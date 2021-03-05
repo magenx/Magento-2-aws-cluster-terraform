@@ -1,0 +1,39 @@
+#!/bin/bash
+#=================================================================================#
+#        MagenX e-commerce stack for Magento 2                                    #
+#        Copyright (C) 2013-present admin@magenx.com                              #
+#        All rights reserved.                                                     #
+#=================================================================================#
+SELF=$(basename $0)
+
+# Magento
+MAGE_VERSION="2"
+GITHUB_REPO_API_URL="https://api.github.com/repos/magenx/Magento-nginx-config/contents"
+
+EXTRA_PACKAGES_DEB="curl jq gnupg2 auditd apt-transport-https apt-show-versions ca-certificates lsb-release unzip vim wget \
+git patch ipset attr acl snmp"
+
+apt-get -y install software-properties-common
+apt-get update
+apt-get -y install ${EXTRA_PACKAGES_DEB}
+
+## install nginx
+echo "deb http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
+curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
+apt-get update
+apt-get -y install nginx
+
+## install varnish
+curl -s https://packagecloud.io/install/repositories/varnishcache/varnish65/script.deb.sh | bash
+apt-get update
+apt-get -y install varnish
+systemctl enable varnish.service
+
+cd /etc/nginx
+curl -s ${GITHUB_REPO_API_URL}/varnish 2>&1 | awk -F'"' '/download_url/ {print $4 ; system("curl -sO "$4)}'
+mv default.vcl /etc/varnish/
+uuidgen > /etc/varnish/secret
+service varnish restart
+service nginx restart
+
+
