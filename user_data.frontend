@@ -9,8 +9,9 @@
 
 # Magento
 MAGE_VERSION="2"
-NGINX_BASE="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/"
-GITHUB_REPO_API_URL="https://api.github.com/repos/magenx/Magento-nginx-config/contents/magento2"
+NGINX_BASE="https://raw.githubusercontent.com/magenx/Magento-2-aws-cluster-terraform/master/"
+GITHUB_REPO_API_URL="https://api.github.com/repos/magenx/Magento-2-aws-cluster-terraform/contents/magento2"
+INSTANCE_LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
 # version lock
 PHP_VERSION="7.4"
@@ -60,7 +61,6 @@ add-apt-repository ppa:ondrej/php -y
 apt-get update
 apt-get -y install php${PHP_VERSION} ${PHP_PACKAGES_DEB[@]/#/php${PHP_VERSION}-} php-pear
 
-PHP_VERSION="$(php -v | head -n 1 | cut -d " " -f 2 | cut -f1-2 -d".")"
 php_ini="/etc/php/${PHP_VERSION}/fpm/php.ini"
 php_fpm_pool="/etc/php/${PHP_VERSION}/fpm/pool.d/www.conf"
 php_opcache_ini="/etc/php/${PHP_VERSION}/fpm/conf.d/10-opcache.ini"
@@ -152,7 +152,7 @@ sed -i 's/mysql.allow_persistent = On/mysql.allow_persistent = Off/' ${php_ini}
 sed -i 's/mysqli.allow_persistent = On/mysqli.allow_persistent = Off/' ${php_ini}
 sed -i 's/pm = dynamic/pm = ondemand/' ${php_fpm_pool}
 sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' ${php_fpm_pool}
-sed -i 's/pm.max_children = 50/pm.max_children = 1000/' ${php_fpm_pool}
+sed -i 's/pm.max_children = 5/pm.max_children = 100/' ${php_fpm_pool}
 
 
 hostnamectl set-hostname server.${MAGE_DOMAIN} --static
@@ -162,7 +162,7 @@ timedatectl set-timezone ${MAGE_TIMEZONE}
 sed -i "s/\[www\]/\[${MAGE_OWNER}\]/" ${php_fpm_pool}
 sed -i "s/^user =.*/user = ${MAGE_PHP_USER}/" ${php_fpm_pool}
 sed -i "s/^group =.*/group = ${MAGE_PHP_USER}/" ${php_fpm_pool}
-sed -i "s/^listen =.*/listen = 127.0.0.1:9000/" ${php_fpm_pool}
+#sed -i "s/^listen =.*/listen = 127.0.0.1:9000/" ${php_fpm_pool}
 sed -ri "s/;?listen.owner =.*/listen.owner = ${MAGE_OWNER}/" ${php_fpm_pool}
 sed -ri "s/;?listen.group =.*/listen.group = ${MAGE_PHP_USER}/" ${php_fpm_pool}
 sed -ri "s/;?listen.mode = 0660/listen.mode = 0660/" ${php_fpm_pool}
@@ -179,7 +179,7 @@ php_admin_flag[log_errors] = on
 php_admin_value[error_log] = "${MAGE_WEB_ROOT_PATH}/var/log/php-fpm-error.log"
 php_admin_value[default_charset] = UTF-8
 php_flag[display_errors] = off
-php_admin_value[memory_limit] = 1024M
+php_admin_value[memory_limit] = 2024M
 php_admin_value[date.timezone] = ${MAGE_TIMEZONE}
 END
 
@@ -197,6 +197,7 @@ mkdir -p /etc/nginx/conf_m${MAGE_VERSION} && cd /etc/nginx/conf_m${MAGE_VERSION}
 curl -s ${GITHUB_REPO_API_URL}/conf_m2 2>&1 | awk -F'"' '/download_url/ {print $4 ; system("curl -sO "$4)}' >/dev/null
 
 sed -i "s/user  nginx;/user  ${MAGE_OWNER};/" /etc/nginx/nginx.conf
+sed -i "s/INSTANCE_LOCAL_IP/${INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/magento${MAGE_VERSION}.conf
 sed -i "s/example.com/${MAGE_DOMAIN}/g" /etc/nginx/sites-available/magento${MAGE_VERSION}.conf
 sed -i "s/example.com/${MAGE_DOMAIN}/g" /etc/nginx/nginx.conf
 sed -i "s,/var/www/html,${MAGE_WEB_ROOT_PATH},g" /etc/nginx/conf_m${MAGE_VERSION}/maps.conf
