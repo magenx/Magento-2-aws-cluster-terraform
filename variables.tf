@@ -5,14 +5,14 @@ variable "ec2" {
     frontend   = "c6g.xlarge"
     admin      = "c6g.xlarge"
     staging    = "c6g.xlarge"
-    developer  = "t4g.micro"
    }
 }
 
 variable "ec2_extra" {
-  description  = "EC2 instance name and type for build systems"
+  description  = "EC2 instance name and type for build and developer systems"
   default      = {
-	build  = "c6g.xlarge"
+	build      = "t4g.micro"
+        developer  = "c6g.xlarge"
    }
 }
 
