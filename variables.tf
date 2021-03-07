@@ -87,7 +87,7 @@ variable "asp" {
 }
 
 variable "s3" {
-  description = "EFS names"
+  description = "S3 names"
   type        = set(string)
   default     = ["magento", "system"]
 }
@@ -95,7 +95,7 @@ variable "s3" {
 variable "efs_name" {
   description = "EFS names"
   type        = set(string)
-  default     = ["production", "staging"]
+  default     = ["developer", "staging"]
 }
 
 variable "load_balancer_name" {
