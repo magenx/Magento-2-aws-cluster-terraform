@@ -382,7 +382,7 @@ resource "aws_lb_target_group" "target_group" {
   vpc_id      = data.aws_vpc.default.id
 }
 # #
-# Create EC2 instances for standalone build system
+# Create EC2 instances for build and developer systems
 # #
 resource "aws_instance" "instances" {
   for_each      = var.ec2_extra
