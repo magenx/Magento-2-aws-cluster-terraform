@@ -126,8 +126,8 @@ mainSteps:
       #!/bin/bash
       if [ -f /home/${var.magento["mage_owner"]}/public_html/app/etc/env.php ]; then
       cd /home/${var.magento["mage_owner"]}/public_html
-      git checkout main
-      git pull origin main
+      su ${var.magento["mage_owner"]} -s /bin/bash -c "git checkout main"
+      su ${var.magento["mage_owner"]} -s /bin/bash -c "git pull origin main"
       systemctl reload php-fpm
       systemctl reload nginx
       else
@@ -161,7 +161,6 @@ mainSteps:
       chown -R ${var.magento["mage_owner"]}:php-${var.magento["mage_owner"]} /home/${var.magento["mage_owner"]}/public_html /home/${var.magento["mage_owner"]}/{.config,.cache,.local,.composer}
       chmod 2770 /home/${var.magento["mage_owner"]}/public_html
       setfacl -Rdm u:${var.magento["mage_owner"]}:rwX,g:php-${var.magento["mage_owner"]}:r-X,o::- /home/${var.magento["mage_owner"]}/public_html
-      git config --system credential.helper '!aws codecommit credential-helper $@'
       git config --system credential.UseHttpPath true
       git config --system user.email "${var.magento["mage_admin_email"]}"
       git config --system user.name "${var.magento["mage_owner"]}"
@@ -169,8 +168,6 @@ mainSteps:
       su ${var.magento["mage_owner"]} -s /bin/bash -c "echo 007 > /home/${var.magento["mage_owner"]}/public_html/magento_umask"
       setfacl -Rdm u:${var.magento["mage_owner"]}:rwX,g:php-${var.magento["mage_owner"]}:rwX,o::- var generated pub/static pub/media
       rm -rf .git
-      find . -type d -exec chmod 2770 {} \;
-      find . -type f -exec chmod 660 {} \;
       chmod +x bin/magento
       bin/magento module:enable --all
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento setup:install \
