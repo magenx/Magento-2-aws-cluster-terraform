@@ -48,7 +48,6 @@ $ git clone https://github.com/magenx/Magento-2-cluster-aws-terraform.git
 - [x] `1` rabbitmq broker
 - [x] `2` s3 bucket
 - [x] `1` codecommit repository 4 branches (main build staging developer)
-- [x] EFS multi AZ mounts 
 - [x] Autoscaling policy per group
 - [x] Systems Manager [https://aws.amazon.com/systems-manager/]
 - [x] Cloudwatch + EventsBridge metrics/alarms/events/triggers
