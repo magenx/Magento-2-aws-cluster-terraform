@@ -49,30 +49,6 @@ resource "aws_codecommit_repository" "codecommit_repository" {
   }
 }
 # #
-# Create EFS file system ids
-# #
-resource "aws_efs_file_system" "efs_file_system" {
-  for_each = var.efs_name
-  creation_token = "${var.magento["mage_owner"]}-${each.key}-efs"
-  tags = {
-    Name = "${var.magento["mage_owner"]}-${each.key}-efs"
-  }
-}
-# #
-# Create EFS mount targets for each filesystem
-# #
-resource "aws_efs_mount_target" "efs_mount_target" {
-  depends_on = [aws_efs_file_system.efs_file_system]
-  for_each = {
-    for index in setproduct(values(aws_efs_file_system.efs_file_system)[*].id, data.aws_subnet_ids.subnet_ids.ids) : "${index[0]}-${index[1]}" => {
-      file_system_id = index[0]
-      subnet_id = index[1]
-    }
-  }
-  file_system_id = each.value.file_system_id
-  subnet_id      = each.value.subnet_id
-}
-# #
 # Update SSM preferences
 # #
 resource "aws_ssm_document" "session_manager_preferences" {
