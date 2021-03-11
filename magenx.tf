@@ -145,7 +145,7 @@ mainSteps:
       setfacl -Rdm u:${var.magento["mage_owner"]}:rwX,g:php-${var.magento["mage_owner"]}:rwX,o::- var generated pub/static pub/media
       rm -rf .git
       chmod +x bin/magento
-      bin/magento module:enable --all
+      su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento module:enable --all"
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento setup:install \
       --base-url=https://${var.magento["mage_domain"]}/ \
       --base-url-secure=https://${var.magento["mage_domain"]}/ \
@@ -190,11 +190,13 @@ mainSteps:
       --session-save-redis-compression-lib=snappy \
       -n"
       if [ ! -f /home/${var.magento["mage_owner"]}/public_html/app/etc/env.php ]; then
+      echo "installation error"
       exit 1
       fi
+      su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento deploy:mode:set production"
       git init
       git add . -A
-      git commit -m ${var.magento["mage_owner"]}-magento-$(date +'%Y-%m-%d')
+      git commit -m ${var.magento["mage_owner"]}-init-sync-$(date +'%Y-%m-%d')
       git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.codecommit_repository.repository_name}
       git branch -m main
       git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.codecommit_repository.repository_name} main
