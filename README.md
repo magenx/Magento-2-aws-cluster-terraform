@@ -31,9 +31,6 @@ $ git clone https://github.com/magenx/Magento-2-cluster-aws-terraform.git
 ```
    terraform init
    terraform apply -target null_resource.launch_template_vars -auto-approve
-   terraform apply -target aws_s3_bucket.s3_bucket -auto-approve
-   terraform apply -target aws_elasticsearch_domain.elasticsearch_domain -auto-approve
-   terraform apply -target aws_db_instance.db_instance -auto-approve
    terraform apply -auto-approve
 ```
 
