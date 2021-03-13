@@ -167,6 +167,11 @@ mainSteps:
       --use-secure=1 \
       --use-secure-admin=1 \
       --consumers-wait-for-messages=0 \
+      --amqp-host=${aws_mq_broker.mq_broker.instances.0.endpoints.0} \
+      --amqp-port=5671 \
+      --amqp-user=${var.magento["mage_owner"]} \
+      --amqp-password='${random_password.password[0].result}' \
+      --amqp-virtualhost='/' \
       --search-engine=elasticsearch7 \
       --elasticsearch-host=${aws_elasticsearch_domain.elasticsearch_domain.endpoint} \
       --elasticsearch-port=443 \
@@ -179,6 +184,8 @@ mainSteps:
       --cache-backend-redis-server=${aws_elasticache_cluster.elasticache_cluster["cache"].cache_nodes.0.address} \
       --cache-backend-redis-port=6379 \
       --cache-backend-redis-db=1 \
+      --cache-backend-redis-compress-data=1 \
+      --cache-backend-redis-compression-lib=l4z \
       -n"
       ## session
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento setup:config:set \
@@ -187,7 +194,7 @@ mainSteps:
       --session-save-redis-port=6379 \
       --session-save-redis-log-level=3 \
       --session-save-redis-db=1 \
-      --session-save-redis-compression-lib=snappy \
+      --session-save-redis-compression-lib=lz4 \
       -n"
       if [ ! -f /home/${var.magento["mage_owner"]}/public_html/app/etc/env.php ]; then
       echo "installation error"
@@ -238,6 +245,23 @@ resource "aws_iam_role_policy_attachment" "ec2_role_policy_attachment" {
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
   name = "EC2IAMProfile"
   role = aws_iam_role.ec2_instance_role.name
+}
+# #
+# Create RabbitMQ - queue message broker
+# #
+resource "aws_mq_broker" "mq_broker" {
+  broker_name = "${var.magento["mage_owner"]}-queue"
+  engine_type        = "RabbitMQ"
+  engine_version     = "3.8.6"
+  host_instance_type = "mq.t3.micro"
+  security_groups    = [data.aws_security_group.security_group.id]
+  user {
+    username = var.magento["mage_owner"]
+    password = random_password.password[0].result
+  }
+  tags = {
+    Name   = "${var.magento["mage_owner"]}-queue"
+  }
 }
 # #
 # Create ElastiCache - Redis - session + cache
