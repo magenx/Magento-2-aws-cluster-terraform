@@ -25,7 +25,7 @@ https://aws.amazon.com/cloudshell/
 $ git clone https://github.com/magenx/Magento-2-cluster-aws-terraform.git
 ```
 > 
-- Create damain + SAN ssl certificate in Certificate Manager
+- Create SAN ssl certificate in Certificate Manager
 - Check all details / all files / adjust your settings
 - Run:
 ```
