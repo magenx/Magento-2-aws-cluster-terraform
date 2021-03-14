@@ -1,6 +1,6 @@
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Generate random secret strings / passwords
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "password" {
   count            = 3
   length           = 16
@@ -10,9 +10,9 @@ resource "random_password" "password" {
   special          = true
   override_special = "!#$%&*?"
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Extract some vars for launch template, append to user_data*
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "null_resource" "launch_template_vars" {
   # extract some configuration values
   provisioner "local-exec" {
@@ -38,9 +38,9 @@ EOF
 on_failure = continue
  }
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create CodeCommit repository for Magento code
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codecommit_repository" "codecommit_repository" {
   repository_name = var.magento["mage_domain"]
   description     = "Magento 2.x code for ${var.magento["mage_domain"]}"
@@ -48,9 +48,9 @@ resource "aws_codecommit_repository" "codecommit_repository" {
     Name = "${var.magento["mage_owner"]}-${var.magento["mage_domain"]}"
   }
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Update SSM preferences
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "session_manager_preferences" {
   name            = "SSM-SessionManagerRunShell"
   document_type   = "Session"
@@ -80,9 +80,9 @@ resource "aws_ssm_document" "session_manager_preferences" {
 }
 EOF
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM YAML Document runShellScript to init/pull git
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "ssm_document_pull" {
   name          = "${var.magento["mage_owner"]}-deployment-git"
   document_type = "Command"
@@ -111,9 +111,9 @@ mainSteps:
       fi
 EOT
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM YAML Document runShellScript to init/pull git
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "ssm_document_install" {
   name          = "${var.magento["mage_owner"]}-install-magento-git"
   document_type = "Command"
@@ -210,9 +210,9 @@ mainSteps:
       git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.codecommit_repository.repository_name} main
 EOT
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create EC2 service role
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role" "ec2_instance_role" {
   name = "EC2IAMProfile"
   description = "Allows EC2 instances to call AWS services on your behalf"
@@ -232,24 +232,24 @@ resource "aws_iam_role" "ec2_instance_role" {
 }
 EOF
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Attach policies to EC2 service role
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role_policy_attachment" "ec2_role_policy_attachment" {
   for_each   = var.ec2_instance_profile_policy
   role       = aws_iam_role.ec2_instance_role.name
   policy_arn = each.value
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create EC2 Instance Profile
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
   name = "EC2IAMProfile"
   role = aws_iam_role.ec2_instance_role.name
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create RabbitMQ - queue message broker
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_mq_broker" "mq_broker" {
   broker_name = "${var.magento["mage_owner"]}-queue"
   engine_type        = "RabbitMQ"
@@ -264,9 +264,9 @@ resource "aws_mq_broker" "mq_broker" {
     Name   = "${var.magento["mage_owner"]}-queue"
   }
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create ElastiCache - Redis - session + cache
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticache_cluster" "elasticache_cluster" {
   for_each             = toset(var.redis["redis_name"])
   cluster_id           = "${var.magento["mage_owner"]}-${each.key}-elc"
@@ -275,9 +275,9 @@ resource "aws_elasticache_cluster" "elasticache_cluster" {
   num_cache_nodes      = 1
   parameter_group_name = var.redis["redis_params"]
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create S3 bucket
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_s3_bucket" "s3_bucket" {
   for_each      = var.s3
   bucket        = "${var.magento["mage_owner"]}-${each.key}-storage"
@@ -287,15 +287,15 @@ resource "aws_s3_bucket" "s3_bucket" {
     Name        = "${var.magento["mage_owner"]}-${each.key}-storage"
   }
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create ElasticSearch service role
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_service_linked_role" "elasticsearch_domain" {
   aws_service_name = "es.amazonaws.com"
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create ElasticSearch domain !!! ~45min creation time
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticsearch_domain" "elasticsearch_domain" {
   depends_on = [aws_iam_service_linked_role.elasticsearch_domain]
   domain_name           = var.elk["elk_domain"]
@@ -336,9 +336,9 @@ resource "aws_elasticsearch_domain" "elasticsearch_domain" {
 }
 EOF
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create RDS instance
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "db_instance" {
   identifier            = "${var.magento["mage_owner"]}-database"
   allocated_storage     = var.rds["rds_storage"]
@@ -357,9 +357,9 @@ resource "aws_db_instance" "db_instance" {
     Name = "${var.magento["mage_owner"]}-database"
   }
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create Application Load Balancer loop names
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb" "load_balancer" {
   for_each           = var.load_balancer_name
   name               = "${var.magento["mage_owner"]}-${each.key}-alb"
@@ -371,9 +371,9 @@ resource "aws_lb" "load_balancer" {
     Name = "${var.magento["mage_owner"]}-${each.key}-alb"
   }
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create Target Groups for Load Balancers
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_target_group" "target_group" {
   for_each    = var.ec2
   name        = "${var.magento["mage_owner"]}-${each.key}-target"
@@ -381,9 +381,9 @@ resource "aws_lb_target_group" "target_group" {
   protocol    = "HTTP"
   vpc_id      = data.aws_vpc.default.id
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create EC2 instances for build and developer systems
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_instance" "instances" {
   for_each      = var.ec2_extra
   ami           = data.aws_ami.ubuntu_2004.id
@@ -402,9 +402,9 @@ resource "aws_instance" "instances" {
   }
   user_data = filebase64("./scripts/user_data.${each.key}")
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create Launch Template for Autoscaling Groups - user_data converted
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_launch_template" "launch_template" {
   for_each = var.ec2
   name = "${var.magento["mage_owner"]}-${each.key}-lt"
@@ -436,9 +436,9 @@ resource "aws_launch_template" "launch_template" {
   }
   user_data = filebase64("./scripts/user_data.${each.key}")
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create Autoscaling Groups
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_group" "autoscaling_group" {
   for_each = var.ec2
   name = "${var.magento["mage_owner"]}-${each.key}-asg"
@@ -452,9 +452,9 @@ resource "aws_autoscaling_group" "autoscaling_group" {
     version = "$Latest"
   }
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create https:// listener for OUTER Load Balancer - forward to varnish
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener" "outerhttps" {
   load_balancer_arn = aws_lb.load_balancer["outer"].arn
   port              = "443"
@@ -466,9 +466,9 @@ resource "aws_lb_listener" "outerhttps" {
     target_group_arn = aws_lb_target_group.target_group["varnish"].arn
   }
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create http:// listener for OUTER Load Balancer - redirect to https://
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener" "outerhttp" {
   load_balancer_arn = aws_lb.load_balancer["outer"].arn
   port              = "80"
@@ -482,9 +482,9 @@ resource "aws_lb_listener" "outerhttp" {
     }
   }
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create default listener for INNER Load Balancer - forward to frontend
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener" "inner" {
   load_balancer_arn = aws_lb.load_balancer["inner"].arn
   port              = "80"
@@ -494,9 +494,9 @@ resource "aws_lb_listener" "inner" {
     target_group_arn = aws_lb_target_group.target_group["frontend"].arn
   }
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create conditional listener rule for INNER Load Balancer - forward to admin
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener_rule" "inneradmin" {
   listener_arn = aws_lb_listener.inner.arn
   priority     = 10
@@ -510,9 +510,9 @@ resource "aws_lb_listener_rule" "inneradmin" {
     }
   }
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create conditional listener rule for INNER Load Balancer - forward to staging
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener_rule" "innerstaging" {
   listener_arn = aws_lb_listener.inner.arn
   priority     = 20
@@ -526,9 +526,9 @@ resource "aws_lb_listener_rule" "innerstaging" {
     }
   }
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create conditional listener rule for INNER Load Balancer - forward to developer
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener_rule" "innerdeveloper" {
   listener_arn = aws_lb_listener.inner.arn
   priority     = 30
@@ -542,9 +542,9 @@ resource "aws_lb_listener_rule" "innerdeveloper" {
     }
   }
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create Autoscaling policy for scale OUT
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "autoscaling_policy_out" {
   for_each               = var.ec2
   name                   = "${var.magento["mage_owner"]}-${each.key}-asp-out"
@@ -553,9 +553,9 @@ resource "aws_autoscaling_policy" "autoscaling_policy_out" {
   cooldown               = 300
   autoscaling_group_name = aws_autoscaling_group.autoscaling_group[each.key].name
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch alarm metric to execute Autoscaling policy for scale OUT
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_out" {
   for_each            = var.ec2
   alarm_name          = "${var.magento["mage_owner"]}-${each.key} scale-out alarm"
@@ -572,9 +572,9 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_out" {
   alarm_description = "${each.key} scale-out alarm - CPU exceeds 60 percent"
   alarm_actions     = [aws_autoscaling_policy.autoscaling_policy_out[each.key].arn]
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create Autoscaling policy for scale IN
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "autoscaling_policy_in" {
   for_each               = var.ec2
   name                   = "${var.magento["mage_owner"]}-${each.key}-asp-in"
@@ -583,9 +583,9 @@ resource "aws_autoscaling_policy" "autoscaling_policy_in" {
   cooldown               = 300
   autoscaling_group_name = aws_autoscaling_group.autoscaling_group[each.key].name
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch alarm metric to execute Autoscaling policy for scale IN
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_in" {
   for_each            = var.ec2
   alarm_name          = "${var.magento["mage_owner"]}-${each.key} scale-in alarm"
@@ -602,9 +602,9 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_in" {
   alarm_description = "${each.key} scale-in alarm - CPU less than 25 percent"
   alarm_actions     = [aws_autoscaling_policy.autoscaling_policy_in[each.key].arn]
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch events service role
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role" "eventsbridge_service_role" {
   name = "EventsBridgeServiceRole"
   description = "Provides EventsBridge manage events on your behalf."
@@ -624,17 +624,17 @@ resource "aws_iam_role" "eventsbridge_service_role" {
 }
 EOF
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Attach policies to CloudWatch events role
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role_policy_attachment" "eventsbridge_role_policy_attachment" {
   for_each   = var.eventsbridge_policy
   role       = aws_iam_role.eventsbridge_service_role.name
   policy_arn = each.value
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch events rule to monitor CodeCommit magento repository state
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "eventsbridge_rule" {
   name        = "EventsBridgeRuleCodeCommitRepositoryStateChange"
   description = "CloudWatch monitor magento repository state change"
@@ -650,9 +650,9 @@ resource "aws_cloudwatch_event_rule" "eventsbridge_rule" {
 }
 EOF
 }
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create EventsBridge target to execute AWS-RunShellScript
-# #
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "eventsbridge_target" {
   rule      = aws_cloudwatch_event_rule.eventsbridge_rule.name
   target_id = "EventsBridgeTargetGitDeploymentScript"
