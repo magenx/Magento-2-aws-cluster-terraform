@@ -178,6 +178,11 @@ mainSteps:
       --remote-storage-driver=aws-s3 \
       --remote-storage-bucket=${aws_s3_bucket.s3_bucket["magento"].bucket} \
       --remote-storage-region=${data.aws_region.current.name}"
+      ## installation check
+      if [ ! -f /home/${var.magento["mage_owner"]}/public_html/app/etc/env.php ]; then
+      echo "installation error"
+      exit 1
+      fi
       ## cache backend
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento setup:config:set \
       --cache-backend=redis \
@@ -196,10 +201,6 @@ mainSteps:
       --session-save-redis-db=1 \
       --session-save-redis-compression-lib=lz4 \
       -n"
-      if [ ! -f /home/${var.magento["mage_owner"]}/public_html/app/etc/env.php ]; then
-      echo "installation error"
-      exit 1
-      fi
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento deploy:mode:set production"
       git init
       git add . -A
