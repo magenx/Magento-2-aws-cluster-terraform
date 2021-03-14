@@ -112,7 +112,7 @@ mainSteps:
 EOT
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create SSM YAML Document runShellScript to init/pull git
+# Create SSM YAML Document runShellScript to install magento, push to codecommit, init git
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "ssm_document_install" {
   name          = "${var.magento["mage_owner"]}-install-magento-git"
