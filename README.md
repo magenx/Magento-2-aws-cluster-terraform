@@ -22,7 +22,7 @@ https://aws.amazon.com/cloudshell/
 - Clone repo:
 > 
 ```
-$ git clone https://github.com/magenx/Magento-2-cluster-aws-terraform.git
+$ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 ```
 > 
 - Create SAN ssl certificate in Certificate Manager
