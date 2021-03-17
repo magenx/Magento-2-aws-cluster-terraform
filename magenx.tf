@@ -39,6 +39,23 @@ on_failure = continue
  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create EFS file system
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_efs_file_system" "efs_file_system" {
+  creation_token = "${var.magento["mage_owner"]}-efs-storage"
+  tags = {
+    Name = "${var.magento["mage_owner"]}-efs-storage"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create EFS mount target for each subnet
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_efs_mount_target" "efs_mount_target" {
+  count           = length(data.aws_subnet_ids.subnet_ids.ids)
+  file_system_id  = aws_efs_file_system.efs_file_system.id
+  subnet_id       = tolist(data.aws_subnet_ids.subnet_ids.ids)[count.index]
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create CodeCommit repository for Magento code
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codecommit_repository" "codecommit_repository" {
