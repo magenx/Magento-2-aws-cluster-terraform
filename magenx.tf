@@ -66,38 +66,6 @@ resource "aws_codecommit_repository" "codecommit_repository" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Update SSM preferences
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_document" "session_manager_preferences" {
-  name            = "SSM-SessionManagerRunShell"
-  document_type   = "Session"
-  document_format = "JSON"
-
-  content = <<EOF
-{
-  "schemaVersion": "1.0",
-  "description": "Document to hold regional settings for Session Manager",
-  "sessionType": "Standard_Stream",
-  "inputs": {
-    "s3BucketName": "${aws_s3_bucket.s3_bucket["system"].bucket}",
-    "s3KeyPrefix": "ssmsessionlogs",
-    "s3EncryptionEnabled": true,
-    "cloudWatchLogGroupName": "",
-    "cloudWatchEncryptionEnabled": false,
-    "cloudWatchStreamingEnabled": false,
-    "idleSessionTimeout": "30",
-    "kmsKeyId": "",
-    "runAsEnabled": true,
-    "runAsDefaultUser": "",
-    "shellProfile": {
-      "windows": "",
-      "linux": ""
-    }
-  }
-}
-EOF
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudFront distribution with S3 origin
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
