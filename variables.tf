@@ -89,7 +89,7 @@ variable "asp" {
 variable "s3" {
   description = "S3 names"
   type        = set(string)
-  default     = ["magento", "system"]
+  default     = ["media", "static", "system"]
 }
 
 variable "efs_name" {
