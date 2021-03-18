@@ -451,7 +451,7 @@ resource "aws_lb" "load_balancer" {
 # Create Target Groups for Load Balancers
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_target_group" "target_group" {
-  for_each    = var.ec2
+  for_each    = merge(var.ec2, var.ec2_extra)
   name        = "${var.magento["mage_owner"]}-${each.key}-target"
   port        = 80
   protocol    = "HTTP"
