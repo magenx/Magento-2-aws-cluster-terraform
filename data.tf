@@ -8,6 +8,13 @@ data "aws_acm_certificate" "issued" {
   most_recent = true
 }
 
+data "aws_acm_certificate" "issued_us" {
+  domain   = var.magento["mage_domain"]
+  provider   = aws.us
+  statuses = ["ISSUED"]
+  most_recent = true
+}
+
 data "aws_vpc" "default" {
   default = true
 }
@@ -23,6 +30,14 @@ data "aws_security_group" "security_group" {
     name   = "group-name"
     values = ["default"]
   }
+}
+
+data "aws_cloudfront_origin_request_policy" "origin_request_policy" {
+  name = "Managed-CORS-S3Origin"
+}
+
+data "aws_cloudfront_cache_policy" "cache_policy" {
+  name = "Managed-CachingOptimized"
 }
 
 data "aws_ami" "ubuntu_2004" {
