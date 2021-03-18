@@ -98,6 +98,65 @@ resource "aws_ssm_document" "session_manager_preferences" {
 EOF
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudFront distribution with S3 origin
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
+  comment = "Origin access identity"
+}
+resource "aws_cloudfront_distribution" "distribution" {
+  origin {
+    domain_name = aws_s3_bucket.s3_bucket["magento"].bucket_regional_domain_name
+    origin_id   = var.magento["mage_domain"]
+
+    s3_origin_config {
+      origin_access_identity = aws_cloudfront_origin_access_identity.origin_access_identity.cloudfront_access_identity_path
+    }
+  }
+
+  enabled             = true
+  is_ipv6_enabled     = true
+  comment             = "${var.magento["mage_domain"]} assets"
+
+  logging_config {
+    include_cookies = false
+    bucket          = aws_s3_bucket.s3_bucket["system"].bucket_regional_domain_name
+    prefix          = "${var.magento["mage_owner"]}-cloudfront-logs"
+  }
+
+  default_cache_behavior {
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = var.magento["mage_domain"]
+
+    compress = true
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.origin_request_policy.id
+    cache_policy_id          = data.aws_cloudfront_cache_policy.cache_policy.id
+
+  viewer_protocol_policy = "https-only"
+    min_ttl                = 0
+    default_ttl            = 3600
+    max_ttl                = 86400
+  }
+  
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  price_class = "PriceClass_100"
+
+  tags = {
+    Name = "production"
+  }
+
+  viewer_certificate {
+    acm_certificate_arn = data.aws_acm_certificate.issued_us.arn
+    ssl_support_method = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2019"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM YAML Document runShellScript to init/pull git
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "ssm_document_pull" {
