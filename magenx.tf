@@ -81,6 +81,8 @@ resource "aws_cloudfront_distribution" "distribution" {
     }
   }
 
+  aliases = [${var.magento["mage_domain"]}]
+
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "${var.magento["mage_domain"]} assets"
