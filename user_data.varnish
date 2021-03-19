@@ -44,7 +44,7 @@ cd /usr/local/src
 wget https://download.configserver.com/csf.tgz
 tar -xzf csf.tgz
 cd csf
-sh install.sh
+bash install.sh
 
 cat > /root/csfconfig <<END
 for program in $(grep -o 'EXE:.*' /var/log/lfd.log | awk -F' ' '{print tolower($1)}' | sort -u)
