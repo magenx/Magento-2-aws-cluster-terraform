@@ -151,7 +151,7 @@ mainSteps:
       cd /home/${var.magento["mage_owner"]}/public_html
       su ${var.magento["mage_owner"]} -s /bin/bash -c "git checkout main"
       su ${var.magento["mage_owner"]} -s /bin/bash -c "git pull origin main"
-      systemctl reload php-fpm
+      systemctl reload php${var.magento["php_version"]}-fpm
       systemctl reload nginx
       else
       exit 1
