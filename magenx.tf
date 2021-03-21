@@ -74,14 +74,14 @@ resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
 resource "aws_cloudfront_distribution" "distribution" {
   origin {
     domain_name = aws_s3_bucket.s3_bucket["media"].bucket_regional_domain_name
-    origin_id   = "${var.magento["mage_domain"]-media-assets"
+    origin_id   = "${var.magento["mage_domain"]}-media-assets"
 
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.origin_access_identity.cloudfront_access_identity_path
     }
   }
 
-  aliases = [${var.magento["mage_domain"]}]
+  aliases = [var.magento["mage_domain"]]
 
   enabled             = true
   is_ipv6_enabled     = true
@@ -96,7 +96,7 @@ resource "aws_cloudfront_distribution" "distribution" {
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${var.magento["mage_domain"] media assets"
+    target_origin_id = "${var.magento["mage_domain"]} media assets"
 
     compress = true
     origin_request_policy_id = data.aws_cloudfront_origin_request_policy.origin_request_policy.id
