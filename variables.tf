@@ -28,6 +28,7 @@ variable "magento" {
     language              = "en_US"
     currency              = "EUR"
     timezone              = "UTC"
+    php_version           = "7.4"
   }
 }
 
