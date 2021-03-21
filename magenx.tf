@@ -707,6 +707,6 @@ resource "aws_cloudwatch_event_target" "eventsbridge_target" {
  
 run_command_targets {
     key    = "tag:Name"
-    values = ["${var.magento["mage_owner"]}-admin-ec2"]
+    values = [aws_launch_template.launch_template["admin"].tag_specifications[0].tags.Name]
   }
 }
