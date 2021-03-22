@@ -37,6 +37,7 @@ curl -s ${GITHUB_REPO_API_URL}/varnish 2>&1 | awk -F'"' '/download_url/ {print $
 mv default.vcl /etc/varnish/
 uuidgen > /etc/varnish/secret
 sed -i "s/INSTANCE_LOCAL_IP/${INSTANCE_LOCAL_IP}/" /etc/nginx/nginx.conf
+sed -i "s/MAGE_DOMAIN/${MAGE_DOMAIN}/" /etc/nginx/nginx.conf
 sed -i "s/INSTANCE_LOCAL_IP/${INSTANCE_LOCAL_IP}/" /etc/varnish/default.vcl
 systemctl varnish restart
 systemctl nginx restart
