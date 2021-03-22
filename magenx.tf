@@ -233,7 +233,7 @@ mainSteps:
       ## cache backend
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento setup:config:set \
       --cache-backend=redis \
-      --cache-backend-redis-server=${aws_elasticache_cluster.elasticache_cluster["cache"].cache_nodes.0.address} \
+      --cache-backend-redis-server=${aws_elasticache_replication_group.elasticache_cluster["cache"].configuration_endpoint_address} \
       --cache-backend-redis-port=6379 \
       --cache-backend-redis-db=1 \
       --cache-backend-redis-compress-data=1 \
@@ -242,7 +242,7 @@ mainSteps:
       ## session
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento setup:config:set \
       --session-save=redis \
-      --session-save-redis-host=${aws_elasticache_cluster.elasticache_cluster["session"].cache_nodes.0.address} \
+      --session-save-redis-host=${aws_elasticache_replication_group.elasticache_cluster["session"].configuration_endpoint_address} \
       --session-save-redis-port=6379 \
       --session-save-redis-log-level=3 \
       --session-save-redis-db=1 \
@@ -312,15 +312,23 @@ resource "aws_mq_broker" "mq_broker" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create ElastiCache - Redis - session + cache
+# Create ElastiCache - Redis Replication group - session + cache
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_elasticache_cluster" "elasticache_cluster" {
-  for_each             = toset(var.redis["redis_name"])
-  cluster_id           = "${var.magento["mage_owner"]}-${each.key}-elc"
-  engine               = "redis"
-  node_type            = var.redis["redis_type"]
-  num_cache_nodes      = 1
-  parameter_group_name = var.redis["redis_params"]
+resource "aws_elasticache_replication_group" "elasticache_cluster" {
+  for_each                      = toset(var.redis["redis_name"])
+  engine                        = "redis"
+  replication_group_id          = "${var.magento["mage_owner"]}-${each.key}-backend"
+  replication_group_description = "Replication group for ${var.magento["mage_domain"]} ${each.key} backend"
+  node_type                     = var.redis["redis_type"]
+  port                          = 6379
+  parameter_group_name          = var.redis["redis_params"]
+  automatic_failover_enabled    = true
+  multi_az_enabled              = true
+
+  cluster_mode {
+    replicas_per_node_group = var.redis["redis_replica"]
+    num_node_groups         = var.redis["redis_shard"]
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create S3 bucket
