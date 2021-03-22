@@ -19,7 +19,7 @@ resource "null_resource" "launch_template_vars" {
     command = <<EOF
 ## Preconfigure user_data. variables
 echo AWS_DEFAULT_REGION=\"${data.aws_region.current.name}\" > ./vars
-echo EFS_DNS_TARGET=\"${aws_efs_mount_target.efs_mount_target.dns_name}\" >> ./vars
+echo EFS_DNS_TARGET=\"${aws_efs_mount_target.efs_mount_target[0].dns_name}\" >> ./vars
 echo CODECOMMIT_MAGENTO_REPO_NAME=\"${aws_codecommit_repository.codecommit_repository.repository_name}\" >> ./vars
 echo MAGE_DOMAIN=\"${var.magento["mage_domain"]}\" >> ./vars
 echo MAGE_OWNER=\"${var.magento["mage_owner"]}\" >> ./vars
