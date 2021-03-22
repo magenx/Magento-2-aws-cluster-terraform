@@ -501,6 +501,8 @@ resource "aws_autoscaling_group" "autoscaling_group" {
   desired_capacity   = var.asg["asg_des"]
   max_size           = var.asg["asg_max"]
   min_size           = var.asg["asg_min"]
+  health_check_grace_period = 300
+  health_check_type         = "ELB"
   target_group_arns  = [aws_lb_target_group.target_group[each.key].arn]
   launch_template {
     name    = aws_launch_template.launch_template[each.key].name
