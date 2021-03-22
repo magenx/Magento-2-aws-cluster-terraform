@@ -500,6 +500,34 @@ resource "aws_autoscaling_group" "autoscaling_group" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create SNS topic, subscription and email alerts for Autoscaling groups actions
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_sns_topic" "sns_topic_autoscaling" {
+  name = "autoscaling-email-alerts"
+}
+
+resource "aws_sns_topic_subscription" "sns_topic_autoscaling_subscription" {
+  topic_arn = aws_sns_topic.sns_topic_autoscaling.arn
+  protocol  = "email"
+  endpoint  = var.magento["mage_admin_email"]
+}
+
+resource "aws_autoscaling_notification" "autoscaling_notification" {
+for_each = aws_autoscaling_group.autoscaling_group 
+group_names = [
+    aws_autoscaling_group.autoscaling_group[each.key].name
+  ]
+
+  notifications = [
+    "autoscaling:EC2_INSTANCE_LAUNCH",
+    "autoscaling:EC2_INSTANCE_TERMINATE",
+    "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+    "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+  ]
+
+  topic_arn = aws_sns_topic.sns_topic_autoscaling.arn
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create https:// listener for OUTER Load Balancer - forward to varnish
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener" "outerhttps" {
