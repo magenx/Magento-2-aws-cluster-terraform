@@ -97,7 +97,7 @@ resource "aws_cloudfront_distribution" "distribution" {
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${var.magento["mage_domain"]} media assets"
+    target_origin_id = "${var.magento["mage_domain"]}-media-assets"
 
     compress = true
     origin_request_policy_id = data.aws_cloudfront_origin_request_policy.origin_request_policy.id
