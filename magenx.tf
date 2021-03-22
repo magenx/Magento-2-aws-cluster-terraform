@@ -90,7 +90,7 @@ resource "aws_cloudfront_distribution" "distribution" {
 
   logging_config {
     include_cookies = false
-    bucket          = aws_s3_bucket.s3_bucket["system"].bucket_regional_domain_name
+    bucket          = aws_s3_bucket.s3_bucket["system"].bucket_domain_name
     prefix          = "${var.magento["mage_owner"]}-cloudfront-logs"
   }
 
