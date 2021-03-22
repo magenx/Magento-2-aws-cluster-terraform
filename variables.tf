@@ -61,10 +61,12 @@ variable "rds" {
 	  
 variable "redis" {
   description      = "Map some ElastiCache configuration values"
-  default  = {	  
-    redis_type      = "cache.m6g.large"
-    redis_params    = "default.redis6.x"
-    redis_name      = ["session", "cache"]
+  default  = {    
+    redis_type       = "cache.m6g.large"
+    redis_params     = "default.redis6.x.cluster.on"
+    redis_replica    = "2"
+    redis_shard      = "1"
+    redis_name       = ["session", "cache"]
   }
 }
 	  
