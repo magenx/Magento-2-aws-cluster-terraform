@@ -4,7 +4,14 @@
 #        Copyright (C) 2013-present admin@magenx.com                              #
 #        All rights reserved.                                                     #
 #=================================================================================#
-SELF=$(basename $0)
+
+
+
+
+
+
+
+###VARIABLES_PLACEHOLDER###
 
 # Magento
 MAGE_VERSION="2"
