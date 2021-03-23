@@ -70,7 +70,7 @@ resource "aws_codecommit_repository" "codecommit_repository" {
 # Create CloudFront distribution with S3 origin
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
-  comment = "Origin access identity"
+  comment = "CloudFront origin access identity"
 }
 resource "aws_cloudfront_distribution" "distribution" {
   origin {
@@ -79,6 +79,11 @@ resource "aws_cloudfront_distribution" "distribution" {
 
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.origin_access_identity.cloudfront_access_identity_path
+    }
+	  
+    custom_header {
+      name  = "X-Magenx-Header"
+      value = uuid()
     }
   }
 
@@ -343,6 +348,28 @@ resource "aws_s3_bucket" "s3_bucket" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create S3 bucket policy for CloudFront access
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_s3_bucket_policy" "s3_bucket_media_policy" {
+  bucket = aws_s3_bucket.s3_bucket["media"].id
+  policy = jsonencode(
+            {
+              Id        = "PolicyForCloudFrontPrivateContentAccess"
+              Statement = [
+                  {
+                      Action    = "s3:GetObject"
+                      Effect    = "Allow"
+                      Principal = {
+                          AWS = aws_cloudfront_origin_access_identity.origin_access_identity.iam_arn
+                        }
+                      Resource  = "${aws_s3_bucket.s3_bucket["media"].arn}/*"
+                    },
+                ]
+              Version   = "2012-10-17"
+            }
+        )
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create ElasticSearch service role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_service_linked_role" "elasticsearch_domain" {
@@ -510,18 +537,19 @@ resource "aws_autoscaling_group" "autoscaling_group" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create SNS topic, subscription and email alerts for Autoscaling groups actions
+# Create SNS topic and email subscription (confirm email right after resource creation)
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_sns_topic" "sns_topic_autoscaling" {
   name = "autoscaling-email-alerts"
 }
-
 resource "aws_sns_topic_subscription" "sns_topic_autoscaling_subscription" {
   topic_arn = aws_sns_topic.sns_topic_autoscaling.arn
   protocol  = "email"
   endpoint  = var.magento["mage_admin_email"]
 }
-
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create Autoscaling groups actions for SNS topic email alerts
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_notification" "autoscaling_notification" {
 for_each = aws_autoscaling_group.autoscaling_group 
 group_names = [
