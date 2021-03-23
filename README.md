@@ -42,13 +42,13 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - [x] `1` rds mysql database
 - [x] `1` build server
 - [x] `1` elk domain
-- [x] `2` redis elasticache
+- [x] `2` redis elasticache cluster
 - [x] `1` rabbitmq broker
 - [x] `2` s3 bucket
 - [x] `1` codecommit repository 4 branches (main build staging developer)
 - [x] `1` cloudfront s3 origin distribution
 - [x] `1` efs file system
-- [x] `1` sns topic and subscription email alerts for asg
+- [x] `1` sns topic and email subscription alerts for asg
 - [x] Autoscaling policy per group
 - [x] Systems Manager [https://aws.amazon.com/systems-manager/]
 - [x] Cloudwatch + EventsBridge metrics/alarms/events/triggers
