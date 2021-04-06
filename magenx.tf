@@ -499,7 +499,7 @@ resource "aws_db_instance" "db_instance" {
 resource "aws_security_group" "alb_security_group" {
   for_each    = var.load_balancer_name
   name        = "${var.magento["mage_owner"]}-${each.key}-alb"
-  description = "${each.key} lb security grup"
+  description = "${each.key} lb security group"
   vpc_id      = data.aws_vpc.default.id
   
     tags = {
