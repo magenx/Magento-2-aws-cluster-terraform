@@ -412,7 +412,7 @@ resource "aws_s3_bucket_policy" "s3_bucket_system_policy" {
         "s3:PutObject"
       ],
       Effect = "Allow"
-      Resource = "arn:aws:s3:::${aws_s3_bucket.s3_bucket["system"].id}/*"
+      Resource = "arn:aws:s3:::${aws_s3_bucket.s3_bucket["system"].id}/${var.magento["mage_owner"]}-alb/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
       Principal = {
         AWS = [
           data.aws_elb_service_account.current.arn
@@ -518,7 +518,7 @@ resource "aws_lb" "load_balancer" {
   subnets            = data.aws_subnet_ids.subnet_ids.ids
   access_logs {
     bucket  = aws_s3_bucket.s3_bucket["system"].bucket
-    prefix  = "${var.magento["mage_owner"]}-${each.key}-alb"
+    prefix  = "${var.magento["mage_owner"]}-alb"
     enabled = true
   }
   tags = {
