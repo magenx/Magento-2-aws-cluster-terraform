@@ -38,7 +38,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 ## Complete setup:
 - [x] `4` autoscaling groups with launch templates base64 converted from user_data.*
 - [x] `5` instances target groups (varnish frontend admin staging developer)
-- [x] `2` load balancers (external/internal) with listeners / rules
+- [x] `2` load balancers (external/internal) with listeners / rules / security groups
 - [x] `1` rds mysql database
 - [x] `1` build server
 - [x] `1` elk domain
