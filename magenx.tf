@@ -507,7 +507,33 @@ resource "aws_security_group" "alb_security_group" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create Application Load Balancer loop names
+# Create Security Rules for Application Load Balancer Security Groups
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_security_group_rule" "outer_alb_security" {
+   for_each =  local.outer_alb_security_rules
+      type             = lookup(each.value, "type", null)
+      description      = lookup(each.value, "description", null)
+      from_port        = lookup(each.value, "from_port", null)
+      to_port          = lookup(each.value, "to_port", null)
+      protocol         = lookup(each.value, "protocol", null)
+      cidr_blocks      = lookup(each.value, "cidr_blocks", null)
+      source_security_group_id = lookup(each.value, "source_security_group_id", null)
+      security_group_id = aws_security_group.alb_security_group["outer"].id
+}
+
+resource "aws_security_group_rule" "inner_alb_security" {
+   for_each =  local.inner_alb_security_rules
+      type             = lookup(each.value, "type", null)
+      description      = lookup(each.value, "description", null)
+      from_port        = lookup(each.value, "from_port", null)
+      to_port          = lookup(each.value, "to_port", null)
+      protocol         = lookup(each.value, "protocol", null)
+      cidr_blocks      = lookup(each.value, "cidr_blocks", null)
+      source_security_group_id = lookup(each.value, "source_security_group_id", null)
+      security_group_id = aws_security_group.alb_security_group["inner"].id
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create Application Load Balancers
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb" "load_balancer" {
   for_each           = var.load_balancer_name
