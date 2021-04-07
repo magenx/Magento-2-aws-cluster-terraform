@@ -127,3 +127,53 @@ variable "eventsbridge_policy" {
   "arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole"
   ]
 }
+
+locals {
+  outer_alb_security_rules = {
+  https_in = {
+    type        = "ingress"
+    description = "Allow all inbound traffic on the load balancer https listener port"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    },
+  http_in = {
+    type        = "ingress"
+    description = "Allow all inbound traffic on the load balancer http listener port"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    },
+  http_out = {
+    type        = "egress"
+    description = "Allow outbound traffic to instances on the instance listener port"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    source_security_group_id = data.aws_security_group.security_group.id
+    }
+  }
+}
+
+locals {
+  inner_alb_security_rules = {
+  http_in = {
+    type        = "ingress"
+    description = "Allow inbound traffic from the VPC CIDR on the load balancer listener port"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [data.aws_vpc.default.cidr_block]
+    },
+  http_out = {
+    type        = "egress"
+    description = "Allow outbound traffic to instances on the instance listener port"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    source_security_group_id = data.aws_security_group.security_group.id
+    }
+  }
+}
