@@ -93,9 +93,9 @@ variable "asp" {
 }
 
 variable "s3" {
-  description = "S3 names"
+  description = "S3 bucket names"
   type        = set(string)
-  default     = ["media", "static", "system"]
+  default     = ["media", "system"]
 }
 
 variable "efs_name" {
