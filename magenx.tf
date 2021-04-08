@@ -477,17 +477,17 @@ EOF
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "db_instance" {
   identifier            = "${var.magento["mage_owner"]}-database"
-  allocated_storage     = var.rds["rds_storage"]
-  max_allocated_storage = var.rds["rds_max_storage"]
-  storage_type          = var.rds["rds_storage_type"] 
-  engine                = var.rds["rds_engine"]
-  engine_version        = var.rds["rds_version"]
-  instance_class        = var.rds["rds_class"]
-  name                  = var.rds["rds_database"]
+  allocated_storage     = var.rds["allocated_storage"]
+  max_allocated_storage = var.rds["max_allocated_storage"]
+  storage_type          = var.rds["storage_type"] 
+  engine                = var.rds["engine"]
+  engine_version        = var.rds["engine_version"]
+  instance_class        = var.rds["instance_class"]
+  name                  = var.rds["name"]
   username              = var.magento["mage_owner"]
   password              = random_password.password[1].result
-  parameter_group_name  = var.rds["rds_params"]
-  skip_final_snapshot   = var.rds["rds_skip_snap"]
+  parameter_group_name  = var.rds["parameter_group_name"]
+  skip_final_snapshot   = var.rds["skip_final_snapshot"]
   copy_tags_to_snapshot = true
   tags = {
     Name = "${var.magento["mage_owner"]}-database"
