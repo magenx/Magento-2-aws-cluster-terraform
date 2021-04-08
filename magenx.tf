@@ -571,7 +571,7 @@ resource "aws_instance" "instances" {
   iam_instance_profile = aws_iam_instance_profile.ec2_instance_profile.name
   vpc_security_group_ids = [data.aws_security_group.security_group.id]
   root_block_device {
-      volume_size = "100"
+      volume_size = "50"
       volume_type = "gp3"
     }
   tags = {
@@ -591,7 +591,7 @@ resource "aws_launch_template" "launch_template" {
   block_device_mappings {
     device_name = "/dev/sda1"
     ebs { 
-        volume_size = "100"
+        volume_size = "50"
         volume_type = "gp3"
             }
   }
@@ -623,11 +623,11 @@ resource "aws_autoscaling_group" "autoscaling_group" {
   for_each = var.ec2
   name = "${var.magento["mage_owner"]}-${each.key}-asg"
   vpc_zone_identifier = data.aws_subnet_ids.subnet_ids.ids
-  desired_capacity   = var.asg["asg_des"]
-  max_size           = var.asg["asg_max"]
-  min_size           = var.asg["asg_min"]
-  health_check_grace_period = 300
-  health_check_type         = "ELB"
+  desired_capacity    = var.asg["desired_capacity"]
+  max_size            = var.asg["max_size"]
+  min_size            = var.asg["min_size"]
+  health_check_grace_period = var.asg["health_check_grace_period"]
+  health_check_type         = var.asg["health_check_type"]
   target_group_arns  = [aws_lb_target_group.target_group[each.key].arn]
   launch_template {
     name    = aws_launch_template.launch_template[each.key].name
