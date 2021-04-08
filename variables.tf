@@ -35,12 +35,13 @@ variable "magento" {
 variable "elk" {
   description      = "Map some ElasticSearch configuration values"
   default  = {
-    elk_domain      = "magenx-elk"
-    elk_ver         = "7.9"
-    elk_type        = "t2.small.elasticsearch"
-    elk_ebs_enabled = true
-    elk_ebs_type    = "gp2"
-    elk_ebs         = "10"
+    domain_name            = "magenx-elk"
+    elasticsearch_version  = "7.9"
+    instance_type          = "t2.small.elasticsearch"
+    instance_count         = "1"
+    ebs_enabled            = true
+    volume_type            = "gp2"
+    volume_size            = "10"
   }
 }
 
