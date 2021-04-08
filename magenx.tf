@@ -230,7 +230,7 @@ mainSteps:
       --base-url=https://${var.magento["mage_domain"]}/ \
       --base-url-secure=https://${var.magento["mage_domain"]}/ \
       --db-host=${aws_db_instance.db_instance.endpoint} \
-      --db-name=${var.rds["rds_database"]} \
+      --db-name=${var.rds["name"]} \
       --db-user=${var.magento["mage_owner"]} \
       --db-password='${random_password.password[1].result}' \
       --admin-firstname=${var.magento["mage_owner"]} \
@@ -352,14 +352,14 @@ resource "aws_elasticache_replication_group" "elasticache_cluster" {
   engine                        = "redis"
   replication_group_id          = "${var.magento["mage_owner"]}-${each.key}-backend"
   replication_group_description = "Replication group for ${var.magento["mage_domain"]} ${each.key} backend"
-  node_type                     = var.redis["redis_type"]
+  node_type                     = var.redis["node_type"]
   port                          = 6379
-  parameter_group_name          = var.redis["redis_params"]
+  parameter_group_name          = var.redis["parameter_group_name"]
   automatic_failover_enabled    = true
   multi_az_enabled              = true
 
   cluster_mode {
-    replicas_per_node_group = var.redis["redis_replica"]
+    replicas_per_node_group = var.redis["replicas_per_node_group"]
     num_node_groups         = var.redis["redis_shard"]
   }
 }
