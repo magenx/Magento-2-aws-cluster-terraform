@@ -434,23 +434,23 @@ resource "aws_iam_service_linked_role" "elasticsearch_domain" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticsearch_domain" "elasticsearch_domain" {
   depends_on = [aws_iam_service_linked_role.elasticsearch_domain]
-  domain_name           = var.elk["elk_domain"]
-  elasticsearch_version = var.elk["elk_ver"]
+  domain_name           = var.elk["domain_name"]
+  elasticsearch_version = var.elk["elasticsearch_version"]
   cluster_config {
-    instance_type  = var.elk["elk_type"]
-    instance_count = "1"
+    instance_type  = var.elk["instance_type"]
+    instance_count = var.elk["instance_count"]
   }
   ebs_options {
-    ebs_enabled = var.elk["elk_ebs_enabled"]
-    volume_type = var.elk["elk_ebs_type"]
-    volume_size = var.elk["elk_ebs"]
+    ebs_enabled = var.elk["ebs_enabled"]
+    volume_type = var.elk["volume_type"]
+    volume_size = var.elk["volume_size"]
   }
   vpc_options {
     subnet_ids = [sort(data.aws_subnet_ids.subnet_ids.ids)[0]]
     security_group_ids = [data.aws_security_group.security_group.id]
   }
   tags = {
-    Name = var.elk["elk_domain"]
+    Name = var.elk["domain_name"]
   }
   access_policies = <<EOF
 {
@@ -466,7 +466,7 @@ resource "aws_elasticsearch_domain" "elasticsearch_domain" {
       "Action": [
         "es:*"
       ],
-      "Resource": "arn:aws:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/${var.elk["elk_domain"]}/*"
+      "Resource": "arn:aws:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/${var.elk["domain_name"]}/*"
     }
   ]
 }
