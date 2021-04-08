@@ -73,9 +73,11 @@ variable "redis" {
 variable "asg" {
   description      = "Map some Autoscaling configuration values"
   default  = {
-    asg_des         = "1"
-    asg_min         = "1"
-    asg_max         = "5"
+    desired_capacity      = "1"
+    min_size              = "1"
+    max_size              = "5"
+    health_check_type     = "EC2"
+    health_check_grace_period = "300"
   }
 }
 	  
