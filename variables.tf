@@ -48,26 +48,26 @@ variable "elk" {
 variable "rds" {
   description      = "Map some RDS configuration values"
   default  = {
-    rds_database     = "magenx_aws_demo"
-    rds_storage      = "20"
-    rds_max_storage  = "100"
-    rds_storage_type = "gp2"
-    rds_version      = "8.0.21"
-    rds_class        = "db.m6g.large"
-    rds_engine       = "mysql"
-    rds_params       = "default.mysql8.0"
-    rds_skip_snap    = "true"
+    name     = "magenx_aws_demo"
+    allocated_storage      = "20"
+    max_allocated_storage  = "100"
+    storage_type           = "gp2"
+    engine_version         = "8.0.21"
+    instance_class         = "db.m6g.large"
+    engine                 = "mysql"
+    parameter_group_name   = "default.mysql8.0"
+    skip_final_snapshot    = "true"
   }
 }
 	  
 variable "redis" {
   description      = "Map some ElastiCache configuration values"
   default  = {    
-    redis_type       = "cache.m6g.large"
-    redis_params     = "default.redis6.x.cluster.on"
-    redis_replica    = "2"
-    redis_shard      = "1"
-    redis_name       = ["session", "cache"]
+    node_type                  = "cache.m6g.large"
+    parameter_group_name       = "default.redis6.x.cluster.on"
+    replicas_per_node_group    = "2"
+    num_node_groups            = "1"
+    redis_name                 = ["session", "cache"]
   }
 }
 	  
