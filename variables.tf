@@ -67,7 +67,7 @@ variable "redis" {
     parameter_group_name       = "default.redis6.x.cluster.on"
     replicas_per_node_group    = "2"
     num_node_groups            = "1"
-    redis_name                 = ["session", "cache"]
+    name                       = ["session", "cache"]
   }
 }
 	  
@@ -85,10 +85,10 @@ variable "asg" {
 variable "asp" {
   description      = "Map some Autoscaling Policy configuration values"
   default  = {	  
-    asp_eval_periods  = "2"
-    asp_period        = "300"
-    asp_out_threshold = "60"
-    asp_in_threshold  = "25"
+    evaluation_periods  = "2"
+    period        = "300"
+    out_threshold = "60"
+    in_threshold  = "25"
   }
 }
 
