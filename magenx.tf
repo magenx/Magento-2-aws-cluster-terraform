@@ -348,7 +348,7 @@ resource "aws_mq_broker" "mq_broker" {
 # Create ElastiCache - Redis Replication group - session + cache
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticache_replication_group" "elasticache_cluster" {
-  for_each                      = toset(var.redis["redis_name"])
+  for_each                      = toset(var.redis["name"])
   engine                        = "redis"
   replication_group_id          = "${var.magento["mage_owner"]}-${each.key}-backend"
   replication_group_description = "Replication group for ${var.magento["mage_domain"]} ${each.key} backend"
@@ -771,12 +771,12 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_out" {
   for_each            = var.ec2
   alarm_name          = "${var.magento["mage_owner"]}-${each.key} scale-out alarm"
   comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = var.asp["asp_eval_periods"]
+  evaluation_periods  = var.asp["evaluation_periods"]
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
-  period              = var.asp["asp_period"]
+  period              = var.asp["period"]
   statistic           = "Average"
-  threshold           = var.asp["asp_out_threshold"]
+  threshold           = var.asp["out_threshold"]
   dimensions = {
     AutoScalingGroupName  = aws_autoscaling_group.autoscaling_group[each.key].name
   }
@@ -801,12 +801,12 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_in" {
   for_each            = var.ec2
   alarm_name          = "${var.magento["mage_owner"]}-${each.key} scale-in alarm"
   comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = var.asp["asp_eval_periods"]
+  evaluation_periods  = var.asp["evaluation_periods"]
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
-  period              = var.asp["asp_period"]
+  period              = var.asp["period"]
   statistic           = "Average"
-  threshold           = var.asp["asp_in_threshold"]
+  threshold           = var.asp["in_threshold"]
   dimensions = {
     AutoScalingGroupName  = aws_autoscaling_group.autoscaling_group[each.key].name
   }
