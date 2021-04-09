@@ -497,7 +497,7 @@ resource "aws_db_instance" "db_instance" {
 # Create Security Groups for Application Load Balancer
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "alb_security_group" {
-  for_each    = var.load_balancer_name
+  for_each    = var.alb
   name        = "${var.magento["mage_owner"]}-${each.key}-alb"
   description = "${each.key} lb security group"
   vpc_id      = data.aws_vpc.default.id
@@ -536,7 +536,7 @@ resource "aws_security_group_rule" "inner_alb_security" {
 # Create Application Load Balancers
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb" "load_balancer" {
-  for_each           = var.load_balancer_name
+  for_each           = var.alb
   name               = "${var.magento["mage_owner"]}-${each.key}-alb"
   internal           = false
   load_balancer_type = "application"
