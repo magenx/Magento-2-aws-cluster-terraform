@@ -360,7 +360,7 @@ resource "aws_elasticache_replication_group" "elasticache_cluster" {
 
   cluster_mode {
     replicas_per_node_group = var.redis["replicas_per_node_group"]
-    num_node_groups         = var.redis["redis_shard"]
+    num_node_groups         = var.redis["num_node_groups"]
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
