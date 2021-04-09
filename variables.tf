@@ -193,7 +193,7 @@ locals {
     },
    ec2_http_out = {
     type        = "egress"
-    description = "Allow outbound https traffic on listener port"
+    description = "Allow outbound http traffic on listener port"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
