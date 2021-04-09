@@ -55,6 +55,7 @@ resource "aws_efs_mount_target" "efs_mount_target" {
   count           = length(data.aws_subnet_ids.subnet_ids.ids)
   file_system_id  = aws_efs_file_system.efs_file_system.id
   subnet_id       = tolist(data.aws_subnet_ids.subnet_ids.ids)[count.index]
+  security_groups = [aws_security_group.security_group["efs"].id]
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CodeCommit repository for Magento code
@@ -335,7 +336,7 @@ resource "aws_mq_broker" "mq_broker" {
   engine_type        = "RabbitMQ"
   engine_version     = "3.8.6"
   host_instance_type = "mq.t3.micro"
-  security_groups    = [data.aws_security_group.security_group.id]
+  security_groups    = [aws_security_group.security_group["mq"].id]
   user {
     username = var.magento["mage_owner"]
     password = random_password.password[0].result
@@ -355,6 +356,7 @@ resource "aws_elasticache_replication_group" "elasticache_cluster" {
   node_type                     = var.redis["node_type"]
   port                          = 6379
   parameter_group_name          = var.redis["parameter_group_name"]
+  security_group_ids            = [aws_security_group.security_group[each.key].id]
   automatic_failover_enabled    = true
   multi_az_enabled              = true
 
@@ -447,7 +449,7 @@ resource "aws_elasticsearch_domain" "elasticsearch_domain" {
   }
   vpc_options {
     subnet_ids = [sort(data.aws_subnet_ids.subnet_ids.ids)[0]]
-    security_group_ids = [data.aws_security_group.security_group.id]
+    security_group_ids = [aws_security_group.security_group["elk"].id]
   }
   tags = {
     Name = var.elk["domain_name"]
@@ -488,29 +490,30 @@ resource "aws_db_instance" "db_instance" {
   password              = random_password.password[1].result
   parameter_group_name  = var.rds["parameter_group_name"]
   skip_final_snapshot   = var.rds["skip_final_snapshot"]
+  vpc_security_group_ids = [aws_security_group.security_group["rds"].id]
   copy_tags_to_snapshot = true
   tags = {
     Name = "${var.magento["mage_owner"]}-database"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create Security Groups for Application Load Balancer
+# Create Security Groups
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group" "alb_security_group" {
-  for_each    = var.alb
-  name        = "${var.magento["mage_owner"]}-${each.key}-alb"
-  description = "${each.key} lb security group"
+resource "aws_security_group" "security_group" {
+  for_each    = local.security_group
+  name        = "${var.magento["mage_owner"]}-${each.key}"
+  description = "${each.key} security group"
   vpc_id      = data.aws_vpc.default.id
   
     tags = {
-    Name = "${var.magento["mage_owner"]}-${each.key}-alb"
+    Name = "${var.magento["mage_owner"]}-${each.key}"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create Security Rules for Application Load Balancer Security Groups
+# Create Security Rules for Security Groups
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group_rule" "outer_alb_security" {
-   for_each =  local.outer_alb_security_rules
+resource "aws_security_group_rule" "security_rule" {
+   for_each =  local.security_rule
       type             = lookup(each.value, "type", null)
       description      = lookup(each.value, "description", null)
       from_port        = lookup(each.value, "from_port", null)
@@ -518,20 +521,8 @@ resource "aws_security_group_rule" "outer_alb_security" {
       protocol         = lookup(each.value, "protocol", null)
       cidr_blocks      = lookup(each.value, "cidr_blocks", null)
       source_security_group_id = lookup(each.value, "source_security_group_id", null)
-      security_group_id = aws_security_group.alb_security_group["outer"].id
-}
-
-resource "aws_security_group_rule" "inner_alb_security" {
-   for_each =  local.inner_alb_security_rules
-      type             = lookup(each.value, "type", null)
-      description      = lookup(each.value, "description", null)
-      from_port        = lookup(each.value, "from_port", null)
-      to_port          = lookup(each.value, "to_port", null)
-      protocol         = lookup(each.value, "protocol", null)
-      cidr_blocks      = lookup(each.value, "cidr_blocks", null)
-      source_security_group_id = lookup(each.value, "source_security_group_id", null)
-      security_group_id = aws_security_group.alb_security_group["inner"].id
-}
+      security_group_id = each.value.security_group_id
+    }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create Application Load Balancers
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -540,7 +531,7 @@ resource "aws_lb" "load_balancer" {
   name               = "${var.magento["mage_owner"]}-${each.key}-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb_security_group[each.key].id]
+  security_groups    = [aws_security_group.security_group[each.key].id]
   subnets            = data.aws_subnet_ids.subnet_ids.ids
   access_logs {
     bucket  = aws_s3_bucket.s3_bucket["system"].bucket
@@ -569,7 +560,7 @@ resource "aws_instance" "instances" {
   ami           = data.aws_ami.ubuntu_2004.id
   instance_type = each.value
   iam_instance_profile = aws_iam_instance_profile.ec2_instance_profile.name
-  vpc_security_group_ids = [data.aws_security_group.security_group.id]
+  vpc_security_group_ids = [aws_security_group.security_group["ec2"].id]
   root_block_device {
       volume_size = "50"
       volume_type = "gp3"
@@ -602,7 +593,7 @@ resource "aws_launch_template" "launch_template" {
   monitoring { enabled = false }
   network_interfaces { 
     associate_public_ip_address = true
-    security_groups = [data.aws_security_group.security_group.id]
+    security_groups = [aws_security_group.security_group["ec2"].id]
   }
   tag_specifications {
     resource_type = "instance"
