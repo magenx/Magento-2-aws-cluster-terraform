@@ -11,7 +11,7 @@ variable "ec2" {
 variable "ec2_extra" {
   description  = "EC2 instance name and type for build and developer systems"
   default      = {
-	build      = "t4g.micro"
+        build      = "t4g.micro"
         developer  = "c6g.xlarge"
    }
 }
@@ -59,7 +59,7 @@ variable "rds" {
     skip_final_snapshot    = "true"
   }
 }
-	  
+          
 variable "redis" {
   description      = "Map some ElastiCache configuration values"
   default  = {    
@@ -70,7 +70,7 @@ variable "redis" {
     name                       = ["session", "cache"]
   }
 }
-	  
+          
 variable "asg" {
   description      = "Map some Autoscaling configuration values"
   default  = {
@@ -81,10 +81,10 @@ variable "asg" {
     health_check_grace_period = "300"
   }
 }
-	  
+          
 variable "asp" {
   description      = "Map some Autoscaling Policy configuration values"
-  default  = {	  
+  default  = {    
     evaluation_periods  = "2"
     period        = "300"
     out_threshold = "60"
@@ -132,51 +132,64 @@ variable "eventsbridge_policy" {
 }
 
 locals {
-  outer_alb_security_rules = {
-  https_in = {
+  security_group = setunion(var.alb,var.redis["name"],["ec2","rds","elk","mq","efs"])
+}
+
+locals {
+ security_rule = {
+  outer_alb_https_in = {
     type        = "ingress"
     description = "Allow all inbound traffic on the load balancer https listener port"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+        security_group_id = aws_security_group.security_group["outer"].id
     },
-  http_in = {
+  outer_alb_http_in = {
     type        = "ingress"
     description = "Allow all inbound traffic on the load balancer http listener port"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+        security_group_id = aws_security_group.security_group["outer"].id
     },
-  http_out = {
+  outer_alb_http_out = {
     type        = "egress"
     description = "Allow outbound traffic to instances on the instance listener port"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    source_security_group_id = data.aws_security_group.security_group.id
-    }
-  }
-}
-
-locals {
-  inner_alb_security_rules = {
-  http_in = {
+    source_security_group_id = aws_security_group.security_group["ec2"].id
+        security_group_id = aws_security_group.security_group["outer"].id
+    },
+  inner_alb_http_in = {
     type        = "ingress"
     description = "Allow inbound traffic from the VPC CIDR on the load balancer listener port"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = [data.aws_vpc.default.cidr_block]
+        security_group_id = aws_security_group.security_group["inner"].id
     },
-  http_out = {
+  inner_alb_http_out = {
     type        = "egress"
     description = "Allow outbound traffic to instances on the instance listener port"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    source_security_group_id = data.aws_security_group.security_group.id
-    }
+    source_security_group_id = aws_security_group.security_group["ec2"].id
+        security_group_id = aws_security_group.security_group["inner"].id
+    },
+  ec2_http_out = {
+    type        = "egress"
+    description = "Allow outbound traffic on listener port"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+        security_group_id = aws_security_group.security_group["ec2"].id
+    },
   }
 }
