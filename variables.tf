@@ -98,13 +98,13 @@ variable "s3" {
   default     = ["media", "system"]
 }
 
-variable "efs_name" {
+variable "efs" {
   description = "EFS names"
   type        = set(string)
   default     = ["developer", "staging"]
 }
 
-variable "load_balancer_name" {
+variable "alb" {
   description = "Load balanser names"
   type        = set(string)
   default     = ["outer", "inner"]
