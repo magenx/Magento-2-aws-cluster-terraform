@@ -182,9 +182,9 @@ locals {
     source_security_group_id = aws_security_group.security_group["ec2"].id
         security_group_id = aws_security_group.security_group["inner"].id
     },
-  ec2_http_out = {
+  ec2_https_out = {
     type        = "egress"
-    description = "Allow outbound traffic on listener port"
+    description = "Allow outbound https traffic on listener port"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
