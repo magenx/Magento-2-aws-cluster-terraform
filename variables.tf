@@ -144,7 +144,7 @@ locals {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-        security_group_id = aws_security_group.security_group["outer"].id
+    security_group_id = aws_security_group.security_group["outer"].id
     },
   outer_alb_http_in = {
     type        = "ingress"
@@ -153,7 +153,7 @@ locals {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-        security_group_id = aws_security_group.security_group["outer"].id
+    security_group_id = aws_security_group.security_group["outer"].id
     },
   outer_alb_http_out = {
     type        = "egress"
@@ -162,7 +162,7 @@ locals {
     to_port     = 80
     protocol    = "tcp"
     source_security_group_id = aws_security_group.security_group["ec2"].id
-        security_group_id = aws_security_group.security_group["outer"].id
+    security_group_id = aws_security_group.security_group["outer"].id
     },
   inner_alb_http_in = {
     type        = "ingress"
@@ -171,7 +171,7 @@ locals {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = [data.aws_vpc.default.cidr_block]
-        security_group_id = aws_security_group.security_group["inner"].id
+    security_group_id = aws_security_group.security_group["inner"].id
     },
   inner_alb_http_out = {
     type        = "egress"
@@ -180,7 +180,7 @@ locals {
     to_port     = 80
     protocol    = "tcp"
     source_security_group_id = aws_security_group.security_group["ec2"].id
-        security_group_id = aws_security_group.security_group["inner"].id
+    security_group_id = aws_security_group.security_group["inner"].id
     },
   ec2_https_out = {
     type        = "egress"
@@ -189,7 +189,16 @@ locals {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-        security_group_id = aws_security_group.security_group["ec2"].id
+    security_group_id = aws_security_group.security_group["ec2"].id
+    },
+   ec2_http_out = {
+    type        = "egress"
+    description = "Allow outbound https traffic on listener port"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    security_group_id = aws_security_group.security_group["ec2"].id
     },
   }
 }
