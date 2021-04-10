@@ -157,7 +157,7 @@ locals {
     },
   outer_alb_http_out = {
     type        = "egress"
-    description = "Allow outbound traffic to instances on the instance listener port"
+    description = "Allow outbound traffic to instances on the load balancer listener port"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -175,7 +175,7 @@ locals {
     },
   inner_alb_http_out = {
     type        = "egress"
-    description = "Allow outbound traffic to instances on the instance listener port"
+    description = "Allow outbound traffic to instances on the load balancer listener port"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -184,7 +184,7 @@ locals {
     },
   ec2_https_out = {
     type        = "egress"
-    description = "Allow outbound https traffic on listener port"
+    description = "Allow outbound traffic on the instance https port"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
@@ -193,7 +193,7 @@ locals {
     },
    ec2_http_out = {
     type        = "egress"
-    description = "Allow outbound http traffic on listener port"
+    description = "Allow outbound traffic on the instance http port"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
