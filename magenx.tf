@@ -285,7 +285,7 @@ mainSteps:
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento deploy:mode:set production"
       git init
       git add . -A
-      git commit -m ${var.magento["mage_owner"]}-init-sync-$(date +'%Y-%m-%d')
+      git commit -m ${var.magento["mage_owner"]}-release0-$(date +'%y%m%d-%H%M%S')
       git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.codecommit_repository.repository_name}
       git branch -m main
       git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.codecommit_repository.repository_name} main
