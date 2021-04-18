@@ -208,7 +208,7 @@ cd /usr/local/src
 wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb
 dpkg -i -E ./amazon-cloudwatch-agent.deb
 
-/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent.json
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-frontend.json
 
 ## install aws codedeploy
 #wget https://aws-codedeploy-eu-west-1.s3.amazonaws.com/latest/install
