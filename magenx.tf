@@ -134,6 +134,49 @@ resource "aws_cloudfront_distribution" "distribution" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Parameter configuration file for CloudWatch agent
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_ssm_parameter" "cloudwatch_agent_config" {
+  for_each    = var.ec2
+  name        = "amazon-cloudwatch-agent-${each.key}.json"
+  description = "Configuration file for CloudWatch agent at ${each.key}"
+  type        = "String"
+  value       = <<EOF
+      "logs": {
+        "logs_collected": {
+          "files": {
+            "collect_list": [
+              {
+                "file_path": "/home/${var.magento["mage_owner"]}/public_html/var/log/nginx-error.log",
+                "log_group_name": "nginx_error_logs",
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
+                "timezone": "${var.magento["timezone"]}"
+              },
+              {
+                "file_path": "/home/${var.magento["mage_owner"]}/public_html/var/log/php-fpm-error.log",
+                "log_group_name": "php_error_logs",
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
+                "timezone": "${var.magento["timezone"]}"
+              },
+              {
+                "file_path": "/home/${var.magento["mage_owner"]}/public_html/var/log/exception.log",
+                "log_group_name": "magento_error_logs",
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
+                "timezone": "${var.magento["timezone"]}"
+              }
+            ]
+          }
+        },
+        "log_stream_name": "${var.magento["mage_domain"]}",
+        "force_flush_interval" : 5
+      }
+EOF
+
+  tags = {
+    Name = "amazon-cloudwatch-agent-${each.key}.json"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM YAML Document runShellScript to configure EFS/NFS folders
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "ssm_document_efs" {
