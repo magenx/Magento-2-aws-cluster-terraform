@@ -51,7 +51,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - [x] `1` sns topic and email subscription alerts for asg
 - [x] Autoscaling policy per group
 - [x] Systems Manager [https://aws.amazon.com/systems-manager/]
-- [x] Cloudwatch + EventsBridge metrics/alarms/events/triggers
+- [x] CloudWatch + EventsBridge metrics/logs/alarms/events/triggers
 - [x] All Magento files managed with git only
 - [x] Live shop in production mode / read-only 
 - [x] CSF Firewall can be clustered
