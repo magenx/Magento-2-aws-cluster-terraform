@@ -7,7 +7,7 @@ import std;
 
 backend default {
     .host = "INSTANCE_LOCAL_IP";
-    .port = "80";
+    .port = "8080";
     .first_byte_timeout = 600s;
 }
 
