@@ -1,7 +1,6 @@
 [Unit]
 Description=Varnish a high-perfomance HTTP accelerator
 After=syslog.target network.target
-OnFailure=service-status-mail@%n.service
 
 [Service]
 # Enviroment variables may be found in /etc/varnish/varnish.params
@@ -20,7 +19,7 @@ LimitCORE=infinity
 Type=forking
 PrivateTmp=false
 ExecStart=/usr/sbin/varnishd \
-	-j unix,user=MAGE_OWNER,ccgroup=MAGE_OWNER,workuser=MAGE_OWNER \
+	-j unix,user=${VARNISH_USER},ccgroup=${VARNISH_GROUP},workuser=${VARNISH_USER} \
 	-P /var/run/varnish.pid \
 	-f $VARNISH_VCL_CONF \
 	-a ${VARNISH_LISTEN_ADDRESS}:${VARNISH_LISTEN_PORT} \
@@ -29,7 +28,7 @@ ExecStart=/usr/sbin/varnishd \
 	-s $VARNISH_STORAGE \
 	$DAEMON_OPTS
 	
-ExecReload=/usr/sbin/varnish_reload_vcl
+ExecReload=/usr/share/varnish/varnishreload
 
 Restart=on-failure
 RestartSec=10
