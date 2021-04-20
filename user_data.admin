@@ -193,7 +193,6 @@ mkdir -p /etc/nginx/sites-enabled
 mkdir -p /etc/nginx/sites-available && cd $_
 curl -s ${GITHUB_REPO_API_URL}/sites-available 2>&1 | awk -F'"' '/download_url/ {print $4 ; system("curl -sO "$4)}' >/dev/null
 ln -s /etc/nginx/sites-available/main.conf /etc/nginx/sites-enabled/magento${MAGE_VERSION}.conf
-ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
 mkdir -p /etc/nginx/conf_m${MAGE_VERSION} && cd /etc/nginx/conf_m${MAGE_VERSION}/
 curl -s ${GITHUB_REPO_API_URL}/conf_m2 2>&1 | awk -F'"' '/download_url/ {print $4 ; system("curl -sO "$4)}' >/dev/null
 
@@ -202,6 +201,10 @@ sed -i "s/INSTANCE_LOCAL_IP/${INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/ma
 sed -i "s/example.com/${MAGE_DOMAIN}/g" /etc/nginx/sites-available/magento${MAGE_VERSION}.conf
 sed -i "s/example.com/${MAGE_DOMAIN}/g" /etc/nginx/nginx.conf
 sed -i "s,/var/www/html,${MAGE_WEB_ROOT_PATH},g" /etc/nginx/conf_m${MAGE_VERSION}/maps.conf
+sed -i "s,access_log.*,access_log  ${MAGE_WEB_ROOT_PATH}/var/log/nginx-access.log  main; #if=$writelog;," /etc/nginx/nginx.conf
+sed -i "s,error_log.*,error_log  ${MAGE_WEB_ROOT_PATH}/var/log/nginx-error.log  error;," /etc/nginx/nginx.conf
+
+find /etc/nginx/ -name "default.conf" -exec rm {} \;
 
 systemctl daemon-reload
 systemctl restart nginx.service
