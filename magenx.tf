@@ -142,6 +142,7 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
   description = "Configuration file for CloudWatch agent at ${each.key}"
   type        = "String"
   value       = <<EOF
+{
       "logs": {
         "logs_collected": {
           "files": {
@@ -170,6 +171,7 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
         "log_stream_name": "${var.magento["mage_domain"]}",
         "force_flush_interval" : 5
       }
+}
 EOF
 
   tags = {
