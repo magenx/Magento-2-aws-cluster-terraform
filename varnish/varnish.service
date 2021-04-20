@@ -16,7 +16,7 @@ LimitMEMLOCK=82000
 # Maximum size of the corefile. 
 LimitCORE=infinity
 
-Type=simple
+Type=forking
 
 ExecStart=/usr/sbin/varnishd \
 	-j unix,user=${VARNISH_USER},ccgroup=${VARNISH_GROUP},workuser=${VARNISH_USER} \
