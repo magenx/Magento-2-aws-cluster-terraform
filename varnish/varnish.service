@@ -16,8 +16,8 @@ LimitMEMLOCK=82000
 # Maximum size of the corefile. 
 LimitCORE=infinity
 
-Type=forking
-PrivateTmp=false
+Type=simple
+
 ExecStart=/usr/sbin/varnishd \
 	-j unix,user=${VARNISH_USER},ccgroup=${VARNISH_GROUP},workuser=${VARNISH_USER} \
 	-P /var/run/varnish.pid \
@@ -29,6 +29,11 @@ ExecStart=/usr/sbin/varnishd \
 	$DAEMON_OPTS
 	
 ExecReload=/usr/share/varnish/varnishreload
+
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
 
 Restart=on-failure
 RestartSec=10
