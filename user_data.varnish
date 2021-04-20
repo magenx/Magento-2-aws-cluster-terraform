@@ -44,14 +44,18 @@ chmod 700 /root/awscli
 /root/awscli/v2/aws elbv2 wait load-balancer-available
 ALB_DNS=$(/root/awscli/v2/aws elbv2 describe-load-balancers --output json | jq -r '.LoadBalancers[] | select (.LoadBalancerName | contains("inner")) | .DNSName')
 
-cd /etc/nginx
+cd /etc/varnish
 curl -s ${GITHUB_REPO_API_URL}/varnish 2>&1 | awk -F'"' '/download_url/ {print $4 ; system("curl -sO "$4)}'
-mv default.vcl /etc/varnish/
+mv nginx.conf /etc/nginx/
+mv varnish.service /etc/systemd/system/
 uuidgen > /etc/varnish/secret
 sed -i "s/INSTANCE_LOCAL_IP/${INSTANCE_LOCAL_IP}/" /etc/nginx/nginx.conf
 sed -i "s/MAGE_DOMAIN/${MAGE_DOMAIN}/" /etc/nginx/nginx.conf
 sed -i "s/ALB_DNS/${ALB_DNS}/" /etc/nginx/nginx.conf
 sed -i "s/INSTANCE_LOCAL_IP/${INSTANCE_LOCAL_IP}/" /etc/varnish/default.vcl
+sed -i "s/INSTANCE_LOCAL_IP/${INSTANCE_LOCAL_IP}/" /etc/varnish/varnish.params
+systemctl daemon-reload
+systemctl enable varnish
 systemctl varnish restart
 systemctl nginx restart
 
