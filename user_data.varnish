@@ -14,7 +14,7 @@ GITHUB_REPO_API_URL="https://api.github.com/repos/magenx/Magento-2-aws-cluster-t
 INSTANCE_LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
 EXTRA_PACKAGES_DEB="curl jq gnupg2 auditd apt-transport-https apt-show-versions ca-certificates lsb-release unzip vim wget \
-git patch ipset attr acl snmp"
+git patch ipset attr acl snmp sendmail liblwp-protocol-https-perl"
 
 apt-get -y install software-properties-common
 apt-get update
