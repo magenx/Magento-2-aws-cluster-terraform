@@ -105,7 +105,7 @@ variable "efs" {
 }
 
 variable "alb" {
-  description = "Load balanser names and type"
+  description = "Load balancer names and type"
   default     = {
     outer     = false
     inner     = true
