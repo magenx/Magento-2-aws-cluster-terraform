@@ -132,6 +132,18 @@ variable "eventsbridge_policy" {
   ]
 }
 
+variable "az_number" {
+  description = "Assign a number to each AZ letter used in secondary cidr/subnets configuration"
+  default = {
+    a = 0
+    b = 1
+    c = 2
+    d = 3
+    e = 4
+    f = 5
+  }
+}
+
 locals {
   security_group = setunion(var.alb,var.redis["name"],["ec2","rds","elk","mq","efs"])
 }
