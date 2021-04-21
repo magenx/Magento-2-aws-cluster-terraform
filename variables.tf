@@ -215,5 +215,23 @@ locals {
     cidr_blocks = ["0.0.0.0/0"]
     security_group_id = aws_security_group.security_group["ec2"].id
     },
+   ec2_http_in = {
+    type        = "ingress"
+    description = "Allow all inbound traffic from the load balancer on http port"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.security_group["inner"].id
+    security_group_id = aws_security_group.security_group["ec2"].id
+    },
+   ec2_http_in = {
+    type        = "ingress"
+    description = "Allow all inbound traffic from the load balancer on http port"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.security_group["outer"].id
+    security_group_id = aws_security_group.security_group["ec2"].id
+    },
   }
 }
