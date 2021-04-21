@@ -147,7 +147,7 @@ variable "az_number" {
 }
 
 locals {
-  security_group = setunion(var.alb,var.redis["name"],["ec2","rds","elk","mq","efs"])
+  security_group = setunion(keys(var.alb),var.redis["name"],["ec2","rds","elk","mq","efs"])
 }
 
 locals {
