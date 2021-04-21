@@ -23,8 +23,13 @@ data "aws_vpc" "default" {
   default = true
 }
 
-data "aws_subnet_ids" "subnet_ids" {
+data "aws_subnet_ids" "default" {
    vpc_id = data.aws_vpc.default.id
+
+  filter {
+    name   = "default-for-az"
+    values = ["true"]
+  }
 }
 
 data "aws_security_group" "security_group" {
