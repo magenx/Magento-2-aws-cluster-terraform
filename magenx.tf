@@ -52,9 +52,9 @@ resource "aws_efs_file_system" "efs_file_system" {
 # Create EFS mount target for each subnet
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_efs_mount_target" "efs_mount_target" {
-  count           = length(data.aws_subnet_ids.subnet_ids.ids)
+  count           = length(data.aws_subnet_ids.default.ids)
   file_system_id  = aws_efs_file_system.efs_file_system.id
-  subnet_id       = tolist(data.aws_subnet_ids.subnet_ids.ids)[count.index]
+  subnet_id       = tolist(data.aws_subnet_ids.default.ids)[count.index]
   security_groups = [aws_security_group.security_group["efs"].id]
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -493,7 +493,7 @@ resource "aws_elasticsearch_domain" "elasticsearch_domain" {
     volume_size = var.elk["volume_size"]
   }
   vpc_options {
-    subnet_ids = [sort(data.aws_subnet_ids.subnet_ids.ids)[0]]
+    subnet_ids = [sort(data.aws_subnet_ids.default.ids)[0]]
     security_group_ids = [aws_security_group.security_group["elk"].id]
   }
   tags = {
@@ -574,10 +574,10 @@ resource "aws_security_group_rule" "security_rule" {
 resource "aws_lb" "load_balancer" {
   for_each           = var.alb
   name               = "${var.magento["mage_owner"]}-${each.key}-alb"
-  internal           = false
+  internal           = each.value
   load_balancer_type = "application"
   security_groups    = [aws_security_group.security_group[each.key].id]
-  subnets            = data.aws_subnet_ids.subnet_ids.ids
+  subnets            = data.aws_subnet_ids.default.ids
   access_logs {
     bucket  = aws_s3_bucket.s3_bucket["system"].bucket
     prefix  = "${var.magento["mage_owner"]}-alb"
@@ -658,7 +658,7 @@ resource "aws_launch_template" "launch_template" {
 resource "aws_autoscaling_group" "autoscaling_group" {
   for_each = var.ec2
   name = "${var.magento["mage_owner"]}-${each.key}-asg"
-  vpc_zone_identifier = data.aws_subnet_ids.subnet_ids.ids
+  vpc_zone_identifier = data.aws_subnet_ids.default.ids
   desired_capacity    = var.asg["desired_capacity"]
   max_size            = var.asg["max_size"]
   min_size            = var.asg["min_size"]
