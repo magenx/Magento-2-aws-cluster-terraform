@@ -30,7 +30,8 @@ apt-get -y install nginx
 curl -s https://packagecloud.io/install/repositories/varnishcache/varnish65/script.deb.sh | bash
 apt-get update
 apt-get -y install varnish
-systemctl enable varnish.service
+
+systemctl stop nginx varnish
 
 ## install aws cli v2
 cd /usr/local/src
@@ -57,8 +58,7 @@ sed -i "s/INSTANCE_LOCAL_IP/${INSTANCE_LOCAL_IP}/" /etc/varnish/varnish.params
 find /etc/nginx/ -name "default.conf" -exec rm {} \;
 systemctl daemon-reload
 systemctl enable varnish
-systemctl varnish restart
-systemctl nginx restart
+systemctl restart nginx varnish
 
 ## install csf firewall
 cd /usr/local/src
