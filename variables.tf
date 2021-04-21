@@ -105,9 +105,11 @@ variable "efs" {
 }
 
 variable "alb" {
-  description = "Load balanser names"
-  type        = set(string)
-  default     = ["outer", "inner"]
+  description = "Load balanser names and type"
+  default     = {
+    outer     = false
+    inner     = true
+    }
 }
 
 variable "ec2_instance_profile_policy" {
