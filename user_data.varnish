@@ -37,7 +37,7 @@ systemctl stop nginx varnish
 cd /usr/local/src
 curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
-./aws/install -i /root/awscli -b /root/awscli/v2/ --update
+./aws/install -i /root/awscli -b /root/awscli/v2 --update
 rm -rf awscliv2.zip aws
 chmod 700 /root/awscli
 
