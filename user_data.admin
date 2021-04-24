@@ -20,7 +20,7 @@ PHP_VERSION="7.4"
 EXTRA_PACKAGES_DEB="curl jq nfs-common gnupg2 ruby auditd apt-transport-https apt-show-versions ca-certificates lsb-release \
 unzip unzip vim wget git patch ipset python3-pip acl attr imagemagick snmp"
 
-PHP_PACKAGES_DEB=(cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth)
+PHP_PACKAGES_DEB=(cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4)
 
 apt-get -y install software-properties-common
 apt-get update
