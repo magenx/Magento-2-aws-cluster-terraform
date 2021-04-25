@@ -161,7 +161,17 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
                 "file_path": "/home/${var.magento["mage_owner"]}/public_html/var/log/exception.log",
                 "log_group_name": "magento_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
-              }
+              },
+              {
+                "file_path": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
+                "log_group_name": "cloudwatch_agent_log",
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
+              },
+              {
+                "file_path": "/var/log/syslog",
+                "log_group_name": "system_syslog",
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
+              },
             ]
           }
         },
