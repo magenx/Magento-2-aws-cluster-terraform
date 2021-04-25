@@ -1,1 +1,160 @@
 #!/bin/bash
+#=================================================================================#
+#        MagenX e-commerce stack for Magento 2                                    #
+#        Copyright (C) 2013-present admin@magenx.com                              #
+#        All rights reserved.                                                     #
+#=================================================================================#
+
+###VARIABLES_PLACEHOLDER###
+
+# Magento
+MAGE_VERSION="2"
+NGINX_BASE="https://raw.githubusercontent.com/magenx/Magento-2-aws-cluster-terraform/master/"
+GITHUB_REPO_API_URL="https://api.github.com/repos/magenx/Magento-2-aws-cluster-terraform/contents/magento2"
+INSTANCE_LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+
+# version lock
+PHP_VERSION="7.4"
+
+# WebStack Packages
+EXTRA_PACKAGES_DEB="curl jq nfs-common gnupg2 ruby auditd apt-transport-https apt-show-versions ca-certificates lsb-release \
+unzip vim wget git patch ipset python3-pip acl attr iotop expect imagemagick snmp"
+
+PHP_PACKAGES_DEB=(cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4)
+
+apt-get -y install software-properties-common
+apt-get update
+apt-get -y install ${EXTRA_PACKAGES_DEB}
+
+## create user
+useradd -d ${MAGE_WEB_ROOT_PATH%/*} -s /bin/bash ${MAGE_OWNER} >/dev/null 2>&1
+## create root php user
+MAGE_PHP_USER="php-${MAGE_OWNER}"
+useradd -M -s /sbin/nologin -d ${MAGE_WEB_ROOT_PATH%/*} ${MAGE_PHP_USER} >/dev/null 2>&1
+usermod -g ${MAGE_PHP_USER} ${MAGE_OWNER}
+
+pip3 install git-remote-codecommit
+
+if [ ! -f ${MAGE_WEB_ROOT_PATH}/app/etc/env.php ]; then
+mkdir -p ${MAGE_WEB_ROOT_PATH}
+chmod 711 /home/${MAGE_OWNER}
+mkdir -p /home/${MAGE_OWNER}/{.config,.cache,.local,.composer}
+chown -R ${MAGE_OWNER}:${MAGE_PHP_USER} ${MAGE_WEB_ROOT_PATH} ${MAGE_WEB_ROOT_PATH%/*}/{.config,.cache,.local,.composer}
+chmod 2770 ${MAGE_WEB_ROOT_PATH}
+setfacl -Rdm u:${MAGE_OWNER}:rwX,g:${MAGE_PHP_USER}:r-X,o::- ${MAGE_WEB_ROOT_PATH}
+cd ${MAGE_WEB_ROOT_PATH}
+su ${MAGE_OWNER} -s /bin/bash -c "git clone -b build codecommit::${AWS_DEFAULT_REGION}://${CODECOMMIT_MAGENTO_REPO_NAME} ."
+setfacl -Rdm u:${MAGE_OWNER}:rwX,g:${MAGE_PHP_USER}:rwX,o::- var generated pub/static pub/media
+chmod +x bin/magento
+fi
+
+## install php
+add-apt-repository ppa:ondrej/php -y
+apt-get update
+apt-get -y install composer php${PHP_VERSION} ${PHP_PACKAGES_DEB[@]/#/php${PHP_VERSION}-} php-pear
+
+php_ini="/etc/php/${PHP_VERSION}/fpm/php.ini"
+php_fpm_pool="/etc/php/${PHP_VERSION}/fpm/pool.d/www.conf"
+php_opcache_ini="/etc/php/${PHP_VERSION}/fpm/conf.d/10-opcache.ini"
+
+cat > /etc/sysctl.conf <<END
+fs.file-max = 1000000
+fs.inotify.max_user_watches = 1000000
+vm.swappiness = 5
+net.ipv4.ip_forward = 0
+net.ipv4.conf.default.rp_filter = 1
+net.ipv4.conf.default.accept_source_route = 0
+kernel.sysrq = 0
+kernel.core_uses_pid = 1
+kernel.msgmnb = 65535
+kernel.msgmax = 65535
+kernel.shmmax = 68719476736
+kernel.shmall = 4294967296
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.tcp_mem = 8388608 8388608 8388608
+net.ipv4.tcp_rmem = 4096 87380 8388608
+net.ipv4.tcp_wmem = 4096 65535 8388608
+net.ipv4.ip_local_port_range = 1024 65535
+net.ipv4.tcp_challenge_ack_limit = 1073741823
+net.ipv4.tcp_fin_timeout = 15
+net.ipv4.tcp_keepalive_time = 15
+net.ipv4.tcp_max_orphans = 262144
+net.ipv4.tcp_max_syn_backlog = 262144
+net.ipv4.tcp_max_tw_buckets = 400000
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_synack_retries = 2
+net.ipv4.tcp_syn_retries = 2
+net.ipv4.tcp_sack = 1
+net.ipv4.route.flush = 1
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+net.core.rmem_default = 8388608
+net.core.wmem_default = 8388608
+net.core.netdev_max_backlog = 262144
+net.core.somaxconn = 65535
+END
+
+sysctl -q -p
+
+cat > ${php_opcache_ini} <<END
+zend_extension=opcache.so
+opcache.enable = 0
+END
+
+cp ${php_ini} ${php_ini}.BACK
+sed -i 's/^\(max_execution_time = \)[0-9]*/\17200/' ${php_ini}
+sed -i 's/^\(max_input_time = \)[0-9]*/\17200/' ${php_ini}
+sed -i 's/^\(memory_limit = \)[0-9]*M/\12048M/' ${php_ini}
+sed -i 's/^\(post_max_size = \)[0-9]*M/\164M/' ${php_ini}
+sed -i 's/^\(upload_max_filesize = \)[0-9]*M/\164M/' ${php_ini}
+sed -i 's/expose_php = On/expose_php = Off/' ${php_ini}
+sed -i 's/;realpath_cache_size =.*/realpath_cache_size = 4096k/' ${php_ini}
+sed -i 's/;realpath_cache_ttl =.*/realpath_cache_ttl = 86400/' ${php_ini}
+sed -i 's/short_open_tag = Off/short_open_tag = On/' ${php_ini}
+sed -i 's/;max_input_vars =.*/max_input_vars = 50000/' ${php_ini}
+sed -i 's/session.gc_maxlifetime = 1440/session.gc_maxlifetime = 28800/' ${php_ini}
+sed -i 's/mysql.allow_persistent = On/mysql.allow_persistent = Off/' ${php_ini}
+sed -i 's/mysqli.allow_persistent = On/mysqli.allow_persistent = Off/' ${php_ini}
+sed -i 's/pm = dynamic/pm = ondemand/' ${php_fpm_pool}
+sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' ${php_fpm_pool}
+sed -i 's/pm.max_children = 5/pm.max_children = 100/' ${php_fpm_pool}
+
+
+hostnamectl set-hostname server.${MAGE_DOMAIN} --static
+
+timedatectl set-timezone ${MAGE_TIMEZONE}
+
+sed -i "s/\[www\]/\[${MAGE_OWNER}\]/" ${php_fpm_pool}
+sed -i "s/^user =.*/user = ${MAGE_PHP_USER}/" ${php_fpm_pool}
+sed -i "s/^group =.*/group = ${MAGE_PHP_USER}/" ${php_fpm_pool}
+#sed -i "s/^listen =.*/listen = 127.0.0.1:9000/" ${php_fpm_pool}
+sed -ri "s/;?listen.owner =.*/listen.owner = ${MAGE_OWNER}/" ${php_fpm_pool}
+sed -ri "s/;?listen.group =.*/listen.group = ${MAGE_PHP_USER}/" ${php_fpm_pool}
+sed -ri "s/;?listen.mode = 0660/listen.mode = 0660/" ${php_fpm_pool}
+sed -ri "s/;?listen.allowed_clients =.*/listen.allowed_clients = 127.0.0.1/" ${php_fpm_pool}
+sed -i '/sendmail_path/,$d' ${php_fpm_pool}
+sed -i '/PHPSESSID/d' ${php_ini}
+sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," ${php_ini}
+
+cat >> ${php_fpm_pool} <<END
+;;
+;; Custom pool settings
+php_flag[display_errors] = off
+php_admin_flag[log_errors] = on
+php_admin_value[error_log] = "${MAGE_WEB_ROOT_PATH}/var/log/php-fpm-error.log"
+php_admin_value[default_charset] = UTF-8
+php_flag[display_errors] = off
+php_admin_value[memory_limit] = 4048M
+php_admin_value[date.timezone] = ${MAGE_TIMEZONE}
+END
+
+cd /usr/local/src
+wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb
+dpkg -i -E ./amazon-cloudwatch-agent.deb
+
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-build.json
+
+## install aws codedeploy
+#wget https://aws-codedeploy-eu-west-1.s3.amazonaws.com/latest/install
+#chmod +x ./install
+#./install auto
