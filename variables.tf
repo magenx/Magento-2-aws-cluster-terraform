@@ -206,7 +206,7 @@ locals {
     cidr_blocks = ["0.0.0.0/0"]
     security_group_id = aws_security_group.security_group["ec2"].id
     },
-   ec2_http_out = {
+  ec2_http_out = {
     type        = "egress"
     description = "Allow outbound traffic on the instance http port"
     from_port   = 80
@@ -215,7 +215,43 @@ locals {
     cidr_blocks = ["0.0.0.0/0"]
     security_group_id = aws_security_group.security_group["ec2"].id
     },
-   ec2_http_in = {
+  ec2_mysql_out = {
+    type        = "egress"
+    description = "Allow outbound traffic on the instance MySql port"
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.security_group["rds"].id
+    security_group_id = aws_security_group.security_group["ec2"].id
+    },
+  ec2_redis_session_out = {
+    type        = "egress"
+    description = "Allow outbound traffic on the instance Redis port"
+    from_port   = 6379
+    to_port     = 6379
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.security_group["session"].id
+    security_group_id = aws_security_group.security_group["ec2"].id
+    },
+  ec2_redis_cache_out = {
+    type        = "egress"
+    description = "Allow outbound traffic on the instance Redis port"
+    from_port   = 6379
+    to_port     = 6379
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.security_group["cache"].id
+    security_group_id = aws_security_group.security_group["ec2"].id
+    },
+  ec2_elk_out = {
+    type        = "egress"
+    description = "Allow outbound traffic on the instance ELK port"
+    from_port   = 9200
+    to_port     = 9200
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.security_group["elk"].id
+    security_group_id = aws_security_group.security_group["ec2"].id
+    },
+  ec2_http_in = {
     type        = "ingress"
     description = "Allow all inbound traffic from the load balancer on http port"
     from_port   = 80
@@ -224,7 +260,7 @@ locals {
     source_security_group_id = aws_security_group.security_group["inner"].id
     security_group_id = aws_security_group.security_group["ec2"].id
     },
-   ec2_http_in = {
+  ec2_http_in = {
     type        = "ingress"
     description = "Allow all inbound traffic from the load balancer on http port"
     from_port   = 80
