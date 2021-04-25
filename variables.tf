@@ -233,5 +233,32 @@ locals {
     source_security_group_id = aws_security_group.security_group["outer"].id
     security_group_id = aws_security_group.security_group["ec2"].id
     },
+  rds_mysql_in = {
+    type        = "ingress"
+    description = "Allow access instances to MySQL Port"
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.security_group["ec2"].id
+    security_group_id = aws_security_group.security_group["rds"].id
+    },
+  redis_session_in = {
+    type        = "ingress"
+    description = "Allow access instances to Redis Session"
+    from_port   = 6379
+    to_port     = 6379
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.security_group["ec2"].id
+    security_group_id = aws_security_group.security_group["session"].id
+    },
+  redis_cache_in = {
+    type        = "ingress"
+    description = "Allow access instances to Redis Cache"
+    from_port   = 6379
+    to_port     = 6379
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.security_group["ec2"].id
+    security_group_id = aws_security_group.security_group["cache"].id
+    },
   }
 }
