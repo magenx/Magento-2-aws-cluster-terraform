@@ -150,20 +150,17 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
               {
                 "file_path": "/home/${var.magento["mage_owner"]}/public_html/var/log/nginx-error.log",
                 "log_group_name": "nginx_error_logs",
-                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
-                "timezone": "${var.magento["timezone"]}"
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
               },
               {
                 "file_path": "/home/${var.magento["mage_owner"]}/public_html/var/log/php-fpm-error.log",
                 "log_group_name": "php_error_logs",
-                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
-                "timezone": "${var.magento["timezone"]}"
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
               },
               {
                 "file_path": "/home/${var.magento["mage_owner"]}/public_html/var/log/exception.log",
                 "log_group_name": "magento_error_logs",
-                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
-                "timezone": "${var.magento["timezone"]}"
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
               }
             ]
           }
