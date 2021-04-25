@@ -240,7 +240,7 @@ apt-get -y install nginx
 ## install php
 add-apt-repository ppa:ondrej/php -y
 apt-get update
-apt-get -y install php${PHP_VERSION} ${PHP_PACKAGES_DEB[@]/#/php${PHP_VERSION}-} php-pear
+apt-get -y install composer php${PHP_VERSION} ${PHP_PACKAGES_DEB[@]/#/php${PHP_VERSION}-} php-pear
 
 php_ini="/etc/php/${PHP_VERSION}/fpm/php.ini"
 php_fpm_pool="/etc/php/${PHP_VERSION}/fpm/pool.d/www.conf"
