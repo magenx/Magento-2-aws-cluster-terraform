@@ -44,7 +44,7 @@ chown -R ${MAGE_OWNER}:${MAGE_PHP_USER} ${MAGE_WEB_ROOT_PATH} ${MAGE_WEB_ROOT_PA
 chmod 2770 ${MAGE_WEB_ROOT_PATH}
 setfacl -Rdm u:${MAGE_OWNER}:rwX,g:${MAGE_PHP_USER}:r-X,o::- ${MAGE_WEB_ROOT_PATH}
 cd ${MAGE_WEB_ROOT_PATH}
-su ${MAGE_OWNER} -s /bin/bash -c "git clone -b main codecommit::${AWS_DEFAULT_REGION}://${CODECOMMIT_MAGENTO_REPO_NAME} ."
+su ${MAGE_OWNER} -s /bin/bash -c "git clone -b developer codecommit::${AWS_DEFAULT_REGION}://${CODECOMMIT_MAGENTO_REPO_NAME} ."
 setfacl -Rdm u:${MAGE_OWNER}:rwX,g:${MAGE_PHP_USER}:rwX,o::- var generated pub/static pub/media
 chmod +x bin/magento
 fi
