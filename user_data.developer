@@ -55,12 +55,19 @@ fi
 ## install mysql
 curl -sS ${REPO_MARIADB_CFG} | bash
 
+## install nginx
+echo "deb http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
+curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
+
+## install php
+add-apt-repository ppa:ondrej/php -y
+
 ## install elasticsearch
 wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add -
 echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" > /etc/apt/sources.list.d/elastic-7.x.list
 
 apt-get update
-apt-get install -y mariadb-server varnish elasticsearch kibana redis-server
+apt-get install -y mariadb-server varnish elasticsearch kibana redis-server nginx composer php${PHP_VERSION} ${PHP_PACKAGES_DEB[@]/#/php${PHP_VERSION}-} php-pear
 
 systemctl enable mysql
 
@@ -121,7 +128,6 @@ MAGE_DB_HOST="${MAGE_DB_HOST}"
 MAGE_DB_NAME="${MAGE_DB_NAME}"
 MAGE_DB_USER="${MAGE_DB_USER}"
 MAGE_DB_PASSWORD="${MAGE_DB_PASSWORD}"
-MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD}"
 END
 
 echo "discovery.type: single-node" >> /etc/elasticsearch/elasticsearch.yml
@@ -157,17 +163,6 @@ wget -qO /etc/varnish/varnish.params https://raw.githubusercontent.com/magenx/Ma
 uuidgen > /etc/varnish/secret
 systemctl daemon-reload
 
-## install nginx
-echo "deb http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
-curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
-apt-get update
-apt-get -y install nginx
-
-## install php
-add-apt-repository ppa:ondrej/php -y
-apt-get update
-apt-get -y install composer php${PHP_VERSION} ${PHP_PACKAGES_DEB[@]/#/php${PHP_VERSION}-} php-pear
-
 cat > /etc/sysctl.conf <<END
 fs.file-max = 1000000
 fs.inotify.max_user_watches = 1000000
@@ -199,7 +194,6 @@ sed -i 's/mysqli.allow_persistent = On/mysqli.allow_persistent = Off/' ${php_ini
 sed -i 's/pm = dynamic/pm = ondemand/' ${php_fpm_pool}
 sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' ${php_fpm_pool}
 sed -i 's/pm.max_children = 5/pm.max_children = 100/' ${php_fpm_pool}
-
 
 hostnamectl set-hostname server.${MAGE_DOMAIN} --static
 
