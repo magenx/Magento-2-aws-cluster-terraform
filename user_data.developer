@@ -69,7 +69,6 @@ MYSQL_ROOT_PASSWORD_GEN=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9@%^&?=+_[]
 MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD_GEN}${RANDOM}"
 
 systemctl restart mariadb
-mysqladmin status --wait=2 &>/dev/null || { REDTXT "\n [!] MYSQL LOOKS DOWN \n"; exit 1; }
 
 mysql --connect-expired-password  <<EOMYSQL
 ALTER USER 'root'@'localhost' IDENTIFIED BY "${MYSQL_ROOT_PASSWORD}";
@@ -167,44 +166,6 @@ systemctl daemon-reload
 ## install redis
 apt-get -y install redis-server
 
-redis_conf="/etc/redis/redis.conf"
-
-for REDISPORT in 6379 6380
-do
-mkdir -p /var/lib/redis-${REDISPORT}
-chmod 755 /var/lib/redis-${REDISPORT}
-chown redis /var/lib/redis-${REDISPORT}
-mkdir -p /etc/redis/
-cp -rf ${redis_conf} /etc/redis/redis-${REDISPORT}.conf
-chown redis /etc/redis/redis-${REDISPORT}.conf
-chmod 644 /etc/redis/redis-${REDISPORT}.conf
-sed -i "s/^bind 127.0.0.1.*/bind 127.0.0.1/"  /etc/redis/redis-${REDISPORT}.conf
-sed -i "s/^dir.*/dir \/var\/lib\/redis-${REDISPORT}\//"  /etc/redis/redis-${REDISPORT}.conf
-sed -i "s/^logfile.*/logfile \/var\/log\/redis\/redis-${REDISPORT}.log/"  /etc/redis/redis-${REDISPORT}.conf
-sed -i "s/^pidfile.*/pidfile \/run\/redis-${REDISPORT}\/redis-${REDISPORT}.pid/"  /etc/redis/redis-${REDISPORT}.conf
-sed -i "s/^port.*/port ${REDISPORT}/" /etc/redis/redis-${REDISPORT}.conf
-sed -i "s/dump.rdb/dump-${REDISPORT}.rdb/" /etc/redis/redis-${REDISPORT}.conf
-sed -i "/save [0-9]0/d" /etc/redis/redis-${REDISPORT}.conf
-sed -i 's/^#.*save ""/save ""/' /etc/redis/redis-${REDISPORT}.conf
-sed -i '/^# rename-command CONFIG ""/a\
-rename-command SLAVEOF "" \
-rename-command CONFIG "" \
-rename-command PUBLISH "" \
-rename-command SAVE "" \
-rename-command SHUTDOWN "" \
-rename-command DEBUG "" \
-rename-command BGSAVE "" \
-rename-command BGREWRITEAOF ""
-'  /etc/redis/redis-${REDISPORT}.conf
-done
-
-systemctl daemon-reload
-systemctl enable redis@6379
-systemctl enable redis@6380
-systemctl stop redis-server
-systemctl disable redis-server
-systemctl restart redis@6379 redis@6380
-
 ## install nginx
 echo "deb http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
 curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
@@ -272,12 +233,9 @@ php_admin_flag[log_errors] = on
 php_admin_value[error_log] = "${MAGE_WEB_ROOT_PATH}/var/log/php-fpm-error.log"
 php_admin_value[default_charset] = UTF-8
 php_flag[display_errors] = on
-php_admin_value[memory_limit] = 4024M
+php_admin_value[memory_limit] = 2024M
 php_admin_value[date.timezone] = ${MAGE_TIMEZONE}
 END
-
-echo "${MAGE_WEB_ROOT_PATH}/app/etc/env.php" >> /etc/opcache-default.blacklist
-echo "${MAGE_WEB_ROOT_PATH}/app/etc/config.php" >> /etc/opcache-default.blacklist
 
 wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}magento${MAGE_VERSION}/fastcgi_params
 wget -qO /etc/nginx/nginx.conf  ${NGINX_BASE}magento${MAGE_VERSION}/nginx.conf
