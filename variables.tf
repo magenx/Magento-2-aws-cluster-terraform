@@ -224,6 +224,15 @@ locals {
     source_security_group_id = aws_security_group.security_group["rds"].id
     security_group_id = aws_security_group.security_group["ec2"].id
     },
+  ec2_rabbitmq_out = {
+    type        = "egress"
+    description = "Allow outbound traffic on the instance RabbitMQ port"
+    from_port   = 5671
+    to_port     = 5671
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.security_group["mq"].id
+    security_group_id = aws_security_group.security_group["ec2"].id
+    },
   ec2_redis_session_out = {
     type        = "egress"
     description = "Allow outbound traffic on the instance Redis port"
@@ -295,6 +304,15 @@ locals {
     protocol    = "tcp"
     source_security_group_id = aws_security_group.security_group["ec2"].id
     security_group_id = aws_security_group.security_group["cache"].id
+    },
+  rabbitmq_in = {
+    type        = "ingress"
+    description = "Allow access instances to RabbitMQ"
+    from_port   = 5671
+    to_port     = 5671
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.security_group["ec2"].id
+    security_group_id = aws_security_group.security_group["mq"].id
     },
   }
 }
