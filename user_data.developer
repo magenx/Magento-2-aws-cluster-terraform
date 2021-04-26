@@ -16,6 +16,9 @@ INSTANCE_LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
 # version lock
 PHP_VERSION="7.4"
+php_ini="/etc/php/${PHP_VERSION}/fpm/php.ini"
+php_fpm_pool="/etc/php/${PHP_VERSION}/fpm/pool.d/www.conf"
+php_opcache_ini="/etc/php/${PHP_VERSION}/fpm/conf.d/10-opcache.ini"
 
 # WebStack Packages
 EXTRA_PACKAGES_DEB="curl jq nfs-common gnupg2 ruby auditd apt-transport-https apt-show-versions ca-certificates lsb-release \
@@ -28,10 +31,10 @@ apt-get update
 apt-get -y install ${EXTRA_PACKAGES_DEB}
 
 ## create user
-useradd -d ${MAGE_WEB_ROOT_PATH%/*} -s /bin/bash ${MAGE_OWNER} >/dev/null 2>&1
+useradd -d ${MAGE_WEB_ROOT_PATH%/*} -s /bin/bash ${MAGE_OWNER}
 ## create root php user
 MAGE_PHP_USER="php-${MAGE_OWNER}"
-useradd -M -s /sbin/nologin -d ${MAGE_WEB_ROOT_PATH%/*} ${MAGE_PHP_USER} >/dev/null 2>&1
+useradd -M -s /sbin/nologin -d ${MAGE_WEB_ROOT_PATH%/*} ${MAGE_PHP_USER}
 usermod -g ${MAGE_PHP_USER} ${MAGE_OWNER}
 
 pip3 install git-remote-codecommit
@@ -131,7 +134,7 @@ sed -i "s/.*node.name.*/node.name: magento-node1/" /etc/elasticsearch/elasticsea
 sed -i "s/.*network.host.*/network.host: 127.0.0.1/" /etc/elasticsearch/elasticsearch.yml
 sed -i "s/.*http.port.*/http.port: 9200/" /etc/elasticsearch/elasticsearch.yml
 sed -i "s/.*-Xms.*/-Xms512m/" /etc/elasticsearch/jvm.options
-sed -i "s/.*-Xmx.*/-Xmx2048m/" /etc/elasticsearch/jvm.options
+sed -i "s/.*-Xmx.*/-Xmx512m/" /etc/elasticsearch/jvm.options
 
 sed -i "s,#JAVA_HOME=,JAVA_HOME=/usr/share/elasticsearch/jdk/," /etc/default/elasticsearch
 
@@ -165,35 +168,6 @@ systemctl daemon-reload
 apt-get -y install redis-server
 
 redis_conf="/etc/redis/redis.conf"
-
-cat > /etc/systemd/system/redis@.service <<END
-[Unit]
-Description=Advanced key-value store at %i
-After=network.target
-[Service]
-Type=forking
-User=redis
-Group=redis
-PrivateTmp=true
-RuntimeDirectory=redis-%i
-RuntimeDirectoryMode=2755
-UMask=007
-PrivateTmp=yes
-LimitNOFILE=65535
-PrivateDevices=yes
-ProtectHome=yes
-ReadOnlyDirectories=/
-ReadWritePaths=-/var/lib/redis
-ReadWritePaths=-/var/log/redis
-ReadWritePaths=-/run/redis-%i
-PIDFile=/run/redis-%i/redis-%i.pid
-ExecStart=/usr/bin/redis-server /etc/redis/redis-%i.conf
-Restart=on-failure
-ProtectSystem=true
-ReadWriteDirectories=-/etc/redis
-[Install]
-WantedBy=multi-user.target
-END
 
 for REDISPORT in 6379 6380
 do
@@ -241,10 +215,6 @@ apt-get -y install nginx
 add-apt-repository ppa:ondrej/php -y
 apt-get update
 apt-get -y install composer php${PHP_VERSION} ${PHP_PACKAGES_DEB[@]/#/php${PHP_VERSION}-} php-pear
-
-php_ini="/etc/php/${PHP_VERSION}/fpm/php.ini"
-php_fpm_pool="/etc/php/${PHP_VERSION}/fpm/pool.d/www.conf"
-php_opcache_ini="/etc/php/${PHP_VERSION}/fpm/conf.d/10-opcache.ini"
 
 cat > /etc/sysctl.conf <<END
 fs.file-max = 1000000
@@ -337,9 +307,3 @@ wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/arm64/latest/amazon-
 dpkg -i -E ./amazon-cloudwatch-agent.deb
 
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-developer.json
-
-## install aws codedeploy
-#wget https://aws-codedeploy-eu-west-1.s3.amazonaws.com/latest/install
-#chmod +x ./install
-#./install auto
-
