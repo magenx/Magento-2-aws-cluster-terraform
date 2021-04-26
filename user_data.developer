@@ -250,71 +250,14 @@ cat > /etc/sysctl.conf <<END
 fs.file-max = 1000000
 fs.inotify.max_user_watches = 1000000
 vm.swappiness = 5
-net.ipv4.ip_forward = 0
-net.ipv4.conf.default.rp_filter = 1
-net.ipv4.conf.default.accept_source_route = 0
-kernel.sysrq = 0
-kernel.core_uses_pid = 1
-kernel.msgmnb = 65535
-kernel.msgmax = 65535
-kernel.shmmax = 68719476736
-kernel.shmall = 4294967296
-net.ipv4.tcp_tw_reuse = 1
-net.ipv4.tcp_mem = 8388608 8388608 8388608
-net.ipv4.tcp_rmem = 4096 87380 8388608
-net.ipv4.tcp_wmem = 4096 65535 8388608
-net.ipv4.ip_local_port_range = 1024 65535
-net.ipv4.tcp_challenge_ack_limit = 1073741823
-net.ipv4.tcp_fin_timeout = 15
-net.ipv4.tcp_keepalive_time = 15
-net.ipv4.tcp_max_orphans = 262144
-net.ipv4.tcp_max_syn_backlog = 262144
-net.ipv4.tcp_max_tw_buckets = 400000
-net.ipv4.tcp_syncookies = 1
-net.ipv4.tcp_synack_retries = 2
-net.ipv4.tcp_syn_retries = 2
-net.ipv4.tcp_sack = 1
-net.ipv4.route.flush = 1
-net.core.rmem_max = 16777216
-net.core.wmem_max = 16777216
-net.core.rmem_default = 8388608
-net.core.wmem_default = 8388608
-net.core.netdev_max_backlog = 262144
-net.core.somaxconn = 65535
 END
 
 sysctl -q -p
 
 cat > ${php_opcache_ini} <<END
 zend_extension=opcache.so
-opcache.enable = 1
-opcache.enable_cli = 1
-opcache.memory_consumption = 512
-opcache.interned_strings_buffer = 4
-opcache.max_accelerated_files = 60000
-opcache.max_wasted_percentage = 5
-opcache.use_cwd = 1
-opcache.validate_timestamps = 0
-;opcache.revalidate_freq = 2
-;opcache.validate_permission= 1
-opcache.validate_root= 1
-opcache.file_update_protection = 2
-opcache.revalidate_path = 0
-opcache.save_comments = 1
-opcache.load_comments = 1
-opcache.fast_shutdown = 1
-opcache.enable_file_override = 0
-opcache.optimization_level = 0xffffffff
-opcache.inherited_hack = 1
-opcache.blacklist_filename=/etc/opcache-default.blacklist
-opcache.max_file_size = 0
-opcache.consistency_checks = 0
-opcache.force_restart_timeout = 60
-opcache.error_log = "/var/log/php-fpm/opcache.log"
-opcache.log_verbosity_level = 1
-opcache.preferred_memory_model = ""
-opcache.protect_memory = 0
-;opcache.mmap_base = ""
+opcache.enable = 0
+opcache.enable_cli = 0
 END
 
 cp ${php_ini} ${php_ini}.BACK
