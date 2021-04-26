@@ -54,8 +54,13 @@ fi
 
 ## install mysql
 curl -sS ${REPO_MARIADB_CFG} | bash
+
+## install elasticsearch
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add -
+echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" > /etc/apt/sources.list.d/elastic-7.x.list
+
 apt-get update
-apt-get install -y mariadb-server
+apt-get install -y mariadb-server varnish elasticsearch kibana redis-server
 
 systemctl enable mysql
 
@@ -119,13 +124,6 @@ MAGE_DB_PASSWORD="${MAGE_DB_PASSWORD}"
 MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD}"
 END
 
-## install elasticsearch
-wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add -
-echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" > /etc/apt/sources.list.d/elastic-7.x.list
-
-apt-get update
-apt-get -y install elasticsearch kibana
-
 echo "discovery.type: single-node" >> /etc/elasticsearch/elasticsearch.yml
 echo "xpack.security.enabled: true" >> /etc/elasticsearch/elasticsearch.yml
 sed -i "s/.*cluster.name.*/cluster.name: magento/" /etc/elasticsearch/elasticsearch.yml
@@ -154,17 +152,10 @@ REMOTE_MONITORING_USER_PASSWORD="$(awk '/PASSWORD remote_monitoring_user/ { prin
 ELASTIC_PASSWORD="$(awk '/PASSWORD elastic/ { print $4 }' /tmp/elasticsearch)"
 END
 
-## install varnish
-apt-get update
-apt-get -y install varnish
-
 wget -qO /etc/systemd/system/varnish.service https://raw.githubusercontent.com/magenx/Magento-2-server-installation/master/varnish.service
 wget -qO /etc/varnish/varnish.params https://raw.githubusercontent.com/magenx/Magento-2-server-installation/master/varnish.params
 uuidgen > /etc/varnish/secret
 systemctl daemon-reload
-   
-## install redis
-apt-get -y install redis-server
 
 ## install nginx
 echo "deb http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
