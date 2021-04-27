@@ -48,6 +48,10 @@ setfacl -Rdm u:${MAGE_OWNER}:rwX,g:${MAGE_PHP_USER}:rwX,o::- var generated pub/s
 chmod +x bin/magento
 fi
 
+## install nodejs
+curl -fsSL https://deb.nodesource.com/setup_15.x | bash -
+apt-get -y install nodejs
+
 ## install php
 add-apt-repository ppa:ondrej/php -y
 apt-get update
