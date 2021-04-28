@@ -31,7 +31,6 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - Run:
 ```
    terraform init
-   terraform apply -target null_resource.launch_template_vars
    terraform apply
 ```
 
