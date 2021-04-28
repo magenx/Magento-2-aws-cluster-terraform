@@ -205,8 +205,8 @@ php_admin_value[memory_limit] = 2024M
 php_admin_value[date.timezone] = ${MAGE_TIMEZONE}
 END
 
-wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}magento${MAGE_VERSION}/fastcgi_params
-wget -qO /etc/nginx/nginx.conf  ${NGINX_BASE}magento${MAGE_VERSION}/nginx.conf
+wget -qO /etc/nginx/fastcgi_params  ${GITHUB_REPO_RAW_URL}/nginx/fastcgi_params
+wget -qO /etc/nginx/nginx.conf  ${GITHUB_REPO_RAW_URL}/nginx/nginx.conf
 mkdir -p /etc/nginx/sites-enabled
 mkdir -p /etc/nginx/sites-available && cd $_
 curl -s ${GITHUB_REPO_API_URL}/nginx/sites-available 2>&1 | awk -F'"' '/download_url/ {print $4 ; system("curl -sO "$4)}' >/dev/null
