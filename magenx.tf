@@ -623,7 +623,7 @@ resource "aws_instance" "instances" {
   volume_tags = {
     Name = "${var.magento["mage_owner"]}-${each.key}-ec2"
   }
-  user_data = filebase64("./scripts/user_data.${each.key}")
+  user_data = base64encode(data.template_file.user_data[each.key].rendered)
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create Launch Template for Autoscaling Groups - user_data converted
@@ -657,7 +657,7 @@ resource "aws_launch_template" "launch_template" {
     tags = {
       Name = "${var.magento["mage_owner"]}-${each.key}-ec2" }
   }
-  user_data = filebase64("./scripts/user_data.${each.key}")
+  user_data = base64encode(data.template_file.user_data[each.key].rendered)
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create Autoscaling Groups
