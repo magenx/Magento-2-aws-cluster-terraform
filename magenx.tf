@@ -11,35 +11,6 @@ resource "random_password" "password" {
   override_special = "!#$%&*?"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Extract some vars for launch template, append to user_data*
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "null_resource" "launch_template_vars" {
-  # extract some configuration values
-  provisioner "local-exec" {
-    command = <<EOF
-## Preconfigure user_data. variables
-echo AWS_DEFAULT_REGION=\"${data.aws_region.current.name}\" > ./vars
-echo EFS_DNS_TARGET=\"${aws_efs_mount_target.efs_mount_target[0].dns_name}\" >> ./vars
-echo CODECOMMIT_MAGENTO_REPO_NAME=\"${aws_codecommit_repository.codecommit_repository.repository_name}\" >> ./vars
-echo MAGE_DOMAIN=\"${var.magento["mage_domain"]}\" >> ./vars
-echo MAGE_OWNER=\"${var.magento["mage_owner"]}\" >> ./vars
-echo MAGE_PHP_USER=\"php-${var.magento["mage_owner"]}\" >> ./vars
-echo MAGE_ADMIN_EMAIL=\"${var.magento["mage_admin_email"]}\" >> ./vars
-echo MAGE_WEB_ROOT_PATH=\"/home/${var.magento["mage_owner"]}/public_html\" >> ./vars
-echo MAGE_TIMEZONE=\"${var.magento["timezone"]}\" >> ./vars
-## Inject variables into user_data
-find scripts/ -type f -exec rm -rf {} \;
-mkdir -p scripts
-cp -rf user_data.* scripts/
-sed -i '/###VARIABLES_PLACEHOLDER###/ {
-r ./vars
-N
-}' scripts/user_data.*
-EOF
-on_failure = continue
- }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create EFS file system
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_efs_file_system" "efs_file_system" {
