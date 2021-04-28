@@ -74,7 +74,7 @@ vars = {
 
 AWS_DEFAULT_REGION = "${data.aws_region.current.name}"
 NGINX_BASE = "https://raw.githubusercontent.com/magenx/Magento-2-aws-cluster-terraform/master/"
-GITHUB_REPO_API_URL = "https://api.github.com/repos/magenx/Magento-2-aws-cluster-terraform/contents/magento2"
+GITHUB_REPO_API_URL = "https://api.github.com/repos/magenx/Magento-2-aws-cluster-terraform/contents"
 
 EFS_DNS_TARGET = "${aws_efs_mount_target.efs_mount_target[0].dns_name}"
 CODECOMMIT_MAGENTO_REPO_NAME = "${aws_codecommit_repository.codecommit_repository.repository_name}"
