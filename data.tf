@@ -66,3 +66,34 @@ data "aws_ami" "ubuntu_2004" {
   }
 }
 
+data "template_file" "user_data" {
+for_each = merge(var.ec2, var.ec2_extra)
+template = file("./user_data/${each.key}")
+
+vars = {
+
+AWS_DEFAULT_REGION = "${data.aws_region.current.name}"
+NGINX_BASE = "https://raw.githubusercontent.com/magenx/Magento-2-aws-cluster-terraform/master/"
+GITHUB_REPO_API_URL = "https://api.github.com/repos/magenx/Magento-2-aws-cluster-terraform/contents/magento2"
+
+EFS_DNS_TARGET = "${aws_efs_mount_target.efs_mount_target[0].dns_name}"
+CODECOMMIT_MAGENTO_REPO_NAME = "${aws_codecommit_repository.codecommit_repository.repository_name}"
+
+EXTRA_PACKAGES_DEB = "curl jq nfs-common gnupg2 auditd apt-transport-https apt-show-versions ca-certificates lsb-release unzip unzip vim wget git patch ipset python3-pip acl attr imagemagick snmp sendmail liblwp-protocol-https-perl"
+PHP_PACKAGES_DEB = "cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4"
+
+PHP_VERSION = "${var.magento["php_version"]}"
+PHP_INI = "/etc/php/${var.magento["php_version"]}/fpm/php.ini"
+PHP_FPM_POOL = "/etc/php/${var.magento["php_version"]}/fpm/pool.d/www.conf"
+PHP_OPCACHE_INI = "/etc/php/${var.magento["php_version"]}/fpm/conf.d/10-opcache.ini"
+
+MAGE_VERSION = "2"
+MAGE_DOMAIN = "${var.magento["mage_domain"]}"
+MAGE_OWNER = "${var.magento["mage_owner"]}"
+MAGE_PHP_USER = "php-${var.magento["mage_owner"]}"
+MAGE_ADMIN_EMAIL = "${var.magento["mage_admin_email"]}"
+MAGE_WEB_ROOT_PATH = "/home/${var.magento["mage_owner"]}/public_html"
+MAGE_TIMEZONE = "${var.magento["timezone"]}"
+
+ }
+}
