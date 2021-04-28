@@ -142,7 +142,7 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
                 "file_path": "/var/log/syslog",
                 "log_group_name": "system_syslog",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
-              },
+              }
             ]
           }
         },
