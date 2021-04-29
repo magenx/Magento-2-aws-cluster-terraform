@@ -20,7 +20,6 @@ usermod -g ${MAGE_PHP_USER} ${MAGE_OWNER}
 
 pip3 install git-remote-codecommit
 
-if [ ! -f ${MAGE_WEB_ROOT_PATH}/app/etc/env.php ]; then
 mkdir -p ${MAGE_WEB_ROOT_PATH}
 chmod 711 /home/${MAGE_OWNER}
 mkdir -p /home/${MAGE_OWNER}/{.config,.cache,.local,.composer}
@@ -29,9 +28,9 @@ chmod 2770 ${MAGE_WEB_ROOT_PATH}
 setfacl -Rdm u:${MAGE_OWNER}:rwX,g:${MAGE_PHP_USER}:r-X,o::- ${MAGE_WEB_ROOT_PATH}
 cd ${MAGE_WEB_ROOT_PATH}
 su ${MAGE_OWNER} -s /bin/bash -c "git clone -b main codecommit::${AWS_DEFAULT_REGION}://${CODECOMMIT_MAGENTO_REPO_NAME} ."
+su ${MAGE_OWNER} -s /bin/bash -c "mkdir -p {pub/media,var/log}"
 setfacl -Rdm u:${MAGE_OWNER}:rwX,g:${MAGE_PHP_USER}:rwX,o::- var generated pub/static pub/media
 chmod +x bin/magento
-fi
 
 ## install nginx
 echo "deb http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
