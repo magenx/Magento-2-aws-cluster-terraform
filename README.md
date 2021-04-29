@@ -1,4 +1,4 @@
-# Magento 2 cluster 
+# Magento 2 AWS cluster with Terraform
 `POC` `SandBox` `PlayGround` `R&D` `DevOps`
 
 ## Classic configuration for Magento 2 auto scaling cluster on AWS :heart:
