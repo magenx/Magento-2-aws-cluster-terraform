@@ -119,7 +119,7 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
           "files": {
             "collect_list": [
               {
-                "file_path": "/home/${var.magento["mage_owner"]}/public_html/var/log/nginx-error.log",
+                "file_path": "/var/log/nginx/error.log",
                 "log_group_name": "nginx_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
               },
