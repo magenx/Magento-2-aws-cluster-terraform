@@ -235,11 +235,12 @@ mainSteps:
     runCommand:
     - |-
       #!/bin/bash
+      cd /home/${var.magento["mage_owner"]}/public_html
       git config --system credential.UseHttpPath true
       git config --system user.email "${var.magento["mage_admin_email"]}"
       git config --system user.name "${var.magento["mage_owner"]}"
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "git clone ${var.magento["mage_source"]} /home/${var.magento["mage_owner"]}/public_html/"
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "echo 007 > /home/${var.magento["mage_owner"]}/public_html/magento_umask"
+      su ${var.magento["mage_owner"]} -s /bin/bash -c "git clone ${var.magento["mage_source"]} ."
+      su ${var.magento["mage_owner"]} -s /bin/bash -c "echo 007 > magento_umask"
       setfacl -Rdm u:${var.magento["mage_owner"]}:rwX,g:php-${var.magento["mage_owner"]}:rwX,o::- var generated pub/static pub/media
       rm -rf .git
       chmod +x bin/magento
@@ -302,7 +303,7 @@ mainSteps:
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento deploy:mode:set production"
       git init
       git add . -A
-      git commit -m ${var.magento["mage_owner"]}-release0-$(date +'%y%m%d-%H%M%S')
+      git commit -m ${var.magento["mage_owner"]}-release-$(date +'%y%m%d-%H%M%S')
       git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.codecommit_repository.repository_name}
       git branch -m main
       git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.codecommit_repository.repository_name} main
