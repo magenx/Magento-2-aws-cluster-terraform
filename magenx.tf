@@ -235,16 +235,10 @@ mainSteps:
     runCommand:
     - |-
       #!/bin/bash
-      mkdir -p /home/${var.magento["mage_owner"]}/public_html && cd $_
-      chmod 711 /home/${var.magento["mage_owner"]}
-      mkdir -p /home/${var.magento["mage_owner"]}/{.config,.cache,.local,.composer}
-      chown -R ${var.magento["mage_owner"]}:php-${var.magento["mage_owner"]} /home/${var.magento["mage_owner"]}/public_html /home/${var.magento["mage_owner"]}/{.config,.cache,.local,.composer}
-      chmod 2770 /home/${var.magento["mage_owner"]}/public_html
-      setfacl -Rdm u:${var.magento["mage_owner"]}:rwX,g:php-${var.magento["mage_owner"]}:r-X,o::- /home/${var.magento["mage_owner"]}/public_html
       git config --system credential.UseHttpPath true
       git config --system user.email "${var.magento["mage_admin_email"]}"
       git config --system user.name "${var.magento["mage_owner"]}"
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "git clone https://github.com/magenx/Magento-2.git /home/${var.magento["mage_owner"]}/public_html/"
+      su ${var.magento["mage_owner"]} -s /bin/bash -c "git clone ${var.magento["mage_source"]} /home/${var.magento["mage_owner"]}/public_html/"
       su ${var.magento["mage_owner"]} -s /bin/bash -c "echo 007 > /home/${var.magento["mage_owner"]}/public_html/magento_umask"
       setfacl -Rdm u:${var.magento["mage_owner"]}:rwX,g:php-${var.magento["mage_owner"]}:rwX,o::- var generated pub/static pub/media
       rm -rf .git
