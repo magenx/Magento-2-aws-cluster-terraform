@@ -178,7 +178,7 @@ mainSteps:
       #!/bin/bash
       mkdir -p /mnt/efs
       mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${aws_efs_mount_target.efs_mount_target[0].dns_name}:/ /mnt/efs
-      mkdir -p /mnt/efs/{main,staging,developer}/{var,pub/media}
+      mkdir -p /mnt/efs/{production,staging,developer}/{var,pub/media}
       chown -R ${var.magento["mage_owner"]}:php-${var.magento["mage_owner"]} /mnt/efs/
       setfacl -Rdm u:${var.magento["mage_owner"]}:rwX,g:php-${var.magento["mage_owner"]}:rwX,o::- /mnt/efs
       umount /mnt/efs
