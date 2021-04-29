@@ -65,8 +65,8 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 ## Magento 2 development | source code:
 - https://github.com/magenx/Magento-2
 - Files cloned from above repository to admin/frontend instances.
-- Push it back to your AWS CodeCommit repository.
-- Magento 2 minimal package preinstalled.
+- Synced to your AWS CodeCommit repository.
+- Magento 2 minimal package pre-installed.
 
 ## Infrastructure DevOps and beyond:
 - Terraform [https://www.terraform.io/docs/]
