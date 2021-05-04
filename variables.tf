@@ -117,9 +117,7 @@ variable "ec2_instance_profile_policy" {
   description = "Policy attach to ec2 instance profile"
   type        = set(string)
   default     = [
-  "arn:aws:iam::aws:policy/AWSCodeCommitFullAccess", 
-  "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy", 
-  "arn:aws:iam::aws:policy/AmazonS3FullAccess", 
+  "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
   "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   ]
 }
