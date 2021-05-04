@@ -340,6 +340,35 @@ resource "aws_iam_role_policy_attachment" "ec2_role_policy_attachment" {
   policy_arn = each.value
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create inline policy for EC2 service role to limit CodeCommit access
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_iam_role_policy" "codecommit_access" {
+  name = "PolicyForCodeCommitAccess"
+  role = aws_iam_role.ec2_instance_role.id
+
+  policy = jsonencode({
+  Version = "2012-10-17",
+  Statement = [
+    {
+      Effect = "Allow",
+      Action = [
+            "codecommit:Get*",
+            "codecommit:List*",
+            "codecommit:Describe*",
+            "codecommit:Put*",
+            "codecommit:Post*",
+            "codecommit:Merge*",
+            "codecommit:Test*",
+            "codecommit:Update*",
+            "codecommit:GitPull",
+            "codecommit:GitPush"
+      ],
+      Resource = aws_codecommit_repository.codecommit_repository.arn
+    }
+  ]
+})
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create EC2 Instance Profile
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
@@ -396,21 +425,45 @@ resource "aws_s3_bucket" "s3_bucket" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create S3 bucket policy for CloudFront access
+# Create policy for CloudFront and EC2 to limit S3 media bucket access
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_s3_bucket_policy" "s3_bucket_media_policy" {
   bucket = aws_s3_bucket.s3_bucket["media"].id
   policy = jsonencode(
             {
-              Id        = "PolicyForCloudFrontPrivateContentAccess"
+              Id        = "PolicyForMediaStorageAccess"
               Statement = [
-                  {
+                    {
                       Action    = "s3:GetObject"
                       Effect    = "Allow"
                       Principal = {
                           AWS = aws_cloudfront_origin_access_identity.origin_access_identity.iam_arn
                         }
                       Resource  = "${aws_s3_bucket.s3_bucket["media"].arn}/*"
+                    },
+                    {
+                      Action = [
+                          "s3:PutObject",
+                          "s3:GetObject",
+                          "s3:DeleteObject",
+                          "s3:PutObjectAcl"
+                        ],
+                      Effect    = "Allow"
+                      Principal = {
+                          AWS = aws_iam_role.ec2_instance_role.arn
+                        }
+                      Resource  = "${aws_s3_bucket.s3_bucket["media"].arn}/*"
+                    },
+                    {
+                      Action = [
+                          "s3:GetBucketLocation",
+                          "s3:ListBucket"
+                        ],
+                      Effect    = "Allow"
+                      Principal = {
+                          AWS = aws_iam_role.ec2_instance_role.arn
+                        }
+                      Resource  = "${aws_s3_bucket.s3_bucket["media"].arn}"
                     },
                 ]
               Version   = "2012-10-17"
