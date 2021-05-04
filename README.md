@@ -53,7 +53,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - [x] CloudWatch + EventsBridge metrics/logs/alarms/events/triggers
 - [x] All Magento files managed with git only
 - [x] Live shop in production mode / read-only 
-- [x] CSF Firewall can be clustered
+- [x] WAF basic Magento 2 rules
 
 ## CI/CD scenario:
 - Event driven
