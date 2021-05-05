@@ -507,7 +507,7 @@ resource "aws_iam_service_linked_role" "elasticsearch_domain" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticsearch_domain" "elasticsearch_domain" {
   depends_on = [aws_iam_service_linked_role.elasticsearch_domain]
-  domain_name           = var.elk["domain_name"]
+  domain_name           = "${var.magento["mage_owner"]}-${var.elk["domain_name"]}"
   elasticsearch_version = var.elk["elasticsearch_version"]
   cluster_config {
     instance_type  = var.elk["instance_type"]
@@ -549,14 +549,14 @@ EOF
 # Create RDS instance
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "db_instance" {
-  identifier            = "${var.magento["mage_owner"]}-database"
+  identifier            = "${var.magento["mage_owner"]}-${var.rds["name"]}-database"
   allocated_storage     = var.rds["allocated_storage"]
   max_allocated_storage = var.rds["max_allocated_storage"]
   storage_type          = var.rds["storage_type"] 
   engine                = var.rds["engine"]
   engine_version        = var.rds["engine_version"]
   instance_class        = var.rds["instance_class"]
-  name                  = var.rds["name"]
+  name                  = "${var.magento["mage_owner"]}_${var.rds["name"]}"
   username              = var.magento["mage_owner"]
   password              = random_password.password[1].result
   parameter_group_name  = var.rds["parameter_group_name"]
