@@ -64,7 +64,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 
 ## Magento 2 development | source code:
 - https://github.com/magenx/Magento-2
-- Files cloned from above repository to admin/frontend instances.
+- Files cloned from above repository to admin / frontend instances. [run: ssm document]
 - Synced to your AWS CodeCommit repository.
 - Magento 2 minimal package pre-installed.
 
@@ -75,7 +75,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 ## TODO:
 - WAF Rules
 - Build server configuration
-- Staging / Developer database/redis/elk configuration
+- Staging database/redis/elk configuration
 - Proper vars
 
 > enjoy catching bugs
