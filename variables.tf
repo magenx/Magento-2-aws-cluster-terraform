@@ -36,9 +36,9 @@ variable "magento" {
 variable "elk" {
   description      = "Map some ElasticSearch configuration values"
   default  = {
-    domain_name            = "magenx-elk"
+    domain_name            = "elk"
     elasticsearch_version  = "7.9"
-    instance_type          = "t2.small.elasticsearch"
+    instance_type          = "m6g.xlarge.elasticsearch"
     instance_count         = "1"
     ebs_enabled            = true
     volume_type            = "gp2"
@@ -49,7 +49,7 @@ variable "elk" {
 variable "rds" {
   description      = "Map some RDS configuration values"
   default  = {
-    name     = "magenx_aws_demo"
+    name                   = "magento"
     allocated_storage      = "20"
     max_allocated_storage  = "100"
     storage_type           = "gp2"
