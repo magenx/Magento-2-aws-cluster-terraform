@@ -57,7 +57,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 
 ## CI/CD scenario:
 - Event driven
-- Changes in 'magento' repository triggers EventsBridge rule.
+- Changes in CodeCommit repository triggers EventsBridge rule.
 - System Manager runs bash script and cleanup on success.
 - Checking environment and do git pull from 'magento' repository and cleanup.
 - Change deployment logic to your needs.
