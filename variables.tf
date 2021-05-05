@@ -249,6 +249,15 @@ locals {
     source_security_group_id = aws_security_group.security_group["cache"].id
     security_group_id = aws_security_group.security_group["ec2"].id
     },
+  ec2_efs_out = {
+    type        = "egress"
+    description = "Allow outbound traffic on the instance NFS port"
+    from_port   = 2049
+    to_port     = 2049
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.security_group["efs"].id
+    security_group_id = aws_security_group.security_group["ec2"].id
+    },
   ec2_elk_out = {
     type        = "egress"
     description = "Allow outbound traffic on the instance ELK port"
@@ -311,6 +320,24 @@ locals {
     protocol    = "tcp"
     source_security_group_id = aws_security_group.security_group["ec2"].id
     security_group_id = aws_security_group.security_group["mq"].id
+    },
+  efs_in = {
+    type        = "ingress"
+    description = "Allow access instances to EFS target"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    source_security_group_id = aws_security_group.security_group["ec2"].id
+    security_group_id = aws_security_group.security_group["efs"].id
+    },
+  efs_out = {
+    type        = "egress"
+    description = "Allow access instances to EFS target"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    source_security_group_id = aws_security_group.security_group["ec2"].id
+    security_group_id = aws_security_group.security_group["efs"].id
     },
   }
 }
