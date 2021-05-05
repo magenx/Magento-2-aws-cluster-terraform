@@ -250,7 +250,7 @@ mainSteps:
       --base-url-secure=https://${var.magento["mage_domain"]}/ \
       --db-host=${aws_db_instance.db_instance.endpoint} \
       --db-name=${aws_db_instance.db_instance.name} \
-      --db-user=${var.magento["mage_owner"]} \
+      --db-user=${aws_db_instance.db_instance.username} \
       --db-password='${random_password.password[1].result}' \
       --admin-firstname=${var.magento["mage_owner"]} \
       --admin-lastname=${var.magento["mage_owner"]} \
@@ -268,7 +268,7 @@ mainSteps:
       --consumers-wait-for-messages=0 \
       --amqp-host=${aws_mq_broker.mq_broker.instances.0.endpoints.0} \
       --amqp-port=5671 \
-      --amqp-user=${var.magento["mage_owner"]} \
+      --amqp-user=${aws_mq_broker.mq_broker.user[*].username} \
       --amqp-password='${random_password.password[0].result}' \
       --amqp-virtualhost='/' \
       --search-engine=elasticsearch7 \
