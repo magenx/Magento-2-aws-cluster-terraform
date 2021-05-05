@@ -313,7 +313,7 @@ EOT
 # Create EC2 service role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role" "ec2_instance_role" {
-  name = "EC2IAMProfile"
+  name = "EC2InstanceRole"
   description = "Allows EC2 instances to call AWS services on your behalf"
   assume_role_policy = <<EOF
 {
@@ -372,7 +372,7 @@ resource "aws_iam_role_policy" "codecommit_access" {
 # Create EC2 Instance Profile
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
-  name = "EC2IAMProfile"
+  name = "EC2InstanceProfile"
   role = aws_iam_role.ec2_instance_role.name
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
