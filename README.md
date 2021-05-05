@@ -49,11 +49,11 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - [x] `1` efs file system for shared folders
 - [x] `1` sns topic and email subscription alerts for asg
 - [x] Autoscaling policy per group
-- [x] Systems Manager [https://aws.amazon.com/systems-manager/]
+- [x] Managed with Systems Manager [https://aws.amazon.com/systems-manager/]
 - [x] CloudWatch + EventsBridge metrics/logs/alarms/events/triggers
 - [x] All Magento files managed with git only
 - [x] Live shop in production mode / read-only 
-- [x] WAF basic Magento 2 rules
+- [x] WAF basic rules
 
 ## CI/CD scenario:
 - Event driven
