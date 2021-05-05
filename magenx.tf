@@ -249,7 +249,7 @@ mainSteps:
       --base-url=https://${var.magento["mage_domain"]}/ \
       --base-url-secure=https://${var.magento["mage_domain"]}/ \
       --db-host=${aws_db_instance.db_instance.endpoint} \
-      --db-name=${var.rds["name"]} \
+      --db-name=${aws_db_instance.db_instance.name} \
       --db-user=${var.magento["mage_owner"]} \
       --db-password='${random_password.password[1].result}' \
       --admin-firstname=${var.magento["mage_owner"]} \
