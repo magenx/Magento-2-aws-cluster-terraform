@@ -74,7 +74,6 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 
 ## TODO:
 - WAF Rules
-- Build server configuration
 - Staging database/redis/elk configuration
 - Proper vars
 
