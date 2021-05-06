@@ -157,34 +157,6 @@ EOF
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create SSM YAML Document runShellScript to configure EFS/NFS folders
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_document" "ssm_document_efs" {
-  name          = "${var.magento["mage_owner"]}-configure-efs"
-  document_type = "Command"
-  document_format = "YAML"
-  target_type   = "/AWS::EC2::Instance"
-  content = <<EOT
----
-schemaVersion: "2.2"
-description: "Remount EFS to create folders"
-parameters:
-mainSteps:
-- action: "aws:runShellScript"
-  name: "efscreatefoldersnfs"
-  inputs:
-    runCommand:
-    - |-
-      #!/bin/bash
-      mkdir -p /mnt/efs
-      mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${aws_efs_mount_target.efs_mount_target[0].dns_name}:/ /mnt/efs
-      mkdir -p /mnt/efs/{production,staging,build,developer}/{var,pub/media}
-      chown -R ${var.magento["mage_owner"]}:php-${var.magento["mage_owner"]} /mnt/efs/
-      setfacl -Rdm u:${var.magento["mage_owner"]}:rwX,g:php-${var.magento["mage_owner"]}:rwX,o::- /mnt/efs
-      umount /mnt/efs
-EOT
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM YAML Document runShellScript to init/pull git
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "ssm_document_pull" {
