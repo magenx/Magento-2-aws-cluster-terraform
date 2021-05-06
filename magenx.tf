@@ -37,6 +37,17 @@ resource "aws_codecommit_repository" "codecommit_repository" {
     tags = {
     Name = "${var.magento["mage_owner"]}-${var.magento["mage_domain"]}"
   }
+  provisioner "local-exec" {
+  interpreter = ["/bin/bash", "-c"]
+  command = <<EOF
+          git clone --mirror ${var.magento["mage_source"]} /tmp/magento
+          cd /tmp/magento
+          git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.codecommit_repository.repository_name}
+          git branch -m main
+          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.codecommit_repository.repository_name} main
+          rm -rf /tmp/magento
+EOF
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudFront distribution with S3 origin
@@ -208,13 +219,6 @@ mainSteps:
     - |-
       #!/bin/bash
       cd /home/${var.magento["mage_owner"]}/public_html
-      git config --system credential.UseHttpPath true
-      git config --system user.email "${var.magento["mage_admin_email"]}"
-      git config --system user.name "${var.magento["mage_owner"]}"
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "git clone ${var.magento["mage_source"]} ."
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "echo 007 > magento_umask"
-      setfacl -Rdm u:${var.magento["mage_owner"]}:rwX,g:php-${var.magento["mage_owner"]}:rwX,o::- var generated pub/static pub/media
-      rm -rf .git
       chmod +x bin/magento
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento module:enable --all"
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento setup:install \
@@ -238,11 +242,12 @@ mainSteps:
       --use-secure=1 \
       --use-secure-admin=1 \
       --consumers-wait-for-messages=0 \
-      --amqp-host=${aws_mq_broker.mq_broker.instances.0.endpoints.0} \
+      --amqp-host=${trimsuffix(trimprefix("${aws_mq_broker.mq_broker.instances.0.endpoints.0}", "amqps://"), ":5671")} \
       --amqp-port=5671 \
       --amqp-user=${var.magento["mage_owner"]} \
       --amqp-password='${random_password.password[0].result}' \
       --amqp-virtualhost='/' \
+      --amqp-ssl=true \
       --search-engine=elasticsearch7 \
       --elasticsearch-host=${aws_elasticsearch_domain.elasticsearch_domain.endpoint} \
       --elasticsearch-port=443 \
