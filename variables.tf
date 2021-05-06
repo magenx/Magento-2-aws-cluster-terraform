@@ -339,5 +339,23 @@ locals {
     source_security_group_id = aws_security_group.security_group["ec2"].id
     security_group_id = aws_security_group.security_group["efs"].id
     },
+  elk_in = {
+    type        = "ingress"
+    description = "Allow inbound traffic to the instance ELK port"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    source_security_group_id = aws_security_group.security_group["ec2"].id
+    security_group_id = aws_security_group.security_group["elk"].id
+    },
+  elk_out = {
+    type        = "egress"
+    description = "Allow outbound traffic to the instance ELK port"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    source_security_group_id = aws_security_group.security_group["ec2"].id
+    security_group_id = aws_security_group.security_group["elk"].id
+    },
   }
 }
