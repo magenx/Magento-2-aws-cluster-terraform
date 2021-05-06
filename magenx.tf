@@ -268,7 +268,7 @@ mainSteps:
       --consumers-wait-for-messages=0 \
       --amqp-host=${aws_mq_broker.mq_broker.instances.0.endpoints.0} \
       --amqp-port=5671 \
-      --amqp-user=${aws_mq_broker.mq_broker.user[*].username} \
+      --amqp-user=${var.magento["mage_owner"]} \
       --amqp-password='${random_password.password[0].result}' \
       --amqp-virtualhost='/' \
       --search-engine=elasticsearch7 \
