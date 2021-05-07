@@ -31,6 +31,7 @@ su ${MAGE_OWNER} -s /bin/bash -c "git clone -b main codecommit::${AWS_DEFAULT_RE
 echo "${EFS_DNS_TARGET}:/production/var ${MAGE_WEB_ROOT_PATH}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
 echo "${EFS_DNS_TARGET}:/production/pub/media ${MAGE_WEB_ROOT_PATH}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
 su ${MAGE_OWNER} -s /bin/bash -c "mkdir -p {pub/media,var}"
+setfacl -Rdm u:${MAGE_OWNER}:rwX,g:${MAGE_PHP_USER}:rwX,o::- var generated pub/static pub/media
 mount -a
 
 if [ $(stat -f -L -c %T ${MAGE_WEB_ROOT_PATH}/pub/media) != "nfs" ]; then
