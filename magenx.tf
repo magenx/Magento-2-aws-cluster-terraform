@@ -356,17 +356,17 @@ resource "aws_iam_instance_profile" "ec2_instance_profile" {
 # Create RabbitMQ - queue message broker
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_mq_broker" "mq_broker" {
-  broker_name = "${var.magento["mage_owner"]}-queue"
+  broker_name = "${var.magento["mage_owner"]}-${var.mq["broker_name"]}"
   engine_type        = "RabbitMQ"
-  engine_version     = "3.8.6"
-  host_instance_type = "mq.t3.micro"
+  engine_version     = var.mq["engine_version"]
+  host_instance_type = var.mq["host_instance_type"]
   security_groups    = [aws_security_group.security_group["mq"].id]
   user {
     username = var.magento["mage_owner"]
     password = random_password.password[0].result
   }
   tags = {
-    Name   = "${var.magento["mage_owner"]}-queue"
+    Name   = "${var.magento["mage_owner"]}-${var.mq["broker_name"]}"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
