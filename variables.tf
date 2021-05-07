@@ -17,7 +17,7 @@ variable "ec2_extra" {
 }
 
 variable "magento" {
-  description      = "Map some magento values"
+  description      = "Map Magento 2 config values"
   default          = {
     mage_owner            = "magenx"
     mage_domain           = "demo.magenx.com"
@@ -34,7 +34,7 @@ variable "magento" {
 }
 
 variable "elk" {
-  description      = "Map some ElasticSearch configuration values"
+  description      = "Map ElasticSearch configuration values"
   default  = {
     domain_name            = "elk"
     elasticsearch_version  = "7.9"
@@ -47,7 +47,7 @@ variable "elk" {
 }
 
 variable "rds" {
-  description      = "Map some RDS configuration values"
+  description      = "Map RDS configuration values"
   default  = {
     name                   = "magento"
     allocated_storage      = "20"
@@ -60,9 +60,18 @@ variable "rds" {
     skip_final_snapshot    = "true"
   }
 }
-          
+      
+variable "mq" {
+  description      = "Map RabbitMQ configuration values"
+  default  = {
+    broker_name            = "queue"
+    engine_version         = "3.8.11"
+    host_instance_type     = "mq.t3.micro"
+  }
+}
+
 variable "redis" {
-  description      = "Map some ElastiCache configuration values"
+  description      = "Map ElastiCache Redis configuration values"
   default  = {    
     node_type                  = "cache.m6g.large"
     parameter_group_name       = "default.redis6.x.cluster.on"
@@ -73,7 +82,7 @@ variable "redis" {
 }
           
 variable "asg" {
-  description      = "Map some Autoscaling configuration values"
+  description      = "Map Autoscaling Group configuration values"
   default  = {
     desired_capacity      = "1"
     min_size              = "1"
@@ -84,7 +93,7 @@ variable "asg" {
 }
           
 variable "asp" {
-  description      = "Map some Autoscaling Policy configuration values"
+  description      = "Map Autoscaling Policy configuration values"
   default  = {    
     evaluation_periods  = "2"
     period        = "300"
@@ -106,7 +115,7 @@ variable "efs" {
 }
 
 variable "alb" {
-  description = "Load balancer names and type"
+  description = "Application Load Balancer names and type"
   default     = {
     outer     = false
     inner     = true
@@ -114,7 +123,7 @@ variable "alb" {
 }
 
 variable "ec2_instance_profile_policy" {
-  description = "Policy attach to ec2 instance profile"
+  description = "Policy attach to EC2 Instance Profile"
   type        = set(string)
   default     = [
   "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
