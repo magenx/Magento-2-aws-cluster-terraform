@@ -546,6 +546,26 @@ resource "aws_db_instance" "db_instance" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create RDS instance event subscription
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_db_event_subscription" "db_event_subscription" {
+  name      = "rds-event-subscription"
+  sns_topic = aws_sns_topic.sns_topic_default.arn
+  source_ids  = [aws_db_instance.db_instance.id]
+  event_categories = [
+    "availability",
+    "deletion",
+    "failover",
+    "failure",
+    "low storage",
+    "maintenance",
+    "notification",
+    "read replica",
+    "recovery",
+    "restoration",
+  ]
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create Security Groups
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "security_group" {
@@ -677,11 +697,11 @@ resource "aws_autoscaling_group" "autoscaling_group" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SNS topic and email subscription (confirm email right after resource creation)
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_sns_topic" "sns_topic_autoscaling" {
-  name = "autoscaling-email-alerts"
+resource "aws_sns_topic" "sns_topic_default" {
+  name = "${var.magento["mage_owner"]}-email-alerts"
 }
-resource "aws_sns_topic_subscription" "sns_topic_autoscaling_subscription" {
-  topic_arn = aws_sns_topic.sns_topic_autoscaling.arn
+resource "aws_sns_topic_subscription" "sns_topic_subscription" {
+  topic_arn = aws_sns_topic.sns_topic_default.arn
   protocol  = "email"
   endpoint  = var.magento["mage_admin_email"]
 }
@@ -701,7 +721,7 @@ group_names = [
     "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
   ]
 
-  topic_arn = aws_sns_topic.sns_topic_autoscaling.arn
+  topic_arn = aws_sns_topic.sns_topic_default.arn
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create https:// listener for OUTER Load Balancer - forward to varnish
