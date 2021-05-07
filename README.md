@@ -55,19 +55,19 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - [x] Live shop in production mode / read-only 
 - [x] WAF basic rules
 
-## CI/CD scenario:
-- Event driven
-- Changes in CodeCommit repository triggers EventsBridge rule.
-- System Manager runs bash script and cleanup on success.
-- Checking environment and pull from CodeCommit repository and cleanup.
-- Change deployment logic to your needs.
-
 ## Magento 2 development | source code:
 - Terraform creates CodeCommit repository
 - Local provisioner mirror files from Github - https://github.com/magenx/Magento-2 - to CodeCommit.
 - EC2 instance user_data on boot clone files from CodeCommit.
 - Magento 2 minimal package ready for installation.
 - Run SSM Document to install Magento
+
+## CI/CD scenario:
+- Event driven
+- Changes in CodeCommit repository triggers EventsBridge rule.
+- System Manager runs bash script and cleanup on success.
+- Checking environment and pull from CodeCommit repository and cleanup.
+- Change deployment logic to your needs.
 
 ## Infrastructure DevOps and beyond:
 - Terraform [https://www.terraform.io/docs/]
