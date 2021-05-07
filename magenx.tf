@@ -178,7 +178,7 @@ resource "aws_ssm_document" "ssm_document_pull" {
   content = <<EOT
 ---
 schemaVersion: "2.2"
-description: "Pull code changes from codecommit"
+description: "Pull code changes from CodeCommit"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
@@ -187,15 +187,11 @@ mainSteps:
     runCommand:
     - |-
       #!/bin/bash
-      if [ -f /home/${var.magento["mage_owner"]}/public_html/app/etc/env.php ]; then
       cd /home/${var.magento["mage_owner"]}/public_html
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "git reset --hard HEAD"
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "git pull origin main"
+      su ${var.magento["mage_owner"]} -s /bin/bash -c "git fetch origin"
+      su ${var.magento["mage_owner"]} -s /bin/bash -c "git reset --hard origin/main"
       systemctl reload php${var.magento["php_version"]}-fpm
       systemctl reload nginx
-      else
-      exit 1
-      fi
 EOT
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
