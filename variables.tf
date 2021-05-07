@@ -183,7 +183,7 @@ locals {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = [data.aws_vpc.default.cidr_block]
+    source_security_group_id = aws_security_group.security_group["ec2"].id
     security_group_id = aws_security_group.security_group["inner"].id
     },
   inner_alb_http_out = {
