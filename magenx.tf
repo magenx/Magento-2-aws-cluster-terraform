@@ -189,7 +189,7 @@ mainSteps:
       #!/bin/bash
       if [ -f /home/${var.magento["mage_owner"]}/public_html/app/etc/env.php ]; then
       cd /home/${var.magento["mage_owner"]}/public_html
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "git checkout main"
+      su ${var.magento["mage_owner"]} -s /bin/bash -c "git reset --hard HEAD"
       su ${var.magento["mage_owner"]} -s /bin/bash -c "git pull origin main"
       systemctl reload php${var.magento["php_version"]}-fpm
       systemctl reload nginx
@@ -219,6 +219,8 @@ mainSteps:
     - |-
       #!/bin/bash
       cd /home/${var.magento["mage_owner"]}/public_html
+      su ${var.magento["mage_owner"]} -s /bin/bash -c "echo 007 > magento_umask"
+      su ${var.magento["mage_owner"]} -s /bin/bash -c "echo -e "/pub/media/*\n/var/*" > .gitignore
       chmod +x bin/magento
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento module:enable --all"
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento setup:install \
@@ -278,7 +280,6 @@ mainSteps:
       --session-save-redis-compression-lib=lz4 \
       -n"
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento deploy:mode:set production"
-      git init
       git add . -A
       git commit -m ${var.magento["mage_owner"]}-release-$(date +'%y%m%d-%H%M%S')
       git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.codecommit_repository.repository_name}
