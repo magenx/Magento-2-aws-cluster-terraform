@@ -220,7 +220,7 @@ mainSteps:
       #!/bin/bash
       cd /home/${var.magento["mage_owner"]}/public_html
       su ${var.magento["mage_owner"]} -s /bin/bash -c "echo 007 > magento_umask"
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "echo -e "/pub/media/*\n/var/*" > .gitignore
+      su ${var.magento["mage_owner"]} -s /bin/bash -c "echo -e '/pub/media/*\n/var/*'" > .gitignore
       chmod +x bin/magento
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento module:enable --all"
       su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento setup:install \
