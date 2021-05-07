@@ -178,7 +178,7 @@ sed -i 's/pm = dynamic/pm = ondemand/' ${PHP_FPM_POOL}
 sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' ${PHP_FPM_POOL}
 sed -i 's/pm.max_children = 5/pm.max_children = 100/' ${PHP_FPM_POOL}
 
-hostnamectl set-hostname server.${MAGE_DOMAIN} --static
+hostnamectl set-hostname server.${MAGE_DEVELOPER_DOMAIN} --static
 
 timedatectl set-timezone ${MAGE_TIMEZONE}
 
@@ -216,11 +216,9 @@ curl -s ${GITHUB_REPO_API_URL}/nginx/conf_m2 2>&1 | awk -F'"' '/download_url/ {p
 
 sed -i "s/user  nginx;/user  ${MAGE_OWNER};/" /etc/nginx/nginx.conf
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/magento${MAGE_VERSION}.conf
-sed -i "s/example.com/${MAGE_DOMAIN}/g" /etc/nginx/sites-available/magento${MAGE_VERSION}.conf
-sed -i "s/example.com/${MAGE_DOMAIN}/g" /etc/nginx/nginx.conf
+sed -i "s/example.com/${MAGE_DEVELOPER_DOMAIN}/g" /etc/nginx/sites-available/magento${MAGE_VERSION}.conf
+sed -i "s/example.com/${MAGE_DEVELOPER_DOMAIN}/g" /etc/nginx/nginx.conf
 sed -i "s,/var/www/html,${MAGE_WEB_ROOT_PATH},g" /etc/nginx/conf_m${MAGE_VERSION}/maps.conf
-sed -i "s,access_log.*,access_log  ${MAGE_WEB_ROOT_PATH}/var/log/nginx-access.log  main; #if=$writelog;," /etc/nginx/nginx.conf
-sed -i "s,error_log.*,error_log  ${MAGE_WEB_ROOT_PATH}/var/log/nginx-error.log  error;," /etc/nginx/nginx.conf
 
 find /etc/nginx/ -name "default.conf" -exec rm {} \;
 
