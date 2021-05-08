@@ -872,9 +872,9 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_in" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch events service role
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_iam_role" "eventsbridge_service_role" {
-  name = "EventsBridgeServiceRole"
-  description = "Provides EventsBridge manage events on your behalf."
+resource "aws_iam_role" "eventbridge_service_role" {
+  name = "EventBridgeServiceRole"
+  description = "Provides EventBridge manage events on your behalf."
   assume_role_policy = <<EOF
 {
  "Version": "2012-10-17",
@@ -894,16 +894,16 @@ EOF
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Attach policies to CloudWatch events role
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_iam_role_policy_attachment" "eventsbridge_role_policy_attachment" {
-  for_each   = var.eventsbridge_policy
-  role       = aws_iam_role.eventsbridge_service_role.name
+resource "aws_iam_role_policy_attachment" "eventbridge_role_policy_attachment" {
+  for_each   = var.eventbridge_policy
+  role       = aws_iam_role.eventbridge_service_role.name
   policy_arn = each.value
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch events rule to monitor CodeCommit magento repository state
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_rule" "eventsbridge_rule" {
-  name        = "EventsBridgeRuleCodeCommitRepositoryStateChange"
+resource "aws_cloudwatch_event_rule" "eventbridge_rule" {
+  name        = "EventBridgeRuleCodeCommitRepositoryStateChange"
   description = "CloudWatch monitor magento repository state change"
   event_pattern = <<EOF
 {
@@ -918,13 +918,13 @@ resource "aws_cloudwatch_event_rule" "eventsbridge_rule" {
 EOF
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create EventsBridge target to execute AWS-RunShellScript
+# Create EventBridge target to execute AWS-RunShellScript
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_target" "eventsbridge_target" {
-  rule      = aws_cloudwatch_event_rule.eventsbridge_rule.name
-  target_id = "EventsBridgeTargetGitDeploymentScript"
+resource "aws_cloudwatch_event_target" "eventbridge_target" {
+  rule      = aws_cloudwatch_event_rule.eventbridge_rule.name
+  target_id = "EventBridgeTargetGitDeploymentScript"
   arn       = aws_ssm_document.ssm_document_pull.arn
-  role_arn  = aws_iam_role.eventsbridge_service_role.arn
+  role_arn  = aws_iam_role.eventbridge_service_role.arn
  
 run_command_targets {
     key    = "tag:Name"
