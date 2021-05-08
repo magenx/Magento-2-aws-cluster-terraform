@@ -900,7 +900,7 @@ resource "aws_iam_role_policy_attachment" "eventbridge_role_policy_attachment" {
   policy_arn = each.value
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create CloudWatch events rule to monitor CodeCommit magento repository state
+# Create EventBridge rule to monitor CodeCommit magento repository state
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "eventbridge_rule" {
   name        = "EventBridgeRuleCodeCommitRepositoryStateChange"
@@ -918,7 +918,7 @@ resource "aws_cloudwatch_event_rule" "eventbridge_rule" {
 EOF
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create EventBridge target to execute AWS-RunShellScript
+# Create EventBridge target to execute as SSM Document
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "eventbridge_target" {
   rule      = aws_cloudwatch_event_rule.eventbridge_rule.name
