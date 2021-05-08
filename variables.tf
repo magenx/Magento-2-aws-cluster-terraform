@@ -131,8 +131,8 @@ variable "ec2_instance_profile_policy" {
   ]
 }
 
-variable "eventsbridge_policy" {
-  description = "Policy attach to EventsBridge role"
+variable "eventbridge_policy" {
+  description = "Policy attach to EventBridge role"
   type        = set(string)
   default     = [
   "arn:aws:iam::aws:policy/service-role/CloudWatchEventsBuiltInTargetExecutionAccess", 
