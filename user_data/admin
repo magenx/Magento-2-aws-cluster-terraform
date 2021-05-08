@@ -44,7 +44,6 @@ umount /mnt/efs
 mount -a
 fi
 
-setfacl -Rdm u:${MAGE_OWNER}:rwX,g:${MAGE_PHP_USER}:rwX,o::- var generated pub/static pub/media
 chmod +x bin/magento
 
 ## install nginx
