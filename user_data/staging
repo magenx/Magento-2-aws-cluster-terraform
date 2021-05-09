@@ -31,7 +31,6 @@ su ${MAGE_OWNER} -s /bin/bash -c "git clone -b staging codecommit::${AWS_DEFAULT
 echo "${EFS_DNS_TARGET}:/staging/var ${MAGE_WEB_ROOT_PATH}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
 echo "${EFS_DNS_TARGET}:/staging/pub/media ${MAGE_WEB_ROOT_PATH}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
 su ${MAGE_OWNER} -s /bin/bash -c "mkdir -p {pub/media,var}"
-setfacl -Rdm u:${MAGE_OWNER}:rwX,g:${MAGE_PHP_USER}:rwX,o::- var generated pub/static pub/media
 mount -a
 
 if [ $(stat -f -L -c %T ${MAGE_WEB_ROOT_PATH}/pub/media) != "nfs" ]; then
@@ -39,11 +38,12 @@ mkdir -p /mnt/efs
 mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${EFS_DNS_TARGET}:/ /mnt/efs
 mkdir -p /mnt/efs/{production,staging,build,developer}/{var,pub/media}
 chown -R ${MAGE_OWNER}:${MAGE_PHP_USER} /mnt/efs/
-setfacl -Rdm u:${MAGE_OWNER}:rwX,g:${MAGE_PHP_USER}:rwX,o::- /mnt/efs
+find /mnt/efs -type d -exec chmod 2770 {} \;
 umount /mnt/efs
 mount -a
 fi
 
+chmod 2770 pub/media var
 chmod +x bin/magento
 
 ## install nginx
