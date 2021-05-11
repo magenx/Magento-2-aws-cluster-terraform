@@ -32,7 +32,7 @@ mv nginx.conf proxypass.conf /etc/nginx/
 mv varnish.service /etc/systemd/system/
 uuidgen > /etc/varnish/secret
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/nginx.conf
-sed -i "s/MAGE_DOMAIN/${MAGE_DOMAIN} ${MAGE_DEVELOPER_DOMAIN} ${MAGE_STAGING_DOMAIN}/" /etc/nginx/nginx.conf
+sed -i "s/MAGE_DOMAIN/${MAGE_DOMAIN} ${MAGE_STAGING_DOMAIN}/" /etc/nginx/nginx.conf
 sed -i "s/ALB_DNS_NAME/${ALB_DNS_NAME}/" /etc/nginx/proxypass.conf
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/varnish/default.vcl
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/varnish/varnish.params
@@ -46,4 +46,4 @@ cd /usr/local/src
 wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb
 dpkg -i -E ./amazon-cloudwatch-agent.deb
 
-/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-varnish.json
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
