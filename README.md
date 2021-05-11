@@ -1,15 +1,23 @@
-# Magento 2 AWS cluster with Terraform
+## Classic configuration for Magento 2 | [Auto Scaling](https://aws.amazon.com/autoscaling/) cluster with Terraform on AWS :heart:
+![adobe-commerce-cloud-magento](https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg)![1_rxaaiY8J_jR0Cy57jnWRzA](https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg)![amazon](https://user-images.githubusercontent.com/1591200/117846734-9c6b5980-b279-11eb-83b2-27171448bb42.png)
 
-## Classic configuration for Magento 2 auto scaling cluster on AWS :heart:
-## Powered by Graviton2 Processor
-## AWS CloudShell + Terraform
+<br />
 
+## AWS Graviton2 Processor - Enabling the best price performance in Amazon EC2:
+![aws-graviton2](https://user-images.githubusercontent.com/1591200/117844857-f0753e80-b277-11eb-9d27-fe8eacdf6c19.png)
+
+<br />
+
+## Developer documentation to read:
 ``` 
+https://devdocs.magento.com/
 https://docs.aws.amazon.com/index.html
 https://www.terraform.io/docs/
 https://aws.amazon.com/cloudshell/
 ```
-# Deployment into default VPC
+<br />
+
+# Deployment into default VPC:
 - Login to AWS Console
 - Start AWS CloudShell
 - Install Terraform:
@@ -46,7 +54,8 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - [x] `1` single codecommit repository with 3 branches (main build staging)
 - [x] `1` cloudfront s3 origin distribution
 - [x] `1` efs file system for shared folders, with mount target per AZ
-- [x] `1` sns topic default subscription email alerts
+- [x] `1` sns topic default subscription to receive email alerts
+##
 - [x] Autoscaling policy per each group, excluding `build` instance
 - [x] Managed with Systems Manager [https://aws.amazon.com/systems-manager/] agent installed
 - [x] Instance Profile assigned to simplified EC2 management
@@ -79,8 +88,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - Staging database/redis/elk configuration
 - Proper vars
 
-> enjoy catching bugs
-##### example below setup configured:
+##
 ![Magento_2_AWS_cloud_auto_scaling_magenx-big](https://user-images.githubusercontent.com/1591200/106358223-ac7eaf00-6302-11eb-963e-cc0d0136d88f.png)
 
 <sub>[Magento 2 on the AWS Cloud: Quick Start Deployment](https://www.magenx.com/blog/post/adobe-commerce-cloud-alternative-infrastructure-as-code-terraform-configuration.html)</sub>
