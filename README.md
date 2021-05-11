@@ -83,7 +83,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 
 ## Infrastructure DevOps and beyond:
 - Terraform [https://www.terraform.io/docs/]
-- Get state => migrate => edit => share
+- edit => migrate => share
 
 ## TODO:
 - WAF Rules
