@@ -67,7 +67,7 @@ data "aws_ami" "ubuntu_2004" {
 }
 
 data "template_file" "user_data" {
-for_each = merge(var.ec2, var.ec2_extra)
+for_each = var.ec2
 template = file("./user_data/${each.key}")
 
 vars = {
