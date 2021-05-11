@@ -611,32 +611,11 @@ resource "aws_lb" "load_balancer" {
 # Create Target Groups for Load Balancers
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_target_group" "target_group" {
-  for_each    = merge(var.ec2, var.ec2_extra)
+  for_each    = var.ec2
   name        = "${var.magento["mage_owner"]}-${each.key}-target"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = data.aws_vpc.default.id
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create EC2 instances for build and developer systems
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_instance" "instances" {
-  for_each      = var.ec2_extra
-  ami           = data.aws_ami.ubuntu_2004.id
-  instance_type = each.value
-  iam_instance_profile = aws_iam_instance_profile.ec2_instance_profile.name
-  vpc_security_group_ids = [aws_security_group.security_group["ec2"].id]
-  root_block_device {
-      volume_size = "50"
-      volume_type = "gp3"
-    }
-  tags = {
-    Name = "${var.magento["mage_owner"]}-${each.key}-ec2"
-  }
-  volume_tags = {
-    Name = "${var.magento["mage_owner"]}-${each.key}-ec2"
-  }
-  user_data = base64encode(data.template_file.user_data[each.key].rendered)
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create Launch Template for Autoscaling Groups - user_data converted
@@ -680,8 +659,8 @@ resource "aws_autoscaling_group" "autoscaling_group" {
   name = "${var.magento["mage_owner"]}-${each.key}-asg"
   vpc_zone_identifier = data.aws_subnet_ids.default.ids
   desired_capacity    = var.asg["desired_capacity"]
-  max_size            = var.asg["max_size"]
   min_size            = var.asg["min_size"]
+  max_size            = (each.key == "build" ? 1 : var.asg["max_size"])
   health_check_grace_period = var.asg["health_check_grace_period"]
   health_check_type         = var.asg["health_check_type"]
   target_group_arns  = [aws_lb_target_group.target_group[each.key].arn]
@@ -794,26 +773,10 @@ resource "aws_lb_listener_rule" "innerstaging" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for INNER Load Balancer - forward to developer
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "innerdeveloper" {
-  listener_arn = aws_lb_listener.inner.arn
-  priority     = 30
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.target_group["developer"].arn
-  }
-  condition {
-    host_header {
-	values = [var.magento["mage_developer_domain"]]
-    }
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create Autoscaling policy for scale OUT
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "autoscaling_policy_out" {
-  for_each               = var.ec2
+  for_each               = {for name,type in var.ec2: name => type if name != "build"}
   name                   = "${var.magento["mage_owner"]}-${each.key}-asp-out"
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
@@ -824,7 +787,7 @@ resource "aws_autoscaling_policy" "autoscaling_policy_out" {
 # Create CloudWatch alarm metric to execute Autoscaling policy for scale OUT
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_out" {
-  for_each            = var.ec2
+  for_each            = {for name,type in var.ec2: name => type if name != "build"}
   alarm_name          = "${var.magento["mage_owner"]}-${each.key} scale-out alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.asp["evaluation_periods"]
@@ -843,7 +806,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_out" {
 # Create Autoscaling policy for scale IN
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "autoscaling_policy_in" {
-  for_each               = var.ec2
+  for_each               = {for name,type in var.ec2: name => type if name != "build"}
   name                   = "${var.magento["mage_owner"]}-${each.key}-asp-in"
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
@@ -854,7 +817,7 @@ resource "aws_autoscaling_policy" "autoscaling_policy_in" {
 # Create CloudWatch alarm metric to execute Autoscaling policy for scale IN
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_in" {
-  for_each            = var.ec2
+  for_each            = {for name,type in var.ec2: name => type if name != "build"}
   alarm_name          = "${var.magento["mage_owner"]}-${each.key} scale-in alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.asp["evaluation_periods"]
