@@ -34,38 +34,39 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 ```
 
 ## Complete setup:
-- [x] `5` autoscaling groups with launch templates base64 converted from user_data.*
-- [x] `4` instances target groups (varnish frontend admin staging)
+- [x] `5` autoscaling groups with launch templates converted from `user_data`
+- [x] `4` load balancer target groups (varnish frontend admin staging)
 - [x] `1` build server
-- [x] `2` load balancers (external/internal) with listeners / rules / security groups
+- [x] `2` load balancers (external/internal) with listeners / rules
 - [x] `1` rds mysql database
 - [x] `1` elk domain
-- [x] `2` redis elasticache cluster
-- [x] `1` rabbitmq broker
-- [x] `2` s3 buckets for [media] and [system] files and logs
-- [x] `1` codecommit repository 4 branches (main build staging)
+- [x] `2` redis elasticache cluster for sessions and cache
+- [x] `1` rabbitmq broker to manage Magento queue messages
+- [x] `2` s3 buckets for [media] images and [system] files and logs (with access policy)
+- [x] `1` single codecommit repository with 3 branches (main build staging)
 - [x] `1` cloudfront s3 origin distribution
-- [x] `1` efs file system for shared folders
-- [x] `1` sns topic and email subscription alerts for asg
-- [x] Autoscaling policy per group
-- [x] Managed with Systems Manager [https://aws.amazon.com/systems-manager/]
-- [x] CloudWatch + EventsBridge metrics / logs / alarms / events / triggers
+- [x] `1` efs file system for shared folders, with mount target per AZ
+- [x] `1` sns topic default subscription email alerts
+- [x] Autoscaling policy per each group, excluding `build` instance
+- [x] Managed with Systems Manager [https://aws.amazon.com/systems-manager/] agent installed
+- [x] Create ssm documents and EventBridge rules to run commands remotely 
+- [x] CloudWatch agent configured to stream logs
 - [x] All Magento files managed with git only
 - [x] Live shop in production mode / read-only 
+- [x] Security groups configured for every service and instances
 - [x] WAF basic rules
 
 ## Magento 2 development | source code:
 - Terraform creates CodeCommit repository
 - Local provisioner mirror files from Github - https://github.com/magenx/Magento-2 - to CodeCommit.
-- EC2 instance user_data on boot clone files from CodeCommit.
+- EC2 instance user_data on boot clone files from CodeCommit branch.
 - Magento 2 minimal package ready for installation.
 - Run SSM Document to install Magento
 
 ## CI/CD scenario:
 - Event driven
 - Changes in CodeCommit repository triggers EventsBridge rule.
-- System Manager runs bash script and cleanup on success.
-- Checking environment and pull from CodeCommit repository and cleanup.
+- SSM Document pull from CodeCommit repository and cleanup.
 - Change deployment logic to your needs.
 
 ## Infrastructure DevOps and beyond:
