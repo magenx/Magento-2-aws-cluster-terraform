@@ -894,3 +894,26 @@ run_command_targets {
     values = [aws_launch_template.launch_template["admin"].tag_specifications[0].tags.Name,aws_launch_template.launch_template["frontend"].tag_specifications[0].tags.Name]
   }
 }
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create EventBridge rule to run Magento cronjob
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_event_rule" "eventbridge_rule_cronjob" {
+  name        = "EventBridge-Rule-Run-Magento-Cronjob"
+  description = "EventBridge rule to run Magento cronjob every minute"
+  schedule_expression = "rate(1 minute)"
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create EventBridge target to execute AWS-RunShellScript command
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_event_target" "eventbridge_target_cronjob" {
+  rule      = aws_cloudwatch_event_rule.eventbridge_rule_cronjob.name
+  target_id = "EventBridge-Target-Admin-Instance-Cron"
+  arn       = "arn:aws:ssm:${var.aws_region}::document/AWS-RunShellScript"
+  role_arn  = aws_iam_role.eventbridge_service_role.arn
+  input     = "{\"commands\":[\"su ${var.magento["mage_owner"]} -s /bin/bash -c "/home/${var.magento["mage_owner"]}/public_html/bin/magento cron:run 2>&1"\"],\"executionTimeout\":[\"180\"]}"
+ 
+run_command_targets {
+    key    = "tag:Name"
+    values = [aws_launch_template.launch_template["admin"].tag_specifications[0].tags.Name]
+  }
+}
