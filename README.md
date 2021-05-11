@@ -35,11 +35,11 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 
 ## Complete setup:
 - [x] `5` autoscaling groups with launch templates converted from `user_data`
-- [x] `4` load balancer target groups (varnish frontend admin staging)
-- [x] `1` build server
+- [x] `4` target groups for load balancer (varnish frontend admin staging)
+- [x] `1` build server to compile all the code
 - [x] `2` load balancers (external/internal) with listeners / rules
 - [x] `1` rds mysql database
-- [x] `1` elk domain
+- [x] `1` elk elasticsearch domain for Magento catalog search
 - [x] `2` redis elasticache cluster for sessions and cache
 - [x] `1` rabbitmq broker to manage Magento queue messages
 - [x] `2` s3 buckets for [media] images and [system] files and logs (with access policy)
@@ -49,6 +49,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - [x] `1` sns topic default subscription email alerts
 - [x] Autoscaling policy per each group, excluding `build` instance
 - [x] Managed with Systems Manager [https://aws.amazon.com/systems-manager/] agent installed
+- [x] Instance Profile assigned to simplified EC2 management
 - [x] Create ssm documents and EventBridge rules to run commands remotely 
 - [x] CloudWatch agent configured to stream logs
 - [x] All Magento files managed with git only
