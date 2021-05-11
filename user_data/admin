@@ -28,8 +28,8 @@ chmod 2770 ${MAGE_WEB_ROOT_PATH}
 setfacl -Rdm u:${MAGE_OWNER}:rwX,g:${MAGE_PHP_USER}:r-X,o::- ${MAGE_WEB_ROOT_PATH}
 cd ${MAGE_WEB_ROOT_PATH}
 su ${MAGE_OWNER} -s /bin/bash -c "git clone -b main codecommit::${AWS_DEFAULT_REGION}://${CODECOMMIT_MAGENTO_REPO_NAME} ."
-echo "${EFS_DNS_TARGET}:/%{ if ${INSTANCE_NAME} == "staging" }staging%{ else }production%{ endif }/var ${MAGE_WEB_ROOT_PATH}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
-echo "${EFS_DNS_TARGET}:/%{ if ${INSTANCE_NAME} == "staging" }staging%{ else }production%{ endif }/pub/media ${MAGE_WEB_ROOT_PATH}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
+echo "${EFS_DNS_TARGET}:/%{ if "${INSTANCE_NAME}" != "staging" }production%{ else }staging%{ endif }/var ${MAGE_WEB_ROOT_PATH}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
+echo "${EFS_DNS_TARGET}:/%{ if "${INSTANCE_NAME}" != "staging" }production%{ else }staging%{ endif }/pub/media ${MAGE_WEB_ROOT_PATH}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
 su ${MAGE_OWNER} -s /bin/bash -c "mkdir -p {pub/media,var}"
 mount -a
 
@@ -187,8 +187,8 @@ curl -s ${GITHUB_REPO_API_URL}/nginx/conf_m2 2>&1 | awk -F'"' '/download_url/ {p
 
 sed -i "s/user  nginx;/user  ${MAGE_OWNER};/" /etc/nginx/nginx.conf
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/magento${MAGE_VERSION}.conf
-sed -i "s/example.com/%{ if ${INSTANCE_NAME} == "staging" }${MAGE_DOMAIN}%{ else }${MAGE_STAGING_DOMAIN}%{ endif }/g" /etc/nginx/sites-available/magento${MAGE_VERSION}.conf
-sed -i "s/example.com/%{ if ${INSTANCE_NAME} == "staging" }${MAGE_DOMAIN}%{ else }${MAGE_STAGING_DOMAIN}%{ endif }/g" /etc/nginx/nginx.conf
+sed -i "s/example.com/%{ if "${INSTANCE_NAME}" != "staging" }${MAGE_DOMAIN}%{ else }${MAGE_STAGING_DOMAIN}%{ endif }/g" /etc/nginx/sites-available/magento${MAGE_VERSION}.conf
+sed -i "s/example.com/%{ if "${INSTANCE_NAME}" != "staging" }${MAGE_DOMAIN}%{ else }${MAGE_STAGING_DOMAIN}%{ endif }/g" /etc/nginx/nginx.conf
 sed -i "s,/var/www/html,${MAGE_WEB_ROOT_PATH},g" /etc/nginx/conf_m${MAGE_VERSION}/maps.conf
 
 find /etc/nginx/ -name "default.conf" -exec rm {} \;
