@@ -36,7 +36,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 
 ## Complete setup:
 - [x] `4` autoscaling groups with launch templates base64 converted from user_data.*
-- [x] `5` instances target groups (varnish frontend admin staging developer)
+- [x] `4` instances target groups (varnish frontend admin staging)
 - [x] `2` load balancers (external/internal) with listeners / rules / security groups
 - [x] `1` rds mysql database
 - [x] `1` build server
@@ -44,7 +44,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - [x] `2` redis elasticache cluster
 - [x] `1` rabbitmq broker
 - [x] `2` s3 buckets for [media] and [system] files and logs
-- [x] `1` codecommit repository 4 branches (main build staging developer)
+- [x] `1` codecommit repository 4 branches (main build staging)
 - [x] `1` cloudfront s3 origin distribution
 - [x] `1` efs file system for shared folders
 - [x] `1` sns topic and email subscription alerts for asg
