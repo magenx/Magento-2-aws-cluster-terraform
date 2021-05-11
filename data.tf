@@ -92,7 +92,6 @@ PHP_OPCACHE_INI = "/etc/php/${var.magento["php_version"]}/fpm/conf.d/10-opcache.
 MAGE_VERSION = "2"
 MAGE_DOMAIN = "${var.magento["mage_domain"]}"
 MAGE_STAGING_DOMAIN = "${var.magento["mage_staging_domain"]}"
-MAGE_DEVELOPER_DOMAIN = "${var.magento["mage_developer_domain"]}"
 MAGE_OWNER = "${var.magento["mage_owner"]}"
 MAGE_PHP_USER = "php-${var.magento["mage_owner"]}"
 MAGE_ADMIN_EMAIL = "${var.magento["mage_admin_email"]}"
