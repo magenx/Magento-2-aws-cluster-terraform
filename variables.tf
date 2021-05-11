@@ -5,14 +5,7 @@ variable "ec2" {
     frontend   = "c6g.xlarge"
     admin      = "c6g.xlarge"
     staging    = "c6g.xlarge"
-   }
-}
-
-variable "ec2_extra" {
-  description  = "EC2 instance name and type for build and developer systems"
-  default      = {
-        build      = "t4g.micro"
-        developer  = "c6g.xlarge"
+    build      = "t4g.micro"
    }
 }
 
@@ -106,12 +99,6 @@ variable "s3" {
   description = "S3 bucket names"
   type        = set(string)
   default     = ["media", "system"]
-}
-
-variable "efs" {
-  description = "EFS names"
-  type        = set(string)
-  default     = ["developer", "staging"]
 }
 
 variable "alb" {
