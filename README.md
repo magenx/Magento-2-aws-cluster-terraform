@@ -3,7 +3,7 @@
 
 <br />
 
-## AWS Graviton2 Processor - Enabling the best price performance in Amazon EC2:
+## AWS Graviton2 Processor - Enabling the best performance in Amazon EC2:
 ![aws-graviton2](https://user-images.githubusercontent.com/1591200/117844857-f0753e80-b277-11eb-9d27-fe8eacdf6c19.png)
 
 <br />
