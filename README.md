@@ -1,5 +1,5 @@
-## Classic configuration for Magento 2 | [Auto Scaling](https://aws.amazon.com/autoscaling/) cluster with Terraform on AWS :heart:
-![adobe-commerce-cloud-magento](https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg)![1_rxaaiY8J_jR0Cy57jnWRzA](https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg)![amazon](https://user-images.githubusercontent.com/1591200/117846734-9c6b5980-b279-11eb-83b2-27171448bb42.png)
+## Configuration for Magento 2 | [Auto Scaling](https://aws.amazon.com/autoscaling/) cluster with Terraform on AWS :heart:
+<img src="https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg" width="210" height="150"><img src="https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg" width="200" height="150"><img src="https://user-images.githubusercontent.com/1591200/117846734-9c6b5980-b279-11eb-83b2-27171448bb42.png" width="215" height="150">
 
 <br />
 
