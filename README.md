@@ -98,8 +98,8 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 ##
 - [x] Autoscaling policy per each group, excluding `build` instance
 - [x] Managed with Systems Manager [https://aws.amazon.com/systems-manager/] agent installed
-- [x] Instance Profile assigned to simplified EC2 management
-- [x] Create ssm documents and EventBridge rules to run commands remotely 
+- [x] Instance Profile assigned to simplify EC2 management
+- [x] Create and use ssm documents and EventBridge rules to automate tasks
 - [x] CloudWatch agent configured to stream logs
 - [x] All Magento files managed with git only
 - [x] Live shop in production mode / read-only 
@@ -107,11 +107,9 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - [x] WAF basic rules
 
 ## Magento 2 development | source code:
-- [Terraform](https://www.terraform.io/docs/) creates CodeCommit repository
-- Local provisioner copy files from Github to CodeCommit - https://github.com/magenx/Magento-2
-- EC2 instance user_data on boot clone files from CodeCommit branch.
-- Magento 2 minimal package ready for installation.
-- Run SSM Document to install Magento
+- Terraform creates CodeCommit repository. Local provisioner copy files from Github https://github.com/magenx/Magento-2. Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
+- Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
+- Right after infrastructure deployment the minimal Magento 2 package is ready to install. Run SSM Document to install Magento
 
 ## CI/CD scenario:
 - Event driven
