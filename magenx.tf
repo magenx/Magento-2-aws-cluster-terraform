@@ -547,7 +547,6 @@ resource "aws_db_instance" "db_instance" {
 resource "aws_db_event_subscription" "db_event_subscription" {
   name      = "rds-event-subscription"
   sns_topic = aws_sns_topic.sns_topic_default.arn
-  source_ids  = [aws_db_instance.db_instance.id]
   event_categories = [
     "availability",
     "deletion",
