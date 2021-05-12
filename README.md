@@ -1,12 +1,44 @@
 ## Magento 2 | [Auto Scaling](https://aws.amazon.com/autoscaling/) cluster with Terraform on AWS cloud :heart:
 > deploy a full-scale e-commerce infrastructure based on Magento 2 in a matter of seconds
 
-<img src="https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg" width="210" height="150"><img src="https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg" width="200" height="150"><img src="https://user-images.githubusercontent.com/1591200/117846734-9c6b5980-b279-11eb-83b2-27171448bb42.png" width="215" height="150">
+<img src="https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg" width="210" height="140"> <img src="https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg" width="180" height="145"> <img src="https://user-images.githubusercontent.com/1591200/118028531-158ead80-b35b-11eb-8957-636de16ada34.png" width="250" height="155">
 
 <br />
 
-## AWS Graviton2 Processor - Enabling the best performance in Amazon EC2:
+## [!] AWS Graviton2 Processor - Enabling the best performance in Amazon EC2:
 ![aws-graviton2](https://user-images.githubusercontent.com/1591200/117844857-f0753e80-b277-11eb-9d27-fe8eacdf6c19.png)
+
+<br />
+
+**The terraform configuration language and all the files in this repository are intuitively simple and straightforward. They are written in simple text and functions that any beginner can understand. Terraform deployment with zero dependency, no prerequisites, no need to install additional software, no programming required.**
+
+<br />
+
+## [?] Why we need Adobe Commerce Cloud alternative:
+The biggest issue is that pricing based on GMV % and AOV %, with this approach, you invest money in the development of a third-party business, but not your own.
+Why spend so much money without having control over your business in the cloud?
+Configuring your own infrastructure these days is the most profitable way. You manage the resources, you have a complete overview how it works and you have full control over the money invested in your own infrastructure. At any time you can make changes to both infrastructure and application design without thinking about restrictions, 3rd party platform limitations and unforeseen costs. There are no hidden bills and payments for excess resources, which, as a result, you will not need.
+
+**E-commerce under your own AWS cloud account:**
+- Open source Magento software and open infrastructure
+- No hardware configuration restrictions
+- No hidden bottlenecks
+- No time waste and queues for support tickets
+- No draconian contracts or obligations in small print
+- Transparent billing no unforeseen payments at any time
+- No sudden surplus resources outside the plan
+  
+Obviously, PaaS intermediaries also use Amazon cloud. Using the same technology only by limiting you with side contract and making you pay 10 times more.
+
+<br />
+
+## [+] EC2 webstack custom configuration
+User data templates with shell scripts. If you are familiar with shell scripting, this is the easiest and most complete way to send instructions to an instance to perform common automated configuration tasks and even run scripts after the instance starts. From default stack optimization to changing any application and service settings.
+
+NGINX is optimized and fully supported on the latest generation of 64-bit ARM Servers utilizing the architecture. PHP 7.4 using socket connection.
+
+Ubuntu 20.04.2 LTS includes support for the very latest ARM-based server systems powered by certified 64-bit processors.
+Develop and deploy at scale. Webstack delivers top performance on ARM.
 
 <br />
 
@@ -42,6 +74,10 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
    terraform init
    terraform apply
 ```
+> to destroy infrastructure: ```terraform destroy```  
+> resources created outside of terraform must be deleted manually, for example CloudWatch logs
+
+<br />
 
 ## Complete setup:
 - [x] `5` autoscaling groups with launch templates converted from `user_data`
