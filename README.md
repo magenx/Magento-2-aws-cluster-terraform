@@ -70,7 +70,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 
 ## Magento 2 development | source code:
 - [Terraform](https://www.terraform.io/docs/) creates CodeCommit repository
-- Local provisioner mirror files from Github - https://github.com/magenx/Magento-2 - to CodeCommit.
+- Local provisioner copy files from Github to CodeCommit - https://github.com/magenx/Magento-2 - aws branch.
 - EC2 instance user_data on boot clone files from CodeCommit branch.
 - Magento 2 minimal package ready for installation.
 - Run SSM Document to install Magento
