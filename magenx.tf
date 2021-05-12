@@ -1,5 +1,5 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Generate random secret strings / passwords
+# Generate random passwords
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "password" {
   count            = 3
@@ -9,6 +9,16 @@ resource "random_password" "password" {
   number           = true
   special          = true
   override_special = "!#$%&*?"
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Generate random string
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "random_string" "string" {
+  length           = 7
+  lower          = true
+  number         = true
+  special        = false
+  upper          = false
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create EFS file system
@@ -231,6 +241,7 @@ mainSteps:
       --admin-email=${var.magento["mage_admin_email"]} \
       --admin-user=admin \
       --admin-password='${random_password.password[2].result}' \
+      --backend-frontname='admin_${random_string.string.result}' \
       --language=${var.magento["language"]} \
       --currency=${var.magento["currency"]} \
       --timezone=${var.magento["timezone"]} \
@@ -751,7 +762,7 @@ resource "aws_lb_listener_rule" "inneradmin" {
   }
   condition {
     path_pattern {
-      values = ["/${var.magento["admin_path"]}/*"]
+      values = ["/admin_${random_string.string.result}/*"]
     }
   }
 }
