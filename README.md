@@ -69,7 +69,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - [x] WAF basic rules
 
 ## Magento 2 development | source code:
-- Terraform creates CodeCommit repository
+- [Terraform](https://www.terraform.io/docs/) creates CodeCommit repository
 - Local provisioner mirror files from Github - https://github.com/magenx/Magento-2 - to CodeCommit.
 - EC2 instance user_data on boot clone files from CodeCommit branch.
 - Magento 2 minimal package ready for installation.
