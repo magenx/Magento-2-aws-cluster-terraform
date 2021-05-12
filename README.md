@@ -20,11 +20,11 @@ Why spend so much money without having control over your business in the cloud?
 Configuring your own infrastructure these days is the most profitable way. You manage the resources, you have a complete overview how it works and you have full control over the money invested in your own infrastructure. At any time you can make changes to both infrastructure and application design without thinking about restrictions, 3rd party platform limitations and unforeseen costs. There are no hidden bills and payments for excess resources, which, as a result, you will not need.
 
 **E-commerce under your own AWS cloud account:**
-- Open source Magento software and open infrastructure
+- Open source Magento and open infrastructure
+- No license fees, no draconian contracts or obligations in small print
 - No hardware configuration restrictions
 - No hidden bottlenecks
 - No time waste and queues for support tickets
-- No draconian contracts or obligations in small print
 - Transparent billing no unforeseen payments at any time
 - No sudden surplus resources outside the plan
   
@@ -32,13 +32,15 @@ Obviously, PaaS intermediaries also use Amazon cloud. Using the same technology 
 
 <br />
 
-## [+] EC2 webstack custom configuration
+## [+] EC2 webstack custom configuration and management
 [User data](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) templates with shell scripts. If you are familiar with shell scripting, this is the easiest and most complete way to send instructions to an instance to perform common automated configuration tasks and even run scripts after the instance starts. From default stack optimization to changing any application and service settings.
 
 NGINX is optimized and fully supported on the latest generation of 64-bit ARM Servers utilizing the architecture. PHP 7.4 using socket connection.
 
 Ubuntu 20.04.2 LTS includes support for the very latest ARM-based server systems powered by certified 64-bit processors.
 Develop and deploy at scale. Webstack delivers top performance on ARM.
+
+[**AWS Systems Manager**](https://aws.amazon.com/systems-manager/) is an AWS service that you can use to view and control your infrastructure on AWS. Using the Systems Manager console, you can view operational data from multiple AWS EC2 instances and automate operational tasks across your AWS resources. Systems Manager helps you maintain security and compliance. No SSH conections from outside, no need to track passwords and ssh keys.
 
 <br />
 
