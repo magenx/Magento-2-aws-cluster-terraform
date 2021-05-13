@@ -21,6 +21,39 @@ resource "random_string" "string" {
   upper          = false
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create and validat ssl certificate for domain and subdomains
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_acm_certificate" "default" {
+  count                     = data.aws_region.current.name != "us-east-1" ? 1 : 0
+  domain_name               = "${var.magento["mage_domain"]}"
+  subject_alternative_names = ["*.${var.magento["mage_domain"]}"]
+  validation_method         = "EMAIL"
+
+lifecycle {
+    create_before_destroy   = true
+  }
+}
+
+resource "aws_acm_certificate" "cloudfront" {
+  provider                  = aws.us
+  domain_name               = "${var.magento["mage_domain"]}"
+  subject_alternative_names = ["*.${var.magento["mage_domain"]}"]
+  validation_method         = "EMAIL"
+
+lifecycle {
+    create_before_destroy   = true
+  }
+}
+
+resource "aws_acm_certificate_validation" "default" {
+  count           = data.aws_region.current.name != "us-east-1" ? 1 : 0
+  certificate_arn = aws_acm_certificate.default[0].arn
+}
+
+resource "aws_acm_certificate_validation" "cloudfront" {
+  certificate_arn = aws_acm_certificate.cloudfront.arn
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create EFS file system
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_efs_file_system" "efs_file_system" {
@@ -120,7 +153,7 @@ resource "aws_cloudfront_distribution" "distribution" {
   }
 
   viewer_certificate {
-    acm_certificate_arn = data.aws_acm_certificate.issued_us.arn
+    acm_certificate_arn = data.aws_acm_certificate.cloudfront.arn
     ssl_support_method = "sni-only"
     minimum_protocol_version = "TLSv1.2_2019"
   }
@@ -716,7 +749,7 @@ resource "aws_lb_listener" "outerhttps" {
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-FS-1-2-Res-2020-10"
-  certificate_arn   = data.aws_acm_certificate.issued.arn
+  certificate_arn   = data.aws_region.current.name != "us-east-1" ? aws_acm_certificate.default[0].arn : aws_acm_certificate.cloudfront.arn
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.target_group["varnish"].arn
