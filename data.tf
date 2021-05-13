@@ -13,19 +13,6 @@ data "aws_availability_zone" "all" {
   name = each.key
 }
 
-data "aws_acm_certificate" "issued" {
-  domain   = var.magento["mage_domain"]
-  statuses = ["ISSUED"]
-  most_recent = true
-}
-
-data "aws_acm_certificate" "issued_us" {
-  domain   = var.magento["mage_domain"]
-  provider   = aws.us
-  statuses = ["ISSUED"]
-  most_recent = true
-}
-
 data "aws_vpc" "default" {
   default = true
 }
