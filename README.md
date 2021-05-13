@@ -41,7 +41,7 @@ Reserved Instances provide you with significant savings on your Amazon EC2 costs
 ## [+] EC2 webstack custom configuration and management
 [User data](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) templates with shell scripts. If you are familiar with shell scripting, this is the easiest and most complete way to send instructions to an instance to perform common automated configuration tasks and even run scripts after the instance starts. From default stack optimization to changing any application and service settings.
 
-NGINX is optimized and fully supported on the latest generation of 64-bit ARM Servers utilizing the architecture. PHP 7.4 using socket connection.
+NGINX is optimized and fully supported on the latest generation of 64-bit ARM Servers utilizing the architecture. PHP using socket connection.
 
 Ubuntu 20.04.2 LTS includes support for the very latest ARM-based server systems powered by certified 64-bit processors.
 Develop and deploy at scale. Webstack delivers top performance on ARM.
