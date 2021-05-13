@@ -68,9 +68,8 @@ https://aws.amazon.com/cloudshell/
 $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 ```
 > 
-- Create ssl certificate in Certificate Manager
-- For CloudFront to work: The certificate must be also imported in the US East (N. Virginia) Region.
-- Check all details / all files / adjust your settings
+- Note: Right after `terraform apply` you will receive email from amazon to approve the ssl certificates
+- Check all details / all files / adjust your settings, edit your domain and email in `variables.tf`
 - Run:
 ```
    terraform init
