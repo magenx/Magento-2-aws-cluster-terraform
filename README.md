@@ -10,10 +10,6 @@
 
 <br />
 
-**The terraform configuration language and all the files in this repository are intuitively simple and straightforward. They are written in simple text and functions that any beginner can understand. Terraform deployment with zero dependency, no prerequisites, no need to install additional software, no programming required.**
-
-<br />
-
 ## [?] Why we need Adobe Commerce Cloud alternative:
 The biggest issue is that ACC pricing based on GMV % and AOV %, with this approach, you invest money in the development of a third-party business, but not your own.
 Why spend so much money without having control over your business in the cloud?
@@ -29,7 +25,10 @@ Configuring your own infrastructure these days is the most profitable way. You m
 - Transparent billing no unforeseen payments at any time
 - No sudden surplus resources outside the plan
   
-Obviously, PaaS intermediaries also use Amazon cloud. Using the same technology only by limiting you with side contract and making you pay 10 times more.
+Obviously, PaaS intermediaries also use Amazon cloud. Using the same technology only by limiting you with side contract and making you pay 10 times more.  
+
+**Other benefits of using your own AWS Cloud account**: [Reserver Instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-reserved-instances.html)  
+Reserved Instances provide you with significant savings on your Amazon EC2 costs compared to On-Demand Instance pricing. With Savings Plans, you make a commitment to a consistent usage amount, measured in USD per hour. This provides you with the flexibility to use the instance configurations that best meet your needs and continue to save money. 
 
 <br />
 
@@ -52,6 +51,10 @@ https://docs.aws.amazon.com/index.html
 https://www.terraform.io/docs/
 https://aws.amazon.com/cloudshell/
 ```
+<br />
+
+### The terraform configuration language and all the files in this repository are intuitively simple and straightforward. They are written in simple text and functions that any beginner can understand. Terraform deployment with zero dependency, no prerequisites, no need to install additional software, no programming required.
+
 <br />
 
 # Deployment into default VPC:
