@@ -21,7 +21,7 @@ resource "random_string" "string" {
   upper          = false
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create and validat ssl certificate for domain and subdomains
+# Create and validate ssl certificate for domain and subdomains
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_acm_certificate" "default" {
   count                     = data.aws_region.current.name != "us-east-1" ? 1 : 0
