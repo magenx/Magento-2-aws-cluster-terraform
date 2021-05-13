@@ -71,7 +71,7 @@ ALB_DNS_NAME = "${aws_lb.load_balancer["inner"].dns_name}"
 EFS_DNS_TARGET = "${aws_efs_mount_target.efs_mount_target[0].dns_name}"
 CODECOMMIT_MAGENTO_REPO_NAME = "${aws_codecommit_repository.codecommit_repository.repository_name}"
 
-EXTRA_PACKAGES_DEB = "curl jq nfs-common gnupg2 auditd apt-transport-https apt-show-versions ca-certificates lsb-release unzip unzip vim wget git patch ipset python3-pip acl attr imagemagick snmp sendmail liblwp-protocol-https-perl"
+EXTRA_PACKAGES_DEB = "curl jq nfs-common gnupg2 apt-transport-https apt-show-versions ca-certificates lsb-release unzip vim wget git patch python3-pip acl attr imagemagick snmp sendmail liblwp-protocol-https-perl"
 PHP_PACKAGES_DEB = "cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4"
 
 PHP_VERSION = "${var.magento["php_version"]}"
