@@ -122,7 +122,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - Change deployment logic to your needs.
 
 ## Infrastructure DevOps and beyond:
-- Terraform [https://www.terraform.io/docs/]
+- Terraform [AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
 - edit => migrate => share
 
 ## TODO:
