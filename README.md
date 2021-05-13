@@ -18,6 +18,11 @@ Configuring your own infrastructure these days is the most profitable way. You m
 Adobe Commerce Cloud has lots of technical problems due to the fact that many services compete on the same server and share the processor time, memory, network and I/O.  
 Bad architectural solution using monolitic servers, not cloud native solution, that was not made specifically for Magento, but adapted in rush using many wrappers, with manual pseudo scaling and 48 hours to 5 days to accept and deploy new settings.
 
+```
+Obviously, PaaS intermediaries also use AWS Cloud. But concealing its cheap solutions with a marketing, 
+trying to hook you up on a dodgy contract and making you pay 10 times more.
+``` 
+
 **E-commerce under your own AWS cloud account:**
 - Open source Magento and open infrastructure
 - No license fees, no draconian contracts or obligations in small print
@@ -27,8 +32,6 @@ Bad architectural solution using monolitic servers, not cloud native solution, t
 - No time waste and queues for [support tickets](https://devdocs.magento.com/cloud/project/services.html)
 - Transparent billing no unforeseen payments at any time
 - No sudden surplus resources outside the plan
-  
-Obviously, PaaS intermediaries also use Amazon cloud. Using the same technology only by limiting you with side contract and making you pay 10 times more.  
 
 **Other benefits of using your own AWS Cloud account**: [Reserver Instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-reserved-instances.html)  
 Reserved Instances provide you with significant savings on your Amazon EC2 costs compared to On-Demand Instance pricing. With Savings Plans, you make a commitment to a consistent usage amount, measured in USD per hour. This provides you with the flexibility to use the instance configurations that best meet your needs and continue to save money. 
