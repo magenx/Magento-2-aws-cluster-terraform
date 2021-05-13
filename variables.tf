@@ -13,7 +13,7 @@ variable "magento" {
   description      = "Map Magento 2 config values"
   default          = {
     mage_owner            = "magenx"
-    mage_domain           = "demo.magenx.com"
+    mage_domain           = "magenx.com"
     mage_admin_email      = "admin@magenx.com"
     mage_coadmin_email    = "root@magenx.com"
     mage_staging_domain   = "stg.magenx.com"
