@@ -21,7 +21,7 @@ Configuring your own infrastructure these days is the most profitable way. You m
 - No hardware configuration restrictions
 - No services configuration limitations
 - No hidden bottlenecks
-- No time waste and queues for support tickets
+- No time waste and queues for [support tickets](https://devdocs.magento.com/cloud/project/services.html)
 - Transparent billing no unforeseen payments at any time
 - No sudden surplus resources outside the plan
   
