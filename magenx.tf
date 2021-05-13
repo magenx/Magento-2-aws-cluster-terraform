@@ -99,7 +99,7 @@ resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
   comment = "CloudFront origin access identity"
 }
 resource "aws_cloudfront_distribution" "distribution" {
-  depends_on = [aws_acm_certificate_validation.cloudfront.certificate_arn]
+  depends_on = [aws_acm_certificate_validation.cloudfront]
   origin {
     domain_name = aws_s3_bucket.s3_bucket["media"].bucket_regional_domain_name
     origin_id   = "${var.magento["mage_domain"]}-media-assets"
@@ -746,7 +746,7 @@ group_names = [
 # Create https:// listener for OUTER Load Balancer - forward to varnish
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener" "outerhttps" {
-  depends_on = [aws_acm_certificate_validation.cloudfront.certificate_arn]
+  depends_on = [aws_acm_certificate_validation.cloudfront, aws_acm_certificate_validation.default]
   load_balancer_arn = aws_lb.load_balancer["outer"].arn
   port              = "443"
   protocol          = "HTTPS"
