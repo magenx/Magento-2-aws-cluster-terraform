@@ -23,6 +23,7 @@ Configuring your own infrastructure these days is the most profitable way. You m
 - Open source Magento and open infrastructure
 - No license fees, no draconian contracts or obligations in small print
 - No hardware configuration restrictions
+- No services configuration limitations
 - No hidden bottlenecks
 - No time waste and queues for support tickets
 - Transparent billing no unforeseen payments at any time
