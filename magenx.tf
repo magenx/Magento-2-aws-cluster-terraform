@@ -99,6 +99,7 @@ resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
   comment = "CloudFront origin access identity"
 }
 resource "aws_cloudfront_distribution" "distribution" {
+  depends_on = [aws_acm_certificate_validation.cloudfront.certificate_arn]
   origin {
     domain_name = aws_s3_bucket.s3_bucket["media"].bucket_regional_domain_name
     origin_id   = "${var.magento["mage_domain"]}-media-assets"
@@ -521,7 +522,7 @@ resource "aws_iam_service_linked_role" "elasticsearch_domain" {
   aws_service_name = "es.amazonaws.com"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create ElasticSearch domain !!! ~45min creation time
+# Create ElasticSearch domain
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticsearch_domain" "elasticsearch_domain" {
   depends_on = [aws_iam_service_linked_role.elasticsearch_domain]
@@ -745,6 +746,7 @@ group_names = [
 # Create https:// listener for OUTER Load Balancer - forward to varnish
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener" "outerhttps" {
+  depends_on = [aws_acm_certificate_validation.cloudfront.certificate_arn]
   load_balancer_arn = aws_lb.load_balancer["outer"].arn
   port              = "443"
   protocol          = "HTTPS"
