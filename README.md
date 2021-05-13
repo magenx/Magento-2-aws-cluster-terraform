@@ -40,7 +40,7 @@ NGINX is optimized and fully supported on the latest generation of 64-bit ARM Se
 Ubuntu 20.04.2 LTS includes support for the very latest ARM-based server systems powered by certified 64-bit processors.
 Develop and deploy at scale. Webstack delivers top performance on ARM.
 
-[**AWS Systems Manager**](https://aws.amazon.com/systems-manager/) is an AWS service that you can use to view and control your infrastructure on AWS. Using the Systems Manager console, you can view operational data from multiple AWS EC2 instances and automate operational tasks across your AWS resources. Systems Manager helps you maintain security and compliance. No SSH conections from outside, no need to track passwords and ssh keys.
+[**AWS Systems Manager**](https://aws.amazon.com/systems-manager/) is an AWS service that you can use to view and control your infrastructure on AWS. Using the Systems Manager console, you can view operational data from multiple AWS EC2 instances and automate operational tasks across your AWS resources. Systems Manager helps you maintain security and compliance. No SSH connections from outside, no need to track passwords and private keys.
 
 <br />
 
