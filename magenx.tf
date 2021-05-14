@@ -520,6 +520,9 @@ resource "aws_s3_bucket_policy" "s3_bucket_system_policy" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_service_linked_role" "elasticsearch_domain" {
   aws_service_name = "es.amazonaws.com"
+  lifecycle {
+    create_before_destroy   = true
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create ElasticSearch domain
@@ -531,6 +534,11 @@ resource "aws_elasticsearch_domain" "elasticsearch_domain" {
   cluster_config {
     instance_type  = var.elk["instance_type"]
     instance_count = var.elk["instance_count"]
+    
+    zone_awareness_enabled = true
+    zone_awareness_config {
+        availability_zone_count = var.elk["instance_count"]
+      }
   }
   ebs_options {
     ebs_enabled = var.elk["ebs_enabled"]
@@ -538,11 +546,11 @@ resource "aws_elasticsearch_domain" "elasticsearch_domain" {
     volume_size = var.elk["volume_size"]
   }
   vpc_options {
-    subnet_ids = [sort(data.aws_subnet_ids.default.ids)[0]]
+    subnet_ids = slice(tolist(data.aws_subnet_ids.default.ids), 0, var.elk["instance_count"])
     security_group_ids = [aws_security_group.security_group["elk"].id]
   }
   tags = {
-    Name = var.elk["domain_name"]
+    Name = "${var.magento["mage_owner"]}-${var.elk["domain_name"]}"
   }
   access_policies = <<EOF
 {
