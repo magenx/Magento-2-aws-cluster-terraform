@@ -175,27 +175,27 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
             "collect_list": [
               {
                 "file_path": "/var/log/nginx/error.log",
-                "log_group_name": "nginx_error_logs",
+                "log_group_name": "${var.magento["mage_owner"]}_nginx_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
               },
               {
                 "file_path": "/home/${var.magento["mage_owner"]}/public_html/var/log/php-fpm-error.log",
-                "log_group_name": "php_error_logs",
+                "log_group_name": "${var.magento["mage_owner"]}_php_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
               },
               {
                 "file_path": "/home/${var.magento["mage_owner"]}/public_html/var/log/exception.log",
-                "log_group_name": "magento_error_logs",
+                "log_group_name": "${var.magento["mage_owner"]}_magento_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
               },
               {
                 "file_path": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
-                "log_group_name": "cloudwatch_agent_log",
+                "log_group_name": "${var.magento["mage_owner"]}_cloudwatch_agent_log",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
               },
               {
                 "file_path": "/var/log/syslog",
-                "log_group_name": "system_syslog",
+                "log_group_name": "${var.magento["mage_owner"]}_system_syslog",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
               }
             ]
@@ -332,7 +332,7 @@ EOT
 # Create EC2 service role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role" "ec2_instance_role" {
-  name = "EC2InstanceRole"
+  name = "${var.magento["mage_owner"]}-EC2InstanceRole"
   description = "Allows EC2 instances to call AWS services on your behalf"
   assume_role_policy = <<EOF
 {
@@ -391,7 +391,7 @@ resource "aws_iam_role_policy" "codecommit_access" {
 # Create EC2 Instance Profile
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
-  name = "EC2InstanceProfile"
+  name = "${var.magento["mage_owner"]}-EC2InstanceProfile"
   role = aws_iam_role.ec2_instance_role.name
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -552,6 +552,10 @@ resource "aws_elasticsearch_domain" "elasticsearch_domain" {
   tags = {
     Name = "${var.magento["mage_owner"]}-${var.elk["domain_name"]}"
   }
+  log_publishing_options {
+    cloudwatch_log_group_arn = aws_cloudwatch_log_group.elk_log_group.arn
+    log_type                 = "ES_APPLICATION_LOGS"
+  }
   access_policies = <<EOF
 {
   "Version": "2012-10-17",
@@ -567,6 +571,36 @@ resource "aws_elasticsearch_domain" "elasticsearch_domain" {
         "es:*"
       ],
       "Resource": "arn:aws:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/${var.elk["domain_name"]}/*"
+    }
+  ]
+}
+EOF
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudWatch log group for ElasticSearch log stream
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_log_group" "elk_log_group" {
+  name = "${var.magento["mage_owner"]}-${var.elk["domain_name"]}"
+}
+
+resource "aws_cloudwatch_log_resource_policy" "elk_log_resource_policy" {
+  policy_name = "${var.magento["mage_owner"]}-${var.elk["domain_name"]}"
+
+  policy_document = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "es.amazonaws.com"
+      },
+      "Action": [
+        "logs:PutLogEvents",
+        "logs:PutLogEventsBatch",
+        "logs:CreateLogStream"
+      ],
+      "Resource": "arn:aws:logs:*"
     }
   ]
 }
@@ -598,7 +632,7 @@ resource "aws_db_instance" "db_instance" {
 # Create RDS instance event subscription
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_event_subscription" "db_event_subscription" {
-  name      = "rds-event-subscription"
+  name      = "${var.magento["mage_owner"]}-rds-event-subscription"
   sns_topic = aws_sns_topic.sns_topic_default.arn
   event_categories = [
     "availability",
