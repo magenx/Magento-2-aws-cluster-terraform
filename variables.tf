@@ -30,8 +30,8 @@ variable "elk" {
   default  = {
     domain_name            = "elk"
     elasticsearch_version  = "7.9"
-    instance_type          = "m6g.xlarge.elasticsearch"
-    instance_count         = "1"
+    instance_type          = "m6g.large.elasticsearch"
+    instance_count         = "3"
     ebs_enabled            = true
     volume_type            = "gp2"
     volume_size            = "10"
