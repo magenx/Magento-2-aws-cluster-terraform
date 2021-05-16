@@ -1015,6 +1015,10 @@ run_command_targets {
 resource "aws_iam_user" "ses_smtp_user" {
   name = "${var.app["brand"]}-ses-smtp-user"
 }
+	
+resource "aws_ses_email_identity" "ses_email_identity" {
+  email = "${var.app["admin_email"]}"
+}
 
 resource "aws_iam_user_policy" "ses_smtp_user_policy" {
   name = "${var.app["brand"]}-ses-smtp-user-policy"
