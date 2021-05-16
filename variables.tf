@@ -9,20 +9,20 @@ variable "ec2" {
    }
 }
 
-variable "magento" {
-  description      = "Map Magento 2 config values"
+variable "app" {
+  description      = "Map application params | Magento 2"
   default          = {
-    mage_owner            = "magenx"
-    mage_domain           = "magenx.com"
-    mage_admin_email      = "admin@magenx.com"
-    mage_coadmin_email    = "xxx"
-    mage_order_email      = "xxx"
-    mage_staging_domain   = "stg.magenx.com"
-    mage_source           = "https://github.com/magenx/Magento-2.git"
-    language              = "en_US"
-    currency              = "EUR"
-    timezone              = "UTC"
-    php_version           = "7.4"
+    brand            = "magenx"
+    domain           = "magenx.com"
+    admin_email      = "admin@magenx.com"
+    coadmin_email    = "xxx"
+    order_email      = "xxx"
+    staging_domain   = "stg.magenx.com"
+    source           = "https://github.com/magenx/Magento-2.git"
+    language         = "en_US"
+    currency         = "EUR"
+    timezone         = "UTC"
+    php_version      = "7.4"
   }
 }
 

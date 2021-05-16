@@ -13,22 +13,22 @@ apt-get update
 apt-get -y install ${EXTRA_PACKAGES_DEB}
 
 ## create user
-useradd -d /home/${MAGE_OWNER} -s /bin/bash ${MAGE_OWNER} >/dev/null 2>&1
+useradd -d /home/${BRAND} -s /bin/bash ${BRAND} >/dev/null 2>&1
 ## create root php user
-useradd -M -s /sbin/nologin -d /home/${MAGE_OWNER} ${MAGE_PHP_USER} >/dev/null 2>&1
-usermod -g ${MAGE_PHP_USER} ${MAGE_OWNER}
+useradd -M -s /sbin/nologin -d /home/${BRAND} ${PHP_USER} >/dev/null 2>&1
+usermod -g ${PHP_USER} ${BRAND}
 
 pip3 install git-remote-codecommit
 
-mkdir -p ${MAGE_WEB_ROOT_PATH}
-chmod 711 /home/${MAGE_OWNER}
-mkdir -p /home/${MAGE_OWNER}/{.config,.cache,.local,.composer}
-chown -R ${MAGE_OWNER}:${MAGE_PHP_USER} ${MAGE_WEB_ROOT_PATH} /home/${MAGE_OWNER}/{.config,.cache,.local,.composer}
-chmod 2770 ${MAGE_WEB_ROOT_PATH}
-setfacl -Rdm u:${MAGE_OWNER}:rwX,g:${MAGE_PHP_USER}:r-X,o::- ${MAGE_WEB_ROOT_PATH}
-cd ${MAGE_WEB_ROOT_PATH}
-su ${MAGE_OWNER} -s /bin/bash -c "git clone -b build codecommit::${AWS_DEFAULT_REGION}://${CODECOMMIT_MAGENTO_REPO_NAME} ."
-setfacl -Rdm u:${MAGE_OWNER}:rwX,g:${MAGE_PHP_USER}:rwX,o::- var generated pub/static pub/media
+mkdir -p ${WEB_ROOT_PATH}
+chmod 711 /home/${BRAND}
+mkdir -p /home/${BRAND}/{.config,.cache,.local,.composer}
+chown -R ${BRAND}:${PHP_USER} ${WEB_ROOT_PATH} /home/${BRAND}/{.config,.cache,.local,.composer}
+chmod 2770 ${WEB_ROOT_PATH}
+setfacl -Rdm u:${BRAND}:rwX,g:${PHP_USER}:r-X,o::- ${WEB_ROOT_PATH}
+cd ${WEB_ROOT_PATH}
+su ${BRAND} -s /bin/bash -c "git clone -b build codecommit::${AWS_DEFAULT_REGION}://${CODECOMMIT_APP_REPO_NAME} ."
+setfacl -Rdm u:${BRAND}:rwX,g:${PHP_USER}:rwX,o::- var generated pub/static pub/media
 
 chmod +x bin/magento
 
@@ -74,31 +74,30 @@ sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' ${PHP_FPM_POOL}
 sed -i 's/pm.max_children = 5/pm.max_children = 100/' ${PHP_FPM_POOL}
 
 
-hostnamectl set-hostname server.${MAGE_DOMAIN} --static
+hostnamectl set-hostname server.${DOMAIN} --static
 
-timedatectl set-timezone ${MAGE_TIMEZONE}
+timedatectl set-timezone ${TIMEZONE}
 
-sed -i "s/\[www\]/\[${MAGE_OWNER}\]/" ${PHP_FPM_POOL}
-sed -i "s/^user =.*/user = ${MAGE_PHP_USER}/" ${PHP_FPM_POOL}
-sed -i "s/^group =.*/group = ${MAGE_PHP_USER}/" ${PHP_FPM_POOL}
-#sed -i "s/^listen =.*/listen = 127.0.0.1:9000/" ${PHP_FPM_POOL}
-sed -ri "s/;?listen.owner =.*/listen.owner = ${MAGE_OWNER}/" ${PHP_FPM_POOL}
-sed -ri "s/;?listen.group =.*/listen.group = ${MAGE_PHP_USER}/" ${PHP_FPM_POOL}
+sed -i "s/\[www\]/\[${BRAND}\]/" ${PHP_FPM_POOL}
+sed -i "s/^user =.*/user = ${PHP_USER}/" ${PHP_FPM_POOL}
+sed -i "s/^group =.*/group = ${PHP_USER}/" ${PHP_FPM_POOL}
+sed -ri "s/;?listen.owner =.*/listen.owner = ${BRAND}/" ${PHP_FPM_POOL}
+sed -ri "s/;?listen.group =.*/listen.group = ${PHP_USER}/" ${PHP_FPM_POOL}
 sed -ri "s/;?listen.mode = 0660/listen.mode = 0660/" ${PHP_FPM_POOL}
 sed -ri "s/;?listen.allowed_clients =.*/listen.allowed_clients = 127.0.0.1/" ${PHP_FPM_POOL}
 sed -i '/sendmail_path/,$d' ${PHP_FPM_POOL}
 sed -i '/PHPSESSID/d' ${PHP_INI}
-sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," ${PHP_INI}
+sed -i "s,.*date.timezone.*,date.timezone = ${TIMEZONE}," ${PHP_INI}
 
 cat >> ${PHP_FPM_POOL} <<END
 ;;
 ;; Custom pool settings
 php_admin_flag[log_errors] = on
-php_admin_value[error_log] = "${MAGE_WEB_ROOT_PATH}/var/log/php-fpm-error.log"
+php_admin_value[error_log] = "${WEB_ROOT_PATH}/var/log/php-fpm-error.log"
 php_admin_value[default_charset] = UTF-8
 php_flag[display_errors] = off
 php_admin_value[memory_limit] = 4048M
-php_admin_value[date.timezone] = ${MAGE_TIMEZONE}
+php_admin_value[date.timezone] = ${TIMEZONE}
 END
 
 cd /usr/local/src

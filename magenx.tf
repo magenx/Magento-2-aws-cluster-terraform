@@ -25,8 +25,8 @@ resource "random_string" "string" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_acm_certificate" "default" {
   count                     = data.aws_region.current.name != "us-east-1" ? 1 : 0
-  domain_name               = "${var.magento["mage_domain"]}"
-  subject_alternative_names = ["*.${var.magento["mage_domain"]}"]
+  domain_name               = "${var.app["domain"]}"
+  subject_alternative_names = ["*.${var.app["domain"]}"]
   validation_method         = "EMAIL"
 
 lifecycle {
@@ -36,8 +36,8 @@ lifecycle {
 
 resource "aws_acm_certificate" "cloudfront" {
   provider                  = aws.us
-  domain_name               = "${var.magento["mage_domain"]}"
-  subject_alternative_names = ["*.${var.magento["mage_domain"]}"]
+  domain_name               = "${var.app["domain"]}"
+  subject_alternative_names = ["*.${var.app["domain"]}"]
   validation_method         = "EMAIL"
 
 lifecycle {
@@ -57,9 +57,9 @@ resource "aws_acm_certificate_validation" "cloudfront" {
 # Create EFS file system
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_efs_file_system" "efs_file_system" {
-  creation_token = "${var.magento["mage_owner"]}-efs-storage"
+  creation_token = "${var.app["brand"]}-efs-storage"
   tags = {
-    Name = "${var.magento["mage_owner"]}-efs-storage"
+    Name = "${var.app["brand"]}-efs-storage"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -75,15 +75,15 @@ resource "aws_efs_mount_target" "efs_mount_target" {
 # Create CodeCommit repository for Magento code
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codecommit_repository" "codecommit_repository" {
-  repository_name = var.magento["mage_domain"]
-  description     = "Magento 2.x code for ${var.magento["mage_domain"]}"
+  repository_name = var.app["domain"]
+  description     = "Magento 2.x code for ${var.app["domain"]}"
     tags = {
-    Name = "${var.magento["mage_owner"]}-${var.magento["mage_domain"]}"
+    Name = "${var.app["brand"]}-${var.app["domain"]}"
   }
   provisioner "local-exec" {
   interpreter = ["/bin/bash", "-c"]
   command = <<EOF
-          git clone -b main ${var.magento["mage_source"]} /tmp/magento
+          git clone -b main ${var.app["source"]} /tmp/magento
           cd /tmp/magento
           git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.codecommit_repository.repository_name}
           git branch -m main
@@ -102,7 +102,7 @@ resource "aws_cloudfront_distribution" "distribution" {
   depends_on = [aws_acm_certificate_validation.cloudfront]
   origin {
     domain_name = aws_s3_bucket.s3_bucket["media"].bucket_regional_domain_name
-    origin_id   = "${var.magento["mage_domain"]}-media-assets"
+    origin_id   = "${var.app["domain"]}-media-assets"
 
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.origin_access_identity.cloudfront_access_identity_path
@@ -114,22 +114,22 @@ resource "aws_cloudfront_distribution" "distribution" {
     }
   }
 
-  aliases = [var.magento["mage_domain"]]
+  aliases = [var.app["domain"]]
 
   enabled             = true
   is_ipv6_enabled     = true
-  comment             = "${var.magento["mage_domain"]} media assets"
+  comment             = "${var.app["domain"]} media assets"
 
   logging_config {
     include_cookies = false
     bucket          = aws_s3_bucket.s3_bucket["system"].bucket_domain_name
-    prefix          = "${var.magento["mage_owner"]}-cloudfront-logs"
+    prefix          = "${var.app["brand"]}-cloudfront-logs"
   }
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${var.magento["mage_domain"]}-media-assets"
+    target_origin_id = "${var.app["domain"]}-media-assets"
 
     compress = true
     origin_request_policy_id = data.aws_cloudfront_origin_request_policy.origin_request_policy.id
@@ -175,33 +175,33 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
             "collect_list": [
               {
                 "file_path": "/var/log/nginx/error.log",
-                "log_group_name": "${var.magento["mage_owner"]}_nginx_error_logs",
+                "log_group_name": "${var.app["brand"]}_nginx_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
               },
               {
-                "file_path": "/home/${var.magento["mage_owner"]}/public_html/var/log/php-fpm-error.log",
-                "log_group_name": "${var.magento["mage_owner"]}_php_error_logs",
+                "file_path": "/home/${var.app["brand"]}/public_html/var/log/php-fpm-error.log",
+                "log_group_name": "${var.app["brand"]}_php_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
               },
               {
-                "file_path": "/home/${var.magento["mage_owner"]}/public_html/var/log/exception.log",
-                "log_group_name": "${var.magento["mage_owner"]}_magento_error_logs",
+                "file_path": "/home/${var.app["brand"]}/public_html/var/log/exception.log",
+                "log_group_name": "${var.app["brand"]}_magento_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
               },
               {
                 "file_path": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
-                "log_group_name": "${var.magento["mage_owner"]}_cloudwatch_agent_log",
+                "log_group_name": "${var.app["brand"]}_cloudwatch_agent_log",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
               },
               {
                 "file_path": "/var/log/syslog",
-                "log_group_name": "${var.magento["mage_owner"]}_system_syslog",
+                "log_group_name": "${var.app["brand"]}_system_syslog",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
               }
             ]
           }
         },
-        "log_stream_name": "${var.magento["mage_domain"]}",
+        "log_stream_name": "${var.app["domain"]}",
         "force_flush_interval" : 5
       }
 }
@@ -215,7 +215,7 @@ EOF
 # Create SSM YAML Document runShellScript to init/pull git
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "ssm_document_pull" {
-  name          = "${var.magento["mage_owner"]}-deployment-git"
+  name          = "${var.app["brand"]}-deployment-git"
   document_type = "Command"
   document_format = "YAML"
   target_type   = "/AWS::EC2::Instance"
@@ -231,10 +231,10 @@ mainSteps:
     runCommand:
     - |-
       #!/bin/bash
-      cd /home/${var.magento["mage_owner"]}/public_html
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "git fetch origin"
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "git reset --hard origin/main"
-      systemctl reload php${var.magento["php_version"]}-fpm
+      cd /home/${var.app["brand"]}/public_html
+      su ${var.app["brand"]} -s /bin/bash -c "git fetch origin"
+      su ${var.app["brand"]} -s /bin/bash -c "git reset --hard origin/main"
+      systemctl reload php${var.app["php_version"]}-fpm
       systemctl reload nginx
 EOT
 }
@@ -242,7 +242,7 @@ EOT
 # Create SSM YAML Document runShellScript to install magento, push to codecommit, init git
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "ssm_document_install" {
-  name          = "${var.magento["mage_owner"]}-install-magento-git"
+  name          = "${var.app["brand"]}-install-magento-git"
   document_type = "Command"
   document_format = "YAML"
   target_type   = "/AWS::EC2::Instance"
@@ -258,27 +258,27 @@ mainSteps:
     runCommand:
     - |-
       #!/bin/bash
-      cd /home/${var.magento["mage_owner"]}/public_html
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "echo 007 > magento_umask"
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "echo -e '/pub/media/*\n/var/*'" > .gitignore
+      cd /home/${var.app["brand"]}/public_html
+      su ${var.app["brand"]} -s /bin/bash -c "echo 007 > magento_umask"
+      su ${var.app["brand"]} -s /bin/bash -c "echo -e '/pub/media/*\n/var/*'" > .gitignore
       chmod +x bin/magento
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento module:enable --all"
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento setup:install \
-      --base-url=https://${var.magento["mage_domain"]}/ \
-      --base-url-secure=https://${var.magento["mage_domain"]}/ \
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento module:enable --all"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:install \
+      --base-url=https://${var.app["domain"]}/ \
+      --base-url-secure=https://${var.app["domain"]}/ \
       --db-host=${aws_db_instance.db_instance.endpoint} \
       --db-name=${aws_db_instance.db_instance.name} \
       --db-user=${aws_db_instance.db_instance.username} \
       --db-password='${random_password.password[1].result}' \
-      --admin-firstname=${var.magento["mage_owner"]} \
-      --admin-lastname=${var.magento["mage_owner"]} \
-      --admin-email=${var.magento["mage_admin_email"]} \
+      --admin-firstname=${var.app["brand"]} \
+      --admin-lastname=${var.app["brand"]} \
+      --admin-email=${var.app["admin_email"]} \
       --admin-user=admin \
       --admin-password='${random_password.password[2].result}' \
       --backend-frontname='admin_${random_string.string.result}' \
-      --language=${var.magento["language"]} \
-      --currency=${var.magento["currency"]} \
-      --timezone=${var.magento["timezone"]} \
+      --language=${var.app["language"]} \
+      --currency=${var.app["currency"]} \
+      --timezone=${var.app["timezone"]} \
       --cleanup-database \
       --session-save=files \
       --use-rewrites=1 \
@@ -287,7 +287,7 @@ mainSteps:
       --consumers-wait-for-messages=0 \
       --amqp-host=${trimsuffix(trimprefix("${aws_mq_broker.mq_broker.instances.0.endpoints.0}", "amqps://"), ":5671")} \
       --amqp-port=5671 \
-      --amqp-user=${var.magento["mage_owner"]} \
+      --amqp-user=${var.app["brand"]} \
       --amqp-password='${random_password.password[0].result}' \
       --amqp-virtualhost='/' \
       --amqp-ssl=true \
@@ -298,12 +298,12 @@ mainSteps:
       --remote-storage-bucket=${aws_s3_bucket.s3_bucket["media"].bucket} \
       --remote-storage-region=${data.aws_region.current.name}"
       ## installation check
-      if [ ! -f /home/${var.magento["mage_owner"]}/public_html/app/etc/env.php ]; then
+      if [ ! -f /home/${var.app["brand"]}/public_html/app/etc/env.php ]; then
       echo "installation error"
       exit 1
       fi
       ## cache backend
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento setup:config:set \
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
       --cache-backend=redis \
       --cache-backend-redis-server=${aws_elasticache_replication_group.elasticache_cluster["cache"].configuration_endpoint_address} \
       --cache-backend-redis-port=6379 \
@@ -312,7 +312,7 @@ mainSteps:
       --cache-backend-redis-compression-lib=l4z \
       -n"
       ## session
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento setup:config:set \
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
       --session-save=redis \
       --session-save-redis-host=${aws_elasticache_replication_group.elasticache_cluster["session"].configuration_endpoint_address} \
       --session-save-redis-port=6379 \
@@ -320,9 +320,9 @@ mainSteps:
       --session-save-redis-db=1 \
       --session-save-redis-compression-lib=lz4 \
       -n"
-      su ${var.magento["mage_owner"]} -s /bin/bash -c "bin/magento deploy:mode:set production"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento deploy:mode:set production"
       git add . -A
-      git commit -m ${var.magento["mage_owner"]}-release-$(date +'%y%m%d-%H%M%S')
+      git commit -m ${var.app["brand"]}-release-$(date +'%y%m%d-%H%M%S')
       git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.codecommit_repository.repository_name}
       git branch -m main
       git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.codecommit_repository.repository_name} main
@@ -332,7 +332,7 @@ EOT
 # Create EC2 service role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role" "ec2_instance_role" {
-  name = "${var.magento["mage_owner"]}-EC2InstanceRole"
+  name = "${var.app["brand"]}-EC2InstanceRole"
   description = "Allows EC2 instances to call AWS services on your behalf"
   assume_role_policy = <<EOF
 {
@@ -391,24 +391,24 @@ resource "aws_iam_role_policy" "codecommit_access" {
 # Create EC2 Instance Profile
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
-  name = "${var.magento["mage_owner"]}-EC2InstanceProfile"
+  name = "${var.app["brand"]}-EC2InstanceProfile"
   role = aws_iam_role.ec2_instance_role.name
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create RabbitMQ - queue message broker
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_mq_broker" "mq_broker" {
-  broker_name = "${var.magento["mage_owner"]}-${var.mq["broker_name"]}"
+  broker_name = "${var.app["brand"]}-${var.mq["broker_name"]}"
   engine_type        = "RabbitMQ"
   engine_version     = var.mq["engine_version"]
   host_instance_type = var.mq["host_instance_type"]
   security_groups    = [aws_security_group.security_group["mq"].id]
   user {
-    username = var.magento["mage_owner"]
+    username = var.app["brand"]
     password = random_password.password[0].result
   }
   tags = {
-    Name   = "${var.magento["mage_owner"]}-${var.mq["broker_name"]}"
+    Name   = "${var.app["brand"]}-${var.mq["broker_name"]}"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -417,8 +417,8 @@ resource "aws_mq_broker" "mq_broker" {
 resource "aws_elasticache_replication_group" "elasticache_cluster" {
   for_each                      = toset(var.redis["name"])
   engine                        = "redis"
-  replication_group_id          = "${var.magento["mage_owner"]}-${each.key}-backend"
-  replication_group_description = "Replication group for ${var.magento["mage_domain"]} ${each.key} backend"
+  replication_group_id          = "${var.app["brand"]}-${each.key}-backend"
+  replication_group_description = "Replication group for ${var.app["domain"]} ${each.key} backend"
   node_type                     = var.redis["node_type"]
   port                          = 6379
   parameter_group_name          = var.redis["parameter_group_name"]
@@ -436,11 +436,11 @@ resource "aws_elasticache_replication_group" "elasticache_cluster" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_s3_bucket" "s3_bucket" {
   for_each      = var.s3
-  bucket        = "${var.magento["mage_owner"]}-${each.key}-storage"
+  bucket        = "${var.app["brand"]}-${each.key}-storage"
   force_destroy = true
   acl           = "private"
   tags = {
-    Name        = "${var.magento["mage_owner"]}-${each.key}-storage"
+    Name        = "${var.app["brand"]}-${each.key}-storage"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -504,7 +504,7 @@ resource "aws_s3_bucket_policy" "s3_bucket_system_policy" {
         "s3:PutObject"
       ],
       Effect = "Allow"
-      Resource = "arn:aws:s3:::${aws_s3_bucket.s3_bucket["system"].id}/${var.magento["mage_owner"]}-alb/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
+      Resource = "arn:aws:s3:::${aws_s3_bucket.s3_bucket["system"].id}/${var.app["brand"]}-alb/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
       Principal = {
         AWS = [
           data.aws_elb_service_account.current.arn
@@ -529,7 +529,7 @@ resource "aws_iam_service_linked_role" "elasticsearch_domain" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticsearch_domain" "elasticsearch_domain" {
   depends_on = [aws_iam_service_linked_role.elasticsearch_domain]
-  domain_name           = "${var.magento["mage_owner"]}-${var.elk["domain_name"]}"
+  domain_name           = "${var.app["brand"]}-${var.elk["domain_name"]}"
   elasticsearch_version = var.elk["elasticsearch_version"]
   cluster_config {
     instance_type  = var.elk["instance_type"]
@@ -550,7 +550,7 @@ resource "aws_elasticsearch_domain" "elasticsearch_domain" {
     security_group_ids = [aws_security_group.security_group["elk"].id]
   }
   tags = {
-    Name = "${var.magento["mage_owner"]}-${var.elk["domain_name"]}"
+    Name = "${var.app["brand"]}-${var.elk["domain_name"]}"
   }
   log_publishing_options {
     cloudwatch_log_group_arn = aws_cloudwatch_log_group.elk_log_group.arn
@@ -580,11 +580,11 @@ EOF
 # Create CloudWatch log group for ElasticSearch log stream
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_log_group" "elk_log_group" {
-  name = "${var.magento["mage_owner"]}-${var.elk["domain_name"]}"
+  name = "${var.app["brand"]}-${var.elk["domain_name"]}"
 }
 
 resource "aws_cloudwatch_log_resource_policy" "elk_log_resource_policy" {
-  policy_name = "${var.magento["mage_owner"]}-${var.elk["domain_name"]}"
+  policy_name = "${var.app["brand"]}-${var.elk["domain_name"]}"
 
   policy_document = <<EOF
 {
@@ -610,29 +610,29 @@ EOF
 # Create RDS instance
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "db_instance" {
-  identifier            = "${var.magento["mage_owner"]}-${var.rds["name"]}-database"
+  identifier            = "${var.app["brand"]}-${var.rds["name"]}-database"
   allocated_storage     = var.rds["allocated_storage"]
   max_allocated_storage = var.rds["max_allocated_storage"]
   storage_type          = var.rds["storage_type"] 
   engine                = var.rds["engine"]
   engine_version        = var.rds["engine_version"]
   instance_class        = var.rds["instance_class"]
-  name                  = "${var.magento["mage_owner"]}_${var.rds["name"]}"
-  username              = var.magento["mage_owner"]
+  name                  = "${var.app["brand"]}_${var.rds["name"]}"
+  username              = var.app["brand"]
   password              = random_password.password[1].result
   parameter_group_name  = var.rds["parameter_group_name"]
   skip_final_snapshot   = var.rds["skip_final_snapshot"]
   vpc_security_group_ids = [aws_security_group.security_group["rds"].id]
   copy_tags_to_snapshot = true
   tags = {
-    Name = "${var.magento["mage_owner"]}-database"
+    Name = "${var.app["brand"]}-database"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create RDS instance event subscription
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_event_subscription" "db_event_subscription" {
-  name      = "${var.magento["mage_owner"]}-rds-event-subscription"
+  name      = "${var.app["brand"]}-rds-event-subscription"
   sns_topic = aws_sns_topic.sns_topic_default.arn
   event_categories = [
     "availability",
@@ -652,12 +652,12 @@ resource "aws_db_event_subscription" "db_event_subscription" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "security_group" {
   for_each    = local.security_group
-  name        = "${var.magento["mage_owner"]}-${each.key}"
+  name        = "${var.app["brand"]}-${each.key}"
   description = "${each.key} security group"
   vpc_id      = data.aws_vpc.default.id
   
     tags = {
-    Name = "${var.magento["mage_owner"]}-${each.key}"
+    Name = "${var.app["brand"]}-${each.key}"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -679,18 +679,18 @@ resource "aws_security_group_rule" "security_rule" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb" "load_balancer" {
   for_each           = var.alb
-  name               = "${var.magento["mage_owner"]}-${each.key}-alb"
+  name               = "${var.app["brand"]}-${each.key}-alb"
   internal           = each.value
   load_balancer_type = "application"
   security_groups    = [aws_security_group.security_group[each.key].id]
   subnets            = data.aws_subnet_ids.default.ids
   access_logs {
     bucket  = aws_s3_bucket.s3_bucket["system"].bucket
-    prefix  = "${var.magento["mage_owner"]}-alb"
+    prefix  = "${var.app["brand"]}-alb"
     enabled = true
   }
   tags = {
-    Name = "${var.magento["mage_owner"]}-${each.key}-alb"
+    Name = "${var.app["brand"]}-${each.key}-alb"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -698,7 +698,7 @@ resource "aws_lb" "load_balancer" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_target_group" "target_group" {
   for_each    = var.ec2
-  name        = "${var.magento["mage_owner"]}-${each.key}-target"
+  name        = "${var.app["brand"]}-${each.key}-target"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = data.aws_vpc.default.id
@@ -708,7 +708,7 @@ resource "aws_lb_target_group" "target_group" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_launch_template" "launch_template" {
   for_each = var.ec2
-  name = "${var.magento["mage_owner"]}-${each.key}-lt"
+  name = "${var.app["brand"]}-${each.key}-lt"
   block_device_mappings {
     device_name = "/dev/sda1"
     ebs { 
@@ -728,12 +728,12 @@ resource "aws_launch_template" "launch_template" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name = "${var.magento["mage_owner"]}-${each.key}-ec2" }
+      Name = "${var.app["brand"]}-${each.key}-ec2" }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      Name = "${var.magento["mage_owner"]}-${each.key}-ec2" }
+      Name = "${var.app["brand"]}-${each.key}-ec2" }
   }
   user_data = base64encode(data.template_file.user_data[each.key].rendered)
 }
@@ -742,7 +742,7 @@ resource "aws_launch_template" "launch_template" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_group" "autoscaling_group" {
   for_each = var.ec2
-  name = "${var.magento["mage_owner"]}-${each.key}-asg"
+  name = "${var.app["brand"]}-${each.key}-asg"
   vpc_zone_identifier = data.aws_subnet_ids.default.ids
   desired_capacity    = var.asg["desired_capacity"]
   min_size            = var.asg["min_size"]
@@ -759,12 +759,12 @@ resource "aws_autoscaling_group" "autoscaling_group" {
 # Create SNS topic and email subscription (confirm email right after resource creation)
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_sns_topic" "sns_topic_default" {
-  name = "${var.magento["mage_owner"]}-email-alerts"
+  name = "${var.app["brand"]}-email-alerts"
 }
 resource "aws_sns_topic_subscription" "sns_topic_subscription" {
   topic_arn = aws_sns_topic.sns_topic_default.arn
   protocol  = "email"
-  endpoint  = var.magento["mage_admin_email"]
+  endpoint  = var.app["admin_email"]
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create Autoscaling groups actions for SNS topic email alerts
@@ -855,7 +855,7 @@ resource "aws_lb_listener_rule" "innerstaging" {
   }
   condition {
     host_header {
-	values = [var.magento["mage_staging_domain"]]
+	values = [var.app["staging_domain"]]
     }
   }
 }
@@ -864,7 +864,7 @@ resource "aws_lb_listener_rule" "innerstaging" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "autoscaling_policy_out" {
   for_each               = {for name,type in var.ec2: name => type if name != "build"}
-  name                   = "${var.magento["mage_owner"]}-${each.key}-asp-out"
+  name                   = "${var.app["brand"]}-${each.key}-asp-out"
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
@@ -875,7 +875,7 @@ resource "aws_autoscaling_policy" "autoscaling_policy_out" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_out" {
   for_each            = {for name,type in var.ec2: name => type if name != "build"}
-  alarm_name          = "${var.magento["mage_owner"]}-${each.key} scale-out alarm"
+  alarm_name          = "${var.app["brand"]}-${each.key} scale-out alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.asp["evaluation_periods"]
   metric_name         = "CPUUtilization"
@@ -894,7 +894,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_out" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "autoscaling_policy_in" {
   for_each               = {for name,type in var.ec2: name => type if name != "build"}
-  name                   = "${var.magento["mage_owner"]}-${each.key}-asp-in"
+  name                   = "${var.app["brand"]}-${each.key}-asp-in"
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
@@ -905,7 +905,7 @@ resource "aws_autoscaling_policy" "autoscaling_policy_in" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_in" {
   for_each            = {for name,type in var.ec2: name => type if name != "build"}
-  alarm_name          = "${var.magento["mage_owner"]}-${each.key} scale-in alarm"
+  alarm_name          = "${var.app["brand"]}-${each.key} scale-in alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.asp["evaluation_periods"]
   metric_name         = "CPUUtilization"
@@ -923,7 +923,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm_in" {
 # Create CloudWatch events service role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role" "eventbridge_service_role" {
-  name = "EventBridgeServiceRole"
+  name = "${var.app["brand"]}-EventBridgeServiceRole"
   description = "Provides EventBridge manage events on your behalf."
   assume_role_policy = <<EOF
 {
@@ -953,7 +953,7 @@ resource "aws_iam_role_policy_attachment" "eventbridge_role_policy_attachment" {
 # Create EventBridge rule to monitor CodeCommit magento repository state
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "eventbridge_rule_codecommit" {
-  name        = "EventBridge-Rule-CodeCommit-Repository-State-Change"
+  name        = "${var.app["brand"]}-EventBridge-Rule-CodeCommit-Repository-State-Change"
   description = "CloudWatch monitor magento repository state change"
   event_pattern = <<EOF
 {
@@ -972,7 +972,7 @@ EOF
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "eventbridge_target_codecommit" {
   rule      = aws_cloudwatch_event_rule.eventbridge_rule_codecommit.name
-  target_id = "EventBridge-Target-Git-Deployment-Script"
+  target_id = "${var.app["brand"]}-EventBridge-Target-Git-Deployment-Script"
   arn       = aws_ssm_document.ssm_document_pull.arn
   role_arn  = aws_iam_role.eventbridge_service_role.arn
  
@@ -985,7 +985,7 @@ run_command_targets {
 # Create EventBridge rule to run Magento cronjob
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "eventbridge_rule_cronjob" {
-  name        = "EventBridge-Rule-Run-Magento-Cronjob"
+  name        = "${var.app["brand"]}-EventBridge-Rule-Run-Magento-Cronjob"
   description = "EventBridge rule to run Magento cronjob every minute"
   schedule_expression = "rate(1 minute)"
 }
@@ -994,10 +994,10 @@ resource "aws_cloudwatch_event_rule" "eventbridge_rule_cronjob" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "eventbridge_target_cronjob" {
   rule      = aws_cloudwatch_event_rule.eventbridge_rule_cronjob.name
-  target_id = "EventBridge-Target-Admin-Instance-Cron"
+  target_id = "${var.app["brand"]}-EventBridge-Target-Admin-Instance-Cron"
   arn       = "arn:aws:ssm:${data.aws_region.current.name}::document/AWS-RunShellScript"
   role_arn  = aws_iam_role.eventbridge_service_role.arn
-  input     = "{\"commands\":[\"su ${var.magento["mage_owner"]} -s /bin/bash -c '/home/${var.magento["mage_owner"]}/public_html/bin/magento cron:run 2>&1'\"],\"executionTimeout\":[\"180\"]}"
+  input     = "{\"commands\":[\"su ${var.app["brand"]} -s /bin/bash -c '/home/${var.app["brand"]}/public_html/bin/magento cron:run 2>&1'\"],\"executionTimeout\":[\"180\"]}"
  
 run_command_targets {
     key    = "tag:Name"

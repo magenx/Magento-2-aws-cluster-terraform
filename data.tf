@@ -65,7 +65,7 @@ data "aws_cloudfront_cache_policy" "cache_policy" {
   name = "Managed-CachingOptimized"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Get get the latest ID of a registered AMI linux distro by owner and filter
+# Get get the latest ID of a registered AMI linux distro by brand and filter
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_ami" "ubuntu_2004" {
   most_recent = true
@@ -92,24 +92,24 @@ GITHUB_REPO_API_URL = "https://api.github.com/repos/magenx/Magento-2-aws-cluster
 
 ALB_DNS_NAME = "${aws_lb.load_balancer["inner"].dns_name}"
 EFS_DNS_TARGET = "${aws_efs_mount_target.efs_mount_target[0].dns_name}"
-CODECOMMIT_MAGENTO_REPO_NAME = "${aws_codecommit_repository.codecommit_repository.repository_name}"
+CODECOMMIT_APP_REPO_NAME = "${aws_codecommit_repository.codecommit_repository.repository_name}"
 
 EXTRA_PACKAGES_DEB = "curl jq nfs-common gnupg2 apt-transport-https apt-show-versions ca-certificates lsb-release unzip vim wget git patch python3-pip acl attr imagemagick snmp"
 PHP_PACKAGES_DEB = "cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4"
 
-PHP_VERSION = "${var.magento["php_version"]}"
-PHP_INI = "/etc/php/${var.magento["php_version"]}/fpm/php.ini"
-PHP_FPM_POOL = "/etc/php/${var.magento["php_version"]}/fpm/pool.d/www.conf"
-PHP_OPCACHE_INI = "/etc/php/${var.magento["php_version"]}/fpm/conf.d/10-opcache.ini"
+PHP_VERSION = "${var.app["php_version"]}"
+PHP_INI = "/etc/php/${var.app["php_version"]}/fpm/php.ini"
+PHP_FPM_POOL = "/etc/php/${var.app["php_version"]}/fpm/pool.d/www.conf"
+PHP_OPCACHE_INI = "/etc/php/${var.app["php_version"]}/fpm/conf.d/10-opcache.ini"
 
-MAGE_VERSION = "2"
-MAGE_DOMAIN = "${var.magento["mage_domain"]}"
-MAGE_STAGING_DOMAIN = "${var.magento["mage_staging_domain"]}"
-MAGE_OWNER = "${var.magento["mage_owner"]}"
-MAGE_PHP_USER = "php-${var.magento["mage_owner"]}"
-MAGE_ADMIN_EMAIL = "${var.magento["mage_admin_email"]}"
-MAGE_WEB_ROOT_PATH = "/home/${var.magento["mage_owner"]}/public_html"
-MAGE_TIMEZONE = "${var.magento["timezone"]}"
+VERSION = "2"
+DOMAIN = "${var.app["domain"]}"
+STAGING_DOMAIN = "${var.app["staging_domain"]}"
+BRAND = "${var.app["brand"]}"
+PHP_USER = "php-${var.app["brand"]}"
+ADMIN_EMAIL = "${var.app["admin_email"]}"
+WEB_ROOT_PATH = "/home/${var.app["brand"]}/public_html"
+TIMEZONE = "${var.app["timezone"]}"
 
  }
 }
