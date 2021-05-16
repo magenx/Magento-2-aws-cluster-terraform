@@ -1041,10 +1041,9 @@ resource "aws_iam_access_key" "ses_smtp_user_access_key" {
 
 resource "aws_ses_configuration_set" "ses_configuration_set" {
   name = uuid()
-
+  reputation_metrics_enabled = true
   delivery_options {
     tls_policy = "Require"
-    reputation_metrics_enabled = true
   }
 }
 
