@@ -1,4 +1,9 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Generate random uuid string that is intended to be used as unique identifier
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "random_uuid" "uuid" {
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Generate random passwords
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "password" {
@@ -1002,5 +1007,103 @@ resource "aws_cloudwatch_event_target" "eventbridge_target_cronjob" {
 run_command_targets {
     key    = "tag:Name"
     values = [aws_launch_template.launch_template["admin"].tag_specifications[0].tags.Name]
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create SES user credentials, ses configuration set to stream SES metrics to CloudWatch
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_iam_user" "ses_smtp_user" {
+  name = "${var.app["brand"]}-ses-smtp-user"
+}
+
+resource "aws_iam_user_policy" "ses_smtp_user_policy" {
+  name = "${var.app["brand"]}-ses-smtp-user-policy"
+  user = aws_iam_user.ses_smtp_user.name
+  
+  policy = jsonencode({
+    Version : "2012-10-17",
+    Statement : [
+      {
+        Effect : "Allow",
+        Action : [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ],
+        Resource : "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_access_key" "ses_smtp_user_access_key" {
+  user = aws_iam_user.ses_smtp_user.name
+}
+
+resource "aws_ses_configuration_set" "ses_configuration_set" {
+  name = uuid()
+
+  delivery_options {
+    tls_policy = "Require"
+    reputation_metrics_enabled = true
+  }
+}
+
+resource "aws_ses_event_destination" "cloudwatch" {
+  name                   = "${var.app["brand"]}-ses-event-destination-cloudwatch"
+  configuration_set_name = aws_ses_configuration_set.ses_configuration_set.name
+  enabled                = true
+  matching_types         = ["bounce", "send", "reject"]
+
+  cloudwatch_destination {
+    default_value  = "default"
+    dimension_name = "dimension"
+    value_source   = "emailHeader"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Parameter store for aws params
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_ssm_parameter" "infrastructure_params" {
+  name        = "${var.app["brand"]}-aws-infrastructure-params"
+  description = "Parameters for AWS infrastructure"
+  type        = "String"
+  value       = <<EOF
+
+DATABASE_ENDPOINT="${aws_db_instance.db_instance.endpoint}"
+DATABASE_INSTANCE_NAME="${aws_db_instance.db_instance.name}"
+DATABASE_USER_NAME="${aws_db_instance.db_instance.username}"
+DATABASE_PASSWORD='${random_password.password[1].result}'
+
+ADMIN_PATH='admin_${random_string.string.result}'
+ADMIN_PASSWORD='${random_password.password[2].result}'
+
+RABBITMQ_ENDPOINT="${trimsuffix(trimprefix("${aws_mq_broker.mq_broker.instances.0.endpoints.0}", "amqps://"), ":5671")}"
+RABBITMQ_USER="${var.app["brand"]}"
+RABBITMQ_PASSWORD='${random_password.password[0].result}'
+
+ELASTICSEARCH_ENDPOINT="${aws_elasticsearch_domain.elasticsearch_domain.endpoint}"
+
+REDIS_CACHE_BACKEND="${aws_elasticache_replication_group.elasticache_cluster["cache"].configuration_endpoint_address}"
+REDIS_SESSION_BACKEND="${aws_elasticache_replication_group.elasticache_cluster["session"].configuration_endpoint_address}"
+
+OUTER_ALB_DNS_NAME="${aws_lb.load_balancer["outer"].dns_name}"
+INNER_ALB_DNS_NAME="${aws_lb.load_balancer["inner"].dns_name}"
+
+CLOUDFRONT_ADDRESS=${aws_cloudfront_distribution.distribution.domain_name}
+
+EFS_DNS_TARGET="${aws_efs_mount_target.efs_mount_target[0].dns_name}"
+
+CODECOMMIT_REPO_NAME="${aws_codecommit_repository.codecommit_repository.repository_name}"
+	  
+SES_KEY=${aws_iam_access_key.ses_smtp_user_access_key.id}
+SES_SECRET=${aws_iam_access_key.ses_smtp_user_access_key.secret}
+SES_PASSWORD=${aws_iam_access_key.ses_smtp_user_access_key.ses_smtp_password_v4}
+
+HTTP_X_HEADER="${random_uuid.uuid.result}"
+
+EOF
+
+  tags = {
+    Name = "${var.app["brand"]}-aws-infrastructure-params"
   }
 }
