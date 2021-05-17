@@ -153,7 +153,7 @@ locals {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    security_group_id = aws_security_group.security_group["outer"].id
+    security_group_id = aws_security_group.this["outer"].id
     },
   outer_alb_http_in = {
     type        = "ingress"
@@ -162,7 +162,7 @@ locals {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    security_group_id = aws_security_group.security_group["outer"].id
+    security_group_id = aws_security_group.this["outer"].id
     },
   outer_alb_http_out = {
     type        = "egress"
@@ -170,8 +170,8 @@ locals {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["ec2"].id
-    security_group_id = aws_security_group.security_group["outer"].id
+    source_security_group_id = aws_security_group.this["ec2"].id
+    security_group_id = aws_security_group.this["outer"].id
     },
   inner_alb_http_in = {
     type        = "ingress"
@@ -179,8 +179,8 @@ locals {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["ec2"].id
-    security_group_id = aws_security_group.security_group["inner"].id
+    source_security_group_id = aws_security_group.this["ec2"].id
+    security_group_id = aws_security_group.this["inner"].id
     },
   inner_alb_http_out = {
     type        = "egress"
@@ -188,8 +188,8 @@ locals {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["ec2"].id
-    security_group_id = aws_security_group.security_group["inner"].id
+    source_security_group_id = aws_security_group.this["ec2"].id
+    security_group_id = aws_security_group.this["inner"].id
     },
   ec2_https_out = {
     type        = "egress"
@@ -198,7 +198,7 @@ locals {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    security_group_id = aws_security_group.security_group["ec2"].id
+    security_group_id = aws_security_group.this["ec2"].id
     },
   ec2_http_out = {
     type        = "egress"
@@ -207,7 +207,7 @@ locals {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    security_group_id = aws_security_group.security_group["ec2"].id
+    security_group_id = aws_security_group.this["ec2"].id
     },
   ec2_mysql_out = {
     type        = "egress"
@@ -215,8 +215,8 @@ locals {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["rds"].id
-    security_group_id = aws_security_group.security_group["ec2"].id
+    source_security_group_id = aws_security_group.this["rds"].id
+    security_group_id = aws_security_group.this["ec2"].id
     },
   ec2_rabbitmq_out = {
     type        = "egress"
@@ -224,8 +224,8 @@ locals {
     from_port   = 5671
     to_port     = 5671
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["mq"].id
-    security_group_id = aws_security_group.security_group["ec2"].id
+    source_security_group_id = aws_security_group.this["mq"].id
+    security_group_id = aws_security_group.this["ec2"].id
     },
   ec2_redis_session_out = {
     type        = "egress"
@@ -233,8 +233,8 @@ locals {
     from_port   = 6379
     to_port     = 6379
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["session"].id
-    security_group_id = aws_security_group.security_group["ec2"].id
+    source_security_group_id = aws_security_group.this["session"].id
+    security_group_id = aws_security_group.this["ec2"].id
     },
   ec2_redis_cache_out = {
     type        = "egress"
@@ -242,8 +242,8 @@ locals {
     from_port   = 6379
     to_port     = 6379
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["cache"].id
-    security_group_id = aws_security_group.security_group["ec2"].id
+    source_security_group_id = aws_security_group.this["cache"].id
+    security_group_id = aws_security_group.this["ec2"].id
     },
   ec2_efs_out = {
     type        = "egress"
@@ -251,8 +251,8 @@ locals {
     from_port   = 2049
     to_port     = 2049
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["efs"].id
-    security_group_id = aws_security_group.security_group["ec2"].id
+    source_security_group_id = aws_security_group.this["efs"].id
+    security_group_id = aws_security_group.this["ec2"].id
     },
   ec2_elk_out = {
     type        = "egress"
@@ -260,8 +260,8 @@ locals {
     from_port   = 9200
     to_port     = 9200
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["elk"].id
-    security_group_id = aws_security_group.security_group["ec2"].id
+    source_security_group_id = aws_security_group.this["elk"].id
+    security_group_id = aws_security_group.this["ec2"].id
     },
   ec2_http_in_inner = {
     type        = "ingress"
@@ -269,8 +269,8 @@ locals {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["inner"].id
-    security_group_id = aws_security_group.security_group["ec2"].id
+    source_security_group_id = aws_security_group.this["inner"].id
+    security_group_id = aws_security_group.this["ec2"].id
     },
   ec2_http_in_outer = {
     type        = "ingress"
@@ -278,8 +278,8 @@ locals {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["outer"].id
-    security_group_id = aws_security_group.security_group["ec2"].id
+    source_security_group_id = aws_security_group.this["outer"].id
+    security_group_id = aws_security_group.this["ec2"].id
     },
   rds_mysql_in = {
     type        = "ingress"
@@ -287,8 +287,8 @@ locals {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["ec2"].id
-    security_group_id = aws_security_group.security_group["rds"].id
+    source_security_group_id = aws_security_group.this["ec2"].id
+    security_group_id = aws_security_group.this["rds"].id
     },
   redis_session_in = {
     type        = "ingress"
@@ -296,8 +296,8 @@ locals {
     from_port   = 6379
     to_port     = 6379
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["ec2"].id
-    security_group_id = aws_security_group.security_group["session"].id
+    source_security_group_id = aws_security_group.this["ec2"].id
+    security_group_id = aws_security_group.this["session"].id
     },
   redis_cache_in = {
     type        = "ingress"
@@ -305,8 +305,8 @@ locals {
     from_port   = 6379
     to_port     = 6379
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["ec2"].id
-    security_group_id = aws_security_group.security_group["cache"].id
+    source_security_group_id = aws_security_group.this["ec2"].id
+    security_group_id = aws_security_group.this["cache"].id
     },
   rabbitmq_in = {
     type        = "ingress"
@@ -314,8 +314,8 @@ locals {
     from_port   = 5671
     to_port     = 5671
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.security_group["ec2"].id
-    security_group_id = aws_security_group.security_group["mq"].id
+    source_security_group_id = aws_security_group.this["ec2"].id
+    security_group_id = aws_security_group.this["mq"].id
     },
   efs_in = {
     type        = "ingress"
@@ -323,8 +323,8 @@ locals {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    source_security_group_id = aws_security_group.security_group["ec2"].id
-    security_group_id = aws_security_group.security_group["efs"].id
+    source_security_group_id = aws_security_group.this["ec2"].id
+    security_group_id = aws_security_group.this["efs"].id
     },
   efs_out = {
     type        = "egress"
@@ -332,8 +332,8 @@ locals {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    source_security_group_id = aws_security_group.security_group["ec2"].id
-    security_group_id = aws_security_group.security_group["efs"].id
+    source_security_group_id = aws_security_group.this["ec2"].id
+    security_group_id = aws_security_group.this["efs"].id
     },
   elk_in = {
     type        = "ingress"
@@ -341,8 +341,8 @@ locals {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    source_security_group_id = aws_security_group.security_group["ec2"].id
-    security_group_id = aws_security_group.security_group["elk"].id
+    source_security_group_id = aws_security_group.this["ec2"].id
+    security_group_id = aws_security_group.this["elk"].id
     },
   elk_out = {
     type        = "egress"
@@ -350,8 +350,8 @@ locals {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    source_security_group_id = aws_security_group.security_group["ec2"].id
-    security_group_id = aws_security_group.security_group["elk"].id
+    source_security_group_id = aws_security_group.this["ec2"].id
+    security_group_id = aws_security_group.this["elk"].id
     },
   }
 }

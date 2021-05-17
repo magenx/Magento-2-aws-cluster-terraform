@@ -55,13 +55,13 @@ data "aws_security_group" "default" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Get the ID of CloudFront origin request policy
 # # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_cloudfront_origin_request_policy" "origin_request_policy" {
+data "aws_cloudfront_origin_request_policy" "this" {
   name = "Managed-CORS-S3Origin"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Get the ID of CloudFront cache policy.
 # # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_cloudfront_cache_policy" "cache_policy" {
+data "aws_cloudfront_cache_policy" "this" {
   name = "Managed-CachingOptimized"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -90,9 +90,9 @@ AWS_DEFAULT_REGION = "${data.aws_region.current.name}"
 GITHUB_REPO_RAW_URL = "https://raw.githubusercontent.com/magenx/Magento-2-aws-cluster-terraform/master"
 GITHUB_REPO_API_URL = "https://api.github.com/repos/magenx/Magento-2-aws-cluster-terraform/contents"
 
-ALB_DNS_NAME = "${aws_lb.load_balancer["inner"].dns_name}"
-EFS_DNS_TARGET = "${aws_efs_mount_target.efs_mount_target[0].dns_name}"
-CODECOMMIT_APP_REPO_NAME = "${aws_codecommit_repository.codecommit_repository.repository_name}"
+ALB_DNS_NAME = "${aws_lb.this["inner"].dns_name}"
+EFS_DNS_TARGET = "${aws_efs_mount_target.this[0].dns_name}"
+CODECOMMIT_APP_REPO_NAME = "${aws_codecommit_repository.this.repository_name}"
 
 EXTRA_PACKAGES_DEB = "curl jq nfs-common gnupg2 apt-transport-https apt-show-versions ca-certificates lsb-release unzip vim wget git patch python3-pip acl attr imagemagick snmp"
 PHP_PACKAGES_DEB = "cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4"
