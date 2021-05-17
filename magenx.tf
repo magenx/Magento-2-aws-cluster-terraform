@@ -231,7 +231,7 @@ description: "Pull code changes from CodeCommit main branch"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
-  name: "${var.app["brand"]}-codecommit-pull-main-changes"
+  name: "${var.app["brand"]}CodecommitPullMainChanges"
   inputs:
     runCommand:
     - |-
@@ -258,7 +258,7 @@ description: "Pull code changes from CodeCommit staging branch"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
-  name: "${var.app["brand"]}-codecommit-pull-staging-changes"
+  name: "${var.app["brand"]}CodecommitPullStagingChanges"
   inputs:
     runCommand:
     - |-
@@ -286,7 +286,7 @@ description: "Configure git, install magento, push to codecommit"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
-  name: "${var.app["brand"]}-install-magento-push-codecommit"
+  name: "${var.app["brand"]}InstallMagentoPushCodecommit"
   inputs:
     runCommand:
     - |-
