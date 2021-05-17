@@ -77,7 +77,7 @@ resource "aws_efs_mount_target" "efs_mount_target" {
   security_groups = [aws_security_group.security_group["efs"].id]
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create CodeCommit repository for Magento code
+# Create CodeCommit repository for application code
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codecommit_repository" "codecommit_repository" {
   repository_name = var.app["domain"]
@@ -88,7 +88,7 @@ resource "aws_codecommit_repository" "codecommit_repository" {
   provisioner "local-exec" {
   interpreter = ["/bin/bash", "-c"]
   command = <<EOF
-          git clone -b main ${var.app["source"]} /tmp/magento
+          git clone -b aws ${var.app["source"]} /tmp/magento
           cd /tmp/magento
           git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.codecommit_repository.repository_name}
           git branch -m main
@@ -115,7 +115,7 @@ resource "aws_cloudfront_distribution" "distribution" {
 	  
     custom_header {
       name  = "X-Magenx-Header"
-      value = uuid()
+      value = random_uuid.uuid.result
     }
   }
 
@@ -217,21 +217,21 @@ EOF
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create SSM YAML Document runShellScript to init/pull git
+# Create SSM Document runShellScript to pull main branch from CodeCommit
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "ssm_document_pull" {
-  name          = "${var.app["brand"]}-deployment-git"
+  name          = "${var.app["brand"]}-codecommit-pull-main-changes"
   document_type = "Command"
   document_format = "YAML"
   target_type   = "/AWS::EC2::Instance"
   content = <<EOT
 ---
 schemaVersion: "2.2"
-description: "Pull code changes from CodeCommit"
+description: "Pull code changes from CodeCommit main branch"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
-  name: "codecommitpullchanges"
+  name: "${var.app["brand"]}-codecommit-pull-main-changes"
   inputs:
     runCommand:
     - |-
@@ -244,10 +244,38 @@ mainSteps:
 EOT
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create SSM YAML Document runShellScript to install magento, push to codecommit, init git
+# Create SSM Document runShellScript to pull staging branch from CodeCommit
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_ssm_document" "ssm_document_pull" {
+  name          = "${var.app["brand"]}-codecommit-pull-staging-changes"
+  document_type = "Command"
+  document_format = "YAML"
+  target_type   = "/AWS::EC2::Instance"
+  content = <<EOT
+---
+schemaVersion: "2.2"
+description: "Pull code changes from CodeCommit staging branch"
+parameters:
+mainSteps:
+- action: "aws:runShellScript"
+  name: "${var.app["brand"]}-codecommit-pull-staging-changes"
+  inputs:
+    runCommand:
+    - |-
+      #!/bin/bash
+      cd /home/${var.app["brand"]}/public_html
+      su ${var.app["brand"]} -s /bin/bash -c "git fetch origin"
+      su ${var.app["brand"]} -s /bin/bash -c "git reset --hard origin/staging"
+      systemctl reload php${var.app["php_version"]}-fpm
+      systemctl reload nginx
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento cache:flush"
+EOT
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Document runShellScript to install magento, push to codecommit, init git
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "ssm_document_install" {
-  name          = "${var.app["brand"]}-install-magento-git"
+  name          = "${var.app["brand"]}-install-magento-push-codecommit"
   document_type = "Command"
   document_format = "YAML"
   target_type   = "/AWS::EC2::Instance"
@@ -258,7 +286,7 @@ description: "Configure git, install magento, push to codecommit"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
-  name: "codecommitinstallmagento"
+  name: "${var.app["brand"]}-install-magento-push-codecommit"
   inputs:
     runCommand:
     - |-
@@ -296,9 +324,11 @@ mainSteps:
       --amqp-password='${random_password.password[0].result}' \
       --amqp-virtualhost='/' \
       --amqp-ssl=true \
-      --search-engine=elasticsearch7 \
-      --elasticsearch-host=${aws_elasticsearch_domain.elasticsearch_domain.endpoint} \
-      --elasticsearch-port=443 \
+      --search-engine=elasticsuite \
+      --es-hosts="${aws_elasticsearch_domain.elasticsearch_domain.endpoint}:443" \
+      --es-user=elastic \
+      --es-pass='${random_password.password[3].result}' \
+      --es-enable-ssl=1 \
       --remote-storage-driver=aws-s3 \
       --remote-storage-bucket=${aws_s3_bucket.s3_bucket["media"].bucket} \
       --remote-storage-region=${data.aws_region.current.name}"
@@ -544,6 +574,15 @@ resource "aws_elasticsearch_domain" "elasticsearch_domain" {
     zone_awareness_config {
         availability_zone_count = var.elk["instance_count"]
       }
+  }
+  advanced_security_options {
+    enabled = true
+    internal_user_database_enabled = true
+
+    master_user_options {
+      master_user_name = "elastic"
+      master_user_password = "${random_password.password[3].result}"
+    }
   }
   ebs_options {
     ebs_enabled = var.elk["ebs_enabled"]
@@ -1084,7 +1123,9 @@ RABBITMQ_ENDPOINT="${trimsuffix(trimprefix("${aws_mq_broker.mq_broker.instances.
 RABBITMQ_USER="${var.app["brand"]}"
 RABBITMQ_PASSWORD='${random_password.password[0].result}'
 
-ELASTICSEARCH_ENDPOINT="${aws_elasticsearch_domain.elasticsearch_domain.endpoint}"
+ELASTICSEARCH_ENDPOINT="${aws_elasticsearch_domain.elasticsearch_domain.endpoint}:443"
+ELASTICSEARCH_USER="elastic"
+ELASTICSEARCH_PASSWORD="${random_password.password[3].result}"
 
 REDIS_CACHE_BACKEND="${aws_elasticache_replication_group.elasticache_cluster["cache"].configuration_endpoint_address}"
 REDIS_SESSION_BACKEND="${aws_elasticache_replication_group.elasticache_cluster["session"].configuration_endpoint_address}"
