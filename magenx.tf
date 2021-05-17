@@ -219,7 +219,7 @@ EOF
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document runShellScript to pull main branch from CodeCommit
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_document" "ssm_document_pull" {
+resource "aws_ssm_document" "ssm_document_pull_main" {
   name          = "${var.app["brand"]}-codecommit-pull-main-changes"
   document_type = "Command"
   document_format = "YAML"
@@ -246,7 +246,7 @@ EOT
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document runShellScript to pull staging branch from CodeCommit
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_document" "ssm_document_pull" {
+resource "aws_ssm_document" "ssm_document_pull_staging" {
   name          = "${var.app["brand"]}-codecommit-pull-staging-changes"
   document_type = "Command"
   document_format = "YAML"
