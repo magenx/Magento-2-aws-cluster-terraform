@@ -546,6 +546,7 @@ resource "aws_db_instance" "this" {
   skip_final_snapshot   = var.rds["skip_final_snapshot"]
   vpc_security_group_ids = [aws_security_group.this["rds"].id]
   copy_tags_to_snapshot = true
+  enabled_cloudwatch_logs_exports = ["general"]
   tags = {
     Name = "${var.app["brand"]}-database"
   }
