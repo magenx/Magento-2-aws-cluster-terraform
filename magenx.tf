@@ -1237,6 +1237,23 @@ mainSteps:
       --session-save-redis-db=1 \
       --session-save-redis-compression-lib=lz4 \
       -n"
+      ## configure smtp ses 
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/general/enabled 1"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/general/log_email 0"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/configuration_option/host email-smtp.eu-west-1.amazonaws.com"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/configuration_option/port 587"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/configuration_option/protocol tls"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/configuration_option/authentication login"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/configuration_option/username ${aws_iam_access_key.ses_smtp_user_access_key.secret}"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/configuration_option/password ${aws_iam_access_key.ses_smtp_user_access_key.ses_smtp_password_v4}"
+      su ${var.app["brand"]} -s /bin/bash -c 'bin/magento config:set smtp/configuration_option/return_path_email ${var.app["admin_email"]}'
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/configuration_option/test_email/from general"
+      su ${var.app["brand"]} -s /bin/bash -c 'bin/magento config:set smtp/configuration_option/test_email/to ${var.app["admin_email"]}'
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/developer/developer_mode 0"
+      ## configure cloudfront media base url
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/unsecure/base_media_url ${aws_cloudfront_distribution.this.domain_name}"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/base_media_url ${aws_cloudfront_distribution.this.domain_name}"
+      ## deploy production mode
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento deploy:mode:set production"
       git add . -A
       git commit -m ${var.app["brand"]}-release-$(date +'%y%m%d-%H%M%S')
