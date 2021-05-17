@@ -538,6 +538,7 @@ resource "aws_db_instance" "this" {
   engine                = var.rds["engine"]
   engine_version        = var.rds["engine_version"]
   instance_class        = var.rds["instance_class"]
+  multi_az              = var.rds["multi_az"]
   name                  = "${var.app["brand"]}_${var.rds["name"]}"
   username              = var.app["brand"]
   password              = random_password.password[1].result
