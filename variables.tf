@@ -50,7 +50,8 @@ variable "rds" {
     instance_class         = "db.m6g.large"
     engine                 = "mysql"
     parameter_group_name   = "default.mysql8.0"
-    skip_final_snapshot    = "true"
+    skip_final_snapshot    = true
+    multi_az               = true
   }
 }
       
