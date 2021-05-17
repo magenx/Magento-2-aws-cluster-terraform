@@ -7,7 +7,7 @@ resource "random_uuid" "uuid" {
 # Generate random passwords
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "password" {
-  count            = 3
+  count            = 4
   length           = 16
   lower            = true
   upper            = true
