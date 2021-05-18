@@ -91,7 +91,7 @@ variable "asp" {
   default  = {    
     evaluation_periods  = "2"
     period        = "300"
-    out_threshold = "60"
+    out_threshold = "80"
     in_threshold  = "25"
   }
 }
