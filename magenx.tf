@@ -571,6 +571,46 @@ resource "aws_db_event_subscription" "db_event_subscription" {
     "configuration change"
   ]
 }
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudWatch CPU Utilization metrics and email alerts
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_metric_alarm" "cpu_utilization_too_high" {
+  alarm_name          = "${var.app["brand"]} rds cpu utilization too high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/RDS"
+  period              = "600"
+  statistic           = "Average"
+  threshold           = "80"
+  alarm_description   = "Average database CPU utilization over last 10 minutes too high"
+  alarm_actions       = ["${aws_sns_topic.default.arn}"]
+  ok_actions          = ["${aws_sns_topic.default.arn}"]
+
+  dimensions = {
+    DBInstanceIdentifier = "${aws_db_instance.this.id}"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudWatch Freeable Memory metrics and email alerts
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_metric_alarm" "freeable_memory_too_low" {
+  alarm_name          = "${var.app["brand"]} rds freeable memory too low"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "FreeableMemory"
+  namespace           = "AWS/RDS"
+  period              = "600"
+  statistic           = "Average"
+  threshold           = "1.0e+09"
+  alarm_description   = "Average database freeable memory over last 10 minutes too low, performance may suffer"
+  alarm_actions       = ["${aws_sns_topic.default.arn}"]
+  ok_actions          = ["${aws_sns_topic.default.arn}"]
+
+  dimensions = {
+    DBInstanceIdentifier = "${aws_db_instance.this.id}"
+  }
+}
 
 
 
@@ -787,7 +827,7 @@ group_names = [
   topic_arn = aws_sns_topic.default.arn
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create Autoscaling policy for scale OUT
+# Create Autoscaling policy for scale-out
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "scaleout" {
   for_each               = {for name,type in var.ec2: name => type if name != "build"}
@@ -798,7 +838,7 @@ resource "aws_autoscaling_policy" "scaleout" {
   autoscaling_group_name = aws_autoscaling_group.this[each.key].name
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create CloudWatch alarm metric to execute Autoscaling policy for scale OUT
+# Create CloudWatch alarm metric to execute Autoscaling policy for scale-out
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "scaleout" {
   for_each            = {for name,type in var.ec2: name => type if name != "build"}
@@ -813,11 +853,11 @@ resource "aws_cloudwatch_metric_alarm" "scaleout" {
   dimensions = {
     AutoScalingGroupName  = aws_autoscaling_group.this[each.key].name
   }
-  alarm_description = "${each.key} scale-out alarm - CPU exceeds 60 percent"
+  alarm_description = "${each.key} scale-out alarm - CPU exceeds ${var.asp["out_threshold"]} percent"
   alarm_actions     = [aws_autoscaling_policy.scaleout[each.key].arn]
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create Autoscaling policy for scale IN
+# Create Autoscaling policy for scale-in
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "scalein" {
   for_each               = {for name,type in var.ec2: name => type if name != "build"}
@@ -828,7 +868,7 @@ resource "aws_autoscaling_policy" "scalein" {
   autoscaling_group_name = aws_autoscaling_group.this[each.key].name
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create CloudWatch alarm metric to execute Autoscaling policy for scale IN
+# Create CloudWatch alarm metric to execute Autoscaling policy for scale-in
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "scalein" {
   for_each            = {for name,type in var.ec2: name => type if name != "build"}
@@ -843,7 +883,7 @@ resource "aws_cloudwatch_metric_alarm" "scalein" {
   dimensions = {
     AutoScalingGroupName  = aws_autoscaling_group.this[each.key].name
   }
-  alarm_description = "${each.key} scale-in alarm - CPU less than 25 percent"
+  alarm_description = "${each.key} scale-in alarm - CPU less than ${var.asp["in_threshold"]} percent"
   alarm_actions     = [aws_autoscaling_policy.scalein[each.key].arn]
 }
 
