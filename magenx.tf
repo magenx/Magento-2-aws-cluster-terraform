@@ -986,7 +986,7 @@ resource "aws_ses_event_destination" "cloudwatch" {
   name                   = "${var.app["brand"]}-ses-event-destination-cloudwatch"
   configuration_set_name = aws_ses_configuration_set.this.name
   enabled                = true
-  matching_types         = ["bounce", "send", "reject"]
+  matching_types         = ["bounce", "send", "complaint", "delivery"]
 
   cloudwatch_destination {
     default_value  = "default"
