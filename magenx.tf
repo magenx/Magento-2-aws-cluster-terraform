@@ -1016,7 +1016,7 @@ resource "aws_iam_access_key" "ses_smtp_user_access_key" {
 }
 
 resource "aws_ses_configuration_set" "this" {
-  name = uuid()
+  name = "${var.app["brand"]}-ses-events"
   reputation_metrics_enabled = true
   delivery_options {
     tls_policy = "Require"
