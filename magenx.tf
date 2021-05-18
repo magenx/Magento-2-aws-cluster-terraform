@@ -319,6 +319,7 @@ resource "aws_elasticache_replication_group" "this" {
   security_group_ids            = [aws_security_group.this[each.key].id]
   automatic_failover_enabled    = true
   multi_az_enabled              = true
+  notification_topic_arn        = aws_sns_topic.default.arn
 
   cluster_mode {
     replicas_per_node_group = var.redis["replicas_per_node_group"]
