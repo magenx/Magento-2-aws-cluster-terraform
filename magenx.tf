@@ -568,6 +568,7 @@ resource "aws_db_event_subscription" "db_event_subscription" {
     "read replica",
     "recovery",
     "restoration",
+    "configuration change"
   ]
 }
 
