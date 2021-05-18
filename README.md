@@ -31,7 +31,10 @@ trying to hook you up on a dodgy contract and making you pay 10 times more.
 - No hidden bottlenecks
 - No time waste and queues for [support tickets](https://devdocs.magento.com/cloud/project/services.html)
 - Transparent billing no unforeseen payments at any time
-- No sudden surplus resources outside the plan
+- No sudden surplus resources outside the plan  
+
+AWS offers all the technologies online retailers need to manage growth—instantly. With technologies like automatic scaling compute resources, networking, storage, content distribution, and a PCI-compliant environment, retailers can always provide great customer experiences and capitalize on growth opportunities.  
+
 
 **Other benefits of using your own AWS Cloud account**: [Reserver Instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-reserved-instances.html)  
 Reserved Instances provide you with significant savings on your Amazon EC2 costs compared to On-Demand Instance pricing. With Savings Plans, you make a commitment to a consistent usage amount, measured in USD per hour. This provides you with the flexibility to use the instance configurations that best meet your needs and continue to save money. 
