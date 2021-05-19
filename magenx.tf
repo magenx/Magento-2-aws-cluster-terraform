@@ -326,10 +326,52 @@ resource "aws_elasticache_replication_group" "this" {
     num_node_groups         = var.redis["num_node_groups"]
   }
 }
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudWatch CPU Utilization metrics and email alerts
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_metric_alarm" "elasticache_cpu" {
+  for_each            = aws_elasticache_replication_group.this
+  alarm_name          = "${var.app["brand"]}-elasticache-${each.key}-cpu-utilization"
+  alarm_description   = "Redis cluster CPU utilization"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ElastiCache"
+  period              = "300"
+  statistic           = "Average"
+  threshold           = 80
+  alarm_actions       = ["${aws_sns_topic.default.arn}"]
+  ok_actions          = ["${aws_sns_topic.default.arn}"]
+  
+  dimensions = {
+    CacheClusterId = aws_elasticache_replication_group.this[each.key].id
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudWatch Freeable Memory metrics and email alerts
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_metric_alarm" "elasticache_memory" {
+  for_each            = aws_elasticache_replication_group.this
+  alarm_name          = "${var.app["brand"]}-elasticache-${each.key}-freeable-memory"
+  alarm_description   = "Redis cluster freeable memory"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "FreeableMemory"
+  namespace           = "AWS/ElastiCache"
+  period              = "60"
+  statistic           = "Average"
+  threshold           = 10000000
+  alarm_actions       = ["${aws_sns_topic.default.arn}"]
+  ok_actions          = ["${aws_sns_topic.default.arn}"]
+  
+  dimensions = {
+    CacheClusterId = aws_elasticache_replication_group.this[each.key].id
+  }
+}
 
 
 
-//////////////////////////////////////////////////////////[ S3 STORAGE ]//////////////////////////////////////////////////
+//////////////////////////////////////////////////////////[ S3 BUCKET ]///////////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create S3 bucket
@@ -578,7 +620,7 @@ resource "aws_db_event_subscription" "db_event_subscription" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch CPU Utilization metrics and email alerts
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_metric_alarm" "cpu_utilization_too_high" {
+resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
   alarm_name          = "${var.app["brand"]} rds cpu utilization too high"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "1"
@@ -598,7 +640,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_too_high" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch Freeable Memory metrics and email alerts
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_metric_alarm" "freeable_memory_too_low" {
+resource "aws_cloudwatch_metric_alarm" "rds_memory" {
   alarm_name          = "${var.app["brand"]} rds freeable memory too low"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = "1"
