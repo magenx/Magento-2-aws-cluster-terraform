@@ -532,24 +532,25 @@ EOF
 # Create RDS instance
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "this" {
-  identifier            = "${var.app["brand"]}-${var.rds["name"]}-database"
+  for_each              = toset(var.rds["name"])
+  identifier            = "${var.app["brand"]}-${each.key}"
   allocated_storage     = var.rds["allocated_storage"]
   max_allocated_storage = var.rds["max_allocated_storage"]
   storage_type          = var.rds["storage_type"] 
   engine                = var.rds["engine"]
   engine_version        = var.rds["engine_version"]
   instance_class        = var.rds["instance_class"]
-  multi_az              = var.rds["multi_az"]
-  name                  = "${var.app["brand"]}_${var.rds["name"]}"
+  multi_az              = (each.key == "staging" ? "false" : var.rds["multi_az"])
+  name                  = "${var.app["brand"]}_${each.key}"
   username              = var.app["brand"]
   password              = random_password.password[1].result
   parameter_group_name  = var.rds["parameter_group_name"]
   skip_final_snapshot   = var.rds["skip_final_snapshot"]
   vpc_security_group_ids = [aws_security_group.this["rds"].id]
-  enabled_cloudwatch_logs_exports = var.rds["enabled_cloudwatch_logs_exports"]
+  enabled_cloudwatch_logs_exports = ["error"]
   copy_tags_to_snapshot = true
   tags = {
-    Name = "${var.app["brand"]}-database"
+    Name = "${var.app["brand"]}-${each.key}"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -559,7 +560,7 @@ resource "aws_db_event_subscription" "db_event_subscription" {
   name      = "${var.app["brand"]}-rds-event-subscription"
   sns_topic = aws_sns_topic.default.arn
   source_type = "db-instance"
-  source_ids = [aws_db_instance.this.id]
+  source_ids = [aws_db_instance.this["production"].id]
   event_categories = [
     "availability",
     "deletion",
@@ -591,7 +592,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_too_high" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    DBInstanceIdentifier = "${aws_db_instance.this.id}"
+    DBInstanceIdentifier = aws_db_instance.this["production"].id
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -611,7 +612,7 @@ resource "aws_cloudwatch_metric_alarm" "freeable_memory_too_low" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    DBInstanceIdentifier = "${aws_db_instance.this.id}"
+    DBInstanceIdentifier = aws_db_instance.this["production"].id
   }
 }
 
@@ -1052,9 +1053,9 @@ resource "aws_ssm_parameter" "infrastructure_params" {
   type        = "String"
   value       = <<EOF
 
-DATABASE_ENDPOINT="${aws_db_instance.this.endpoint}"
-DATABASE_INSTANCE_NAME="${aws_db_instance.this.name}"
-DATABASE_USER_NAME="${aws_db_instance.this.username}"
+DATABASE_ENDPOINT="${aws_db_instance.this["production"].endpoint}"
+DATABASE_INSTANCE_NAME="${aws_db_instance.this["production"].name}"
+DATABASE_USER_NAME="${aws_db_instance.this["production"].username}"
 DATABASE_PASSWORD='${random_password.password[1].result}'
 
 ADMIN_PATH='admin_${random_string.string.result}'
@@ -1227,9 +1228,9 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:install \
       --base-url=https://${var.app["domain"]}/ \
       --base-url-secure=https://${var.app["domain"]}/ \
-      --db-host=${aws_db_instance.this.endpoint} \
-      --db-name=${aws_db_instance.this.name} \
-      --db-user=${aws_db_instance.this.username} \
+      --db-host=${aws_db_instance.this["production"].endpoint} \
+      --db-name=${aws_db_instance.this["production"].name} \
+      --db-user=${aws_db_instance.this["production"].username} \
       --db-password='${random_password.password[1].result}' \
       --admin-firstname=${var.app["brand"]} \
       --admin-lastname=${var.app["brand"]} \
