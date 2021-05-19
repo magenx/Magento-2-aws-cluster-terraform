@@ -49,6 +49,38 @@ resource "aws_sns_topic_subscription" "default" {
 
 
 
+///////////////////////////////////////////////////////[ SECURITY GROUPS ]////////////////////////////////////////////////
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create Security Groups
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_security_group" "this" {
+  for_each    = local.security_group
+  name        = "${var.app["brand"]}-${each.key}"
+  description = "${each.key} security group"
+  vpc_id      = data.aws_vpc.default.id
+  
+    tags = {
+    Name = "${var.app["brand"]}-${each.key}"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create Security Rules for Security Groups
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_security_group_rule" "this" {
+   for_each =  local.security_rule
+      type             = lookup(each.value, "type", null)
+      description      = lookup(each.value, "description", null)
+      from_port        = lookup(each.value, "from_port", null)
+      to_port          = lookup(each.value, "to_port", null)
+      protocol         = lookup(each.value, "protocol", null)
+      cidr_blocks      = lookup(each.value, "cidr_blocks", null)
+      source_security_group_id = lookup(each.value, "source_security_group_id", null)
+      security_group_id = each.value.security_group_id
+    }
+
+
+
 ///////////////////////////////////////////////////[ AWS CERTIFICATE MANAGER ]////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -657,38 +689,6 @@ resource "aws_cloudwatch_metric_alarm" "rds_memory" {
     DBInstanceIdentifier = aws_db_instance.this["production"].id
   }
 }
-
-
-
-///////////////////////////////////////////////////////[ SECURITY GROUPS ]////////////////////////////////////////////////
-
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create Security Groups
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group" "this" {
-  for_each    = local.security_group
-  name        = "${var.app["brand"]}-${each.key}"
-  description = "${each.key} security group"
-  vpc_id      = data.aws_vpc.default.id
-  
-    tags = {
-    Name = "${var.app["brand"]}-${each.key}"
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create Security Rules for Security Groups
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group_rule" "this" {
-   for_each =  local.security_rule
-      type             = lookup(each.value, "type", null)
-      description      = lookup(each.value, "description", null)
-      from_port        = lookup(each.value, "from_port", null)
-      to_port          = lookup(each.value, "to_port", null)
-      protocol         = lookup(each.value, "protocol", null)
-      cidr_blocks      = lookup(each.value, "cidr_blocks", null)
-      source_security_group_id = lookup(each.value, "source_security_group_id", null)
-      security_group_id = each.value.security_group_id
-    }
 	
 	
 	
