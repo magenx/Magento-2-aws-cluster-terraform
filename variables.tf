@@ -50,7 +50,6 @@ variable "rds" {
     parameter_group_name   = "default.mariadb10.5"
     skip_final_snapshot    = true
     multi_az               = true
-    enabled_cloudwatch_logs_exports = ["error"]
   }
 }
       
