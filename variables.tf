@@ -40,7 +40,7 @@ variable "elk" {
 variable "rds" {
   description      = "Map RDS configuration values"
   default  = {
-    name                   = "magento"
+    name                   = ["production","staging"]
     allocated_storage      = "20"
     max_allocated_storage  = "100"
     storage_type           = "gp2"
@@ -50,7 +50,7 @@ variable "rds" {
     parameter_group_name   = "default.mariadb10.5"
     skip_final_snapshot    = true
     multi_az               = true
-    enabled_cloudwatch_logs_exports = "error"
+    enabled_cloudwatch_logs_exports = ["error"]
   }
 }
       
