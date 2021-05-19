@@ -98,11 +98,11 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
  `1` build server to compile all the code  
  `2` load balancers (external/internal) with listeners / rules  
  `1` rds mysql database multi AZ  
- `1` elk elasticsearch domain for Magento catalog search  
+ `1` elasticsearch domain for Magento catalog search  
  `2` redis elasticache cluster for sessions and cache  
  `1` rabbitmq broker to manage queue messages  
  `2` s3 buckets for [media] images and [system] files and logs (with access policy)  
- `1` single codecommit repository with 3 branches (main build staging)  
+ `1` codecommit repository with 3 branches (main build staging)  
  `1` cloudfront s3 origin distribution  
  `1` efs file system for shared folders, with mount target per AZ  
  `1` sns topic default subscription to receive email alerts  
