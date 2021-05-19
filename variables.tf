@@ -15,8 +15,6 @@ variable "app" {
     brand            = "magenx"
     domain           = "magenx.com"
     admin_email      = "admin@magenx.com"
-    coadmin_email    = "xxx"
-    order_email      = "xxx"
     staging_domain   = "stg.magenx.com"
     source           = "https://github.com/magenx/Magento-2.git"
     language         = "en_US"
