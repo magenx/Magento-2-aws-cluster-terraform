@@ -93,19 +93,23 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 <br />
 
 ## Complete setup:
-- [x] `5` autoscaling groups with launch templates converted from `user_data`
-- [x] `4` target groups for load balancer (varnish frontend admin staging)
-- [x] `1` build server to compile all the code
-- [x] `2` load balancers (external/internal) with listeners / rules
-- [x] `1` rds mysql database multi AZ
-- [x] `1` elk elasticsearch domain for Magento catalog search
-- [x] `2` redis elasticache cluster for sessions and cache
-- [x] `1` rabbitmq broker to manage Magento queue messages
-- [x] `2` s3 buckets for [media] images and [system] files and logs (with access policy)
-- [x] `1` single codecommit repository with 3 branches (main build staging)
-- [x] `1` cloudfront s3 origin distribution
-- [x] `1` efs file system for shared folders, with mount target per AZ
-- [x] `1` sns topic default subscription to receive email alerts
+ `5` autoscaling groups with launch templates converted from `user_data`  
+ `4` target groups for load balancer (varnish frontend admin staging)  
+ `1` build server to compile all the code  
+ `2` load balancers (external/internal) with listeners / rules  
+ `1` rds mysql database multi AZ  
+ `1` elk elasticsearch domain for Magento catalog search  
+ `2` redis elasticache cluster for sessions and cache  
+ `1` rabbitmq broker to manage Magento queue messages  
+ `2` s3 buckets for [media] images and [system] files and logs (with access policy)  
+ `1` single codecommit repository with 3 branches (main build staging)  
+ `1` cloudfront s3 origin distribution  
+ `1` efs file system for shared folders, with mount target per AZ  
+ `1` sns topic default subscription to receive email alerts  
+ 
+ >the settings initially imply a large store, and are designed for huge traffic.  
+ >services are clustered and replicated thus ready for failover.
+ 
 ##
 - [x] Autoscaling policy per each group, excluding `build` instance
 - [x] Managed with Systems Manager [https://aws.amazon.com/systems-manager/] agent installed
@@ -122,7 +126,13 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - Terraform creates CodeCommit repository. Local provisioner copy files from Github https://github.com/magenx/Magento-2. Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
 - Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
 - Right after infrastructure deployment the minimal Magento 2 package is ready to install. Run SSM Document to install Magento
-> minimal Magento 2 package can be extended anytime. Remove blacklisted components from `composer.json` in `"replace": {` and run `composer update`
+> minimal Magento 2 package can be extended anytime. Remove blacklisted components from `composer.json` in `"replace": {}` and run `composer update`  
+- Why removing bloatware packages:
+  - Faster backend and frontend
+  - Easy deployments
+  - Less dependencies
+  - Zero maintenance
+  - Low security risks  
 
 ## CI/CD scenario:
 - Event driven
