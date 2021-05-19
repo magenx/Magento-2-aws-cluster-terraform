@@ -128,7 +128,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
 - Right after infrastructure deployment the minimal Magento 2 package is ready to install. Run SSM Document to install Magento
 > minimal Magento 2 package can be extended anytime. Remove blacklisted components from `composer.json` in `"replace": {}` and run `composer update`  
-- Why removing bloatware packages:
+- Why removing bloatware modules and use Magento minimal package:
   - Faster backend and frontend
   - Easy deployments
   - Less dependencies
