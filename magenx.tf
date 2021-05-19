@@ -558,6 +558,8 @@ resource "aws_db_instance" "this" {
 resource "aws_db_event_subscription" "db_event_subscription" {
   name      = "${var.app["brand"]}-rds-event-subscription"
   sns_topic = aws_sns_topic.default.arn
+  source_type = "db-instance"
+  source_ids = [aws_db_instance.this.id]
   event_categories = [
     "availability",
     "deletion",
