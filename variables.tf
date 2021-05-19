@@ -44,10 +44,10 @@ variable "rds" {
     allocated_storage      = "20"
     max_allocated_storage  = "100"
     storage_type           = "gp2"
-    engine_version         = "8.0.21"
+    engine_version         = "10.5.8"
     instance_class         = "db.m6g.large"
-    engine                 = "mysql"
-    parameter_group_name   = "default.mysql8.0"
+    engine                 = "mariadb"
+    parameter_group_name   = "default.mariadb10.5"
     skip_final_snapshot    = true
     multi_az               = true
   }
