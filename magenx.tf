@@ -12,7 +12,7 @@ resource "random_uuid" "uuid" {
 # Generate random passwords
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "this" {
-  for_each         = toset(["rds", "elk", "redis", "mq", "magento"])
+  for_each         = toset(["rds", "elk", "mq", "magento"])
   length           = 16
   lower            = true
   upper            = true
@@ -351,8 +351,6 @@ resource "aws_elasticache_replication_group" "this" {
   security_group_ids            = [aws_security_group.this[each.key].id]
   automatic_failover_enabled    = true
   multi_az_enabled              = true
-  auth_token                    = random_password.this["redis"].result
-  transit_encryption_enabled    = true
   notification_topic_arn        = aws_sns_topic.default.arn
 
   cluster_mode {
@@ -1177,7 +1175,6 @@ ELASTICSEARCH_PASSWORD="${random_password.this["elk"].result}"
 
 REDIS_CACHE_BACKEND="${aws_elasticache_replication_group.this["cache"].configuration_endpoint_address}"
 REDIS_SESSION_BACKEND="${aws_elasticache_replication_group.this["session"].configuration_endpoint_address}"
-REDIS_AUTH_TOKEN="${random_password.this["redis"].result}"
 
 OUTER_ALB_DNS_NAME="${aws_lb.this["outer"].dns_name}"
 INNER_ALB_DNS_NAME="${aws_lb.this["inner"].dns_name}"
@@ -1377,7 +1374,6 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
       --cache-backend=redis \
       --cache-backend-redis-server=${aws_elasticache_replication_group.this["cache"].configuration_endpoint_address} \
-      --cache-backend-redis-password='${random_password.this["redis"].result}'
       --cache-backend-redis-port=6379 \
       --cache-backend-redis-db=1 \
       --cache-backend-redis-compress-data=1 \
@@ -1387,7 +1383,6 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
       --session-save=redis \
       --session-save-redis-host=${aws_elasticache_replication_group.this["session"].configuration_endpoint_address} \
-      --session-save-redis-password='${random_password.this["redis"].result}'
       --session-save-redis-port=6379 \
       --session-save-redis-log-level=3 \
       --session-save-redis-db=1 \
