@@ -12,7 +12,7 @@ resource "random_uuid" "uuid" {
 # Generate random passwords
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "password" {
-  count            = 4
+  for_each         = toset(["rds", "elk", "redis", "mq"])
   length           = 16
   lower            = true
   upper            = true
@@ -798,6 +798,68 @@ resource "aws_lb_listener_rule" "innerstaging" {
     }
   }
 }
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudWatch HTTP 5XX metrics and email alerts
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_metric_alarm" "httpcode_target_5xx_count" {
+  alarm_name          = "${var.app["brand"]}-http-5xx-errors-from-target"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "HTTPCode_Target_5XX_Count"
+  namespace           = "AWS/ApplicationELB"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = "25"
+  alarm_description   = "HTTPCode 5XX count for frontend instances over 25"
+  alarm_actions       = ["${aws_sns_topic.default.arn}"]
+  ok_actions          = ["${aws_sns_topic.default.arn}"]
+  
+  dimensions = {
+    TargetGroup  = aws_lb_target_group.this["frontend"].arn
+    LoadBalancer = aws_lb.this["inner"].arn
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudWatch HTTP 5XX metrics and email alerts
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_metric_alarm" "httpcode_elb_5xx_count" {
+  alarm_name          = "${var.app["brand"]}-http-5xx-errors-from-loadbalancer"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "HTTPCode_ELB_5XX_Count"
+  namespace           = "AWS/ApplicationELB"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = "25"
+  alarm_description   = "HTTPCode 5XX count for loadbalancer over 25"
+  alarm_actions       = ["${aws_sns_topic.default.arn}"]
+  ok_actions          = ["${aws_sns_topic.default.arn}"]
+  
+  dimensions = {
+    LoadBalancer = aws_lb.this["outer"].arn
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudWatch RequestCount metrics and email alerts
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_metric_alarm" "alb_rps" {
+  alarm_name          = "${var.app["brand"]}-loadbalancer-rps"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "RequestCount"
+  namespace           = "AWS/ApplicationELB"
+  period              = "120"
+  statistic           = "Sum"
+  threshold           = "5000"
+  alarm_description   = "The number of requests processed over 2 minutes greater than 5000"
+  alarm_actions       = ["${aws_sns_topic.default.arn}"]
+  ok_actions          = ["${aws_sns_topic.default.arn}"]
+
+  dimensions = {
+    LoadBalancer = aws_lb.this["outer"].arn
+  }
+}
+
 
 
 /////////////////////////////////////////////////////[ AUTOSCALING CONFIGURATION ]////////////////////////////////////////
