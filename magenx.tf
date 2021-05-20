@@ -11,8 +11,8 @@ resource "random_uuid" "uuid" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Generate random passwords
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "random_password" "password" {
-  for_each         = toset(["rds", "elk", "redis", "mq"])
+resource "random_password" "this" {
+  for_each         = toset(["rds", "elk", "redis", "mq", "magento"])
   length           = 16
   lower            = true
   upper            = true
@@ -326,7 +326,7 @@ resource "aws_mq_broker" "this" {
   security_groups    = [aws_security_group.this["mq"].id]
   user {
     username = var.app["brand"]
-    password = random_password.password[0].result
+    password = random_password.this["mq"].result
   }
   tags = {
     Name   = "${var.app["brand"]}-${var.mq["broker_name"]}"
@@ -351,6 +351,8 @@ resource "aws_elasticache_replication_group" "this" {
   security_group_ids            = [aws_security_group.this[each.key].id]
   automatic_failover_enabled    = true
   multi_az_enabled              = true
+  auth_token                    = random_password.this["redis"].result
+  transit_encryption_enabled    = true
   notification_topic_arn        = aws_sns_topic.default.arn
 
   cluster_mode {
@@ -525,7 +527,7 @@ resource "aws_elasticsearch_domain" "this" {
 
     master_user_options {
       master_user_name = "elastic"
-      master_user_password = "${random_password.password[3].result}"
+      master_user_password = "${random_password.this["elk"].result}"
     }
   }
   node_to_node_encryption  {
@@ -617,7 +619,7 @@ resource "aws_db_instance" "this" {
   multi_az              = (each.key == "staging" ? "false" : var.rds["multi_az"])
   name                  = "${var.app["brand"]}_${each.key}"
   username              = var.app["brand"]
-  password              = random_password.password[1].result
+  password              = random_password.this["rds"].result
   parameter_group_name  = var.rds["parameter_group_name"]
   skip_final_snapshot   = var.rds["skip_final_snapshot"]
   vpc_security_group_ids = [aws_security_group.this["rds"].id]
@@ -1160,21 +1162,22 @@ resource "aws_ssm_parameter" "infrastructure_params" {
 DATABASE_ENDPOINT="${aws_db_instance.this["production"].endpoint}"
 DATABASE_INSTANCE_NAME="${aws_db_instance.this["production"].name}"
 DATABASE_USER_NAME="${aws_db_instance.this["production"].username}"
-DATABASE_PASSWORD='${random_password.password[1].result}'
+DATABASE_PASSWORD='${random_password.this["rds"].result}'
 
 ADMIN_PATH='admin_${random_string.string.result}'
-ADMIN_PASSWORD='${random_password.password[2].result}'
+ADMIN_PASSWORD='${random_password.this["magento"].result}'
 
 RABBITMQ_ENDPOINT="${trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.endpoints.0}", "amqps://"), ":5671")}"
 RABBITMQ_USER="${var.app["brand"]}"
-RABBITMQ_PASSWORD='${random_password.password[0].result}'
+RABBITMQ_PASSWORD='${random_password.this["mq"].result}'
 
 ELASTICSEARCH_ENDPOINT="${aws_elasticsearch_domain.this.endpoint}:443"
 ELASTICSEARCH_USER="elastic"
-ELASTICSEARCH_PASSWORD="${random_password.password[3].result}"
+ELASTICSEARCH_PASSWORD="${random_password.this["elk"].result}"
 
 REDIS_CACHE_BACKEND="${aws_elasticache_replication_group.this["cache"].configuration_endpoint_address}"
 REDIS_SESSION_BACKEND="${aws_elasticache_replication_group.this["session"].configuration_endpoint_address}"
+REDIS_AUTH_TOKEN="${random_password.this["redis"].result}"
 
 OUTER_ALB_DNS_NAME="${aws_lb.this["outer"].dns_name}"
 INNER_ALB_DNS_NAME="${aws_lb.this["inner"].dns_name}"
@@ -1335,12 +1338,12 @@ mainSteps:
       --db-host=${aws_db_instance.this["production"].endpoint} \
       --db-name=${aws_db_instance.this["production"].name} \
       --db-user=${aws_db_instance.this["production"].username} \
-      --db-password='${random_password.password[1].result}' \
+      --db-password='${random_password.this["rds"].result}' \
       --admin-firstname=${var.app["brand"]} \
       --admin-lastname=${var.app["brand"]} \
       --admin-email=${var.app["admin_email"]} \
       --admin-user=admin \
-      --admin-password='${random_password.password[2].result}' \
+      --admin-password='${random_password.this["magento"].result}' \
       --backend-frontname='admin_${random_string.string.result}' \
       --language=${var.app["language"]} \
       --currency=${var.app["currency"]} \
@@ -1354,13 +1357,13 @@ mainSteps:
       --amqp-host=${trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.endpoints.0}", "amqps://"), ":5671")} \
       --amqp-port=5671 \
       --amqp-user=${var.app["brand"]} \
-      --amqp-password='${random_password.password[0].result}' \
+      --amqp-password='${random_password.this["mq"].result}' \
       --amqp-virtualhost='/' \
       --amqp-ssl=true \
       --search-engine=elasticsuite \
       --es-hosts="${aws_elasticsearch_domain.this.endpoint}:443" \
       --es-user=elastic \
-      --es-pass='${random_password.password[3].result}' \
+      --es-pass='${random_password.this["elk"].result}' \
       --es-enable-ssl=1 \
       --remote-storage-driver=aws-s3 \
       --remote-storage-bucket=${aws_s3_bucket.this["media"].bucket} \
@@ -1374,6 +1377,7 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
       --cache-backend=redis \
       --cache-backend-redis-server=${aws_elasticache_replication_group.this["cache"].configuration_endpoint_address} \
+      --cache-backend-redis-password='${random_password.this["redis"].result}'
       --cache-backend-redis-port=6379 \
       --cache-backend-redis-db=1 \
       --cache-backend-redis-compress-data=1 \
@@ -1383,6 +1387,7 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
       --session-save=redis \
       --session-save-redis-host=${aws_elasticache_replication_group.this["session"].configuration_endpoint_address} \
+      --session-save-redis-password='${random_password.this["redis"].result}'
       --session-save-redis-port=6379 \
       --session-save-redis-log-level=3 \
       --session-save-redis-db=1 \
