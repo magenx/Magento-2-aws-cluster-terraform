@@ -144,7 +144,7 @@ sed -i 's/mysql.allow_persistent = On/mysql.allow_persistent = Off/' ${PHP_INI}
 sed -i 's/mysqli.allow_persistent = On/mysqli.allow_persistent = Off/' ${PHP_INI}
 sed -i 's/pm = dynamic/pm = ondemand/' ${PHP_FPM_POOL}
 sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' ${PHP_FPM_POOL}
-sed -i 's/pm.max_children = 5/pm.max_children = 100/' ${PHP_FPM_POOL}
+sed -i 's/^\(pm.max_children = \)[0-9]*/\1100/' ${PHP_FPM_POOL}
 
 
 hostnamectl set-hostname server.${DOMAIN} --static
