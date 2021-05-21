@@ -69,36 +69,11 @@ sed -i 's/;max_input_vars =.*/max_input_vars = 50000/' ${PHP_INI}
 sed -i 's/session.gc_maxlifetime = 1440/session.gc_maxlifetime = 28800/' ${PHP_INI}
 sed -i 's/mysql.allow_persistent = On/mysql.allow_persistent = Off/' ${PHP_INI}
 sed -i 's/mysqli.allow_persistent = On/mysqli.allow_persistent = Off/' ${PHP_INI}
-sed -i 's/pm = dynamic/pm = ondemand/' ${PHP_FPM_POOL}
-sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' ${PHP_FPM_POOL}
-sed -i 's/pm.max_children = 5/pm.max_children = 100/' ${PHP_FPM_POOL}
-
+sed -i "s,.*date.timezone.*,date.timezone = ${TIMEZONE}," ${PHP_INI}
 
 hostnamectl set-hostname server.${DOMAIN} --static
 
 timedatectl set-timezone ${TIMEZONE}
-
-sed -i "s/\[www\]/\[${BRAND}\]/" ${PHP_FPM_POOL}
-sed -i "s/^user =.*/user = ${PHP_USER}/" ${PHP_FPM_POOL}
-sed -i "s/^group =.*/group = ${PHP_USER}/" ${PHP_FPM_POOL}
-sed -ri "s/;?listen.owner =.*/listen.owner = ${BRAND}/" ${PHP_FPM_POOL}
-sed -ri "s/;?listen.group =.*/listen.group = ${PHP_USER}/" ${PHP_FPM_POOL}
-sed -ri "s/;?listen.mode = 0660/listen.mode = 0660/" ${PHP_FPM_POOL}
-sed -ri "s/;?listen.allowed_clients =.*/listen.allowed_clients = 127.0.0.1/" ${PHP_FPM_POOL}
-sed -i '/sendmail_path/,$d' ${PHP_FPM_POOL}
-sed -i '/PHPSESSID/d' ${PHP_INI}
-sed -i "s,.*date.timezone.*,date.timezone = ${TIMEZONE}," ${PHP_INI}
-
-cat >> ${PHP_FPM_POOL} <<END
-;;
-;; Custom pool settings
-php_admin_flag[log_errors] = on
-php_admin_value[error_log] = "${WEB_ROOT_PATH}/var/log/php-fpm-error.log"
-php_admin_value[default_charset] = UTF-8
-php_flag[display_errors] = off
-php_admin_value[memory_limit] = 4048M
-php_admin_value[date.timezone] = ${TIMEZONE}
-END
 
 cd /usr/local/src
 wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb
