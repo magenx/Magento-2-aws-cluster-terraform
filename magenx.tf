@@ -394,7 +394,7 @@ resource "aws_mq_broker" "this" {
   engine_version     = var.mq["engine_version"]
   host_instance_type = var.mq["host_instance_type"]
   security_groups    = [aws_security_group.this["mq"].id]
-  subnet_ids         = values(aws_subnet.this).0.id
+  subnet_ids         = [values(aws_subnet.this).0.id]
   user {
     username = var.app["brand"]
     password = random_password.this["mq"].result
