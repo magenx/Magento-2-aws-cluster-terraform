@@ -108,7 +108,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
  `1` sns topic default subscription to receive email alerts  
  `1` ses user access details for smtp module
  
- >resources are grouped into a virtual network, VPC dedicated to your brand
+ >resources are grouped into a virtual network, VPC dedicated to your brand  
  >the settings initially imply a large store, and are designed for huge traffic.  
  >services are clustered and replicated thus ready for failover.
  
