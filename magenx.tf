@@ -178,18 +178,6 @@ resource "aws_security_group_rule" "this" {
 # Create and validate ssl certificate for domain and subdomains
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_acm_certificate" "default" {
-  count                     = data.aws_region.current.name != "us-east-1" ? 1 : 0
-  domain_name               = "${var.app["domain"]}"
-  subject_alternative_names = ["*.${var.app["domain"]}"]
-  validation_method         = "EMAIL"
-
-lifecycle {
-    create_before_destroy   = true
-  }
-}
-
-resource "aws_acm_certificate" "cloudfront" {
-  provider                  = aws.us
   domain_name               = "${var.app["domain"]}"
   subject_alternative_names = ["*.${var.app["domain"]}"]
   validation_method         = "EMAIL"
@@ -200,12 +188,7 @@ lifecycle {
 }
 
 resource "aws_acm_certificate_validation" "default" {
-  count           = data.aws_region.current.name != "us-east-1" ? 1 : 0
-  certificate_arn = aws_acm_certificate.default[0].arn
-}
-
-resource "aws_acm_certificate_validation" "cloudfront" {
-  certificate_arn = aws_acm_certificate.cloudfront.arn
+  certificate_arn = aws_acm_certificate.default.arn
 }
 
 
@@ -269,7 +252,6 @@ resource "aws_cloudfront_origin_access_identity" "this" {
 }
 
 resource "aws_cloudfront_distribution" "this" {
-  depends_on = [aws_acm_certificate_validation.cloudfront]
   origin {
     domain_name = aws_s3_bucket.this["media"].bucket_regional_domain_name
     origin_id   = "${var.app["domain"]}-media-assets"
@@ -283,8 +265,6 @@ resource "aws_cloudfront_distribution" "this" {
       value = random_uuid.uuid.result
     }
   }
-
-  aliases = [var.app["domain"]]
 
   enabled             = true
   is_ipv6_enabled     = true
@@ -324,9 +304,8 @@ resource "aws_cloudfront_distribution" "this" {
   }
 
   viewer_certificate {
-    acm_certificate_arn = aws_acm_certificate.cloudfront.arn
-    ssl_support_method = "sni-only"
-    minimum_protocol_version = "TLSv1.2_2019"
+    cloudfront_default_certificate = true
+    minimum_protocol_version = "TLSv1"
   }
 }
 
@@ -809,12 +788,12 @@ resource "aws_lb_target_group" "this" {
 # Create https:// listener for OUTER Load Balancer - forward to varnish
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener" "outerhttps" {
-  depends_on = [aws_acm_certificate_validation.cloudfront, aws_acm_certificate_validation.default]
+  depends_on = [aws_acm_certificate_validation.default]
   load_balancer_arn = aws_lb.this["outer"].arn
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-FS-1-2-Res-2020-10"
-  certificate_arn   = data.aws_region.current.name != "us-east-1" ? aws_acm_certificate.default[0].arn : aws_acm_certificate.cloudfront.arn
+  certificate_arn   = aws_acm_certificate.default.arn
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this["varnish"].arn
