@@ -97,7 +97,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
  `4` target groups for load balancer (varnish frontend admin staging)  
  `1` build server to compile all the code  
  `2` load balancers (external/internal) with listeners / rules  
- `1` rds mysql database multi AZ  
+ `2` rds mariadb databases multi AZ production, single AZ staging
  `1` elasticsearch domain for Magento catalog search  
  `2` redis elasticache cluster for sessions and cache  
  `1` rabbitmq broker to manage queue messages  
