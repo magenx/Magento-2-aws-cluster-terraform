@@ -65,7 +65,7 @@ The terraform configuration language and all the files in this repository are in
 
 <br />
 
-# Deployment into default VPC:
+# Deployment into dedicated VPC:
 - Login to AWS Console
 - Start AWS CloudShell
 - Install Terraform:
@@ -112,6 +112,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
  >services are clustered and replicated thus ready for failover.
  
 ##
+- [x] Deployment into isolated Amazon Virtual Private Cloud
 - [x] Autoscaling policy per each group, excluding `build` instance
 - [x] Managed with Systems Manager [https://aws.amazon.com/systems-manager/] agent installed
 - [x] Instance Profile assigned to simplify EC2 management
