@@ -80,7 +80,7 @@ The terraform configuration language and all the files in this repository are in
 $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 ```
 > 
-- Note: Right after `terraform apply` you will receive email from amazon to approve the ssl certificates
+- Note: Right after `terraform apply` you will receive email from amazon to approve resources
 - Check all details / all files / adjust your settings, edit your domain and email in `variables.tf`
 - Run:
 ```
