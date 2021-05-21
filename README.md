@@ -65,7 +65,7 @@ The terraform configuration language and all the files in this repository are in
 
 <br />
 
-# Deployment into dedicated VPC:
+# Deployment into isolated VPC:
 - Login to AWS Console
 - Start AWS CloudShell
 - Install Terraform:
@@ -108,6 +108,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
  `1` sns topic default subscription to receive email alerts  
  `1` ses user access details for smtp module
  
+ >resources are grouped into a virtual network, VPC dedicated to your brand
  >the settings initially imply a large store, and are designed for huge traffic.  
  >services are clustered and replicated thus ready for failover.
  
