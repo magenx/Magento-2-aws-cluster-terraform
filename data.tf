@@ -42,6 +42,15 @@ data "aws_subnet_ids" "default" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Get all available VPC in this region
+# # ---------------------------------------------------------------------------------------------------------------------#
+data "aws_vpcs" "available" {}
+
+data "aws_vpc" "all" {
+  for_each = data.aws_vpcs.available.ids
+  id = each.key
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Get the ID of default Security Group
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_security_group" "default" {
@@ -91,7 +100,7 @@ GITHUB_REPO_RAW_URL = "https://raw.githubusercontent.com/magenx/Magento-2-aws-cl
 GITHUB_REPO_API_URL = "https://api.github.com/repos/magenx/Magento-2-aws-cluster-terraform/contents"
 
 ALB_DNS_NAME = "${aws_lb.this["inner"].dns_name}"
-EFS_DNS_TARGET = "${aws_efs_mount_target.this[0].dns_name}"
+EFS_DNS_TARGET = "${values(aws_efs_mount_target.this).0.dns_name}"
 CODECOMMIT_APP_REPO_NAME = "${aws_codecommit_repository.this.repository_name}"
 
 EXTRA_PACKAGES_DEB = "curl jq nfs-common gnupg2 apt-transport-https apt-show-versions ca-certificates lsb-release unzip vim wget git patch python3-pip acl attr imagemagick snmp"

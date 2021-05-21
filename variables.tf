@@ -130,13 +130,18 @@ variable "eventbridge_policy" {
 variable "az_number" {
   description = "Assign a number to each AZ letter used in secondary cidr/subnets configuration"
   default = {
-    a = 1
-    b = 2
-    c = 3
-    d = 4
-    e = 5
-    f = 6
+    a = 0
+    b = 1
+    c = 2
+    d = 3
+    e = 4
+    f = 5
+    g = 6
   }
+}
+
+locals {
+bit = (trimprefix(trimsuffix(sort(values(data.aws_vpc.all).*.cidr_block)[0], ".0.0/16"), "172.") - 1)
 }
 
 locals {

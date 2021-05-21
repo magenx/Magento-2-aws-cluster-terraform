@@ -1,5 +1,92 @@
 
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create VPC
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_vpc" "this" {
+  cidr_block = "172.${local.bit}.0.0/16"
+  tags = {
+    Name = "${var.app["brand"]}-vpc"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create subnets for each AZ
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_subnet" "this" {
+  for_each                = data.aws_availability_zone.all
+  vpc_id                  = aws_vpc.this.id
+  availability_zone       = each.key
+  cidr_block              = cidrsubnet(aws_vpc.this.cidr_block, 4, var.az_number[each.value.name_suffix])
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "${var.app["brand"]}-subnet"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create RDS subnet group
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_db_subnet_group" "this" {
+  name       = "${var.app["brand"]}-db-subnet"
+  description = "${var.app["brand"]}-db-subnet"
+  subnet_ids = values(aws_subnet.this).*.id
 
+  tags = {
+    Name = "${var.app["brand"]}-db-subnet"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create ElastiCache subnet group
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_elasticache_subnet_group" "this" {
+  description = "${var.app["brand"]}-elasticache-subnet"
+  name       = "${var.app["brand"]}-elasticache-subnet"
+  subnet_ids = values(aws_subnet.this).*.id
+  
+  tags = {
+    Name = "${var.app["brand"]}-elasticache-subnet"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create internet gateway - igw
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_internet_gateway" "this" {
+  vpc_id = aws_vpc.this.id
+  tags = {
+    Name = "${var.app["brand"]}-igw"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create route table
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_route" "this" {
+  route_table_id         = aws_vpc.this.main_route_table_id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.this.id
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Assign AZ subnets to route table
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_route_table_association" "this" {
+  for_each       = aws_subnet.this
+  subnet_id      = aws_subnet.this[each.key].id
+  route_table_id = aws_vpc.this.main_route_table_id
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create DHCP options
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_vpc_dhcp_options" "this" {
+  domain_name          = "${data.aws_region.current.name}.compute.internal"
+  domain_name_servers  = ["AmazonProvidedDNS"]
+  tags = {
+    Name = "${var.app["brand"]}-dhcp"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Assign DHCP options to VPC
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_vpc_dhcp_options_association" "this" {
+  vpc_id          = aws_vpc.this.id
+  dhcp_options_id = aws_vpc_dhcp_options.this.id
+}
 
 ///////////////////////////////////////////////////[ RANDOM STRING GENERATOR ]////////////////////////////////////////////
 
@@ -58,7 +145,7 @@ resource "aws_security_group" "this" {
   for_each    = local.security_group
   name        = "${var.app["brand"]}-${each.key}"
   description = "${each.key} security group"
-  vpc_id      = data.aws_vpc.default.id
+  vpc_id      = aws_vpc.this.id
   
     tags = {
     Name = "${var.app["brand"]}-${each.key}"
@@ -134,9 +221,9 @@ resource "aws_efs_file_system" "this" {
 # Create EFS mount target for each subnet
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_efs_mount_target" "this" {
-  count           = length(data.aws_subnet_ids.default.ids)
+  for_each        = aws_subnet.this
   file_system_id  = aws_efs_file_system.this.id
-  subnet_id       = tolist(data.aws_subnet_ids.default.ids)[count.index]
+  subnet_id       = aws_subnet.this[each.key].id
   security_groups = [aws_security_group.this["efs"].id]
 }
 
@@ -323,7 +410,9 @@ resource "aws_mq_broker" "this" {
   engine_type        = "RabbitMQ"
   engine_version     = var.mq["engine_version"]
   host_instance_type = var.mq["host_instance_type"]
+  deployment_mode    = "ACTIVE_STANDBY_MULTI_AZ"
   security_groups    = [aws_security_group.this["mq"].id]
+  subnet_ids         = values(aws_subnet.this).*.id
   user {
     username = var.app["brand"]
     password = random_password.this["mq"].result
@@ -349,6 +438,7 @@ resource "aws_elasticache_replication_group" "this" {
   port                          = 6379
   parameter_group_name          = var.redis["parameter_group_name"]
   security_group_ids            = [aws_security_group.this[each.key].id]
+  subnet_group_name             = aws_elasticache_subnet_group.this.name
   automatic_failover_enabled    = true
   multi_az_enabled              = true
   notification_topic_arn        = aws_sns_topic.default.arn
@@ -519,25 +609,13 @@ resource "aws_elasticsearch_domain" "this" {
         availability_zone_count = var.elk["instance_count"]
       }
   }
-  advanced_security_options {
-    enabled = true
-    internal_user_database_enabled = true
-
-    master_user_options {
-      master_user_name = "elastic"
-      master_user_password = "${random_password.this["elk"].result}"
-    }
-  }
-  node_to_node_encryption  {
-    enabled = true
-  }
   ebs_options {
     ebs_enabled = var.elk["ebs_enabled"]
     volume_type = var.elk["volume_type"]
     volume_size = var.elk["volume_size"]
   }
   vpc_options {
-    subnet_ids = slice(tolist(data.aws_subnet_ids.default.ids), 0, var.elk["instance_count"])
+    subnet_ids = slice(values(aws_subnet.this).*.id, 0, var.elk["instance_count"])
     security_group_ids = [aws_security_group.this["elk"].id]
   }
   tags = {
@@ -621,6 +699,7 @@ resource "aws_db_instance" "this" {
   parameter_group_name  = var.rds["parameter_group_name"]
   skip_final_snapshot   = var.rds["skip_final_snapshot"]
   vpc_security_group_ids = [aws_security_group.this["rds"].id]
+  db_subnet_group_name   = aws_db_subnet_group.this.name
   enabled_cloudwatch_logs_exports = ["error"]
   copy_tags_to_snapshot = true
   tags = {
@@ -703,7 +782,7 @@ resource "aws_lb" "this" {
   internal           = each.value
   load_balancer_type = "application"
   security_groups    = [aws_security_group.this[each.key].id]
-  subnets            = data.aws_subnet_ids.default.ids
+  subnets            = values(aws_subnet.this).*.id
   access_logs {
     bucket  = aws_s3_bucket.this["system"].bucket
     prefix  = "${var.app["brand"]}-alb"
@@ -721,7 +800,7 @@ resource "aws_lb_target_group" "this" {
   name        = "${var.app["brand"]}-${each.key}-target"
   port        = 80
   protocol    = "HTTP"
-  vpc_id      = data.aws_vpc.default.id
+  vpc_id      = aws_vpc.this.id
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create https:// listener for OUTER Load Balancer - forward to varnish
@@ -904,7 +983,7 @@ resource "aws_launch_template" "this" {
 resource "aws_autoscaling_group" "this" {
   for_each = var.ec2
   name = "${var.app["brand"]}-${each.key}-asg"
-  vpc_zone_identifier = data.aws_subnet_ids.default.ids
+  vpc_zone_identifier = values(aws_subnet.this).*.id
   desired_capacity    = var.asg["desired_capacity"]
   min_size            = var.asg["min_size"]
   max_size            = (each.key == "build" ? 1 : var.asg["max_size"])
@@ -1181,7 +1260,7 @@ INNER_ALB_DNS_NAME="${aws_lb.this["inner"].dns_name}"
 
 CLOUDFRONT_ADDRESS=${aws_cloudfront_distribution.this.domain_name}
 
-EFS_DNS_TARGET="${aws_efs_mount_target.this[0].dns_name}"
+EFS_DNS_TARGET="${values(aws_efs_mount_target.this).0.dns_name}"
 
 CODECOMMIT_REPO_NAME="${aws_codecommit_repository.this.repository_name}"
 	  
