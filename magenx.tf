@@ -933,7 +933,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_rps" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_launch_template" "this" {
   for_each = var.ec2
-  name = "${var.app["brand"]}-${each.key}-lt"
+  name = "${var.app["brand"]}-${each.key}-ltpl"
   block_device_mappings {
     device_name = "/dev/sda1"
     ebs { 
