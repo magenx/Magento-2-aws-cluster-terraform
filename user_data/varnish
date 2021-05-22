@@ -36,7 +36,7 @@ sed -i "s/DOMAIN/${DOMAIN} ${STAGING_DOMAIN}/" /etc/nginx/nginx.conf
 sed -i "s/ALB_DNS_NAME/${ALB_DNS_NAME}/" /etc/nginx/proxypass.conf
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/varnish/default.vcl
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/varnish/varnish.params
-find /etc/nginx/ -name "default.conf" -exec rm {} \;
+
 systemctl daemon-reload
 systemctl enable varnish
 systemctl restart nginx varnish
