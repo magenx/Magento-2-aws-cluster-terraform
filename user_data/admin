@@ -191,8 +191,6 @@ sed -i "s/example.com/%{ if "${INSTANCE_NAME}" != "staging" }${DOMAIN}%{ else }$
 sed -i "s/example.com/%{ if "${INSTANCE_NAME}" != "staging" }${DOMAIN}%{ else }${STAGING_DOMAIN}%{ endif }/g" /etc/nginx/nginx.conf
 sed -i "s,/var/www/html,${WEB_ROOT_PATH},g" /etc/nginx/conf_m${VERSION}/maps.conf
 
-find /etc/nginx/ -name "default.conf" -exec rm {} \;
-
 systemctl daemon-reload
 systemctl restart nginx.service
 systemctl restart php${PHP_VERSION}-fpm.service
