@@ -34,6 +34,7 @@ variable "elk" {
     ebs_enabled            = true
     volume_type            = "gp2"
     volume_size            = "10"
+    log_type               = "ES_APPLICATION_LOGS"
   }
 }
 
@@ -50,6 +51,8 @@ variable "rds" {
     parameter_group_name   = "default.mariadb10.5"
     skip_final_snapshot    = true
     multi_az               = true
+    enabled_cloudwatch_logs_exports = "error"
+    copy_tags_to_snapshot  = true
   }
 }
       
@@ -70,6 +73,8 @@ variable "redis" {
     replicas_per_node_group    = "1"
     num_node_groups            = "2"
     name                       = ["session", "cache"]
+    automatic_failover_enabled    = true
+    multi_az_enabled              = true
   }
 }
           
