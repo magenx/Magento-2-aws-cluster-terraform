@@ -424,8 +424,8 @@ resource "aws_elasticache_replication_group" "this" {
   parameter_group_name          = var.redis["parameter_group_name"]
   security_group_ids            = [aws_security_group.this[each.key].id]
   subnet_group_name             = aws_elasticache_subnet_group.this.name
-  automatic_failover_enabled    = true
-  multi_az_enabled              = true
+  automatic_failover_enabled    = var.redis["automatic_failover_enabled"]
+  multi_az_enabled              = var.redis["multi_az_enabled"]
   notification_topic_arn        = aws_sns_topic.default.arn
 
   cluster_mode {
@@ -608,7 +608,7 @@ resource "aws_elasticsearch_domain" "this" {
   }
   log_publishing_options {
     cloudwatch_log_group_arn = aws_cloudwatch_log_group.elk.arn
-    log_type                 = "ES_APPLICATION_LOGS"
+    log_type                 = var.elk["log_type"]
   }
   access_policies = <<EOF
 {
@@ -685,8 +685,8 @@ resource "aws_db_instance" "this" {
   skip_final_snapshot   = var.rds["skip_final_snapshot"]
   vpc_security_group_ids = [aws_security_group.this["rds"].id]
   db_subnet_group_name   = aws_db_subnet_group.this.name
-  enabled_cloudwatch_logs_exports = ["error"]
-  copy_tags_to_snapshot = true
+  enabled_cloudwatch_logs_exports = [var.rds["enabled_cloudwatch_logs_exports"]]
+  copy_tags_to_snapshot = var.rds["copy_tags_to_snapshot"]
   tags = {
     Name = "${var.app["brand"]}-${each.key}"
   }
