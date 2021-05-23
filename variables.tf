@@ -33,7 +33,7 @@ variable "elk" {
     instance_count         = "3"
     ebs_enabled            = true
     volume_type            = "gp2"
-    volume_size            = "10"
+    volume_size            = "20"
     log_type               = "ES_APPLICATION_LOGS"
   }
 }
@@ -42,11 +42,12 @@ variable "rds" {
   description      = "Map RDS configuration values"
   default  = {
     name                   = ["production","staging"]
-    allocated_storage      = "20"
+    allocated_storage      = "50"
     max_allocated_storage  = "100"
     storage_type           = "gp2"
     engine_version         = "10.5.8"
     instance_class         = "db.m6g.large"
+    instance_class_staging = "db.m6g.large"
     engine                 = "mariadb"
     parameter_group_name   = "default.mariadb10.5"
     skip_final_snapshot    = true
