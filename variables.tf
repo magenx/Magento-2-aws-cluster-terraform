@@ -147,7 +147,7 @@ variable "az_number" {
 }
 
 locals {
-  bit = (trimprefix(trimsuffix(sort(values(data.aws_vpc.all).*.cidr_block)[0], ".0.0/16"), "172.") - 1)
+  bit = (trimsuffix(trimprefix(sort(values(data.aws_vpc.all).*.cidr_block)[0], "172."), ".0.0/16") - 1)
   security_group = setunion(keys(var.alb),var.redis["name"],["ec2","rds","elk","mq","efs"])
 }
 
