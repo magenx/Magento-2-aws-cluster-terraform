@@ -676,7 +676,7 @@ resource "aws_db_instance" "this" {
   storage_type          = var.rds["storage_type"] 
   engine                = var.rds["engine"]
   engine_version        = var.rds["engine_version"]
-  instance_class        = var.rds["instance_class"]
+  instance_class        = (each.key == "staging" ? var.rds["instance_class_staging"] : var.rds["instance_class"])
   multi_az              = (each.key == "staging" ? "false" : var.rds["multi_az"])
   name                  = "${var.app["brand"]}_${each.key}"
   username              = var.app["brand"]
