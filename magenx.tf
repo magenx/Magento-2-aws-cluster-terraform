@@ -1336,12 +1336,12 @@ mainSteps:
       cd /home/${var.app["brand"]}/public_html
       su ${var.app["brand"]} -s /bin/bash -c "git fetch origin"
       su ${var.app["brand"]} -s /bin/bash -c "git reset --hard origin/main"
+      systemctl reload php${var.app["php_version"]}-fpm
+      systemctl reload nginx
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:db:status --no-ansi"
       if [[ $? -eq 0 ]]; then
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento cache:clean"
       else
-      systemctl reload php${var.app["php_version"]}-fpm
-      systemctl reload nginx
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade --keep-generated --no-ansi -n"
       fi
 EOT
@@ -1369,12 +1369,12 @@ mainSteps:
       cd /home/${var.app["brand"]}/public_html
       su ${var.app["brand"]} -s /bin/bash -c "git fetch origin"
       su ${var.app["brand"]} -s /bin/bash -c "git reset --hard origin/staging"
+      systemctl reload php${var.app["php_version"]}-fpm
+      systemctl reload nginx
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:db:status --no-ansi"
       if [[ $? -eq 0 ]]; then
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento cache:clean"
       else
-      systemctl reload php${var.app["php_version"]}-fpm
-      systemctl reload nginx
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade --no-ansi -n"
       fi
 EOT
