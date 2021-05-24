@@ -1328,7 +1328,7 @@ description: "Pull code changes from CodeCommit main branch"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
-  name: "${var.app["brand"]}CodecommitPullMainChanges"
+  name: "${var.app["brand"]}CodeCommitPullMainChanges"
   inputs:
     runCommand:
     - |-
@@ -1336,8 +1336,14 @@ mainSteps:
       cd /home/${var.app["brand"]}/public_html
       su ${var.app["brand"]} -s /bin/bash -c "git fetch origin"
       su ${var.app["brand"]} -s /bin/bash -c "git reset --hard origin/main"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:db:status --no-ansi"
+      if [[ $? -eq 0 ]]; then
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento cache:clean"
+      else
       systemctl reload php${var.app["php_version"]}-fpm
       systemctl reload nginx
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade --keep-generated --no-ansi -n"
+      fi
 EOT
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -1355,7 +1361,7 @@ description: "Pull code changes from CodeCommit staging branch"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
-  name: "${var.app["brand"]}CodecommitPullStagingChanges"
+  name: "${var.app["brand"]}CodeCommitPullStagingChanges"
   inputs:
     runCommand:
     - |-
@@ -1363,9 +1369,14 @@ mainSteps:
       cd /home/${var.app["brand"]}/public_html
       su ${var.app["brand"]} -s /bin/bash -c "git fetch origin"
       su ${var.app["brand"]} -s /bin/bash -c "git reset --hard origin/staging"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:db:status --no-ansi"
+      if [[ $? -eq 0 ]]; then
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento cache:clean"
+      else
       systemctl reload php${var.app["php_version"]}-fpm
       systemctl reload nginx
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento cache:flush"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade --no-ansi -n"
+      fi
 EOT
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
