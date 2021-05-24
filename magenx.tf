@@ -1483,7 +1483,7 @@ EOT
 /////////////////////////////////////////////////////////[ AWS INSPECTOR ]////////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create AWS Insperctor assessment template
+# Create AWS Inspector assessment template
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_inspector_assessment_template" "this" {
   name = "${var.app["brand"]}-InspectorTemplate"
@@ -1493,13 +1493,13 @@ resource "aws_inspector_assessment_template" "this" {
   target_arn = aws_inspector_assessment_target.all.arn
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create AWS Insperctor assessment targets
+# Create AWS Inspector assessment targets
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_inspector_assessment_target" "all" {
   name = "${var.app["brand"]}-InspectorTargets"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create IAM Role for AWS Insperctor assessment
+# Create IAM Role for AWS Inspector assessment
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role" "assessment_template" {
   name = "${var.app["brand"]}-IamRoleForInspector"
@@ -1520,7 +1520,7 @@ resource "aws_iam_role" "assessment_template" {
 EOF
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create IAM Policy for AWS Insperctor assessment template
+# Create IAM Policy for AWS Inspector assessment template
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role_policy" "assessment_template" {
   name = "${var.app["brand"]}-InspectorAssessmentTrigger"
@@ -1541,7 +1541,7 @@ resource "aws_iam_role_policy" "assessment_template" {
 EOF
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create scheduled job for AWS Insperctor assessment template
+# Create scheduled job for AWS Inspector assessment template
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "assessment_template" {
   name = "${var.app["brand"]}-InspectorScheduledAssessment"
@@ -1549,7 +1549,7 @@ resource "aws_cloudwatch_event_rule" "assessment_template" {
   schedule_expression = "cron(00 06 ? * MON *)"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create target for AWS Insperctor assessment template scheduled job
+# Create target for AWS Inspector assessment template scheduled job
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "assessment_template" {
   rule = aws_cloudwatch_event_rule.assessment_template.name
