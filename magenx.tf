@@ -1477,3 +1477,191 @@ mainSteps:
       git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.this.repository_name} main
 EOT
 }
+
+	
+	
+/////////////////////////////////////////////////////////[ AWS INSPECTOR ]////////////////////////////////////////////////
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create AWS Insperctor assessment template
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_inspector_assessment_template" "this" {
+  name = "${var.app["brand"]}-InspectorTemplate"
+  duration = 3600
+  rules_package_arns = data.aws_inspector_rules_packages.available.arns
+  
+  target_arn = aws_inspector_assessment_target.all.arn
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create AWS Insperctor assessment targets
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_inspector_assessment_target" "all" {
+  name = "${var.app["brand"]}-InspectorTargets"
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create IAM Role for AWS Insperctor assessment
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_iam_role" "assessment_template" {
+  name = "${var.app["brand"]}-IamRoleForInspector"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": ["events.amazonaws.com"]
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create IAM Policy for AWS Insperctor assessment template
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_iam_role_policy" "assessment_template" {
+  name = "${var.app["brand"]}-InspectorAssessmentTrigger"
+  role = aws_iam_role.assessment_template.id
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "inspector:StartAssessmentRun"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create scheduled job for AWS Insperctor assessment template
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_event_rule" "assessment_template" {
+  name = "${var.app["brand"]}-InspectorScheduledAssessment"
+  description = "Scheduled Inspector Assessment for ${var.app["brand"]}"
+  schedule_expression = "cron(00 06 ? * MON *)"
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create target for AWS Insperctor assessment template scheduled job
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_event_target" "assessment_template" {
+  rule = aws_cloudwatch_event_rule.assessment_template.name
+  target_id = "${var.app["brand"]}-InspectorAssessment"
+  arn = aws_inspector_assessment_template.this.arn
+  role_arn = aws_iam_role.assessment_template.arn
+}
+
+
+
+///////////////////////////////////////////////////////[ AWS WAFv2 RULES ]////////////////////////////////////////////////
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create AWS WAFv2 rules association with ALB
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_wafv2_web_acl_association" "this" {
+  resource_arn = aws_lb.this["outer"].arn
+  web_acl_arn = aws_waf_web_acl.this.arn
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create AWS WAFv2 rules
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_wafv2_web_acl" "this" {
+  name = "${var.app["brand"]}-WAF-Protections"
+  scope = "REGIONAL"
+  description = "${var.app["brand"]}-WAF-Protections"
+
+  default_action {
+    allow {
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name = "${var.app["brand"]}-WAF-Protections"
+    sampled_requests_enabled = true
+  }
+
+  rule {
+    name = "AWSManagedRulesCommonRule"
+    priority = 0
+    override_action {
+      none {
+      }
+    }
+    statement {
+      managed_rule_group_statement {
+        name = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name = "${var.app["brand"]}-AWSManagedRulesCommonRule"
+      sampled_requests_enabled = true
+    }
+  }
+  rule {
+    name = "AWSManagedRulesKnownBadInputsRule"
+    priority = 1
+    override_action {
+      none {
+      }
+    }
+    statement {
+      managed_rule_group_statement {
+        name = "AWSManagedRulesKnownBadInputsRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name = "${var.app["brand"]}-AWSManagedRulesKnownBadInputsRule"
+      sampled_requests_enabled = true
+    }
+  }
+  rule {
+    name = "AWSManagedRulesAmazonIpReputation"
+    priority = 2
+    override_action {
+      none {
+      }
+    }
+    statement {
+      managed_rule_group_statement {
+        name = "AWSManagedRulesAmazonIpReputationList"
+        vendor_name = "AWS"
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name = "${var.app["brand"]}-AWSManagedRulesAmazonIpReputation"
+      sampled_requests_enabled = true
+    }
+  }
+  rule {
+    name = "AWSManagedRulesBotControlRule"
+    priority = 4
+    override_action {
+      none {
+      }
+    }
+    statement {
+      managed_rule_group_statement {
+        name = "AWSManagedRulesBotControlRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name = "${var.app["brand"]}-AWSManagedRulesBotControlRule"
+      sampled_requests_enabled = true
+    }
+  }
+}
