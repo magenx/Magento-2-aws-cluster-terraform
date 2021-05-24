@@ -113,9 +113,9 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
  >services are clustered and replicated thus ready for failover.
  
 ##
-- [x] Deployment into isolated Amazon Virtual Private Cloud
+- [x] Deployment into isolated Virtual Private Cloud
 - [x] Autoscaling policy per each group, excluding `build` instance
-- [x] Managed with Systems Manager [https://aws.amazon.com/systems-manager/] agent installed
+- [x] Managed with [Systems Manager](https://aws.amazon.com/systems-manager/) agent
 - [x] Instance Profile assigned to simplify EC2 management
 - [x] Create and use ssm documents and EventBridge rules to automate tasks
 - [x] Simple Email Service authentication + SMTP Magento module
@@ -123,7 +123,8 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - [x] All Magento files managed with git only
 - [x] Live shop in production mode / read-only 
 - [x] Security groups configured for every service and instances
-- [x] WAF basic rules
+- [x] AWS Inspector Assesment templates
+- [x] AWS WAF Protection rules
 
 ## Magento 2 development | source code:
 - Terraform creates CodeCommit repository. Local provisioner copy files from Github https://github.com/magenx/Magento-2. Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
@@ -149,7 +150,14 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 
 ## TODO:
 - WAF Rules
-- Proper vars
+- Proper vars  
+
+## :heart_eyes_cat: Support the project  
+This takes time and research. You can use this for free. But for me its not free to create it.
+If you are using this project, there are few ways you can support it:
+- [x] Star and sharing the project
+- [x] Open an issue to help me make it better
+- [x] [PAYPAL](https://paypal.me/magenx) - You can make one-time donation.  
 
 ##
 ![Magento_2_AWS_cloud_auto_scaling_magenx-big](https://user-images.githubusercontent.com/1591200/106358223-ac7eaf00-6302-11eb-963e-cc0d0136d88f.png)
