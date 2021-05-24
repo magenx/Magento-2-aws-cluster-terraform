@@ -123,7 +123,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - [x] All Magento files managed with git only
 - [x] Live shop in production mode / read-only 
 - [x] Security groups configured for every service and instances
-- [x] AWS Inspector Assesment templates
+- [x] AWS Inspector Assessment templates
 - [x] AWS WAF Protection rules
 
 ## Magento 2 development | source code:
