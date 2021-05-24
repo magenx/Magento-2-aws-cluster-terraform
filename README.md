@@ -149,7 +149,6 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - edit => migrate => share
 
 ## TODO:
-- WAF Rules
 - Proper vars  
 
 ## :heart_eyes_cat: Support the project  
