@@ -4,7 +4,7 @@
 /////////////////////////////////////////////////[ AWS BUDGET NOTIFICATION ]//////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create alert you when your budget thresholds are forecasted to exceed
+# Create alert when your budget thresholds are forecasted to exceed
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_budgets_budget" "all" {
   name              = "${var.app["brand"]}-budget-monthly-forecasted"
