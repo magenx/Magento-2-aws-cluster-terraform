@@ -61,9 +61,7 @@ variable "rds" {
 }
 
 variable "max_connection_count" {
-  type        = map(string)
   description = "Map 6g. class RDS max connection count"
-
   default = {
      "db.m6g.large"    = "683"
      "db.m6g.xlarge"   = "1365"
