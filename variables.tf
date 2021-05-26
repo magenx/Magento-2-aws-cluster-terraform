@@ -53,7 +53,32 @@ variable "rds" {
     skip_final_snapshot    = true
     multi_az               = true
     enabled_cloudwatch_logs_exports = "error"
-    copy_tags_to_snapshot  = true
+    copy_tags_to_snapshot    = true
+    backup_retention_period  = "7"
+    delete_automated_backups = true
+    deletion_protection      = false
+  }
+}
+
+variable "max_connection_count" {
+  type        = map(string)
+  description = "Map 6g. class RDS max connection count"
+
+  default = {
+     "db.m6g.large"    = "683"
+     "db.m6g.xlarge"   = "1365"
+     "db.r6g.large"    = "1365"
+     "db.m6g.2xlarge"  = "2731"
+     "db.r6g.xlarge"   = "2731"
+     "db.m6g.4xlarge"  = "5461"
+     "db.r6g.2xlarge"  = "5461"
+     "db.m6g.8xlarge"  = "10923"
+     "db.r6g.4xlarge"  = "10923"
+     "db.m6g.12xlarge" = "16384"
+     "db.m6g.16xlarge" = "21845"
+     "db.r6g.8xlarge"  = "21845"
+     "db.r6g.12xlarge" = "32768"
+     "db.r6g.16xlarge" = "43691"
   }
 }
       
