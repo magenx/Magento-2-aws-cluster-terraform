@@ -693,24 +693,27 @@ EOF
 # Create RDS instance
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "this" {
-  for_each              = toset(var.rds["name"])
-  identifier            = "${var.app["brand"]}-${each.key}"
-  allocated_storage     = var.rds["allocated_storage"]
-  max_allocated_storage = var.rds["max_allocated_storage"]
-  storage_type          = var.rds["storage_type"] 
-  engine                = var.rds["engine"]
-  engine_version        = var.rds["engine_version"]
-  instance_class        = (each.key == "staging" ? var.rds["instance_class_staging"] : var.rds["instance_class"])
-  multi_az              = (each.key == "staging" ? "false" : var.rds["multi_az"])
-  name                  = "${var.app["brand"]}_${each.key}"
-  username              = var.app["brand"]
-  password              = random_password.this["rds"].result
-  parameter_group_name  = var.rds["parameter_group_name"]
-  skip_final_snapshot   = var.rds["skip_final_snapshot"]
+  for_each               = toset(var.rds["name"])
+  identifier             = "${var.app["brand"]}-${each.key}"
+  allocated_storage      = var.rds["allocated_storage"]
+  max_allocated_storage  = var.rds["max_allocated_storage"]
+  storage_type           = var.rds["storage_type"] 
+  engine                 = var.rds["engine"]
+  engine_version         = var.rds["engine_version"]
+  instance_class         = (each.key == "staging" ? var.rds["instance_class_staging"] : var.rds["instance_class"])
+  multi_az               = (each.key == "staging" ? "false" : var.rds["multi_az"])
+  name                   = "${var.app["brand"]}_${each.key}"
+  username               = var.app["brand"]
+  password               = random_password.this["rds"].result
+  parameter_group_name   = var.rds["parameter_group_name"]
+  skip_final_snapshot    = var.rds["skip_final_snapshot"]
   vpc_security_group_ids = [aws_security_group.this["rds"].id]
   db_subnet_group_name   = aws_db_subnet_group.this.name
   enabled_cloudwatch_logs_exports = [var.rds["enabled_cloudwatch_logs_exports"]]
-  copy_tags_to_snapshot = var.rds["copy_tags_to_snapshot"]
+  copy_tags_to_snapshot           = var.rds["copy_tags_to_snapshot"]
+  backup_retention_period         = var.rds["backup_retention_period"]
+  delete_automated_backups        = var.rds["delete_automated_backups"]
+  deletion_protection             = var.rds["deletion_protection"]
   tags = {
     Name = "${var.app["brand"]}-${each.key}"
   }
@@ -777,9 +780,65 @@ resource "aws_cloudwatch_metric_alarm" "rds_memory" {
     DBInstanceIdentifier = aws_db_instance.this["production"].id
   }
 }
-	
-	
-	
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudWatch Connections Anomaly metrics and email alerts
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_metric_alarm" "rds_connections_anomaly" {
+  alarm_name          = "${var.app["brand"]} rds connections anomaly"
+  comparison_operator = "GreaterThanUpperThreshold"
+  evaluation_periods  = "5"
+  threshold_metric_id = "e1"
+  alarm_description   = "Database connection count anomaly detected"
+  alarm_actions       = ["${aws_sns_topic.default.arn}"]
+  ok_actions          = ["${aws_sns_topic.default.arn}"]
+  
+  insufficient_data_actions = []
+
+  metric_query {
+    id          = "e1"
+    expression  = "ANOMALY_DETECTION_BAND(m1, 2)"
+    label       = "DatabaseConnections (Expected)"
+    return_data = "true"
+  }
+
+  metric_query {
+    id          = "m1"
+    return_data = "true"
+    metric {
+      metric_name = "DatabaseConnections"
+      namespace   = "AWS/RDS"
+      period      = "600"
+      stat        = "Average"
+      unit        = "Count"
+
+      dimensions = {
+        DBInstanceIdentifier = aws_db_instance.this["production"].id
+      }
+    }
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudWatch Max Connections metrics and email alerts
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_metric_alarm" "rds_max_connections" {
+  alarm_name          = "${var.app["brand"]} rds connections over last 10 minutes is too high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "DatabaseConnections"
+  namespace           = "AWS/RDS"
+  period              = "600"
+  statistic           = "Average"
+  threshold           = ceil((80 / 100) * var.max_connection_count[var.rds["instance_class"]])
+  alarm_description   = "Average connections over last 10 minutes is too high"
+  alarm_actions       = [aws_sns_topic.topic.arn]
+  ok_actions          = [aws_sns_topic.topic.arn]
+
+  dimensions = {
+    DBInstanceIdentifier = aws_db_instance.this["production"].id
+  }
+}
+
+
 /////////////////////////////////////////////////[ APPLICATION LOAD BALANCER ]////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
