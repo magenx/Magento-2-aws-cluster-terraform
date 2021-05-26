@@ -22,20 +22,24 @@ Bad architectural solution using monolitic servers, not cloud native solution, t
 Obviously, PaaS intermediaries also use AWS Cloud. But concealing its cheap solutions with a marketing, 
 trying to hook you up on a dodgy contract and making you pay 10 times more.
 ``` 
+<img align="right" width="600" height="390" src="https://user-images.githubusercontent.com/1591200/119651122-8edad580-be1c-11eb-94fc-db3dfcc3358a.png">
 
-## E-commerce under your own AWS cloud account pros:
-- Open source Magento and open infrastructure
-- No license fees, no draconian contracts or obligations in small print
+## AWS cloud account pros:
+- Open source Magento
+- No license fees
+- No draconian contracts
 - No hardware configuration restrictions
 - No services configuration limitations
 - No hidden bottlenecks
-- No time waste and queues for [support tickets](https://devdocs.magento.com/cloud/project/services.html)
-- Transparent billing no unforeseen payments at any time
-- No sudden surplus resources outside the plan  
-
+- No time waste for [support tickets](https://devdocs.magento.com/cloud/project/services.html)
+- Transparent billing
+- No sudden surplus resources  
+  
+  
+  
 **Amazon Web Services** offers an ecommerce cloud computing solutions to small and large businesses that want a flexible, secured, highly scalable infrastructure. All the technologies online retailers need to manage growth—instantly. With technologies like automatic scaling compute resources, networking, storage, content distribution, and a PCI-compliant environment, retailers can always provide great customer experiences and capitalize on growth opportunities.  
 
-**Other benefits of using your own AWS Cloud account**: [Reserved Instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-reserved-instances.html)  
+**The biggest benefits of using your own AWS Cloud account**: [Reserved Instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-reserved-instances.html)  
 Reserved Instances provide you with significant savings on your Amazon EC2 costs compared to On-Demand Instance pricing. With Savings Plans, you make a commitment to a consistent usage amount, measured in USD per hour. This provides you with the flexibility to use the instance configurations that best meet your needs and continue to save money. 
 
 <br />
