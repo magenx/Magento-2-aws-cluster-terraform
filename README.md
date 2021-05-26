@@ -22,7 +22,7 @@ Bad architectural solution using monolitic servers, not cloud native solution, t
 Obviously, PaaS intermediaries also use AWS Cloud. But concealing its cheap solutions with a marketing, 
 trying to hook you up on a dodgy contract and making you pay 10 times more.
 ``` 
-<img align="right" width="600" height="390" src="https://user-images.githubusercontent.com/1591200/119651122-8edad580-be1c-11eb-94fc-db3dfcc3358a.png">
+<img align="right" src="https://user-images.githubusercontent.com/1591200/119654001-e3338480-be1f-11eb-9f16-e8e4eedc1f07.png">
 
 ## AWS cloud account pros:
 - Open source Magento
