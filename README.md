@@ -154,12 +154,16 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 
 ## TODO:
 - Proper vars  
-
-## What to do in case of an accident:  
+  
+    
+    
+## Emergency Exit:  
 Terraform run fails during development or other failure that messes up the account:  
 ```terraform destroy``` reports No changes or Nothing to destroy, but you can see some resources in AWS console.  
 [AWS NUKE](https://github.com/rebuy-de/aws-nuke) - Remove all resources from an AWS account. (runs in dry run mode to list all resources)
-
+   
+    
+   
 ## :heart_eyes_cat: Support the project  
 This takes time and research. You can use this for free. But for me its not free to create it.
 If you are using this project, there are few ways you can support it:
