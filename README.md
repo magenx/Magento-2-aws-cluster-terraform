@@ -128,7 +128,10 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - [x] Live shop in production mode / read-only 
 - [x] Security groups configured for every service and instances
 - [x] AWS Inspector Assessment templates
-- [x] AWS WAF Protection rules
+- [x] AWS WAF Protection rules  
+
+##
+![Magento_2_AWS_cloud_auto_scaling_terraform-map](https://user-images.githubusercontent.com/1591200/119865996-34bd3b80-bf14-11eb-82bb-d55d8c04c721.png)
 
 ## Magento 2 development | source code:
 - Terraform creates CodeCommit repository. Local provisioner copy files from Github https://github.com/magenx/Magento-2. Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
@@ -171,7 +174,6 @@ If you are using this project, there are few ways you can support it:
 - [x] Open an issue to help me make it better
 - [x] [PAYPAL](https://paypal.me/magenx) - You can make one-time donation.  
 
-##
-![Magento_2_AWS_cloud_auto_scaling_terraform-map](https://user-images.githubusercontent.com/1591200/119865996-34bd3b80-bf14-11eb-82bb-d55d8c04c721.png)
+  
 
 <sub>[Magento 2 on the AWS Cloud: Quick Start Deployment](https://www.magenx.com/blog/post/adobe-commerce-cloud-alternative-infrastructure-as-code-terraform-configuration.html)</sub>
