@@ -172,6 +172,6 @@ If you are using this project, there are few ways you can support it:
 - [x] [PAYPAL](https://paypal.me/magenx) - You can make one-time donation.  
 
 ##
-![Magento_2_AWS_cloud_auto_scaling_magenx-big](https://user-images.githubusercontent.com/1591200/106358223-ac7eaf00-6302-11eb-963e-cc0d0136d88f.png)
+![Magento_2_AWS_cloud_auto_scaling_terraform-map](https://user-images.githubusercontent.com/1591200/119865996-34bd3b80-bf14-11eb-82bb-d55d8c04c721.png)
 
 <sub>[Magento 2 on the AWS Cloud: Quick Start Deployment](https://www.magenx.com/blog/post/adobe-commerce-cloud-alternative-infrastructure-as-code-terraform-configuration.html)</sub>
