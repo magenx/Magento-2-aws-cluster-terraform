@@ -710,6 +710,7 @@ resource "aws_db_instance" "this" {
   vpc_security_group_ids = [aws_security_group.this["rds"].id]
   db_subnet_group_name   = aws_db_subnet_group.this.name
   enabled_cloudwatch_logs_exports = [var.rds["enabled_cloudwatch_logs_exports"]]
+  performance_insights_enabled    = var.rds["performance_insights_enabled"]
   copy_tags_to_snapshot           = var.rds["copy_tags_to_snapshot"]
   backup_retention_period         = var.rds["backup_retention_period"]
   delete_automated_backups        = var.rds["delete_automated_backups"]
