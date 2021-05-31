@@ -53,6 +53,7 @@ variable "rds" {
     skip_final_snapshot    = true
     multi_az               = true
     enabled_cloudwatch_logs_exports = "error"
+    performance_insights_enabled = true
     copy_tags_to_snapshot    = true
     backup_retention_period  = "7"
     delete_automated_backups = true
