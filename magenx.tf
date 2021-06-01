@@ -1623,7 +1623,7 @@ resource "aws_wafv2_web_acl" "this" {
     }
   }
   rule {
-    name = "AWSManagedRulesKnownBadInputsRule"
+    name = "AWSManagedRulesSQLiRuleSet"
     priority = 1
     override_action {
       none {
@@ -1631,13 +1631,13 @@ resource "aws_wafv2_web_acl" "this" {
     }
     statement {
       managed_rule_group_statement {
-        name = "AWSManagedRulesKnownBadInputsRuleSet"
+        name = "AWSManagedRulesSQLiRuleSet"
         vendor_name = "AWS"
       }
     }
     visibility_config {
       cloudwatch_metrics_enabled = true
-      metric_name = "${var.app["brand"]}-AWSManagedRulesKnownBadInputsRule"
+      metric_name = "${var.app["brand"]}-AWSManagedRulesSQLiRuleSet"
       sampled_requests_enabled = true
     }
   }
