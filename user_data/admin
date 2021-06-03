@@ -62,7 +62,7 @@ debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false
 %{ endif }
 
 apt-get -y update
-apt-get -y install %{ if "${INSTANCE_NAME}" != "admin" } %{ else ~}phpmyadmin %{ endif } composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor ~}
+apt-get -y install %{ if "${INSTANCE_NAME}" != "admin" } %{ else ~}phpmyadmin%{ endif } composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor }
 
 cat > /etc/sysctl.conf <<END
 fs.file-max = 1000000
