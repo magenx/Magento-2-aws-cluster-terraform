@@ -52,10 +52,16 @@ curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
 apt-get update
 apt-get -y install nginx
 
-## install php
-add-apt-repository ppa:ondrej/php -y
-apt-get update
-apt-get -y install composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor ~}
+## install php + phpmyadmin
+add-apt-repository -y ppa:ondrej/php
+add-apt-repository -y ppa:phpmyadmin/ppa
+apt-get -y update
+
+debconf-set-selections <<< "phpmyadmin phpmyadmin/internal/skip-preseed boolean true"
+debconf-set-selections <<< "phpmyadmin phpmyadmin/reconfigure-webserver multiselect"
+debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false"
+
+apt-get -y install phpmyadmin composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor ~}
 
 cat > /etc/sysctl.conf <<END
 fs.file-max = 1000000
@@ -190,6 +196,15 @@ sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/m
 sed -i "s/example.com/%{ if "${INSTANCE_NAME}" != "staging" }${DOMAIN}%{ else }${STAGING_DOMAIN}%{ endif }/g" /etc/nginx/sites-available/magento${VERSION}.conf
 sed -i "s/example.com/%{ if "${INSTANCE_NAME}" != "staging" }${DOMAIN}%{ else }${STAGING_DOMAIN}%{ endif }/g" /etc/nginx/nginx.conf
 sed -i "s,/var/www/html,${WEB_ROOT_PATH},g" /etc/nginx/conf_m${VERSION}/maps.conf
+
+PROFILER_PLACEHOLDER="$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)"
+sed -i "s/PROFILER_PLACEHOLDER/$${PROFILER_PLACEHOLDER}/" /etc/nginx/conf_m${VERSION}/maps.conf
+
+PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
+BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9=+_[]{}()<>-' | fold -w 64 | head -n 1)
+
+sed -i "s/.*blowfish_secret.*/\$$cfg['blowfish_secret'] = '$${BLOWFISHCODE}';/" /var/lib/phpmyadmin/blowfish_secret.inc.php
+sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_$${PMA_FOLDER}/g" /etc/nginx/conf_m${VERSION}/phpmyadmin.conf
 
 systemctl daemon-reload
 systemctl restart nginx.service
