@@ -54,14 +54,16 @@ apt-get -y install nginx
 
 ## install php + phpmyadmin
 add-apt-repository -y ppa:ondrej/php
-add-apt-repository -y ppa:phpmyadmin/ppa
-apt-get -y update
 
+%{ if "${INSTANCE_NAME}" != "admin" ~} %{ else }
+add-apt-repository -y ppa:phpmyadmin/ppa
 debconf-set-selections <<< "phpmyadmin phpmyadmin/internal/skip-preseed boolean true"
 debconf-set-selections <<< "phpmyadmin phpmyadmin/reconfigure-webserver multiselect"
 debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false"
+%{ endif }
 
-apt-get -y install phpmyadmin composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor ~}
+apt-get -y update
+apt-get -y install %{ if "${INSTANCE_NAME}" != "admin" ~} %{ else ~}phpmyadmin%{ endif ~} composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor ~}
 
 cat > /etc/sysctl.conf <<END
 fs.file-max = 1000000
