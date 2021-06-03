@@ -192,6 +192,7 @@ mkdir -p /etc/nginx/conf_m${VERSION} && cd /etc/nginx/conf_m${VERSION}/
 curl -s ${GITHUB_REPO_API_URL}/nginx/conf_m2 2>&1 | awk -F'"' '/download_url/ {print $4 ; system("curl -sO "$4)}' >/dev/null
 
 sed -i "s/user  nginx;/user  ${BRAND};/" /etc/nginx/nginx.conf
+sed -i "s/CIDR/${CIDR}/" /etc/nginx/nginx.conf
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/magento${VERSION}.conf
 sed -i "s/example.com/%{ if "${INSTANCE_NAME}" != "staging" }${DOMAIN}%{ else }${STAGING_DOMAIN}%{ endif }/g" /etc/nginx/sites-available/magento${VERSION}.conf
 sed -i "s/example.com/%{ if "${INSTANCE_NAME}" != "staging" }${DOMAIN}%{ else }${STAGING_DOMAIN}%{ endif }/g" /etc/nginx/nginx.conf
@@ -200,11 +201,12 @@ sed -i "s,/var/www/html,${WEB_ROOT_PATH},g" /etc/nginx/conf_m${VERSION}/maps.con
 PROFILER_PLACEHOLDER="$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)"
 sed -i "s/PROFILER_PLACEHOLDER/$${PROFILER_PLACEHOLDER}/" /etc/nginx/conf_m${VERSION}/maps.conf
 
+%{ if "${INSTANCE_NAME}" != "admin" } %{ else }
 PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
 BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9=+_[]{}()<>-' | fold -w 64 | head -n 1)
-
 sed -i "s/.*blowfish_secret.*/\$$cfg['blowfish_secret'] = '$${BLOWFISHCODE}';/" /var/lib/phpmyadmin/blowfish_secret.inc.php
 sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_$${PMA_FOLDER}/g" /etc/nginx/conf_m${VERSION}/phpmyadmin.conf
+%{ endif }
 
 systemctl daemon-reload
 systemctl restart nginx.service
