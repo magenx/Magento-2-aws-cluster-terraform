@@ -54,7 +54,7 @@ apt-get -y install nginx
 
 ## install php + phpmyadmin
 add-apt-repository -y ppa:ondrej/php
-%{ if "${INSTANCE_NAME}" != "admin" } %{ else }
+%{ if "${INSTANCE_NAME}" == "admin" }
 add-apt-repository -y ppa:phpmyadmin/ppa
 debconf-set-selections <<< "phpmyadmin phpmyadmin/internal/skip-preseed boolean true"
 debconf-set-selections <<< "phpmyadmin phpmyadmin/reconfigure-webserver multiselect"
@@ -62,7 +62,7 @@ debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false
 %{ endif }
 
 apt-get -y update
-apt-get -y install %{ if "${INSTANCE_NAME}" != "admin" } %{ else ~}phpmyadmin%{ endif } composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor }
+apt-get -y install %{ if "${INSTANCE_NAME}" == "admin" }phpmyadmin%{ endif } composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor }
 
 cat > /etc/sysctl.conf <<END
 fs.file-max = 1000000
@@ -202,7 +202,7 @@ sed -i "s,/var/www/html,${WEB_ROOT_PATH},g" /etc/nginx/conf_m${VERSION}/maps.con
 PROFILER_PLACEHOLDER="$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)"
 sed -i "s/PROFILER_PLACEHOLDER/$${PROFILER_PLACEHOLDER}/" /etc/nginx/conf_m${VERSION}/maps.conf
 
-%{ if "${INSTANCE_NAME}" != "admin" } %{ else }
+%{ if "${INSTANCE_NAME}" == "admin" }
 PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
 BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9=+_[]{}()<>-' | fold -w 64 | head -n 1)
 sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '$${BLOWFISHCODE}';/" /var/lib/phpmyadmin/blowfish_secret.inc.php
