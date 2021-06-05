@@ -13,6 +13,8 @@ apt-get -y install software-properties-common
 apt-get update
 apt-get -y install ${EXTRA_PACKAGES_DEB}
 
+pip3 install git-remote-codecommit
+
 ## install nginx
 echo "deb http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
 curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
