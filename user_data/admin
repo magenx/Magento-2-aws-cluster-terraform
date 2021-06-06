@@ -197,16 +197,16 @@ sed -i "s/CIDR/${CIDR}/" /etc/nginx/nginx.conf
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/magento.conf
 sed -i "s/example.com/%{ if "${INSTANCE_NAME}" != "staging" }${DOMAIN}%{ else }${STAGING_DOMAIN}%{ endif }/g" /etc/nginx/sites-available/magento.conf
 sed -i "s/example.com/%{ if "${INSTANCE_NAME}" != "staging" }${DOMAIN}%{ else }${STAGING_DOMAIN}%{ endif }/g" /etc/nginx/nginx.conf
-sed -i "s,/var/www/html,${WEB_ROOT_PATH},g" /etc/nginx/conf_m${VERSION}/maps.conf
+sed -i "s,/var/www/html,${WEB_ROOT_PATH},g" /etc/nginx/conf.d/maps.conf
 
 PROFILER_PLACEHOLDER="$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)"
-sed -i "s/PROFILER_PLACEHOLDER/$${PROFILER_PLACEHOLDER}/" /etc/nginx/conf_m${VERSION}/maps.conf
+sed -i "s/PROFILER_PLACEHOLDER/$${PROFILER_PLACEHOLDER}/" /etc/nginx/conf.d/maps.conf
 
 %{ if "${INSTANCE_NAME}" == "admin" }
 PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
 BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9=+_[]{}()<>-' | fold -w 64 | head -n 1)
 sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '$${BLOWFISHCODE}';/" /var/lib/phpmyadmin/blowfish_secret.inc.php
-sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_$${PMA_FOLDER}/g" /etc/nginx/conf_m${VERSION}/phpmyadmin.conf
+sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_$${PMA_FOLDER}/g" /etc/nginx/conf.d/phpmyadmin.conf
 %{ endif }
 
 systemctl daemon-reload
