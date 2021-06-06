@@ -450,7 +450,17 @@ resource "aws_iam_role_policy" "codecommit_access" {
             "codecommit:GitPush"
       ],
       Resource = aws_codecommit_repository.app.arn
-    }
+    },
+    {
+      Effect = "Allow",
+      Action = [
+            "codecommit:Get*",
+            "codecommit:List*",
+            "codecommit:Describe*",
+            "codecommit:GitPull"
+      ],
+      Resource = aws_codecommit_repository.services.arn
+     }
   ]
 })
 }
