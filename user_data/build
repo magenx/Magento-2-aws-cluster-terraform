@@ -27,7 +27,7 @@ chown -R ${BRAND}:${PHP_USER} ${WEB_ROOT_PATH} /home/${BRAND}/{.config,.cache,.l
 chmod 2770 ${WEB_ROOT_PATH}
 setfacl -Rdm u:${BRAND}:rwX,g:${PHP_USER}:r-X,o::- ${WEB_ROOT_PATH}
 cd ${WEB_ROOT_PATH}
-su ${BRAND} -s /bin/bash -c "git clone -b build codecommit::${AWS_DEFAULT_REGION}://${CODECOMMIT_APP_REPO_NAME} ."
+su ${BRAND} -s /bin/bash -c "git clone -b build ${CODECOMMIT_APP_REPO} ."
 setfacl -Rdm u:${BRAND}:rwX,g:${PHP_USER}:rwX,o::- var generated pub/static pub/media
 
 chmod +x bin/magento
