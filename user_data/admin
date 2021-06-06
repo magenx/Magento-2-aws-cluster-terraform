@@ -27,7 +27,7 @@ chown -R ${BRAND}:${PHP_USER} ${WEB_ROOT_PATH} /home/${BRAND}/{.config,.cache,.l
 chmod 2770 ${WEB_ROOT_PATH}
 setfacl -Rdm u:${BRAND}:rwX,g:${PHP_USER}:r-X,o::- ${WEB_ROOT_PATH}
 cd ${WEB_ROOT_PATH}
-su ${BRAND} -s /bin/bash -c "git clone -b main codecommit::${AWS_DEFAULT_REGION}://${CODECOMMIT_APP_REPO_NAME} ."
+su ${BRAND} -s /bin/bash -c "git clone -b main ${CODECOMMIT_APP_REPO} ."
 echo "${EFS_DNS_TARGET}:/%{ if "${INSTANCE_NAME}" != "staging" }production%{ else }staging%{ endif }/var ${WEB_ROOT_PATH}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
 echo "${EFS_DNS_TARGET}:/%{ if "${INSTANCE_NAME}" != "staging" }production%{ else }staging%{ endif }/pub/media ${WEB_ROOT_PATH}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
 su ${BRAND} -s /bin/bash -c "mkdir -p {pub/media,var}"
@@ -47,6 +47,12 @@ chmod 2770 pub/media var
 chmod +x bin/magento
 
 ## install nginx
+mkdir -p /etc/nginx
+cd /etc/nginx
+git clone -b nginx_${INSTANCE_NAME} ${CODECOMMIT_SERVICES_REPO} .
+mkdir -p /etc/nginx/sites-enabled
+ln -s /etc/nginx/sites-available/magento.conf /etc/nginx/sites-enabled/magento.conf
+
 echo "deb http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
 curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
 apt-get update
@@ -182,14 +188,6 @@ END
 
 echo "${WEB_ROOT_PATH}/app/etc/env.php" >> /etc/opcache-default.blacklist
 echo "${WEB_ROOT_PATH}/app/etc/config.php" >> /etc/opcache-default.blacklist
-
-wget -qO /etc/nginx/nginx.conf  ${GITHUB_REPO_RAW_URL}/nginx/nginx.conf
-mkdir -p /etc/nginx/sites-enabled
-mkdir -p /etc/nginx/sites-available && cd $_
-curl -s ${GITHUB_REPO_API_URL}/nginx/sites-available 2>&1 | awk -F'"' '/download_url/ {print $4 ; system("curl -sO "$4)}' >/dev/null
-ln -s /etc/nginx/sites-available/magento.conf /etc/nginx/sites-enabled/magento.conf
-mkdir -p /etc/nginx/conf_m${VERSION} && cd /etc/nginx/conf_m${VERSION}/
-curl -s ${GITHUB_REPO_API_URL}/nginx/conf_m2 2>&1 | awk -F'"' '/download_url/ {print $4 ; system("curl -sO "$4)}' >/dev/null
 
 sed -i "s/user  nginx;/user  ${BRAND};/" /etc/nginx/nginx.conf
 sed -i "s/CIDR/${CIDR}/" /etc/nginx/nginx.conf
