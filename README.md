@@ -106,7 +106,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
  `2` redis elasticache cluster for sessions and cache  
  `1` rabbitmq broker to manage queue messages  
  `2` s3 buckets for [media] images and [system] files and logs (with access policy)  
- `1` codecommit repository with 3 branches (main build staging)  
+ `2` codecommit app files repository and services config files repository
  `1` cloudfront s3 origin distribution  
  `1` efs file system for shared folders, with mount target per AZ  
  `1` sns topic default subscription to receive email alerts  
@@ -147,6 +147,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 
 ## CI/CD scenario:
 - Event driven
+- Services configuration files tracked in CodeCommit repository
 - Changes in CodeCommit repository triggers EventBridge rule. By default admin and frontend tagged resources are targets of this rule.
 - SSM Document pull from CodeCommit repository and cleanup.
 - Change deployment logic to your needs.
