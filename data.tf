@@ -104,9 +104,6 @@ CIDR = "${aws_vpc.this.cidr_block}"
 RESOLVER = "${cidrhost(aws_vpc.this.cidr_block, 2)}"
 AWS_DEFAULT_REGION = "${data.aws_region.current.name}"
 
-GITHUB_REPO_RAW_URL = "https://raw.githubusercontent.com/magenx/Magento-2-aws-cluster-terraform/master"
-GITHUB_REPO_API_URL = "https://api.github.com/repos/magenx/Magento-2-aws-cluster-terraform/contents"
-
 ALB_DNS_NAME = "${aws_lb.this["inner"].dns_name}"
 EFS_DNS_TARGET = "${values(aws_efs_mount_target.this).0.dns_name}"
   
