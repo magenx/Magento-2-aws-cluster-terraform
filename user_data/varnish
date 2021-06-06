@@ -37,7 +37,7 @@ sed -i "s/CIDR/${CIDR}/" /etc/nginx/nginx.conf
 sed -i "s/RESOLVER/${RESOLVER}/" /etc/nginx/nginx.conf
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/nginx.conf
 sed -i "s/DOMAIN/${DOMAIN} ${STAGING_DOMAIN}/" /etc/nginx/nginx.conf
-sed -i "s/ALB_DNS_NAME/${ALB_DNS_NAME}/" /etc/nginx/proxypass.conf
+sed -i "s/ALB_DNS_NAME/${ALB_DNS_NAME}/" /etc/nginx/nginx.conf
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/varnish/default.vcl
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/varnish/varnish.params
 
