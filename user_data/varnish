@@ -30,7 +30,7 @@ systemctl stop nginx varnish
 
 cd /etc/varnish
 curl -s ${GITHUB_REPO_API_URL}/varnish 2>&1 | awk -F'"' '/download_url/ {print $4 ; system("curl -sO "$4)}'
-mv nginx.conf proxypass.conf /etc/nginx/
+mv nginx.conf /etc/nginx/
 mv varnish.service /etc/systemd/system/
 uuidgen > /etc/varnish/secret
 sed -i "s/CIDR/${CIDR}/" /etc/nginx/nginx.conf
