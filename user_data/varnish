@@ -29,17 +29,36 @@ apt-get -y install varnish
 systemctl stop nginx varnish
 
 cd /etc/varnish
-curl -s ${GITHUB_REPO_API_URL}/varnish 2>&1 | awk -F'"' '/download_url/ {print $4 ; system("curl -sO "$4)}'
-mv nginx.conf /etc/nginx/
-mv varnish.service /etc/systemd/system/
+git init
+git remote add origin ${CODECOMMIT_SERVICES_REPO}
+git fetch
+git reset --hard origin/varnish
+git checkout -t origin/varnish
+
+sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/varnish/default.vcl
+sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/varnish/varnish.params
+
 uuidgen > /etc/varnish/secret
+
+cd /etc/systemd/system/
+git init
+git remote add origin ${CODECOMMIT_SERVICES_REPO}
+git fetch
+git reset --hard origin/systemd_proxy
+git checkout -t origin/systemd_proxy
+
+cd /etc/nginx
+git init
+git remote add origin ${CODECOMMIT_SERVICES_REPO}
+git fetch
+git reset --hard origin/nginx_proxy
+git checkout -t origin/nginx_proxy
+
 sed -i "s/CIDR/${CIDR}/" /etc/nginx/nginx.conf
 sed -i "s/RESOLVER/${RESOLVER}/" /etc/nginx/nginx.conf
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/nginx.conf
 sed -i "s/DOMAIN/${DOMAIN} ${STAGING_DOMAIN}/" /etc/nginx/nginx.conf
 sed -i "s/ALB_DNS_NAME/${ALB_DNS_NAME}/" /etc/nginx/nginx.conf
-sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/varnish/default.vcl
-sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/varnish/varnish.params
 
 systemctl daemon-reload
 systemctl enable varnish
