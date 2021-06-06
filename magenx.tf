@@ -248,7 +248,7 @@ resource "aws_efs_mount_target" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CodeCommit repository for application code
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_codecommit_repository" "this" {
+resource "aws_codecommit_repository" "app" {
   repository_name = var.app["domain"]
   description     = "Magento 2.x code for ${var.app["domain"]}"
     tags = {
@@ -259,15 +259,69 @@ resource "aws_codecommit_repository" "this" {
   command = <<EOF
           git clone -b aws ${var.app["source"]} /tmp/magento
           cd /tmp/magento
-          git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.this.repository_name}
+          git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
           git branch -m main
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.this.repository_name} main
+          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name} main
           rm -rf /tmp/magento
 EOF
   }
 }
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CodeCommit repository for services configuration
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_codecommit_repository" "services" {
+  repository_name = "${var.app["brand"]}-services-config"
+  description     = "EC2 linux and services configurations"
+    tags = {
+    Name = "${var.app["brand"]}-services-config"
+  }
+  provisioner "local-exec" {
+  interpreter = ["/bin/bash", "-c"]
+  command = <<EOF
+          cd ${abspath(path.root)}/services/nginx
+          git init
+          git commit --allow-empty -m "main branch"
+          git branch -m main
+          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} main
 
+          git branch -m nginx_admin
+          git add .
+          git commit -m "nginx_ec2_config"
+          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_admin
 
+          git branch -m nginx_frontend
+          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_frontend
+		  
+          git branch -m nginx_staging
+          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_staging
+          rm -rf .git
+
+          cd ${abspath(path.root)}/services/varnish
+          git init
+          git add .
+          git commit -m "varnish_ec2_config"
+          git branch -m varnish
+          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} varnish
+          rm -rf .git
+
+          cd ${abspath(path.root)}/services/systemd_proxy
+          git init
+          git add .
+          git commit -m "systemd_proxy_ec2_config"
+          git branch -m systemd_proxy
+          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} systemd_proxy
+          rm -rf .git
+
+          cd ${abspath(path.root)}/services/nginx_proxy
+          git init
+          git add .
+          git commit -m "nginx_proxy_ec2_config"
+          git branch -m nginx_proxy
+          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_proxy
+          rm -rf .git
+EOF
+  }
+}
 
 ////////////////////////////////////////////////////////[ CLOUDFRONT ]////////////////////////////////////////////////////
 
@@ -395,7 +449,7 @@ resource "aws_iam_role_policy" "codecommit_access" {
             "codecommit:GitPull",
             "codecommit:GitPush"
       ],
-      Resource = aws_codecommit_repository.this.arn
+      Resource = aws_codecommit_repository.app.arn
     }
   ]
 })
@@ -1187,7 +1241,7 @@ resource "aws_cloudwatch_event_rule" "codecommit_main" {
 {
 	"source": ["aws.codecommit"],
 	"detail-type": ["CodeCommit Repository State Change"],
-	"resources": ["${aws_codecommit_repository.this.arn}"],
+	"resources": ["${aws_codecommit_repository.app.arn}"],
 	"detail": {
 		"referenceType": ["branch"],
 		"referenceName": ["main"]
@@ -1331,7 +1385,8 @@ CLOUDFRONT_ADDRESS=${aws_cloudfront_distribution.this.domain_name}
 
 EFS_DNS_TARGET="${values(aws_efs_mount_target.this).0.dns_name}"
 
-CODECOMMIT_REPO_NAME="${aws_codecommit_repository.this.repository_name}"
+CODECOMMIT_APP_REPO="codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
+CODECOMMIT_SERVICES_REPO="codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name}"
 	  
 SES_KEY=${aws_iam_access_key.ses_smtp_user_access_key.id}
 SES_SECRET=${aws_iam_access_key.ses_smtp_user_access_key.secret}
@@ -1567,9 +1622,9 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento deploy:mode:set production"
       git add . -A
       git commit -m ${var.app["brand"]}-release-$(date +'%y%m%d-%H%M%S')
-      git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.this.repository_name}
+      git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
       git branch -m main
-      git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.this.repository_name} main
+      git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name} main
 EOT
 }
 
