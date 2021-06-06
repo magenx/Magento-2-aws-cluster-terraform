@@ -47,12 +47,6 @@ chmod 2770 pub/media var
 chmod +x bin/magento
 
 ## install nginx
-mkdir -p /etc/nginx
-cd /etc/nginx
-git clone -b nginx_${INSTANCE_NAME} ${CODECOMMIT_SERVICES_REPO} .
-mkdir -p /etc/nginx/sites-enabled
-ln -s /etc/nginx/sites-available/magento.conf /etc/nginx/sites-enabled/magento.conf
-
 echo "deb http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
 curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
 apt-get update
@@ -188,6 +182,15 @@ END
 
 echo "${WEB_ROOT_PATH}/app/etc/env.php" >> /etc/opcache-default.blacklist
 echo "${WEB_ROOT_PATH}/app/etc/config.php" >> /etc/opcache-default.blacklist
+
+cd /etc/nginx
+git init
+git remote add origin ${CODECOMMIT_SERVICES_REPO}
+git fetch
+git reset --hard origin/nginx_${INSTANCE_NAME}
+git checkout -t origin/nginx_${INSTANCE_NAME}
+
+ln -s /etc/nginx/sites-available/magento.conf /etc/nginx/sites-enabled/magento.conf
 
 sed -i "s/user  nginx;/user  ${BRAND};/" /etc/nginx/nginx.conf
 sed -i "s/CIDR/${CIDR}/" /etc/nginx/nginx.conf
