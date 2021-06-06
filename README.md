@@ -108,11 +108,11 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
  `2` redis elasticache cluster for sessions and cache  
  `1` rabbitmq broker to manage queue messages  
  `2` s3 buckets for [media] images and [system] files and logs (with access policy)  
- `2` codecommit app files repository and services config files repository
+ `2` codecommit app files repository and services config files repository  
  `1` cloudfront s3 origin distribution  
  `1` efs file system for shared folders, with mount target per AZ  
  `1` sns topic default subscription to receive email alerts  
- `1` ses user access details for smtp module
+ `1` ses user access details for smtp module  
  
  >resources are grouped into a virtual network, VPC dedicated to your brand  
  >the settings initially imply a large store, and are designed for huge traffic.  
