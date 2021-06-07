@@ -257,7 +257,7 @@ resource "aws_codecommit_repository" "app" {
   provisioner "local-exec" {
   interpreter = ["/bin/bash", "-c"]
   command = <<EOF
-          git clone -b aws ${var.app["source"]} /tmp/magento
+          git clone ${var.app["source"]} /tmp/magento
           cd /tmp/magento
           git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
           git branch -m main
