@@ -137,7 +137,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 ![Magento_2_AWS_cloud_auto_scaling_terraform-map](https://user-images.githubusercontent.com/1591200/119973444-66351600-bfab-11eb-82b8-1413c9aa41fc.png)
 
 ## Magento 2 development | source code:
-- Local provisioner copy files from Github https://github.com/magenx/Magento-2
+- Local provisioner copy files from https://github.com/magenx/Magento-2/tree/aws
 - Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
 - Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
 - Right after infrastructure deployment the minimal Magento 2 package is ready to install.
