@@ -140,7 +140,8 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 - Local provisioner copy files from Github https://github.com/magenx/Magento-2
 - Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
 - Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
-- Right after infrastructure deployment the minimal Magento 2 package is ready to install. Run SSM Document to install Magento
+- Right after infrastructure deployment the minimal Magento 2 package is ready to install.
+- Check and run SSM Document to install Magento
 > minimal Magento 2 package can be extended anytime.
 > Remove blacklisted components from `composer.json` in `"replace": {}` and run `composer update`  
 > modules configuration here: https://github.com/magenx/Magento-2/blob/aws/composer.json
@@ -154,7 +155,7 @@ $ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
 ## CI/CD scenario:
 - Event driven
 - Services configuration files tracked in CodeCommit repository
-- Changes in CodeCommit repository triggers EventBridge rule. By default admin and frontend tagged resources are targets of this rule.
+- Changes in CodeCommit repository triggers EventBridge rule.
 - SSM Document pull from CodeCommit repository and cleanup.
 - Change deployment logic to your needs.
 
