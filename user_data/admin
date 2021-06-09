@@ -25,7 +25,7 @@ chmod 711 /home/${BRAND}
 mkdir -p /home/${BRAND}/{.config,.cache,.local,.composer}
 chown -R ${BRAND}:${PHP_USER} ${WEB_ROOT_PATH} /home/${BRAND}/{.config,.cache,.local,.composer}
 chmod 2770 ${WEB_ROOT_PATH}
-setfacl -Rdm u:${BRAND}:rwX,g:${PHP_USER}:r-X,o::- ${WEB_ROOT_PATH}
+setfacl -R -m u:${BRAND}:rwX,g:${PHP_USER}:r-X,o::-,d:u:${BRAND}:rwX,d:g:${PHP_USER}:r-X,d:o::- ${WEB_ROOT_PATH}
 cd ${WEB_ROOT_PATH}
 su ${BRAND} -s /bin/bash -c "git clone -b main ${CODECOMMIT_APP_REPO} ."
 echo "${EFS_DNS_TARGET}:/%{ if "${INSTANCE_NAME}" != "staging" }production%{ else }staging%{ endif }/var ${WEB_ROOT_PATH}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
