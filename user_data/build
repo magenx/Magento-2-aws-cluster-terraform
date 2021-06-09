@@ -62,8 +62,6 @@ sed -i 's/^\(memory_limit = \)[0-9]*M/\14048M/' ${PHP_INI}
 sed -i 's/^\(post_max_size = \)[0-9]*M/\164M/' ${PHP_INI}
 sed -i 's/^\(upload_max_filesize = \)[0-9]*M/\164M/' ${PHP_INI}
 sed -i 's/expose_php = On/expose_php = Off/' ${PHP_INI}
-sed -i 's/;realpath_cache_size =.*/realpath_cache_size = 4096k/' ${PHP_INI}
-sed -i 's/;realpath_cache_ttl =.*/realpath_cache_ttl = 86400/' ${PHP_INI}
 sed -i 's/short_open_tag = Off/short_open_tag = On/' ${PHP_INI}
 sed -i 's/;max_input_vars =.*/max_input_vars = 50000/' ${PHP_INI}
 sed -i 's/session.gc_maxlifetime = 1440/session.gc_maxlifetime = 28800/' ${PHP_INI}
