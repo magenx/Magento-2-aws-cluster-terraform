@@ -30,7 +30,7 @@ resource "aws_budgets_budget" "all" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Generate random uuid string that is intended to be used as unique identifier
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "random_uuid" "uuid" {
+resource "random_uuid" "this" {
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Generate random passwords
@@ -47,7 +47,8 @@ resource "random_password" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Generate random string
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "random_string" "string" {
+resource "random_string" "this" {
+  for_each         = toset(["admin_path", "mysql_path"])
   length           = 7
   lower          = true
   number         = true
@@ -991,8 +992,46 @@ resource "aws_lb_listener_rule" "inneradmin" {
     target_group_arn = aws_lb_target_group.this["admin"].arn
   }
   condition {
+    host_header {
+      values = [var.app["domain"]]
+    }
+  }
+  condition {
+    http_header {
+      http_header_name = "X-Magenx-Header"
+      values           = [random_uuid.this.result]
+    }
+  }
+  condition {
     path_pattern {
-      values = ["/admin_${random_string.string.result}/*"]
+      values = ["/admin_${random_string.this["admin_path"].result}/*"]
+    }
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create conditional listener rule for INNER Load Balancer - forward to phpmyadmin
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_lb_listener_rule" "innermysql" {
+  listener_arn = aws_lb_listener.inner.arn
+  priority     = 20
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.this["admin"].arn
+  }
+  condition {
+    host_header {
+      values = [var.app["domain"]]
+    }
+  }
+  condition {
+    http_header {
+      http_header_name = "X-Magenx-Header"
+      values           = [random_uuid.this.result]
+    }
+  }
+  condition {
+    path_pattern {
+      values = ["/mysql_${random_string.this["mysql_path"].result}/*"]
     }
   }
 }
@@ -1001,7 +1040,7 @@ resource "aws_lb_listener_rule" "inneradmin" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener_rule" "innerstaging" {
   listener_arn = aws_lb_listener.inner.arn
-  priority     = 20
+  priority     = 30
   action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this["staging"].arn
