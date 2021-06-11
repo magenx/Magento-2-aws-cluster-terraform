@@ -36,7 +36,7 @@ resource "random_uuid" "this" {
 # Generate random passwords
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "this" {
-  for_each         = toset(["rds", "elk", "mq", "magento"])
+  for_each         = toset(["rds", "elk", "mq", "magento", "blowfish"])
   length           = 16
   lower            = true
   upper            = true
@@ -48,7 +48,7 @@ resource "random_password" "this" {
 # Generate random string
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_string" "this" {
-  for_each         = toset(["admin_path", "mysql_path"])
+  for_each         = toset(["admin_path", "mysql_path", "profiler"])
   length           = 7
   lower          = true
   number         = true
