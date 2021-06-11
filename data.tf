@@ -128,6 +128,8 @@ WEB_ROOT_PATH = "/home/${var.app["brand"]}/public_html"
 TIMEZONE = "${var.app["timezone"]}"
 MAGENX_HEADER = "${random_uuid.this.result}"
 MYSQL_PATH = "mysql_${random_string.this["mysql_path"].result}"
+PROFILER = "${random_string.this["profiler"].result}"
+BLOWFISH = "${random_password.this["blowfish"].result}"
 
  }
 }
