@@ -203,10 +203,9 @@ PROFILER_PLACEHOLDER="$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 
 sed -i "s/PROFILER_PLACEHOLDER/$${PROFILER_PLACEHOLDER}/" /etc/nginx/conf.d/maps.conf
 
 %{ if "${INSTANCE_NAME}" == "admin" }
-PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
 BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9=+_[]{}()<>-' | fold -w 64 | head -n 1)
 sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '$${BLOWFISHCODE}';/" /var/lib/phpmyadmin/blowfish_secret.inc.php
-sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_$${PMA_FOLDER}/g" /etc/nginx/conf.d/phpmyadmin.conf
+sed -i "s/PHPMYADMIN_PLACEHOLDER/${MYSQL_PATH}/g" /etc/nginx/conf.d/phpmyadmin.conf
 %{ endif }
 
 systemctl daemon-reload
