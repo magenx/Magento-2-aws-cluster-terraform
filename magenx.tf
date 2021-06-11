@@ -36,8 +36,8 @@ resource "random_uuid" "this" {
 # Generate random passwords
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "this" {
-  for_each         = toset(["rds", "elk", "mq", "magento", "blowfish"])
-  length           = 16
+  for_each         = toset(["rds", "elk", "mq", "app", "blowfish"])
+  length           = (each.key == "blowfish" ? 32 : 16)
   lower            = true
   upper            = true
   number           = true
@@ -1416,7 +1416,7 @@ DATABASE_USER_NAME="${aws_db_instance.this["production"].username}"
 DATABASE_PASSWORD='${random_password.this["rds"].result}'
 
 ADMIN_PATH='admin_${random_string.string.result}'
-ADMIN_PASSWORD='${random_password.this["magento"].result}'
+ADMIN_PASSWORD='${random_password.this["app"].result}'
 
 RABBITMQ_ENDPOINT="${trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.endpoints.0}", "amqps://"), ":5671")}"
 RABBITMQ_USER="${var.app["brand"]}"
@@ -1605,7 +1605,7 @@ mainSteps:
       --admin-lastname=${var.app["brand"]} \
       --admin-email=${var.app["admin_email"]} \
       --admin-user=admin \
-      --admin-password='${random_password.this["magento"].result}' \
+      --admin-password='${random_password.this["app"].result}' \
       --backend-frontname='admin_${random_string.string.result}' \
       --language=${var.app["language"]} \
       --currency=${var.app["currency"]} \
