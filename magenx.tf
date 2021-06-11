@@ -970,15 +970,40 @@ resource "aws_lb_listener" "outerhttp" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create default listener for INNER Load Balancer - forward to frontend
+# Create default listener for INNER Load Balancer - default response
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener" "inner" {
   load_balancer_arn = aws_lb.this["inner"].arn
   port              = "80"
   protocol          = "HTTP"
   default_action {
+    type             = "fixed-response"
+    fixed_response {
+        content_type = "text/plain"
+        message_body = "No targets are responding to this request"
+        status_code  = "502"
+        }
+    }
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create conditional listener rule for INNER Load Balancer - forward to frontend
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_lb_listener_rule" "innerfrontend" {
+  listener_arn = aws_lb_listener.inner.arn
+  priority     = 10
+  action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this["frontend"].arn
+  }
+  condition {
+    host_header {
+      values = [var.app["domain"]]
+    }
+  }
+  condition {
+    http_header {
+      http_header_name = "X-Magenx-Header"
+      values           = [random_uuid.this.result]
+    }
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -986,7 +1011,7 @@ resource "aws_lb_listener" "inner" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener_rule" "inneradmin" {
   listener_arn = aws_lb_listener.inner.arn
-  priority     = 10
+  priority     = 20
   action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this["admin"].arn
@@ -1013,7 +1038,7 @@ resource "aws_lb_listener_rule" "inneradmin" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener_rule" "innermysql" {
   listener_arn = aws_lb_listener.inner.arn
-  priority     = 20
+  priority     = 30
   action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this["admin"].arn
@@ -1040,7 +1065,7 @@ resource "aws_lb_listener_rule" "innermysql" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener_rule" "innerstaging" {
   listener_arn = aws_lb_listener.inner.arn
-  priority     = 30
+  priority     = 40
   action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this["staging"].arn
