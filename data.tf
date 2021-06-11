@@ -126,6 +126,7 @@ PHP_USER = "php-${var.app["brand"]}"
 ADMIN_EMAIL = "${var.app["admin_email"]}"
 WEB_ROOT_PATH = "/home/${var.app["brand"]}/public_html"
 TIMEZONE = "${var.app["timezone"]}"
+MAGENX_HEADER = "${random_uuid.this.result}"
 
  }
 }
