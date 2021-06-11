@@ -127,7 +127,7 @@ ADMIN_EMAIL = "${var.app["admin_email"]}"
 WEB_ROOT_PATH = "/home/${var.app["brand"]}/public_html"
 TIMEZONE = "${var.app["timezone"]}"
 MAGENX_HEADER = "${random_uuid.this.result}"
-MYSQL_PATH = "${random_string.this["mysql_path"].result}"
+MYSQL_PATH = "mysql_${random_string.this["mysql_path"].result}"
 
  }
 }
