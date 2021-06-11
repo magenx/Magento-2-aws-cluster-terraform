@@ -346,7 +346,7 @@ resource "aws_cloudfront_distribution" "this" {
 	  
     custom_header {
       name  = "X-Magenx-Header"
-      value = random_uuid.uuid.result
+      value = random_uuid.this.result
     }
   }
 
