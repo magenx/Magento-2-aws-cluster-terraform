@@ -365,14 +365,13 @@ resource "aws_cloudfront_distribution" "this" {
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "${var.app["domain"]}-media-assets"
 
-    compress = true
     origin_request_policy_id = data.aws_cloudfront_origin_request_policy.this.id
     cache_policy_id          = data.aws_cloudfront_cache_policy.this.id
 
   viewer_protocol_policy = "https-only"
     min_ttl                = 0
-    default_ttl            = 3600
-    max_ttl                = 86400
+    default_ttl            = 86400
+    max_ttl                = 604800
   }
   
   restrictions {
