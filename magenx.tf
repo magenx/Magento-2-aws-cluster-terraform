@@ -1467,7 +1467,7 @@ SES_KEY=${aws_iam_access_key.ses_smtp_user_access_key.id}
 SES_SECRET=${aws_iam_access_key.ses_smtp_user_access_key.secret}
 SES_PASSWORD=${aws_iam_access_key.ses_smtp_user_access_key.ses_smtp_password_v4}
 
-HTTP_X_HEADER="${random_uuid.uuid.result}"
+HTTP_X_HEADER="${random_uuid.this.result}"
 
 EOF
 
