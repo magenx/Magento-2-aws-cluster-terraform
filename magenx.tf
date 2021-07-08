@@ -1439,7 +1439,7 @@ DATABASE_INSTANCE_NAME="${aws_db_instance.this["production"].name}"
 DATABASE_USER_NAME="${aws_db_instance.this["production"].username}"
 DATABASE_PASSWORD='${random_password.this["rds"].result}'
 
-ADMIN_PATH='admin_${random_string.string.result}'
+ADMIN_PATH='admin_${random_string.this["admin_path"].result'
 ADMIN_PASSWORD='${random_password.this["app"].result}'
 
 RABBITMQ_ENDPOINT="${trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.endpoints.0}", "amqps://"), ":5671")}"
@@ -1630,7 +1630,7 @@ mainSteps:
       --admin-email=${var.app["admin_email"]} \
       --admin-user=admin \
       --admin-password='${random_password.this["app"].result}' \
-      --backend-frontname='admin_${random_string.string.result}' \
+      --backend-frontname='admin_${random_string.this["admin_path"].result}' \
       --language=${var.app["language"]} \
       --currency=${var.app["currency"]} \
       --timezone=${var.app["timezone"]} \
