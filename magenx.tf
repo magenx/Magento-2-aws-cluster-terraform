@@ -1584,7 +1584,7 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "git reset --hard origin/staging"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:db:status --no-ansi -n"
       if [[ $? -ne 0 ]]; then
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade --keep-generated --no-ansi -n"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade --no-ansi -n"
       fi
       systemctl reload php*fpm.service
       systemctl reload nginx.service
