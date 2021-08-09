@@ -1550,14 +1550,13 @@ mainSteps:
       cd /home/${var.app["brand"]}/public_html
       su ${var.app["brand"]} -s /bin/bash -c "git fetch origin"
       su ${var.app["brand"]} -s /bin/bash -c "git reset --hard origin/main"
-      systemctl reload php${var.app["php_version"]}-fpm
-      systemctl reload nginx
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:db:status --no-ansi"
-      if [[ $? -eq 0 ]]; then
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento cache:clean"
-      else
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:db:status --no-ansi -n"
+      if [[ $? -ne 0 ]]; then
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade --keep-generated --no-ansi -n"
       fi
+      systemctl reload php*fpm.service
+      systemctl reload nginx.service
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento cache:flush"
 EOT
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -1583,14 +1582,13 @@ mainSteps:
       cd /home/${var.app["brand"]}/public_html
       su ${var.app["brand"]} -s /bin/bash -c "git fetch origin"
       su ${var.app["brand"]} -s /bin/bash -c "git reset --hard origin/staging"
-      systemctl reload php${var.app["php_version"]}-fpm
-      systemctl reload nginx
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:db:status --no-ansi"
-      if [[ $? -eq 0 ]]; then
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento cache:clean"
-      else
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade --no-ansi -n"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:db:status --no-ansi -n"
+      if [[ $? -ne 0 ]]; then
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade --keep-generated --no-ansi -n"
       fi
+      systemctl reload php*fpm.service
+      systemctl reload nginx.service
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento cache:flush"
 EOT
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
