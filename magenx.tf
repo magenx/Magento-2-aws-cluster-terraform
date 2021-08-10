@@ -983,6 +983,7 @@ resource "aws_lb_listener" "inner" {
         status_code  = "502"
         }
     }
+}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create conditional listener rule for INNER Load Balancer - forward to frontend
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -1439,7 +1440,7 @@ DATABASE_INSTANCE_NAME="${aws_db_instance.this["production"].name}"
 DATABASE_USER_NAME="${aws_db_instance.this["production"].username}"
 DATABASE_PASSWORD='${random_password.this["rds"].result}'
 
-ADMIN_PATH='admin_${random_string.this["admin_path"].result'
+ADMIN_PATH='admin_${random_string.this["admin_path"].result}'
 ADMIN_PASSWORD='${random_password.this["app"].result}'
 
 RABBITMQ_ENDPOINT="${trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.endpoints.0}", "amqps://"), ":5671")}"
