@@ -208,7 +208,7 @@ sed -i "s/PHPMYADMIN_PLACEHOLDER/${MYSQL_PATH}/g" /etc/nginx/conf.d/phpmyadmin.c
 
 systemctl daemon-reload
 systemctl restart nginx.service
-systemctl restart php${PHP_VERSION}-fpm.service
+systemctl restart php*fpm.service
 
 cd /usr/local/src
 wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb
