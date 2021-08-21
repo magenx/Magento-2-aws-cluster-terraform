@@ -1156,7 +1156,7 @@ resource "aws_launch_template" "this" {
             }
   }
   iam_instance_profile { name = aws_iam_instance_profile.this.name }
-  image_id = data.aws_ami.ubuntu_2004.id
+  image_id = data.aws_ami.distro.id
   instance_initiated_shutdown_behavior = "terminate"
   instance_type = each.value
   monitoring { enabled = false }
