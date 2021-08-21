@@ -2,7 +2,8 @@
 > Deploy a full-scale secure and flexible e-commerce infrastructure based on Magento 2 in a matter of seconds.  
 > Enterprise-grade solution for companies of all sizes, B2B B2C, providing the best customer experience.  
 
-<img src="https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg" width="210" height="140"> <img src="https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg" width="180" height="145"> <img src="https://user-images.githubusercontent.com/1591200/118028531-158ead80-b35b-11eb-8957-636de16ada34.png" width="250" height="155">
+<img src="https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg" width="200" height="140"> <img src="https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg" width="175" height="145"> <img src="https://user-images.githubusercontent.com/1591200/118028531-158ead80-b35b-11eb-8957-636de16ada34.png" width="250" height="155">
+<img src="https://user-images.githubusercontent.com/1591200/130320410-91749ce8-5af1-4802-af25-ffb36e7ded98.png" width="120" height="135">
 
 <br />
 
@@ -50,7 +51,7 @@ Reserved Instances provide you with significant savings on your Amazon EC2 costs
 
 NGINX is optimized and fully supported on the latest generation of 64-bit ARM Servers utilizing the architecture. PHP using socket connection.
 
-Ubuntu 20.04 LTS includes support for the very latest ARM-based server systems powered by certified 64-bit processors.
+Debian 11 [bullseye](https://www.debian.org/) which will be supported for the next 5 years. Includes support for the very latest ARM-based server systems powered by certified 64-bit processors.
 Develop and deploy at scale. Webstack delivers top performance on ARM.
 
 [**AWS Systems Manager**](https://aws.amazon.com/systems-manager/) is an AWS service that you can use to view and control your infrastructure on AWS. Using the Systems Manager console, you can view operational data from multiple AWS EC2 instances and automate operational tasks across your AWS resources. Systems Manager helps you maintain security and compliance. No SSH connections from outside, no need to track passwords and private keys.
@@ -74,6 +75,7 @@ The idea was to create something more complex, with deeper settings, that terrif
 
 # Deployment into isolated VPC:
 - Login to AWS Console
+- [Subscribe to Debian 11 ARM](https://aws.amazon.com/marketplace/pp/prodview-jwzxq55gno4p4)
 - Start AWS CloudShell
 - Install Terraform:
 ```
@@ -81,10 +83,14 @@ The idea was to create something more complex, with deeper settings, that terrif
    sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
    sudo yum -y install terraform
 ```
-- Clone repo:
+- Create deployment directory:  
+```
+  mkdir magento && cd magento
+```
+- Clone repo:  
 > 
 ```
-$ git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git
+  git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
 ```
 > 
 - Note: Right after `terraform apply` you will receive email from amazon to approve resources
