@@ -24,7 +24,7 @@ Bad architectural solution using monolitic servers, not cloud native solution, t
 Obviously, PaaS intermediaries also use AWS Cloud. But concealing its cheap solutions with a marketing, 
 trying to hook you up on a dodgy contract and making you pay 10 times more.
 ``` 
-<img align="right" src="https://user-images.githubusercontent.com/1591200/130331243-03e6097a-c380-4586-b380-cbc733237d93.png">
+<img align="right" width="600" src="https://user-images.githubusercontent.com/1591200/130331243-03e6097a-c380-4586-b380-cbc733237d93.png">
 
 ## AWS cloud account pros:
 - Open source Magento
@@ -38,6 +38,7 @@ trying to hook you up on a dodgy contract and making you pay 10 times more.
 - No sudden surplus resources  
   
   
+&nbsp;  
   
 **Amazon Web Services** offers an ecommerce cloud computing solutions to small and large businesses that want a flexible, secured, highly scalable infrastructure. All the technologies online retailers need to manage growth—instantly. With technologies like automatic scaling compute resources, networking, storage, content distribution, and a PCI-compliant environment, retailers can always provide great customer experiences and capitalize on growth opportunities.  
 
