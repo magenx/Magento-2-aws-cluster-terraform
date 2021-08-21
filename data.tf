@@ -79,15 +79,17 @@ data "aws_cloudfront_cache_policy" "this" {
   name = "Managed-CachingOptimized"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Get get the latest ID of a registered AMI linux distro by brand and filter
+# Get get the latest ID of a registered AMI linux distro by owner and version
 # # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_ami" "ubuntu_2004" {
+data "aws_ami" "distro" {
   most_recent = true
-  owners      = ["099720109477"]
+  #owners      = ["099720109477"] # ubuntu
+  owners      = ["136693071363"] # debian
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*"]
+    #values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*"] # ubuntu
+    values = ["debian-11-arm64*"] # debian
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
