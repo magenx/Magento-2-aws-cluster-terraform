@@ -184,7 +184,7 @@ Enabled modules for business requirements:
 - edit => migrate => share
 
 ## TODO:
-- Proper vars  
+- rework and simplify.  
   
     
     
