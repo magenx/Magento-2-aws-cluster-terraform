@@ -8,6 +8,7 @@
 INSTANCE_LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
 ## system installation
+apt-mark hold ${EXCLUDE_PACKAGES_DEB}
 apt-get -y install software-properties-common
 apt-get update
 apt-get -y install ${EXTRA_PACKAGES_DEB}
