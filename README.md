@@ -160,7 +160,7 @@ The idea was to create something more complex, with deeper settings, that terrif
   - Zero maintenance
   - Low security risks  
   
-Enabled modules:  
+Enabled modules for business requirements:  
 - [x] [Stripe Payments](https://stripe.com/docs/plugins/magento)
 - [x] [Smile ElasticSuite](https://github.com/Smile-SA/elasticsuite)
 - [x] [Mageplaza SMTP](https://github.com/mageplaza/magento-2-smtp)
