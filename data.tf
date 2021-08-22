@@ -112,8 +112,9 @@ EFS_DNS_TARGET = "${values(aws_efs_mount_target.this).0.dns_name}"
 CODECOMMIT_APP_REPO = "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
 CODECOMMIT_SERVICES_REPO = "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name}"
   
-EXTRA_PACKAGES_DEB = "curl jq nfs-common gnupg2 apt-transport-https apt-show-versions ca-certificates lsb-release unzip vim wget git patch python3-pip acl attr imagemagick snmp"
+EXTRA_PACKAGES_DEB = "jq nfs-common apt-transport-https apt-show-versions ca-certificates lsb-release unzip git patch python3-pip acl attr imagemagick snmp"
 PHP_PACKAGES_DEB = "cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4 apcu"
+EXCLUDE_PACKAGES_DEB = "apache2* *apcu-bc"
 
 PHP_VERSION = "${var.app["php_version"]}"
 PHP_INI = "/etc/php/${var.app["php_version"]}/fpm/php.ini"
