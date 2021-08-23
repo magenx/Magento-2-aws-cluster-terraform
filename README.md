@@ -149,16 +149,18 @@ The idea was to create something more complex, with deeper settings, that terrif
 - Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
 - Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
 - Right after infrastructure deployment the minimal Magento 2 package is ready to install.
-- Check and run SSM Document to install Magento
-> minimal Magento 2 package can be extended anytime.
+- Check and run SSM Document to install Magento  
+> Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime.
 > Remove blacklisted components from `composer.json` in `"replace": {}` and run `composer update`  
-> modules configuration here: https://github.com/magenx/Magento-2/blob/aws/composer.json
-- Why removing bloatware modules and use Magento minimal package:
-  - Faster backend and frontend
-  - Easy deployments
-  - Less dependencies
-  - Zero maintenance
-  - Low security risks  
+> modules configuration here: https://github.com/magenx/Magento-2/blob/aws/composer.json  
+
+## [!] Why removing bloatware modules and use Magento minimal package:
+- Faster backend and frontend  &#8595;`from 14% upto 50%`
+- Better memory management  &#8595;`upto 15%`
+- Easy deployments
+- Less dependencies
+- Zero maintenance
+- Low security risks  
   
 Enabled modules for business requirements:  
 - [x] [Stripe Payments](https://stripe.com/docs/plugins/magento)
