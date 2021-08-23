@@ -1593,6 +1593,46 @@ mainSteps:
 EOT
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Document runShellScript to pull build branch from CodeCommit to deploy code and static files
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_ssm_document" "ssm_document_pull_build" {
+  name          = "${var.app["brand"]}-codecommit-pull-build-changes"
+  document_type = "Command"
+  document_format = "YAML"
+  target_type   = "/AWS::EC2::Instance"
+  content = <<EOT
+---
+schemaVersion: "2.2"
+description: "Pull code changes from CodeCommit build branch"
+parameters:
+mainSteps:
+- action: "aws:runShellScript"
+  name: "${var.app["brand"]}CodeCommitPullBuildChanges"
+  inputs:
+    runCommand:
+    - |-
+      #!/bin/bash
+      cd /home/${var.app["brand"]}/public_html
+      rm -rf ..?* .[!.]* *
+      su ${var.app["brand"]} -s /bin/bash -c "git clone -b build codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name} ."
+      ## catch module installation logic here ##
+      su ${var.app["brand"]} -s /bin/bash -c "composer install --optimize-autoloader --prefer-dist --no-dev" >> var/log/php-fpm-error.log
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:di:compile" >> var/log/php-fpm-error.log
+      if [[ $? -ne 0 ]]; then
+      echo
+      echo "Code compilation error" >> var/log/php-fpm-error.log
+      exit 1
+      fi
+      su ${var.app["brand"]} -s /bin/bash -c "composer dump-autoload --no-dev --optimize --apcu" >> var/log/php-fpm-error.log
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:static-content:deploy -f" >> var/log/php-fpm-error.log
+      if [[ $? -ne 0 ]]; then
+      echo
+      echo "Static files compilation error" >> var/log/php-fpm-error.log
+      exit 1
+      fi
+EOT
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document runShellScript to install magento, push to codecommit, init git
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "ssm_document_install" {
