@@ -1612,8 +1612,8 @@ mainSteps:
     runCommand:
     - |-
       #!/bin/bash
+      rm -rf /home/${var.app["brand"]}/public_html/{*,.*}
       cd /home/${var.app["brand"]}/public_html
-      rm -rf ..?* .[!.]* *
       su ${var.app["brand"]} -s /bin/bash -c "git clone -b build codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name} ."
       ## catch module installation logic here ##
       su ${var.app["brand"]} -s /bin/bash -c "composer install --optimize-autoloader --prefer-dist --no-dev" >> var/log/php-fpm-error.log
