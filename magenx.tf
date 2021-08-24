@@ -1730,8 +1730,8 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c 'bin/magento config:set smtp/configuration_option/test_email/to ${var.app["admin_email"]}'
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/developer/developer_mode 0"
       ## configure cloudfront media base url
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/unsecure/base_media_url ${aws_cloudfront_distribution.this.domain_name}"
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/base_media_url ${aws_cloudfront_distribution.this.domain_name}"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/unsecure/base_media_url https://${aws_cloudfront_distribution.this.domain_name}/"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/base_media_url https://${aws_cloudfront_distribution.this.domain_name}/"
       ## deploy production mode
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento deploy:mode:set production"
       git add . -A
