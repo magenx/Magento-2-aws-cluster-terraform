@@ -9,17 +9,15 @@ INSTANCE_LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
 ## system installation
 apt-mark hold ${EXCLUDE_PACKAGES_DEB}
-apt-get -y install software-properties-common
 apt-get update
 apt-get -y install ${EXTRA_PACKAGES_DEB}
+pip3 install git-remote-codecommit
 
 ## create user
 useradd -d /home/${BRAND} -s /bin/bash ${BRAND} >/dev/null 2>&1
 ## create root php user
 useradd -M -s /sbin/nologin -d /home/${BRAND} ${PHP_USER} >/dev/null 2>&1
 usermod -g ${PHP_USER} ${BRAND}
-
-pip3 install git-remote-codecommit
 
 mkdir -p ${WEB_ROOT_PATH}
 chmod 711 /home/${BRAND}
@@ -35,13 +33,12 @@ chmod +x bin/magento
 
 ## install nodejs
 curl -fsSL https://deb.nodesource.com/setup_15.x | bash -
-apt-get -y install nodejs
 
 ## install php
 wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
 echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
 apt-get update
-apt-get -y install composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor ~}
+apt-get -y install nodejs composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor ~}
 
 
 cat > /etc/sysctl.conf <<END
