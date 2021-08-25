@@ -1695,7 +1695,7 @@ mainSteps:
       --remote-storage-region=${data.aws_region.current.name}"
       ## installation check
       if [ ! -f /home/${var.app["brand"]}/public_html/app/etc/env.php ]; then
-      echo "installation error"
+      echo "Installation error"
       exit 1
       fi
       ## cache backend
@@ -1734,6 +1734,11 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/base_media_url https://${aws_cloudfront_distribution.this.domain_name}/"
       ## deploy production mode
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento deploy:mode:set production"
+      if [[ $? -ne 0 ]]; then
+      echo
+      echo "Code compilation error"
+      exit 1
+      fi
       git add . -A
       git commit -m ${var.app["brand"]}-release-$(date +'%y%m%d-%H%M%S')
       git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
