@@ -9,17 +9,18 @@ INSTANCE_LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
 ## installation
 apt-mark hold ${EXCLUDE_PACKAGES_DEB}
-apt-get -y install software-properties-common
 apt-get update
 apt-get -y install ${EXTRA_PACKAGES_DEB}
+pip3 install git-remote-codecommit
+
+hostnamectl set-hostname server.${DOMAIN} --static
+timedatectl set-timezone ${TIMEZONE}
 
 ## create user
 useradd -d /home/${BRAND} -s /bin/bash ${BRAND}
 ## create root php user
 useradd -M -s /sbin/nologin -d /home/${BRAND} ${PHP_USER}
 usermod -g ${PHP_USER} ${BRAND}
-
-pip3 install git-remote-codecommit
 
 mkdir -p ${WEB_ROOT_PATH}
 chmod 711 /home/${BRAND}
@@ -48,14 +49,9 @@ chmod 2770 pub/media var
 chmod +x bin/magento
 
 ## install nginx
-curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
-echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
-http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" \
-    | sudo tee /etc/apt/sources.list.d/nginx.list
-echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" \
-    | sudo tee /etc/apt/preferences.d/99nginx
-apt-get update
-apt-get -y install nginx
+curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor > /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
+echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" > /etc/apt/preferences.d/99nginx
 
 ## install php + phpmyadmin
 wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
@@ -67,8 +63,8 @@ debconf-set-selections <<< "phpmyadmin phpmyadmin/reconfigure-webserver multisel
 debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false"
 %{ endif }
 
-apt-get -y update
-apt-get -y install %{ if "${INSTANCE_NAME}" == "admin" }phpmyadmin%{ endif } composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor }
+apt-get update
+apt-get -y install %{ if "${INSTANCE_NAME}" == "admin" }phpmyadmin%{ endif } nginx composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor }
 
 cat > /etc/sysctl.conf <<END
 fs.file-max = 1000000
@@ -158,11 +154,6 @@ sed -i 's/mysqli.allow_persistent = On/mysqli.allow_persistent = Off/' ${PHP_INI
 sed -i 's/pm = dynamic/pm = ondemand/' ${PHP_FPM_POOL}
 sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' ${PHP_FPM_POOL}
 sed -i 's/^\(pm.max_children = \)[0-9]*/\1100/' ${PHP_FPM_POOL}
-
-
-hostnamectl set-hostname server.${DOMAIN} --static
-
-timedatectl set-timezone ${TIMEZONE}
 
 sed -i "s/\[www\]/\[${BRAND}\]/" ${PHP_FPM_POOL}
 sed -i "s/^user =.*/user = ${PHP_USER}/" ${PHP_FPM_POOL}
