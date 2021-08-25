@@ -10,26 +10,19 @@ INSTANCE_LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
 ## system installation
 apt-mark hold ${EXCLUDE_PACKAGES_DEB}
-apt-get -y install software-properties-common
 apt-get update
-apt-get -y install ${EXTRA_PACKAGES_DEB}
-
+apt-get -qqy install ${EXTRA_PACKAGES_DEB}
 pip3 install git-remote-codecommit
 
 ## install nginx
-curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
-echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
-http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" \
-    | sudo tee /etc/apt/sources.list.d/nginx.list
-echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" \
-    | sudo tee /etc/apt/preferences.d/99nginx
-apt-get update
-apt-get -y install nginx
+curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor > /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
+echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" > /etc/apt/preferences.d/99nginx
 
 ## install varnish
-#curl -s https://packagecloud.io/install/repositories/varnishcache/varnish65/script.deb.sh | bash
-#apt-get update
-apt-get -y install varnish
+#curl -s https://packagecloud.io/install/repositories/varnishcache/varnish66/script.deb.sh | bash
+apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/nginx.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"; done
+apt-get -qqy install varnish nginx
 
 systemctl stop nginx varnish
 
@@ -69,6 +62,9 @@ sed -i "s/MAGENX_HEADER/${MAGENX_HEADER}/" /etc/nginx/nginx.conf
 systemctl daemon-reload
 systemctl enable varnish
 systemctl restart nginx varnish
+
+hostnamectl set-hostname server.${DOMAIN} --static
+timedatectl set-timezone ${TIMEZONE}
 
 ## install CloudWatch agent with config from SSM Parameter store
 cd /usr/local/src
