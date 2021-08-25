@@ -12,7 +12,7 @@ variable "ec2" {
 variable "app" {
   description      = "Map application params | Magento 2"
   default          = {
-    cidr             = "172.30.0.0/16"
+    cidr_block       = "172.30.0.0/16"
     brand            = "magenx"
     domain           = "magenx.com"
     admin_email      = "admin@magenx.com"
