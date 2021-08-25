@@ -188,7 +188,7 @@ git checkout -t origin/nginx_${INSTANCE_NAME}
 ln -s /etc/nginx/sites-available/magento.conf /etc/nginx/sites-enabled/magento.conf
 
 sed -i "s/user  nginx;/user  ${BRAND};/" /etc/nginx/nginx.conf
-sed -i "s/CIDR/${CIDR}/" /etc/nginx/nginx.conf
+sed -i "s,CIDR,${CIDR}," /etc/nginx/nginx.conf
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/magento.conf
 sed -i "s/example.com/%{ if "${INSTANCE_NAME}" != "staging" }${DOMAIN}%{ else }${STAGING_DOMAIN}%{ endif }/g" /etc/nginx/sites-available/magento.conf
 sed -i "s/example.com/%{ if "${INSTANCE_NAME}" != "staging" }${DOMAIN}%{ else }${STAGING_DOMAIN}%{ endif }/g" /etc/nginx/nginx.conf
