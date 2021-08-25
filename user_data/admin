@@ -10,11 +10,8 @@ INSTANCE_LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 ## installation
 apt-mark hold ${EXCLUDE_PACKAGES_DEB}
 apt-get update
-apt-get -y install ${EXTRA_PACKAGES_DEB}
+apt-get -qqy install ${EXTRA_PACKAGES_DEB}
 pip3 install git-remote-codecommit
-
-hostnamectl set-hostname server.${DOMAIN} --static
-timedatectl set-timezone ${TIMEZONE}
 
 ## create user
 useradd -d /home/${BRAND} -s /bin/bash ${BRAND}
@@ -49,12 +46,12 @@ chmod 2770 pub/media var
 chmod +x bin/magento
 
 ## install nginx
-curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor > /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+curl -s https://nginx.org/keys/nginx_signing.key | gpg --dearmor > /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
 echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
 echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" > /etc/apt/preferences.d/99nginx
 
 ## install php + phpmyadmin
-wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
+wget -qO /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
 echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
 
 %{ if "${INSTANCE_NAME}" == "admin" }
@@ -63,8 +60,8 @@ debconf-set-selections <<< "phpmyadmin phpmyadmin/reconfigure-webserver multisel
 debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false"
 %{ endif }
 
-apt-get update
-apt-get -y install %{ if "${INSTANCE_NAME}" == "admin" }phpmyadmin%{ endif } nginx composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor }
+for repository in nginx php; do apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/$${repository}.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"; done
+apt-get -qqy install %{ if "${INSTANCE_NAME}" == "admin" }phpmyadmin%{ endif } nginx composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor }
 
 cat > /etc/sysctl.conf <<END
 fs.file-max = 1000000
@@ -206,6 +203,9 @@ sed -i "s/PHPMYADMIN_PLACEHOLDER/${MYSQL_PATH}/g" /etc/nginx/conf.d/phpmyadmin.c
 systemctl daemon-reload
 systemctl restart nginx.service
 systemctl restart php*fpm.service
+
+hostnamectl set-hostname server.${DOMAIN} --static
+timedatectl set-timezone ${TIMEZONE}
 
 cd /usr/local/src
 wget https://s3.${AWS_DEFAULT_REGION}.amazonaws.com/amazon-ssm-${AWS_DEFAULT_REGION}/latest/debian_arm64/amazon-ssm-agent.deb
