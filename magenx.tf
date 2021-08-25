@@ -11,7 +11,6 @@ resource "aws_budgets_budget" "all" {
   budget_type       = "COST"
   limit_amount      = "2000"
   limit_unit        = "USD"
-  time_period_start = formatdate("YYYY-MM-DD_hh:mm", timestamp())
   time_unit         = "MONTHLY"
 
   notification {
@@ -64,7 +63,7 @@ resource "random_string" "this" {
 # Create our dedicated VPC
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_vpc" "this" {
-  cidr_block           = "172.${local.bit}.0.0/16"
+  cidr_block           = var.app["cidr_block"]
   instance_tenancy     = "default"
   enable_dns_support   = true
   enable_dns_hostnames = true
