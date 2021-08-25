@@ -60,7 +60,7 @@ debconf-set-selections <<< "phpmyadmin phpmyadmin/reconfigure-webserver multisel
 debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false"
 %{ endif }
 
-for repository in nginx php; do apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/$${repository}.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"; done
+%{ for WEBSTACK_REPOSITORY in nginx php ~} apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/${WEBSTACK_REPOSITORY}.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0" %{ endfor }
 apt-get -qqy install %{ if "${INSTANCE_NAME}" == "admin" }phpmyadmin%{ endif } nginx composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor }
 
 cat > /etc/sysctl.conf <<END
