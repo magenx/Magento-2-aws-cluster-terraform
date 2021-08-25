@@ -12,6 +12,7 @@ variable "ec2" {
 variable "app" {
   description      = "Map application params | Magento 2"
   default          = {
+    cidr             = "172.30.0.0/16"
     brand            = "magenx"
     domain           = "magenx.com"
     admin_email      = "admin@magenx.com"
@@ -171,7 +172,6 @@ variable "az_number" {
 }
 
 locals {
-  bit = (trimsuffix(trimprefix(sort(values(data.aws_vpc.all).*.cidr_block)[0], "172."), ".0.0/16") - 1)
   security_group = setunion(keys(var.alb),var.redis["name"],["ec2","rds","elk","mq","efs"])
 }
 
