@@ -8,7 +8,6 @@
 INSTANCE_LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
 ## installation
-apt-mark hold ${EXCLUDE_PACKAGES_DEB}
 apt-get update
 apt-get -qqy install ${EXTRA_PACKAGES_DEB}
 pip3 install git-remote-codecommit
@@ -62,7 +61,7 @@ debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false
 
 apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/nginx.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/php.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
-apt-get -qqy install %{ if "${INSTANCE_NAME}" == "admin" }phpmyadmin%{ endif } nginx composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor }
+apt-get -qqy install %{ if "${INSTANCE_NAME}" == "admin" }phpmyadmin%{ endif } nginx composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor } apache2*- *apcu-bc-
 
 cat > /etc/sysctl.conf <<END
 fs.file-max = 1000000
