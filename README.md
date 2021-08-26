@@ -1,4 +1,4 @@
-## Magento 2 [auto scaling](https://aws.amazon.com/autoscaling/) cluster with Terraform on AWS cloud :heart:
+## Magento 2 [auto scaling](https://aws.amazon.com/autoscaling/) cluster with Terraform on AWS cloud :cloud:
 > Deploy a full-scale secure and flexible e-commerce infrastructure based on Magento 2 in a matter of seconds.  
 > Enterprise-grade solution for companies of all sizes, B2B B2C, providing the best customer experience.  
 
