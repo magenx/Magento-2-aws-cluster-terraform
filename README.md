@@ -28,14 +28,14 @@ trying to hook you up on a dodgy contract and making you pay 10 times more.
 
 ## AWS cloud account pros:
 - Open source Magento
-- No license fees
-- No draconian contracts
-- No hardware configuration restrictions
-- No services configuration limitations
-- No hidden bottlenecks
-- No time waste for [support tickets](https://devdocs.magento.com/cloud/project/services.html)
+- Pay as You Go
 - Transparent billing
-- No sudden surplus resources  
+- No draconian contracts
+- No sudden surplus resources
+- No hardware restrictions
+- No services limitations
+- No hidden bottlenecks
+- No time waste for [support tickets](https://devdocs.magento.com/cloud/project/services.html) 
   
   
 &nbsp;  
