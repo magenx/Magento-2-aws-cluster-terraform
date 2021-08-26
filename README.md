@@ -137,6 +137,7 @@ The idea was to create something more complex, with deeper settings, that terrif
 - [x] All Magento files managed with git only
 - [x] Live shop in production mode / read-only 
 - [x] Security groups configured for every service and instances
+- [x] Enhanced security in AWS and LEMP 
 - [x] AWS Inspector Assessment templates
 - [x] AWS WAF Protection rules  
 
