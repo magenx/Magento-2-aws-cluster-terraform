@@ -13,7 +13,7 @@
 <br />
 
 ## [?] Why we need Adobe Commerce Cloud alternative:
-The biggest issue is that ACC pricing based on GMV % and AOV %, with this approach, you invest money in the development of a third-party business, but not your own.
+The biggest issue is that ACC pricing based on GMV % and AOV %, you overpay up to 80%, while the bill between Adobe and AWS remains at a minimum. With this approach, you invest money in the development of a third-party business, but not your own.
 Why spend so much money without having control over your business in the cloud?
 Configuring your own infrastructure these days is the most profitable way. You manage the resources, you have a complete overview how it works and you have full control over the money invested in your own infrastructure. At any time you can make changes to both infrastructure and application design without thinking about restrictions, 3rd party platform limitations and unforeseen costs. There are no hidden bills and payments for excess resources, which, as a result, you will not need.  
 
