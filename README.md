@@ -164,13 +164,11 @@ The idea was to create something more complex, with deeper settings, that terrif
   
 Enabled modules for business requirements:  
 - [x] [Stripe Payments](https://stripe.com/docs/plugins/magento)
-- [x] [Smile ElasticSuite](https://github.com/Smile-SA/elasticsuite)
 - [x] [Mageplaza SMTP](https://github.com/mageplaza/magento-2-smtp)
 - [x] [Magefan Blog](https://github.com/magefan/module-blog)
 - [x] [Fooman Order#=Invoice#](https://fooman.com/magento-extension-invoice-order-number-m2.html)
 - [x] [Fooman Print PDF](https://fooman.com/magento-extension-print-order-pdf-m2.html)
 - [x] [Fooman Email PDF](https://fooman.com/magento-extension-email-attachments-m2.html)
-- [x] [TechDivision Import Framework](https://github.com/techdivision/import-cli-simple)  
 
 <br />
 
