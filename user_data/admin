@@ -61,7 +61,7 @@ debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false
 
 apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/nginx.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/php.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
-apt-get -qqy install %{ if "${INSTANCE_NAME}" == "admin" }phpmyadmin%{ endif } nginx composer php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor }
+apt-get -qqy install %{ if "${INSTANCE_NAME}" == "admin" }composer mariadb-client phpmyadmin%{ endif } nginx php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor }
 
 cat > /etc/sysctl.conf <<END
 fs.file-max = 1000000
@@ -212,6 +212,6 @@ wget https://s3.${AWS_DEFAULT_REGION}.amazonaws.com/amazon-ssm-${AWS_DEFAULT_REG
 dpkg -i amazon-ssm-agent.deb
 systemctl enable amazon-ssm-agent
 
-wget https://s3.${AWS_DEFAULT_REGION}.amazonaws.com/amazoncloudwatch-agent-${AWS_DEFAULT_REGION}/debian/arm64/latest/amazon-cloudwatch-agent.deb
+wget https://s3.${AWS_DEFAULT_REGION}.amazonaws.com/amazoncloudwatch-agent-${AWS_DEFAULT_REGION}/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb
 dpkg -i amazon-cloudwatch-agent.deb
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
