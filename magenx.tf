@@ -678,7 +678,7 @@ resource "aws_elasticsearch_domain" "this" {
     enabled = true
     master_user_options {
       master_user_name = "elastic"
-      master_user_password = ${random_password.this["elk"].result}
+      master_user_password = random_password.this["elk"].result
     }
   }
   cluster_config {
