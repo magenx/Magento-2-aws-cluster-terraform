@@ -674,6 +674,13 @@ resource "aws_elasticsearch_domain" "this" {
   depends_on = [aws_iam_service_linked_role.elasticsearch_domain]
   domain_name           = "${var.app["brand"]}-${var.elk["domain_name"]}"
   elasticsearch_version = var.elk["elasticsearch_version"]
+  advanced_security_options {
+    enabled = true
+    master_user_options {
+      master_user_name = "elastic"
+      master_user_password = ${random_password.this["elk"].result}
+    }
+  }
   cluster_config {
     instance_type  = var.elk["instance_type"]
     instance_count = var.elk["instance_count"]
@@ -1684,11 +1691,13 @@ mainSteps:
       --amqp-password='${random_password.this["mq"].result}' \
       --amqp-virtualhost='/' \
       --amqp-ssl=true \
-      --search-engine=elasticsuite \
-      --es-hosts="${aws_elasticsearch_domain.this.endpoint}:443" \
-      --es-user=elastic \
-      --es-pass='${random_password.this["elk"].result}' \
-      --es-enable-ssl=1 \
+      --search-engine=elasticsearch7 \
+      --elasticsearch-host="${aws_elasticsearch_domain.this.endpoint}" \
+      --elasticsearch-port=443 \
+      --elasticsearch-index-prefix=${var.app["brand"]} \
+      --elasticsearch-username=elastic \
+      --elasticsearch-password='${random_password.this["elk"].result}' \
+      --elasticsearch-enable-auth=1 \
       --remote-storage-driver=aws-s3 \
       --remote-storage-bucket=${aws_s3_bucket.this["media"].bucket} \
       --remote-storage-region=${data.aws_region.current.name}"
