@@ -676,6 +676,7 @@ resource "aws_elasticsearch_domain" "this" {
   elasticsearch_version = var.elk["elasticsearch_version"]
   advanced_security_options {
     enabled = true
+    internal_user_database_enabled = true
     master_user_options {
       master_user_name = "elastic"
       master_user_password = random_password.this["elk"].result
