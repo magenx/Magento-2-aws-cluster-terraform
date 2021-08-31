@@ -659,16 +659,24 @@ resource "aws_s3_bucket_policy" "system" {
 //////////////////////////////////////////////////////////[ ELASTICSEARCH ]///////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create ElasticSearch service role
+# Create ElasticSearch service linked role if not exists
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_iam_service_linked_role" "es" {
-  aws_service_name = "es.amazonaws.com"
+resource "null_resource" "es" {
+  provisioner "local-exec" {
+  interpreter = ["/bin/bash", "-c"]
+  command = <<EOF
+          exit_code=$(aws iam get-role --role-name AWSServiceRoleForAmazonElasticsearchService > /dev/null 2>&1 ; echo $?)
+          if [[ $exit_code -ne 0 ]]; then
+          aws iam create-service-linked-role --aws-service-name es.amazonaws.com
+          fi
+EOF
+ }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create ElasticSearch domain
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticsearch_domain" "this" {
-  depends_on = [aws_iam_service_linked_role.es]
+  depends_on = [null_resource.es]
   domain_name           = "${var.app["brand"]}-${var.elk["domain_name"]}"
   elasticsearch_version = var.elk["elasticsearch_version"]
   cluster_config {
