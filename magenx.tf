@@ -35,7 +35,7 @@ resource "random_uuid" "this" {
 # Generate random passwords
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "this" {
-  for_each         = toset(["rds", "elk", "mq", "app", "blowfish"])
+  for_each         = toset(["rds", "mq", "app", "blowfish"])
   length           = (each.key == "blowfish" ? 32 : 16)
   lower            = true
   upper            = true
@@ -674,14 +674,6 @@ resource "aws_elasticsearch_domain" "this" {
   depends_on = [aws_iam_service_linked_role.elasticsearch_domain]
   domain_name           = "${var.app["brand"]}-${var.elk["domain_name"]}"
   elasticsearch_version = var.elk["elasticsearch_version"]
-  advanced_security_options {
-    enabled = true
-    internal_user_database_enabled = true
-    master_user_options {
-      master_user_name = "elastic"
-      master_user_password = random_password.this["elk"].result
-    }
-  }
   cluster_config {
     instance_type  = var.elk["instance_type"]
     instance_count = var.elk["instance_count"]
@@ -1696,9 +1688,7 @@ mainSteps:
       --elasticsearch-host="${aws_elasticsearch_domain.this.endpoint}" \
       --elasticsearch-port=443 \
       --elasticsearch-index-prefix=${var.app["brand"]} \
-      --elasticsearch-username=elastic \
-      --elasticsearch-password='${random_password.this["elk"].result}' \
-      --elasticsearch-enable-auth=1 \
+      --elasticsearch-enable-auth=0 \
       --remote-storage-driver=aws-s3 \
       --remote-storage-bucket=${aws_s3_bucket.this["media"].bucket} \
       --remote-storage-region=${data.aws_region.current.name}"
