@@ -661,7 +661,7 @@ resource "aws_s3_bucket_policy" "system" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create ElasticSearch service role
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_iam_service_linked_role" "elasticsearch_domain" {
+resource "aws_iam_service_linked_role" "es" {
   aws_service_name = "es.amazonaws.com"
   lifecycle {
     create_before_destroy   = true
@@ -671,7 +671,7 @@ resource "aws_iam_service_linked_role" "elasticsearch_domain" {
 # Create ElasticSearch domain
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticsearch_domain" "this" {
-  depends_on = [aws_iam_service_linked_role.elasticsearch_domain]
+  depends_on = [aws_iam_service_linked_role.es]
   domain_name           = "${var.app["brand"]}-${var.elk["domain_name"]}"
   elasticsearch_version = var.elk["elasticsearch_version"]
   cluster_config {
