@@ -663,9 +663,6 @@ resource "aws_s3_bucket_policy" "system" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_service_linked_role" "es" {
   aws_service_name = "es.amazonaws.com"
-  lifecycle {
-    create_before_destroy   = true
-  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create ElasticSearch domain
