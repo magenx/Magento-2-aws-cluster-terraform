@@ -1447,8 +1447,6 @@ RABBITMQ_USER="${var.app["brand"]}"
 RABBITMQ_PASSWORD='${random_password.this["mq"].result}'
 
 ELASTICSEARCH_ENDPOINT="${aws_elasticsearch_domain.this.endpoint}:443"
-ELASTICSEARCH_USER="elastic"
-ELASTICSEARCH_PASSWORD="${random_password.this["elk"].result}"
 
 REDIS_CACHE_BACKEND="${aws_elasticache_replication_group.this["cache"].configuration_endpoint_address}"
 REDIS_SESSION_BACKEND="${aws_elasticache_replication_group.this["session"].configuration_endpoint_address}"
