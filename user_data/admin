@@ -184,6 +184,7 @@ git fetch
 git reset --hard origin/nginx_${INSTANCE_NAME}
 git checkout -t origin/nginx_${INSTANCE_NAME}
 
+mkdir -p /etc/nginx/sites-enabled
 ln -s /etc/nginx/sites-available/magento.conf /etc/nginx/sites-enabled/magento.conf
 
 sed -i "s/user  nginx;/user  ${BRAND};/" /etc/nginx/nginx.conf
