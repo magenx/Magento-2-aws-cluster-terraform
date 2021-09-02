@@ -1696,8 +1696,13 @@ mainSteps:
       --remote-storage-bucket=${aws_s3_bucket.this["media"].bucket} \
       --remote-storage-region=${data.aws_region.current.name}"
       ## installation check
+      if [[ $? -ne 0 ]]; then
+      echo
+      echo "Installation error - check command output log"
+      exit 1
+      fi
       if [ ! -f /home/${var.app["brand"]}/public_html/app/etc/env.php ]; then
-      echo "Installation error"
+      echo "Installation error - env.php not available"
       exit 1
       fi
       ## cache backend
