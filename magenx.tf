@@ -1153,7 +1153,7 @@ resource "aws_launch_template" "this" {
   for_each = var.ec2
   name = "${var.app["brand"]}-${each.key}-ltpl"
   block_device_mappings {
-    device_name = "/dev/sda1"
+    device_name = "/dev/xvda"
     ebs { 
         volume_size = "50"
         volume_type = "gp3"
