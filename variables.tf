@@ -294,6 +294,15 @@ locals {
     source_security_group_id = aws_security_group.this["elk"].id
     security_group_id = aws_security_group.this["ec2"].id
     },
+  ec2_http_in_ec2 = {
+    type        = "ingress"
+    description = "Allow all inbound traffic from ec2 on http port"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.this["ec2"].id
+    security_group_id = aws_security_group.this["ec2"].id
+    },
   ec2_http_in_inner = {
     type        = "ingress"
     description = "Allow all inbound traffic from the load balancer on http port"
