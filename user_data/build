@@ -14,7 +14,7 @@ apt-get -y install ${EXTRA_PACKAGES_DEB}
 pip3 install git-remote-codecommit
 
 ## create user
-useradd -d /home/${BRAND} -s /bin/bash ${BRAND} >/dev/null 2>&1
+useradd -d /home/${BRAND} -s /sbin/nologin ${BRAND} >/dev/null 2>&1
 ## create root php user
 useradd -M -s /sbin/nologin -d /home/${BRAND} ${PHP_USER} >/dev/null 2>&1
 usermod -g ${PHP_USER} ${BRAND}
