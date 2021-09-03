@@ -505,6 +505,7 @@ resource "aws_mq_broker" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticache_replication_group" "this" {
   for_each                      = toset(var.redis["name"])
+  number_cache_clusters         = length(values(aws_subnet.this).*.id)
   engine                        = "redis"
   replication_group_id          = "${var.app["brand"]}-${each.key}-backend"
   replication_group_description = "Replication group for ${var.app["domain"]} ${each.key} backend"
@@ -516,10 +517,8 @@ resource "aws_elasticache_replication_group" "this" {
   automatic_failover_enabled    = var.redis["automatic_failover_enabled"]
   multi_az_enabled              = var.redis["multi_az_enabled"]
   notification_topic_arn        = aws_sns_topic.default.arn
-
-  cluster_mode {
-    replicas_per_node_group = var.redis["replicas_per_node_group"]
-    num_node_groups         = var.redis["num_node_groups"]
+  tags = {
+    Name = "${var.app["brand"]}-${each.key}-backend"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -1453,8 +1452,8 @@ RABBITMQ_PASSWORD='${random_password.this["mq"].result}'
 
 ELASTICSEARCH_ENDPOINT="https://${aws_elasticsearch_domain.this.endpoint}:443"
 
-REDIS_CACHE_BACKEND="${aws_elasticache_replication_group.this["cache"].configuration_endpoint_address}"
-REDIS_SESSION_BACKEND="${aws_elasticache_replication_group.this["session"].configuration_endpoint_address}"
+REDIS_CACHE_BACKEND="${aws_elasticache_replication_group.this["cache"].primary_endpoint_address}"
+REDIS_SESSION_BACKEND="${aws_elasticache_replication_group.this["session"].primary_endpoint_address}"
 
 OUTER_ALB_DNS_NAME="${aws_lb.this["outer"].dns_name}"
 INNER_ALB_DNS_NAME="${aws_lb.this["inner"].dns_name}"
@@ -1708,19 +1707,19 @@ mainSteps:
       ## cache backend
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
       --cache-backend=redis \
-      --cache-backend-redis-server=${aws_elasticache_replication_group.this["cache"].configuration_endpoint_address} \
+      --cache-backend-redis-server=${aws_elasticache_replication_group.this["cache"].primary_endpoint_address} \
       --cache-backend-redis-port=6379 \
-      --cache-backend-redis-db=1 \
+      --cache-backend-redis-db=0 \
       --cache-backend-redis-compress-data=1 \
       --cache-backend-redis-compression-lib=l4z \
       -n"
       ## session
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
       --session-save=redis \
-      --session-save-redis-host=${aws_elasticache_replication_group.this["session"].configuration_endpoint_address} \
+      --session-save-redis-host=${aws_elasticache_replication_group.this["session"].primary_endpoint_address} \
       --session-save-redis-port=6379 \
       --session-save-redis-log-level=3 \
-      --session-save-redis-db=1 \
+      --session-save-redis-db=0 \
       --session-save-redis-compression-lib=lz4 \
       -n"
       ## configure smtp ses 
