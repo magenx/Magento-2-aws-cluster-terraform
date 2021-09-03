@@ -1451,7 +1451,7 @@ RABBITMQ_ENDPOINT="${trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.end
 RABBITMQ_USER="${var.app["brand"]}"
 RABBITMQ_PASSWORD='${random_password.this["mq"].result}'
 
-ELASTICSEARCH_ENDPOINT="${aws_elasticsearch_domain.this.endpoint}:443"
+ELASTICSEARCH_ENDPOINT="https://${aws_elasticsearch_domain.this.endpoint}:443"
 
 REDIS_CACHE_BACKEND="${aws_elasticache_replication_group.this["cache"].configuration_endpoint_address}"
 REDIS_SESSION_BACKEND="${aws_elasticache_replication_group.this["session"].configuration_endpoint_address}"
@@ -1688,7 +1688,7 @@ mainSteps:
       --amqp-virtualhost='/' \
       --amqp-ssl=true \
       --search-engine=elasticsearch7 \
-      --elasticsearch-host="${aws_elasticsearch_domain.this.endpoint}" \
+      --elasticsearch-host="https://${aws_elasticsearch_domain.this.endpoint}" \
       --elasticsearch-port=443 \
       --elasticsearch-index-prefix=${var.app["brand"]} \
       --elasticsearch-enable-auth=0 \
