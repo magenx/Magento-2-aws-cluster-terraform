@@ -182,7 +182,7 @@ Terraform run fails during development or other failure that messes up the accou
 <br />
    
 ## [!] Contact us for installation and support:
-We can launch this project for your store in a short time. Many big retailers have already migrated to this architecture. 
+We can launch this project for your store in a short time. Many big retailers have already migrated to this architecture.
 - [x] Write us an [email](mailto:info@magenx.com?subject=Magento%202%20auto%20scaling%20cluster%20on%20AWS) to discuss the project.
 - [x] Send a private message on [Linkedin](https://www.linkedin.com/in/magenx/)  
     
