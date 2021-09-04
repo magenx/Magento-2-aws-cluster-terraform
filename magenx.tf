@@ -1722,10 +1722,12 @@ mainSteps:
       --session-save-redis-db=0 \
       --session-save-redis-compression-lib=lz4 \
       -n"
+      ## clean cache
+      rm -rf var/cache var/page_cache
       ## configure smtp ses 
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/general/enabled 1"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/general/log_email 0"
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/configuration_option/host email-smtp.eu-west-1.amazonaws.com"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/configuration_option/host email-smtp.${data.aws_region.current.name}.amazonaws.com"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/configuration_option/port 587"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/configuration_option/protocol tls"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/configuration_option/authentication login"
@@ -1746,7 +1748,7 @@ mainSteps:
       exit 1
       fi
       git add . -A
-      git commit -m ${var.app["brand"]}-release-$(date +'%y%m%d-%H%M%S')
+      git commit -m ${var.app["brand"]}-init-$(date +'%y%m%d-%H%M%S')
       git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
       git branch -m main
       git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name} main
