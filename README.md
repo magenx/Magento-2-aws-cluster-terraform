@@ -153,22 +153,16 @@ The idea was to create something more complex, with deeper settings, that terrif
 > Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime.
 > Remove blacklisted components from `composer.json` in `"replace": {}` and run `composer update`  
 > modules configuration here: https://github.com/magenx/Magento-2/blob/aws/composer.json  
-
-## [!] Why removing bloatware modules and use Magento minimal package:
-- Faster backend and frontend  &#8595;`from 14% upto 50%`
-- Better memory management  &#8595;`upto 15%`
-- Easy deployments
-- Less dependencies
-- Zero maintenance
-- Low security risks  
   
-Enabled modules for business requirements:  
-- [x] [Stripe Payments](https://stripe.com/docs/plugins/magento)
-- [x] [Mageplaza SMTP](https://github.com/mageplaza/magento-2-smtp)
-- [x] [Magefan Blog](https://github.com/magefan/module-blog)
-- [x] [Fooman Order#=Invoice#](https://fooman.com/magento-extension-invoice-order-number-m2.html)
-- [x] [Fooman Print PDF](https://fooman.com/magento-extension-print-order-pdf-m2.html)
-- [x] [Fooman Email PDF](https://fooman.com/magento-extension-email-attachments-m2.html)
+  
+**Performance and security enhancements**|**Enabled modules for business requirements**
+-----|-----
+Faster backend and frontend from 14% upto 50%|[Fooman Email PDF](https://fooman.com/magento-extension-email-attachments-m2.html)
+Better memory management upto 15%|[Stripe Payments](https://stripe.com/docs/plugins/magento)
+Easy deployments|[Mageplaza SMTP](https://github.com/mageplaza/magento-2-smtp)
+Less dependencies|[Magefan Blog](https://github.com/magefan/module-blog)
+Zero maintenance|[Fooman Order#=Invoice#](https://fooman.com/magento-extension-invoice-order-number-m2.html)
+Low security risks|[Fooman Print PDF](https://fooman.com/magento-extension-print-order-pdf-m2.html)
 
 <br />
 
@@ -177,15 +171,7 @@ Enabled modules for business requirements:
 - Services configuration files tracked in CodeCommit repository
 - Changes in CodeCommit repository triggers EventBridge rule.
 - SSM Document pull from CodeCommit repository and cleanup.
-- Change deployment logic to your needs.
-
-## Infrastructure DevOps and beyond:
-- Terraform [AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
-- edit => migrate => share
-
-## TODO:
-- rework and simplify.  
-  
+- Change deployment logic to your needs.  
     
     
 ## Emergency Exit:  
@@ -193,8 +179,20 @@ Terraform run fails during development or other failure that messes up the accou
 ```terraform destroy``` reports No changes or Nothing to destroy, but you can see some resources in AWS console.  
 [AWS NUKE](https://github.com/rebuy-de/aws-nuke) - Remove all resources from an AWS account. (runs in dry run mode to list all resources)
    
-    
+<br />
    
+## [!] Contact us for installation and support:
+We can launch this project for your store in a short time. Many big retailers have already migrated to this architecture. 
+- [x] Write us an [email](mailto:info@magenx.com?subject=Magento%202%20auto%20scaling%20cluster%20on%20AWS) to discuss the project.
+- [x] Send a private message on [Linkedin](https://www.linkedin.com/in/magenx/)  
+    
+<br />
+   
+## ![hyvatheme](https://user-images.githubusercontent.com/1591200/132108893-0fc007b1-87f0-47a1-b8c1-d6dd3a6dda83.png)
+[Hyvä themes](https://hyva.io/hyva-themes-license.html) - Magento 2 frontend alternative to PWA. Hyvä themes is a brand-new frontend for Magento 2 with the best DevOps experience, performance and time to market. With Hyvä, you build your Magento 2 shop quicker and with a lower budget. And the result is a modern and ultra fast browser experience for your visitors. We recommend that you start developing your store using this theme or switch your existing store frontend to this theme.  
+    
+<br />
+    
 ## :heart_eyes_cat: Support the project  
 This takes time and research. You can use this for free. But for me its not free to create it.
 If you are using this project, there are few ways you can support it:
