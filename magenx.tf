@@ -47,7 +47,7 @@ resource "random_password" "this" {
 # Generate random string
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_string" "this" {
-  for_each         = toset(["admin_path", "mysql_path", "profiler"])
+  for_each         = toset(["admin_path", "mysql_path", "profiler", "persistent"])
   length           = 7
   lower          = true
   number         = true
@@ -1720,7 +1720,13 @@ mainSteps:
       --session-save-redis-log-level=3 \
       --session-save-redis-db=0 \
       --session-save-redis-compression-lib=lz4 \
+      --session-save-redis-persistent-id=${random_string.this["persistent"].result} \
       -n"
+      ## add cache optimization
+      sed -i "/${aws_elasticache_replication_group.this["cache"].primary_endpoint_address}/a\            'load_from_slave' => '${aws_elasticache_replication_group.this["cache"].reader_endpoint_address}:6379', \\
+            'master_write_only' => '0', \\
+            'retry_reads_on_master' => '1' \\
+            'persistent' => '${random_string.this["persistent"].result}',"  app/etc/env.php
       ## clean cache
       rm -rf var/cache var/page_cache
       ## configure smtp ses 
