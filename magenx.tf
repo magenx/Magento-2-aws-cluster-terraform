@@ -1735,6 +1735,9 @@ mainSteps:
       ## install modules to properly test magento 2 production-ready functionality
       su ${var.app["brand"]} -s /bin/bash -c "composer -n require fooman/sameorderinvoicenumber-m2 fooman/emailattachments-m2 fooman/printorderpdf-m2 mageplaza/module-smtp magefan/module-blog stripe/stripe-payments"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade -n --no-ansi"
+      ## correct general contact name and email address
+      su ${var.app["brand"]} -s /bin/bash -c 'bin/magento config:set trans_email/ident_general/name ${var.app["brand"]}'
+      su ${var.app["brand"]} -s /bin/bash -c 'bin/magento config:set trans_email/ident_general/email ${var.app["admin_email"]}'
       ## configure smtp ses 
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/general/enabled 1"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/general/log_email 0"
