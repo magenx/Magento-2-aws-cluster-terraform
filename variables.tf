@@ -283,6 +283,15 @@ locals {
     source_security_group_id = aws_security_group.this["efs"].id
     security_group_id = aws_security_group.this["ec2"].id
     },
+  ec2_ses_out = {
+    type        = "egress"
+    description = "Allow outbound traffic on the region SES port"
+    from_port   = 587
+    to_port     = 587
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.this["ec2"].id
+    security_group_id = aws_security_group.this["ec2"].id
+    },
   ec2_elk_out = {
     type        = "egress"
     description = "Allow outbound traffic on the instance ELK port"
