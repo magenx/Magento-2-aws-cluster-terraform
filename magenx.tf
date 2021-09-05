@@ -1731,7 +1731,7 @@ mainSteps:
       ## clean cache
       rm -rf var/cache var/page_cache
       ## install modules to properly test magento 2 production-ready functionality
-      su ${var.app["brand"]} -s /bin/bash -c "composer require fooman/sameorderinvoicenumber-m2 fooman/emailattachments-m2 fooman/printorderpdf-m2 mageplaza/module-smtp magefan/module-blog stripe/stripe-payments"
+      su ${var.app["brand"]} -s /bin/bash -c "composer -n require fooman/sameorderinvoicenumber-m2 fooman/emailattachments-m2 fooman/printorderpdf-m2 mageplaza/module-smtp magefan/module-blog stripe/stripe-payments"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade -n --no-ansi"
       ## configure smtp ses 
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/general/enabled 1"
