@@ -134,6 +134,7 @@ The idea was to create something more complex, with deeper settings, that terrif
 - [x] Simple Email Service authentication + SMTP Magento module
 - [x] CloudWatch agent configured to stream logs
 - [x] All Magento files managed with git only
+- [x] Configuration settings saved in Parameter Store
 - [x] Live shop in production mode / read-only 
 - [x] Security groups configured for every service and instances
 - [x] Enhanced security in AWS and LEMP 
