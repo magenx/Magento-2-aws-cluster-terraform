@@ -1444,6 +1444,9 @@ DATABASE_PASSWORD='${random_password.this["rds"].result}'
 
 ADMIN_PATH='admin_${random_string.this["admin_path"].result}'
 ADMIN_PASSWORD='${random_password.this["app"].result}'
+	
+MYSQL_PATH="mysql_${random_string.this["mysql_path"].result}"
+PROFILER="${random_string.this["profiler"].result}"
 
 RABBITMQ_ENDPOINT="${trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.endpoints.0}", "amqps://"), ":5671")}"
 RABBITMQ_USER="${var.app["brand"]}"
