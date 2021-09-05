@@ -94,7 +94,7 @@ The idea was to create something more complex, with deeper settings, that terrif
 ```
 > 
 - Note: Right after `terraform apply` you will receive email from amazon to approve resources
-- Check all details / all files / adjust your settings, edit your domain and email in `variables.tf`
+- Check all details / all files / adjust your settings, edit your cidr, brand, domain, email and other vars in `variables.tf`
 - Run:
 ```
    terraform init
@@ -146,7 +146,7 @@ The idea was to create something more complex, with deeper settings, that terrif
 
 ## Magento 2 development | source code:
 - Local provisioner copy files from https://github.com/magenx/Magento-2
-- Pickup files from your own repo @ [variables.tf#L19](https://github.com/magenx/Magento-2-aws-cluster-terraform/blob/f4128b83663e81dc4bbce9fb8d68a508e19bf73e/variables.tf#L19)
+- Pickup files from your own repo @ [variables.tf#L20](https://github.com/magenx/Magento-2-aws-cluster-terraform/blob/main/variables.tf#L20)
 - Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
 - Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
 - Right after infrastructure deployment the minimal Magento 2 package is ready to install.
