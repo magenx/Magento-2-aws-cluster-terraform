@@ -17,7 +17,7 @@ variable "app" {
     domain           = "magenx.com"
     admin_email      = "admin@magenx.com"
     staging_domain   = "stg.magenx.com"
-    source           = "-b aws https://github.com/magenx/Magento-2.git"
+    source           = "https://github.com/magenx/Magento-2.git"
     language         = "en_US"
     currency         = "EUR"
     timezone         = "UTC"
