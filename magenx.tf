@@ -1726,7 +1726,7 @@ mainSteps:
       ## add cache optimization
       sed -i "/${aws_elasticache_replication_group.this["cache"].primary_endpoint_address}/a\            'load_from_slave' => '${aws_elasticache_replication_group.this["cache"].reader_endpoint_address}:6379', \\
             'master_write_only' => '0', \\
-            'retry_reads_on_master' => '1' \\
+            'retry_reads_on_master' => '1', \\
             'persistent' => '${random_string.this["persistent"].result}',"  app/etc/env.php
       ## clean cache
       rm -rf var/cache var/page_cache
