@@ -1655,6 +1655,7 @@ mainSteps:
       cd /home/${var.app["brand"]}/public_html
       su ${var.app["brand"]} -s /bin/bash -c "echo 007 > magento_umask"
       su ${var.app["brand"]} -s /bin/bash -c "echo -e '/pub/media/*\n/var/*'" > .gitignore
+      su ${var.app["brand"]} -s /bin/bash -c "composer -n -q config -g http-basic.repo.magento.com 8c681734f22763b50ea0c29dff9e7af2 02dfee497e669b5db1fe1c8d481d6974"
       chmod +x bin/magento
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento module:enable --all"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:install \
@@ -1729,6 +1730,9 @@ mainSteps:
             'persistent' => '${random_string.this["persistent"].result}',"  app/etc/env.php
       ## clean cache
       rm -rf var/cache var/page_cache
+      ## install modules to properly test magento 2 production-ready functionality
+      su ${var.app["brand"]} -s /bin/bash -c "composer require fooman/sameorderinvoicenumber-m2 fooman/emailattachments-m2 fooman/printorderpdf-m2 mageplaza/module-smtp magefan/module-blog stripe/stripe-payments"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade -n --no-ansi"
       ## configure smtp ses 
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/general/enabled 1"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/general/log_email 0"
