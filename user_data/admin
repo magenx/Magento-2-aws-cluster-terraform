@@ -199,6 +199,7 @@ sed -i "s/PROFILER_PLACEHOLDER/${PROFILER}/" /etc/nginx/conf.d/maps.conf
 %{ if "${INSTANCE_NAME}" == "admin" }
 sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISH}';/" /var/lib/phpmyadmin/blowfish_secret.inc.php
 sed -i "s/PHPMYADMIN_PLACEHOLDER/${MYSQL_PATH}/g" /etc/nginx/conf.d/phpmyadmin.conf
+sed -i "s,#include conf_m2/phpmyadmin.conf;,include conf_m2/phpmyadmin.conf;," /etc/nginx/sites-available/magento.conf
 %{ endif }
 
 systemctl daemon-reload
