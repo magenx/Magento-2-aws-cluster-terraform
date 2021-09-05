@@ -150,7 +150,7 @@ The idea was to create something more complex, with deeper settings, that terrif
 - Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
 - Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
 - Right after infrastructure deployment the minimal Magento 2 package is ready to install.
-- Check and run SSM Document to install Magento  
+- Check and run SSM Document to install Magento and pre-configure modules (select admin instance)
 > Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime.
 > Remove replaced components from `composer.json` in `"replace": {}` and run `composer update`  
 > modules configuration here: https://github.com/magenx/Magento-2/blob/main/composer.json  
