@@ -152,18 +152,18 @@ The idea was to create something more complex, with deeper settings, that terrif
 - Right after infrastructure deployment the minimal Magento 2 package is ready to install.
 - Check and run SSM Document to install Magento  
 > Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime.
-> Remove blacklisted components from `composer.json` in `"replace": {}` and run `composer update`  
-> modules configuration here: https://github.com/magenx/Magento-2/blob/aws/composer.json  
-  
-  
-|**Performance and security enhancements**|**Enabled modules for business requirements**|
-|:-----|:-----|
-|Faster backend and frontend from 14% upto 50%|[Fooman Email PDF](https://fooman.com/magento-extension-email-attachments-m2.html)|
-|Better memory management upto 15%|[Stripe Payments](https://stripe.com/docs/plugins/magento)|
-|Easy deployments|[Mageplaza SMTP](https://github.com/mageplaza/magento-2-smtp)|
-|Less dependencies|[Magefan Blog](https://github.com/magefan/module-blog)|
-|Zero maintenance|[Fooman Order#=Invoice#](https://fooman.com/magento-extension-invoice-order-number-m2.html)|
-|Low security risks|[Fooman Print PDF](https://fooman.com/magento-extension-print-order-pdf-m2.html)|
+> Remove replaced components from `composer.json` in `"replace": {}` and run `composer update`  
+> modules configuration here: https://github.com/magenx/Magento-2/blob/main/composer.json  
+   
+   
+|**Performance and security enhancements**||**Enabled modules for business requirements**|
+|:-----|---|:-----|
+|Faster backend and frontend from 14% upto 50%||[Fooman Email PDF](https://fooman.com/magento-extension-email-attachments-m2.html)|
+|Better memory management upto 15%||[Stripe Payments](https://stripe.com/docs/plugins/magento)|
+|Easy deployments||[Mageplaza SMTP](https://github.com/mageplaza/magento-2-smtp)|
+|Less dependencies||[Magefan Blog](https://github.com/magefan/module-blog)|
+|Zero maintenance||[Fooman Order#=Invoice#](https://fooman.com/magento-extension-invoice-order-number-m2.html)|
+|Low security risks||[Fooman Print PDF](https://fooman.com/magento-extension-print-order-pdf-m2.html)|
 
 <br />
 
