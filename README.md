@@ -144,7 +144,7 @@ The idea was to create something more complex, with deeper settings, that terrif
 ![Magento_2_AWS_cloud_auto_scaling_terraform-map](https://user-images.githubusercontent.com/1591200/119973444-66351600-bfab-11eb-82b8-1413c9aa41fc.png)
 
 ## Magento 2 development | source code:
-- Local provisioner copy files from https://github.com/magenx/Magento-2/tree/aws
+- Local provisioner copy files from https://github.com/magenx/Magento-2
 - Pickup files from your own repo @ [variables.tf#L19](https://github.com/magenx/Magento-2-aws-cluster-terraform/blob/f4128b83663e81dc4bbce9fb8d68a508e19bf73e/variables.tf#L19)
 - Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
 - Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
