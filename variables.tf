@@ -289,7 +289,7 @@ locals {
     from_port   = 587
     to_port     = 587
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.this["ec2"].id
+    cidr_blocks = ["0.0.0.0/0"]
     security_group_id = aws_security_group.this["ec2"].id
     },
   ec2_elk_out = {
