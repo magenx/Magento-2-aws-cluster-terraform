@@ -173,12 +173,6 @@ The idea was to create something more complex, with deeper settings, that terrif
 - Changes in CodeCommit repository triggers EventBridge rule.
 - SSM Document pull from CodeCommit repository and cleanup.
 - Change deployment logic to your needs.  
-    
-    
-## Emergency Exit:  
-Terraform run fails during development or other failure that messes up the account:  
-```terraform destroy``` reports No changes or Nothing to destroy, but you can see some resources in AWS console.  
-[AWS NUKE](https://github.com/rebuy-de/aws-nuke) - Remove all resources from an AWS account. (runs in dry run mode to list all resources)
    
 <br />
    
