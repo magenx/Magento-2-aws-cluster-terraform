@@ -594,7 +594,12 @@ resource "aws_s3_bucket_policy" "media" {
                       Principal = {
                           AWS = aws_cloudfront_origin_access_identity.this.iam_arn
                         }
-                      Resource  = "${aws_s3_bucket.this["media"].arn}/*"
+                      Resource  = [
+                              "${aws_s3_bucket.this["media"].arn}/*.jpg",
+			      "${aws_s3_bucket.this["media"].arn}/*.png",
+			      "${aws_s3_bucket.this["media"].arn}/*.gif",
+			      "${aws_s3_bucket.this["media"].arn}/*.webp"
+                     ]
                     },
                     {
                       Action = [
@@ -606,7 +611,12 @@ resource "aws_s3_bucket_policy" "media" {
                       Principal = {
                           AWS = aws_iam_role.ec2.arn
                         }
-                      Resource  = "${aws_s3_bucket.this["media"].arn}/*"
+                      Resource  = [
+			      "${aws_s3_bucket.this["media"].arn}/*.jpg",
+			      "${aws_s3_bucket.this["media"].arn}/*.png",
+			      "${aws_s3_bucket.this["media"].arn}/*.gif",
+			      "${aws_s3_bucket.this["media"].arn}/*.webp"
+                     ]
                     },
                     {
                       Action = [
