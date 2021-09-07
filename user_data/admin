@@ -193,8 +193,8 @@ sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/m
 sed -i "s/example.com/%{ if "${INSTANCE_NAME}" != "staging" }${DOMAIN}%{ else }${STAGING_DOMAIN}%{ endif }/g" /etc/nginx/sites-available/magento.conf
 sed -i "s/example.com/%{ if "${INSTANCE_NAME}" != "staging" }${DOMAIN}%{ else }${STAGING_DOMAIN}%{ endif }/g" /etc/nginx/nginx.conf
 sed -i "s,/var/www/html,${WEB_ROOT_PATH},g" /etc/nginx/conf.d/maps.conf
-
 sed -i "s/PROFILER_PLACEHOLDER/${PROFILER}/" /etc/nginx/conf.d/maps.conf
+echo "" > /etc/nginx/conf.d/default.conf
 
 %{ if "${INSTANCE_NAME}" == "admin" }
 sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISH}';/" /var/lib/phpmyadmin/blowfish_secret.inc.php
