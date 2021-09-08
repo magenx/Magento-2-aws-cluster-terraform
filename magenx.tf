@@ -1679,6 +1679,7 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "echo 007 > magento_umask"
       su ${var.app["brand"]} -s /bin/bash -c "echo -e '/pub/media/*\n/var/*'" > .gitignore
       su ${var.app["brand"]} -s /bin/bash -c "composer -n -q config -g http-basic.repo.magento.com 8c681734f22763b50ea0c29dff9e7af2 02dfee497e669b5db1fe1c8d481d6974"
+      su ${var.app["brand"]} -s /bin/bash -c "composer update -n"
       chmod +x bin/magento
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento module:enable --all"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:install \
