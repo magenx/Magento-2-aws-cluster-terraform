@@ -1730,7 +1730,7 @@ mainSteps:
       fi
       ## cache backend
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
-      --cache-id-prefix="${random_string.this["id_prefix"].result}_"
+      --cache-id-prefix="${random_string.this["id_prefix"].result}_" \
       --cache-backend=redis \
       --cache-backend-redis-server=${aws_elasticache_replication_group.this["cache"].primary_endpoint_address} \
       --cache-backend-redis-port=6379 \
