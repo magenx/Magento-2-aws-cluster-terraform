@@ -47,8 +47,8 @@ resource "random_password" "this" {
 # Generate random string
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_string" "this" {
-  for_each         = toset(["admin_path", "mysql_path", "profiler", "persistent"])
-  length           = 7
+  for_each         = toset(["admin_path", "mysql_path", "profiler", "persistent", "id_prefix"])
+  length           = (each.key == "id_prefix" ? 3 : 7)
   lower          = true
   number         = true
   special        = false
@@ -1730,6 +1730,7 @@ mainSteps:
       fi
       ## cache backend
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
+      --cache-id-prefix="${random_string.this["id_prefix"].result}_"
       --cache-backend=redis \
       --cache-backend-redis-server=${aws_elasticache_replication_group.this["cache"].primary_endpoint_address} \
       --cache-backend-redis-port=6379 \
@@ -1751,7 +1752,13 @@ mainSteps:
       sed -i "/${aws_elasticache_replication_group.this["cache"].primary_endpoint_address}/a\            'load_from_slave' => '${aws_elasticache_replication_group.this["cache"].reader_endpoint_address}:6379', \\
             'master_write_only' => '0', \\
             'retry_reads_on_master' => '1', \\
-            'persistent' => '${random_string.this["persistent"].result}',"  app/etc/env.php
+            'persistent' => '${random_string.this["persistent"].result}', \\
+            'preload_keys' => [ \\
+                    '${random_string.this["id_prefix"].result}_EAV_ENTITY_TYPES', \\
+                    '${random_string.this["id_prefix"].result}_GLOBAL_PLUGIN_LIST', \\
+                    '${random_string.this["id_prefix"].result}_DB_IS_UP_TO_DATE', \\
+                    '${random_string.this["id_prefix"].result}_SYSTEM_DEFAULT', \\
+                ],"  app/etc/env.php
       ## clean cache
       rm -rf var/cache var/page_cache
       ## install modules to properly test magento 2 production-ready functionality
