@@ -351,6 +351,7 @@ resource "aws_cloudfront_distribution" "this" {
 
   enabled             = true
   is_ipv6_enabled     = true
+  web_acl_id          = aws_wafv2_web_acl.cloudfront.arn
   comment             = "${var.app["domain"]} media assets"
 
   logging_config {
@@ -382,12 +383,12 @@ resource "aws_cloudfront_distribution" "this" {
   price_class = "PriceClass_100"
 
   tags = {
-    Name = "production"
+    Name = "${var.app["brand"]}-cloudfront-production"
   }
 
   viewer_certificate {
     cloudfront_default_certificate = true
-    minimum_protocol_version = "TLSv1"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 }
 
@@ -1805,6 +1806,50 @@ EOT
 
 ///////////////////////////////////////////////////////[ AWS WAFv2 RULES ]////////////////////////////////////////////////
 
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create AWS WAFv2 rate based rule for Cloudfront
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_wafv2_web_acl" "cloudfront" {
+  name        = "${var.app["brand"]}-Cloudfront-WAF-Protection-rate-based"
+  description = "Cloudfront WAF Protection rate based"
+  scope       = "CLOUDFRONT"
+
+  default_action {
+    block {}
+  }
+
+  rule {
+    name     = "${var.app["brand"]}-Cloudfront-WAF-Protection-rate-based"
+    priority = 1
+
+    action {
+      count {}
+    }
+
+    statement {
+      rate_based_statement {
+        limit              = 100
+        aggregate_key_type = "IP"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "${var.app["brand"]}-Cloudfront-WAF-Protection-rate-based-rule"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  tags = {
+    Name = "${var.app["brand"]}-Cloudfront-WAF-Protection"
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "${var.app["brand"]}-Cloudfront-WAF-Protection-rate-based"
+    sampled_requests_enabled   = true
+  }
+}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create AWS WAFv2 rules association with ALB
 # # ---------------------------------------------------------------------------------------------------------------------#
