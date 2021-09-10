@@ -1784,6 +1784,8 @@ mainSteps:
       ## configure cloudfront media base url
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/unsecure/base_media_url https://${aws_cloudfront_distribution.this.domain_name}/media/"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/base_media_url https://${aws_cloudfront_distribution.this.domain_name}/media/"
+      ## enable eav cache
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/caching/cache_user_defined_attributes 1"
       ## deploy production mode
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento deploy:mode:set production"
       if [[ $? -ne 0 ]]; then
