@@ -14,9 +14,9 @@ variable "app" {
   default          = {
     cidr_block       = "172.30.0.0/16"
     brand            = "magenx"
-    domain           = "magenx.com"
-    admin_email      = "admin@magenx.com"
-    staging_domain   = "stg.magenx.com"
+    domain           = "magenx.org"
+    admin_email      = "admin@magenx.org"
+    staging_domain   = "staging.magenx.org"
     source           = "https://github.com/magenx/Magento-2.git"
     language         = "en_US"
     currency         = "EUR"
