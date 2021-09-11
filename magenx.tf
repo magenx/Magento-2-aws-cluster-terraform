@@ -335,6 +335,12 @@ resource "aws_cloudfront_origin_access_identity" "this" {
 }
 
 resource "aws_cloudfront_distribution" "this" {
+  enabled             = true
+  is_ipv6_enabled     = true
+  web_acl_id          = aws_wafv2_web_acl.this.arn
+  price_class         = "PriceClass_100"
+  comment             = "${var.app["domain"]} assets"
+  
   origin {
     domain_name = aws_s3_bucket.this["media"].bucket_regional_domain_name
     origin_id   = "${var.app["domain"]}-media-assets"
@@ -348,30 +354,47 @@ resource "aws_cloudfront_distribution" "this" {
       value = random_uuid.this.result
     }
   }
-
-  enabled             = true
-  is_ipv6_enabled     = true
-  web_acl_id          = aws_wafv2_web_acl.cloudfront.arn
-  comment             = "${var.app["domain"]} media assets"
-
-  logging_config {
-    include_cookies = false
-    bucket          = aws_s3_bucket.this["system"].bucket_domain_name
-    prefix          = "${var.app["brand"]}-cloudfront-logs"
-  }
-
+  
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "${var.app["domain"]}-media-assets"
 
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.this.id
-    cache_policy_id          = data.aws_cloudfront_cache_policy.this.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.s3.id
+    cache_policy_id          = data.aws_cloudfront_cache_policy.s3.id
 
-  viewer_protocol_policy = "https-only"
-    min_ttl                = 0
-    default_ttl            = 86400
-    max_ttl                = 604800
+    viewer_protocol_policy = "https-only"
+
+  }
+  
+  origin {
+	domain_name = var.app["domain"]
+	origin_id   = "${var.app["domain"]}-static-assets"
+
+	custom_origin_config {
+		http_port              = 80
+		https_port             = 443
+		origin_protocol_policy = "https-only"
+		origin_ssl_protocols   = ["TLSv1.2"]
+	}
+  }
+
+  ordered_cache_behavior {
+	path_pattern     = "/static/*"
+	allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+	cached_methods   = ["GET", "HEAD"]
+	target_origin_id = "${var.app["domain"]}-static-assets"
+	
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.custom.id
+    cache_policy_id          = data.aws_cloudfront_cache_policy.custom.id
+
+    viewer_protocol_policy = "https-only"
+
+}
+  logging_config {
+    include_cookies = false
+    bucket          = aws_s3_bucket.this["system"].bucket_domain_name
+    prefix          = "${var.app["brand"]}-cloudfront-logs"
   }
   
   restrictions {
@@ -380,15 +403,13 @@ resource "aws_cloudfront_distribution" "this" {
     }
   }
 
-  price_class = "PriceClass_100"
-
-  tags = {
-    Name = "${var.app["brand"]}-cloudfront-production"
-  }
-
   viewer_certificate {
     cloudfront_default_certificate = true
     minimum_protocol_version = "TLSv1.2_2021"
+  }
+  
+  tags = {
+    Name = "${var.app["brand"]}-cloudfront-production"
   }
 }
 
@@ -1807,66 +1828,16 @@ EOT
 ///////////////////////////////////////////////////////[ AWS WAFv2 RULES ]////////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create AWS WAFv2 rate based rule for Cloudfront
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_wafv2_web_acl" "cloudfront" {
-  name        = "${var.app["brand"]}-Cloudfront-WAF-Protection-rate-based"
-  description = "Cloudfront WAF Protection rate based"
-  scope       = "CLOUDFRONT"
-
-  default_action {
-    block {}
-  }
-
-  rule {
-    name     = "${var.app["brand"]}-Cloudfront-WAF-Protection-rate-based"
-    priority = 1
-
-    action {
-      count {}
-    }
-
-    statement {
-      rate_based_statement {
-        limit              = 100
-        aggregate_key_type = "IP"
-      }
-    }
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "${var.app["brand"]}-Cloudfront-WAF-Protection-rate-based-rule"
-      sampled_requests_enabled   = true
-    }
-  }
-
-  tags = {
-    Name = "${var.app["brand"]}-Cloudfront-WAF-Protection"
-  }
-
-  visibility_config {
-    cloudwatch_metrics_enabled = true
-    metric_name                = "${var.app["brand"]}-Cloudfront-WAF-Protection-rate-based"
-    sampled_requests_enabled   = true
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create AWS WAFv2 rules association with ALB
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_wafv2_web_acl_association" "this" {
-  resource_arn = aws_lb.this["outer"].arn
-  web_acl_arn = aws_wafv2_web_acl.this.arn
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create AWS WAFv2 rules
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_wafv2_web_acl" "this" {
-  name = "${var.app["brand"]}-WAF-Protections"
-  scope = "REGIONAL"
+  name        = "${var.app["brand"]}-WAF-Protections"
+  provider    = aws.useast1
+  scope       = "CLOUDFRONT"
   description = "${var.app["brand"]}-WAF-Protections"
 
   default_action {
-    allow {
+    block {
     }
   }
 
@@ -1877,8 +1848,80 @@ resource "aws_wafv2_web_acl" "this" {
   }
 
   rule {
-    name = "AWSManagedRulesCommonRule"
+    name     = "${var.app["brand"]}-Cloudfront-WAF-media-Protection-rate-based"
     priority = 0
+
+    action {
+      count {}
+    }
+
+    statement {
+      rate_based_statement {
+       limit              = 100
+       aggregate_key_type = "IP"
+       
+       scope_down_statement {
+         byte_match_statement {
+          field_to_match {
+              uri_path   {}
+              }
+          search_string  = "/media/"
+          positional_constraint = "STARTS_WITH"
+
+          text_transformation {
+            priority   = 0
+            type       = "NONE"
+           }
+         }
+       }
+     }
+  }
+      visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "${var.app["brand"]}-Cloudfront-WAF-Protection-rate-based-rule"
+      sampled_requests_enabled   = true
+    }
+   }
+   
+   rule {
+    name     = "${var.app["brand"]}-Cloudfront-WAF-static-Protection-rate-based"
+    priority = 1
+
+    action {
+      count {}
+    }
+
+    statement {
+      rate_based_statement {
+       limit              = 200
+       aggregate_key_type = "IP"
+       
+       scope_down_statement {
+         byte_match_statement {
+          field_to_match {
+              uri_path   {}
+              }
+          search_string  = "/static/"
+          positional_constraint = "STARTS_WITH"
+
+          text_transformation {
+            priority   = 0
+            type       = "NONE"
+           }
+         }
+       }
+     }
+    }
+      visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "${var.app["brand"]}-Cloudfront-WAF-static-Protection-rate-based-rule"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  rule {
+    name = "AWSManagedRulesCommonRule"
+    priority = 2
     override_action {
       none {
       }
@@ -1896,27 +1939,8 @@ resource "aws_wafv2_web_acl" "this" {
     }
   }
   rule {
-    name = "AWSManagedRulesSQLiRuleSet"
-    priority = 1
-    override_action {
-      none {
-      }
-    }
-    statement {
-      managed_rule_group_statement {
-        name = "AWSManagedRulesSQLiRuleSet"
-        vendor_name = "AWS"
-      }
-    }
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name = "${var.app["brand"]}-AWSManagedRulesSQLiRuleSet"
-      sampled_requests_enabled = true
-    }
-  }
-  rule {
     name = "AWSManagedRulesAmazonIpReputation"
-    priority = 2
+    priority = 3
     override_action {
       none {
       }

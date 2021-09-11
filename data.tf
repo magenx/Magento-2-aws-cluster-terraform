@@ -69,13 +69,19 @@ data "aws_security_group" "default" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Get the ID of CloudFront origin request policy
 # # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_cloudfront_origin_request_policy" "this" {
+data "aws_cloudfront_origin_request_policy" "s3" {
   name = "Managed-CORS-S3Origin"
+}
+data "aws_cloudfront_origin_request_policy" "custom" {
+  name = "Managed-CORS-CustomOrigin"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Get the ID of CloudFront cache policy.
 # # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_cloudfront_cache_policy" "this" {
+data "aws_cloudfront_cache_policy" "s3" {
+  name = "Managed-CachingOptimizedForUncompressedObjects"
+}
+data "aws_cloudfront_cache_policy" "custom" {
   name = "Managed-CachingOptimized"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
