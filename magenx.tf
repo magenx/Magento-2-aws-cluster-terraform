@@ -389,7 +389,7 @@ resource "aws_cloudfront_distribution" "this" {
     cache_policy_id          = data.aws_cloudfront_cache_policy.custom.id
 
     viewer_protocol_policy = "https-only"
-
+    compress               = true
 }
   logging_config {
     include_cookies = false
@@ -1803,9 +1803,14 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/developer/developer_mode 0"
       ## explicitly set the new catalog media url format
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/url/catalog_media_url_format image_optimization_parameters"
-      ## configure cloudfront media base url
+      ## configure cloudfront media / static base url
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/unsecure/base_media_url https://${aws_cloudfront_distribution.this.domain_name}/media/"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/base_media_url https://${aws_cloudfront_distribution.this.domain_name}/media/"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/unsecure/base_static_url https://${aws_cloudfront_distribution.this.domain_name}/static/"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/base_static_url https://${aws_cloudfront_distribution.this.domain_name}/static/"
+      ## minify js and css
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/css/minify_files 1"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/js/minify_files 1"
       ## enable eav cache
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/caching/cache_user_defined_attributes 1"
       ## deploy production mode
@@ -1837,7 +1842,7 @@ resource "aws_wafv2_web_acl" "this" {
   description = "${var.app["brand"]}-WAF-Protections"
 
   default_action {
-    block {
+    allow {
     }
   }
 
