@@ -57,6 +57,7 @@ sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/nginx.conf
 sed -i "s/DOMAIN/${DOMAIN} ${STAGING_DOMAIN}/" /etc/nginx/nginx.conf
 sed -i "s/MAGENX_HEADER/${MAGENX_HEADER}/" /etc/nginx/nginx.conf
 sed -i "s/ALB_DNS_NAME/${ALB_DNS_NAME}/" /etc/nginx/conf.d/alb.conf
+sed -i "s,CORS_ORIGIN,https://${DOMAIN},g" /etc/nginx/conf.d/cors.conf
 
 systemctl daemon-reload
 systemctl enable varnish
