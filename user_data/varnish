@@ -21,7 +21,7 @@ echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 
 ## install varnish
 #curl -s https://packagecloud.io/install/repositories/varnishcache/varnish66/script.deb.sh | bash
 apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/nginx.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
-apt-get -qqy install varnish nginx
+apt-get -qqy install varnish nginx nginx-module-geoip
 
 systemctl stop nginx varnish
 
