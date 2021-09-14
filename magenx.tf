@@ -980,7 +980,7 @@ resource "aws_lb_target_group" "this" {
   protocol    = "HTTP"
   vpc_id      = aws_vpc.this.id
   health_check {
-    path = "${var.app["brand"]}-${each.key}-health-check"
+    path = "/${var.app["brand"]}-${each.key}-health-check"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
