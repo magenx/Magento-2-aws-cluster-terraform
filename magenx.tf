@@ -1063,11 +1063,6 @@ resource "aws_lb_listener_rule" "inneradmin" {
     target_group_arn = aws_lb_target_group.this["admin"].arn
   }
   condition {
-    host_header {
-      values = [var.app["domain"]]
-    }
-  }
-  condition {
     http_header {
       http_header_name = "X-Magenx-Header"
       values           = [random_uuid.this.result]
@@ -1088,11 +1083,6 @@ resource "aws_lb_listener_rule" "innermysql" {
   action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this["admin"].arn
-  }
-  condition {
-    host_header {
-      values = [var.app["domain"]]
-    }
   }
   condition {
     http_header {
