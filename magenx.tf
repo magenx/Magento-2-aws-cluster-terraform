@@ -1816,8 +1816,8 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/css/minify_files 1"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/js/minify_files 1"
       ## enable hsts upgrade headers
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:show web/secure/enable_hsts 1"
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:show web/secure/enable_upgrade_insecure 1"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/enable_hsts 1"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/enable_upgrade_insecure 1"
       ## enable eav cache
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/caching/cache_user_defined_attributes 1"
       ## deploy production mode
