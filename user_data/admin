@@ -239,6 +239,8 @@ _TIMER_USER_DATA_END="$(date -R)"
 
 cat > /tmp/timer_user_data_log <<END
 Instance: ${INSTANCE_NAME} - $${INSTANCE_ID} - $${INSTANCE_TYPE}
+Region: ${AWS_DEFAULT_REGION}
+Brand: ${BRAND}
 Uptime:  $(uptime -s)
 
 User data timer start:           $${_TIMER_USER_DATA_START}
@@ -254,5 +256,5 @@ END
 
 aws sns publish \
     --topic-arn aws_sns_topic.default.arn \
-    --subject "Timer for: ${INSTANCE_NAME} - $${INSTANCE_ID} - $${INSTANCE_TYPE}" \
+    --subject "Timer for: ${BRAND} at ${AWS_DEFAULT_REGION} - ${INSTANCE_NAME} - $${INSTANCE_ID}" \
     --message file:///tmp/timer_user_data_log
