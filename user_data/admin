@@ -4,6 +4,7 @@
 #        Copyright (C) 2013-present admin@magenx.com                              #
 #        All rights reserved.                                                     #
 #=================================================================================#
+_TIMER_USER_DATA_START="$(date -R)"
 
 INSTANCE_LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
@@ -11,6 +12,8 @@ INSTANCE_LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 apt-get update
 apt-get -qqy install ${EXTRA_PACKAGES_DEB}
 pip3 install git-remote-codecommit
+
+_TIMER_USER_DATA_APT="$(date -R)"
 
 ## create user
 useradd -d /home/${BRAND} -s /sbin/nologin ${BRAND}
@@ -25,7 +28,7 @@ chown -R ${BRAND}:${PHP_USER} ${WEB_ROOT_PATH} /home/${BRAND}/{.config,.cache,.l
 chmod 2770 ${WEB_ROOT_PATH}
 setfacl -R -m u:${BRAND}:rwX,g:${PHP_USER}:r-X,o::-,d:u:${BRAND}:rwX,d:g:${PHP_USER}:r-X,d:o::- ${WEB_ROOT_PATH}
 cd ${WEB_ROOT_PATH}
-su ${BRAND} -s /bin/bash -c "git clone -b main ${CODECOMMIT_APP_REPO} ."
+su ${BRAND} -s /bin/bash -c "git clone -b %{ if "${INSTANCE_NAME}" != "staging" }main%{ else }staging%{ endif } ${CODECOMMIT_APP_REPO} ."
 echo "${EFS_DNS_TARGET}:/%{ if "${INSTANCE_NAME}" != "staging" }production%{ else }staging%{ endif }/var ${WEB_ROOT_PATH}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
 echo "${EFS_DNS_TARGET}:/%{ if "${INSTANCE_NAME}" != "staging" }production%{ else }staging%{ endif }/pub/media ${WEB_ROOT_PATH}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
 su ${BRAND} -s /bin/bash -c "mkdir -p {pub/media,var}"
@@ -40,6 +43,8 @@ find /mnt/efs -type d -exec chmod 2770 {} \;
 umount /mnt/efs
 mount -a
 fi
+
+_TIMER_USER_DATA_MOUNT="$(date -R)"
 
 chmod 2770 pub/media var
 chmod +x bin/magento
@@ -61,6 +66,9 @@ debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false
 
 apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/nginx.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/php.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+
+_TIMER_USER_DATA_LEMP_REPO="$(date -R)"
+
 apt-get -qqy install %{ if "${INSTANCE_NAME}" == "admin" }composer mariadb-client phpmyadmin%{ endif } nginx php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor }
 
 cat > /etc/sysctl.conf <<END
@@ -141,7 +149,7 @@ sed -i 's/^\(memory_limit = \)[0-9]*M/\1%{ if "${INSTANCE_NAME}" == "admin" }204
 sed -i 's/^\(post_max_size = \)[0-9]*M/\164M/' ${PHP_INI}
 sed -i 's/^\(upload_max_filesize = \)[0-9]*M/\132M/' ${PHP_INI}
 sed -i 's/expose_php = On/expose_php = Off/' ${PHP_INI}
-sed -i 's/;realpath_cache_size =.*/realpath_cache_size = 10M/' ${PHP_INI}
+sed -i 's/;realpath_cache_size =.*/realpath_cache_size = 5M/' ${PHP_INI}
 sed -i 's/;realpath_cache_ttl =.*/realpath_cache_ttl = 86400/' ${PHP_INI}
 sed -i 's/short_open_tag = Off/short_open_tag = On/' ${PHP_INI}
 sed -i 's/;max_input_vars =.*/max_input_vars = 50000/' ${PHP_INI}
@@ -177,6 +185,8 @@ END
 echo "${WEB_ROOT_PATH}/app/etc/env.php" >> /etc/opcache-default.blacklist
 echo "${WEB_ROOT_PATH}/app/etc/config.php" >> /etc/opcache-default.blacklist
 
+_TIMER_USER_DATA_LEMP_INSTALLED="$(date -R)"
+
 cd /etc/nginx
 git init
 git remote add origin ${CODECOMMIT_SERVICES_REPO}
@@ -207,6 +217,8 @@ systemctl daemon-reload
 systemctl restart nginx.service
 systemctl restart php*fpm.service
 
+_TIMER_USER_DATA_LEMP_READY="$(date -R)"
+
 hostnamectl set-hostname server.${DOMAIN} --static
 timedatectl set-timezone ${TIMEZONE}
 
@@ -220,3 +232,20 @@ dpkg -i amazon-cloudwatch-agent.deb
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
 
 chmod 750 /usr/bin/aws
+
+_TIMER_USER_DATA_END="$(date -R)"
+
+cat > /tmp/timer_user_data_log <<END
+Instance uptime:                 $(uptime -s)
+User data timer start:           $${_TIMER_USER_DATA_START}
+Command apt-get update:          $${_TIMER_USER_DATA_APT}
+useradd, git, mount ready:       $${_TIMER_USER_DATA_MOUNT}
+LEMP repository ready:           $${_TIMER_USER_DATA_LEMP_REPO}
+LEMP webstack installed:         $${_TIMER_USER_DATA_LEMP_INSTALLED}
+LEMP webstack config ready:      $${_TIMER_USER_DATA_LEMP_READY}
+User data timer end:             $${_TIMER_USER_DATA_END}
+
+Timer report ready: $(date -R)
+END
+
+aws sns publish --topic-arn "${SNS_TOPIC_ARN}" --message file:///tmp/timer_user_data_log
