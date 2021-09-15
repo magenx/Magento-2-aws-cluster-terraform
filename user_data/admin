@@ -7,6 +7,8 @@
 _TIMER_USER_DATA_START="$(date -R)"
 
 INSTANCE_LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+INSTANCE_TYPE=$(curl -s http://169.254.169.254/latest/meta-data/instance-type)
 
 ## installation
 apt-get update
@@ -236,7 +238,9 @@ chmod 750 /usr/bin/aws
 _TIMER_USER_DATA_END="$(date -R)"
 
 cat > /tmp/timer_user_data_log <<END
-Instance uptime:                 $(uptime -s)
+Instance: ${INSTANCE_NAME} - $${INSTANCE_ID} - $${INSTANCE_TYPE}
+Uptime:  $(uptime -s)
+
 User data timer start:           $${_TIMER_USER_DATA_START}
 Command apt-get update:          $${_TIMER_USER_DATA_APT}
 useradd, git, mount ready:       $${_TIMER_USER_DATA_MOUNT}
