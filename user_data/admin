@@ -252,4 +252,7 @@ User data timer end:             $${_TIMER_USER_DATA_END}
 Timer report ready: $(date -R)
 END
 
-aws sns publish --topic-arn "${SNS_TOPIC_ARN}" --message file:///tmp/timer_user_data_log
+aws sns publish \
+    --topic-arn aws_sns_topic.default.arn \
+    --subject "Timer for: ${INSTANCE_NAME} - $${INSTANCE_ID} - $${INSTANCE_TYPE}" \
+    --message file:///tmp/timer_user_data_log
