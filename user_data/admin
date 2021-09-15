@@ -255,6 +255,6 @@ Timer report ready: $(date -R)
 END
 
 aws sns publish \
-    --topic-arn aws_sns_topic.default.arn \
+    --topic-arn ${SNS_TOPIC_ARN} \
     --subject "Timer for: ${BRAND} at ${AWS_DEFAULT_REGION} - ${INSTANCE_NAME} - $${INSTANCE_ID}" \
     --message file:///tmp/timer_user_data_log
