@@ -449,6 +449,27 @@ resource "aws_iam_role_policy_attachment" "ec2" {
   policy_arn = each.value.policy
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create inline policy for EC2 service role to publish sns message
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_iam_role_policy" "sns_publish" {
+  for_each = var.ec2
+  name = "EC2ProfileSNSPublishPolicy${title(each.key)}"
+  role = aws_iam_role.ec2[each.key].id
+
+  policy = jsonencode({
+  Version = "2012-10-17",
+  Statement = [
+    {
+      Sid    = "EC2ProfileSNSPublishPolicy${each.key}",
+      Effect = "Allow",
+      Action = [
+            "sns:Publish"
+      ],
+      Resource = aws_sns_topic.default.arn
+ }]
+})
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create inline policy for EC2 service role to limit CodeCommit access
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role_policy" "codecommit_access" {
