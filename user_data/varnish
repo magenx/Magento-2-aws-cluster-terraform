@@ -78,3 +78,4 @@ dpkg -i amazon-cloudwatch-agent.deb
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
 
 chmod 750 /usr/bin/aws
+iptables -A OUTPUT -m owner ! --uid-owner root -d 169.254.169.254 -j DROP
