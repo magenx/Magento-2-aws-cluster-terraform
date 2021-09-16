@@ -212,6 +212,7 @@ echo "" > /etc/nginx/conf.d/default.conf
 %{ if "${INSTANCE_NAME}" == "admin" }
 cp /usr/share/phpmyadmin/config.sample.inc.php /etc/phpmyadmin/config.inc.php
 sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISH}';/" /etc/phpmyadmin/config.inc.php
+sed -i "s/localhost/${DATABASE_ENDPOINT}/" /etc/phpmyadmin/config.inc.php
 sed -i "s/PHPMYADMIN_PLACEHOLDER/${MYSQL_PATH}/g" /etc/nginx/conf.d/phpmyadmin.conf
 sed -i "s,#include conf.d/phpmyadmin.conf;,include conf.d/phpmyadmin.conf;," /etc/nginx/sites-available/magento.conf
 %{ endif }
