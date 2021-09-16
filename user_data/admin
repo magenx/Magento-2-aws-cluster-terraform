@@ -210,7 +210,8 @@ sed -i "s/PROFILER_PLACEHOLDER/${PROFILER}/" /etc/nginx/conf.d/maps.conf
 echo "" > /etc/nginx/conf.d/default.conf
 
 %{ if "${INSTANCE_NAME}" == "admin" }
-sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISH}';/" /var/lib/phpmyadmin/blowfish_secret.inc.php
+cp /usr/share/phpmyadmin/config.sample.inc.php /etc/phpmyadmin/config.inc.php
+sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISH}';/" /etc/phpmyadmin/config.inc.php
 sed -i "s/PHPMYADMIN_PLACEHOLDER/${MYSQL_PATH}/g" /etc/nginx/conf.d/phpmyadmin.conf
 sed -i "s,#include conf.d/phpmyadmin.conf;,include conf.d/phpmyadmin.conf;," /etc/nginx/sites-available/magento.conf
 %{ endif }
@@ -234,7 +235,6 @@ dpkg -i amazon-cloudwatch-agent.deb
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
 
 chmod 750 /usr/bin/aws
-iptables -A OUTPUT -m owner ! --uid-owner root -d 169.254.169.254 -j DROP
 
 _TIMER_USER_DATA_END="$(date -R)"
 
