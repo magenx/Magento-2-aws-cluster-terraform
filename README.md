@@ -145,7 +145,7 @@ The idea was to create something more complex, with deeper settings, that terrif
 ##
 ![Magento_2_AWS_cloud_auto_scaling_terraform-map](https://user-images.githubusercontent.com/1591200/119973444-66351600-bfab-11eb-82b8-1413c9aa41fc.png)
 
-## Magento 2 development | source code:
+## :hammer_and_wrench: Magento 2 development | source code:
 - Local provisioner copy files from https://github.com/magenx/Magento-2
 - Pickup files from your own repo @ [variables.tf#L20](https://github.com/magenx/Magento-2-aws-cluster-terraform/blob/main/variables.tf#L20)
 - Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
@@ -177,7 +177,7 @@ The idea was to create something more complex, with deeper settings, that terrif
    
 <br />
    
-## [!] Contact us for installation and support:
+## [:e-mail:] Contact us for installation and support:
 We can launch this project for your store in a short time. Many big retailers have already migrated to this architecture.
 - [x] Write us an [email](mailto:info@magenx.com?subject=Magento%202%20auto%20scaling%20cluster%20on%20AWS) to discuss the project.
 - [x] Send a private message on [Linkedin](https://www.linkedin.com/in/magenx/)  
