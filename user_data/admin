@@ -240,6 +240,7 @@ chmod 750 /usr/bin/aws
 _TIMER_USER_DATA_END="$(date -R)"
 
 cat > /tmp/timer_user_data_log <<END
+
 Instance: ${INSTANCE_NAME} $${INSTANCE_ID} $${INSTANCE_TYPE}
 Region: ${AWS_DEFAULT_REGION}
 Brand: ${BRAND}
@@ -247,17 +248,16 @@ Uptime since:  $(uptime -s)
 
 User data timer start:           $${_TIMER_USER_DATA_START}
 Command apt-get update:          $${_TIMER_USER_DATA_APT}
-useradd, git, mount ready:       $${_TIMER_USER_DATA_MOUNT}
+Command git clone, mount:        $${_TIMER_USER_DATA_MOUNT}
 LEMP repository ready:           $${_TIMER_USER_DATA_LEMP_REPO}
 LEMP webstack installed:         $${_TIMER_USER_DATA_LEMP_INSTALLED}
 LEMP webstack config ready:      $${_TIMER_USER_DATA_LEMP_READY}
 User data timer end:             $${_TIMER_USER_DATA_END}
 
-Timer report ready: $(date -R)
 END
 
 aws sns publish \
     --region ${AWS_DEFAULT_REGION} \
     --topic-arn ${SNS_TOPIC_ARN} \
-    --subject "Timer for: ${BRAND} at ${AWS_DEFAULT_REGION} ${INSTANCE_NAME} $${INSTANCE_ID}" \
+    --subject "Timer for user_data: ${BRAND} at ${AWS_DEFAULT_REGION} ${INSTANCE_NAME} $${INSTANCE_ID}" \
     --message file:///tmp/timer_user_data_log
