@@ -1056,7 +1056,7 @@ resource "aws_lb_listener" "inner" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener_rule" "innerfrontend" {
   listener_arn = aws_lb_listener.inner.arn
-  priority     = 10
+  priority     = 30
   action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this["frontend"].arn
@@ -1100,7 +1100,7 @@ resource "aws_lb_listener_rule" "inneradmin" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener_rule" "innermysql" {
   listener_arn = aws_lb_listener.inner.arn
-  priority     = 30
+  priority     = 10
   action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this["admin"].arn
