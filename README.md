@@ -157,7 +157,7 @@ The idea was to create something more complex, with deeper settings, that terrif
 > modules configuration here: https://github.com/magenx/Magento-2/blob/main/composer.json  
    
    
-|**Performance and security enhancements**||**Enabled modules for business requirements**|
+|**Performance and security enhancements**||**Enabled modules for test requirements**|
 |:-----|---|:-----|
 |Faster backend and frontend from 14% upto 50%||[Fooman Email PDF](https://fooman.com/magento-extension-email-attachments-m2.html)|
 |Better memory management upto 15%||[Stripe Payments](https://stripe.com/docs/plugins/magento)|
