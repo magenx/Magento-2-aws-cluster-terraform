@@ -647,6 +647,7 @@ resource "aws_s3_bucket_policy" "media" {
                         }
                       Resource  = [
                               "${aws_s3_bucket.this["media"].arn}/*.jpg",
+			      "${aws_s3_bucket.this["media"].arn}/*.jpeg",
 			      "${aws_s3_bucket.this["media"].arn}/*.png",
 			      "${aws_s3_bucket.this["media"].arn}/*.gif",
 			      "${aws_s3_bucket.this["media"].arn}/*.webp"
@@ -656,7 +657,8 @@ resource "aws_s3_bucket_policy" "media" {
                       Action = [
                           "s3:PutObject",
                           "s3:GetObject",
-                          "s3:DeleteObject"
+                          "s3:DeleteObject",
+                          "s3:GetObjectAcl"
                         ],
                       Effect    = "Allow"
                       Principal = {
@@ -664,10 +666,12 @@ resource "aws_s3_bucket_policy" "media" {
                         }
                       Resource  = [
 			      "${aws_s3_bucket.this["media"].arn}/*.jpg",
+			      "${aws_s3_bucket.this["media"].arn}/*.jpeg",
 			      "${aws_s3_bucket.this["media"].arn}/*.png",
 			      "${aws_s3_bucket.this["media"].arn}/*.gif",
 			      "${aws_s3_bucket.this["media"].arn}/*.webp",
-                              "${aws_s3_bucket.this["media"].arn}/storage.flag"
+                              "${aws_s3_bucket.this["media"].arn}/storage.flag",
+                              "${aws_s3_bucket.this["media"].arn}/*.csv"
                      ]
                     },
                     {
