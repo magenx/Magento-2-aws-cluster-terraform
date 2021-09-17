@@ -486,12 +486,7 @@ resource "aws_iam_role_policy" "codecommit_access" {
       Action = [
             "codecommit:Get*",
             "codecommit:List*",
-            "codecommit:Describe*",
-            "codecommit:Put*",
-            "codecommit:Post*",
             "codecommit:Merge*",
-            "codecommit:Test*",
-            "codecommit:Update*",
             "codecommit:GitPull",
             "codecommit:GitPush"
       ],
