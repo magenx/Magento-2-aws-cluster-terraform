@@ -662,16 +662,11 @@ resource "aws_s3_bucket_policy" "media" {
                         ],
                       Effect    = "Allow"
                       Principal = {
-                          AWS = [ aws_iam_role.ec2["admin"].arn, aws_iam_role.ec2["frontend"].arn ]
+                          AWS = [ aws_iam_role.ec2["admin"].arn ]
                         }
                       Resource  = [
-			      "${aws_s3_bucket.this["media"].arn}/*.jpg",
-			      "${aws_s3_bucket.this["media"].arn}/*.jpeg",
-			      "${aws_s3_bucket.this["media"].arn}/*.png",
-			      "${aws_s3_bucket.this["media"].arn}/*.gif",
-			      "${aws_s3_bucket.this["media"].arn}/*.webp",
-                              "${aws_s3_bucket.this["media"].arn}/storage.flag",
-                              "${aws_s3_bucket.this["media"].arn}/*.csv"
+			      "${aws_s3_bucket.this["media"].arn}",
+                              "${aws_s3_bucket.this["media"].arn}/*"
                      ]
                     },
                     {
@@ -681,7 +676,7 @@ resource "aws_s3_bucket_policy" "media" {
                         ],
                       Effect    = "Allow"
                       Principal = {
-                          AWS = [ aws_iam_role.ec2["admin"].arn, aws_iam_role.ec2["frontend"].arn ]
+                          AWS = [ aws_iam_role.ec2["admin"].arn ]
                         }
                       Resource  = "${aws_s3_bucket.this["media"].arn}"
                     },
@@ -1720,7 +1715,7 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "echo 007 > magento_umask"
       su ${var.app["brand"]} -s /bin/bash -c "echo -e '/pub/media/*\n/var/*'" > .gitignore
       su ${var.app["brand"]} -s /bin/bash -c "composer -n -q config -g http-basic.repo.magento.com 8c681734f22763b50ea0c29dff9e7af2 02dfee497e669b5db1fe1c8d481d6974"
-      su ${var.app["brand"]} -s /bin/bash -c "composer update -n"
+      su ${var.app["brand"]} -s /bin/bash -c "composer install -n"
       chmod +x bin/magento
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento module:enable --all"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:install \
@@ -1755,10 +1750,7 @@ mainSteps:
       --elasticsearch-host="https://${aws_elasticsearch_domain.this.endpoint}" \
       --elasticsearch-port=443 \
       --elasticsearch-index-prefix=${var.app["brand"]} \
-      --elasticsearch-enable-auth=0 \
-      --remote-storage-driver=aws-s3 \
-      --remote-storage-bucket=${aws_s3_bucket.this["media"].bucket} \
-      --remote-storage-region=${data.aws_region.current.name}"
+      --elasticsearch-enable-auth=0"
       ## installation check
       if [[ $? -ne 0 ]]; then
       echo
@@ -1802,6 +1794,13 @@ mainSteps:
                 ],"  app/etc/env.php
       ## clean cache
       rm -rf var/cache var/page_cache
+      ## enable s3 remote storage
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set --remote-storage-driver=aws-s3 \
+      --remote-storage-bucket=${aws_s3_bucket.this["media"].bucket} \
+      --remote-storage-region=${data.aws_region.current.name} \
+      -n"
+      ## sync to s3 remote storage
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento remote-storage:sync"
       ## install modules to properly test magento 2 production-ready functionality
       su ${var.app["brand"]} -s /bin/bash -c "composer -n require fooman/sameorderinvoicenumber-m2 fooman/emailattachments-m2 fooman/printorderpdf-m2 mageplaza/module-smtp magefan/module-blog stripe/stripe-payments"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade -n --no-ansi"
