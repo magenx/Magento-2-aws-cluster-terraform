@@ -94,7 +94,6 @@ variable "redis" {
   description      = "Map ElastiCache Redis configuration values"
   default  = {    
     node_type                  = "cache.m6g.large"
-    parameter_group_name       = "default.redis6.x"
     name                       = ["session", "cache"]
     automatic_failover_enabled    = true
     multi_az_enabled              = true
