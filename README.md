@@ -30,7 +30,7 @@ trying to hook you up on a dodgy contract and making you pay 10 times more.
 - Pay as You Go
 - Transparent billing
 - No draconian contracts
-- No sudden surplus resources
+- No sudden overage charges
 - No hardware restrictions
 - No services limitations
 - No hidden bottlenecks
