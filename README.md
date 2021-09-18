@@ -75,7 +75,7 @@ The idea was to create something more complex, with deeper settings, that terrif
 
 <br />
 
-# Deployment into isolated VPC:
+# :rocket: Deployment into isolated VPC:
 - Login to AWS Console
 - [Subscribe to Debian 11 ARM](https://aws.amazon.com/marketplace/pp/prodview-jwzxq55gno4p4)
 - Choose an AWS Region
