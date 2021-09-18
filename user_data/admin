@@ -4,7 +4,7 @@
 #        Copyright (C) 2013-present admin@magenx.com                              #
 #        All rights reserved.                                                     #
 #=================================================================================#
-_TIMER_USER_DATA_START="$(date -R)"
+_TIMER_USER_DATA_START="$(date +%T)"
 
 INSTANCE_LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
@@ -15,7 +15,7 @@ apt-get update
 apt-get -qqy install ${EXTRA_PACKAGES_DEB}
 pip3 install git-remote-codecommit
 
-_TIMER_USER_DATA_APT="$(date -R)"
+_TIMER_USER_DATA_APT="$(date +%T)"
 
 ## create user
 useradd -d /home/${BRAND} -s /sbin/nologin ${BRAND}
@@ -46,7 +46,7 @@ umount /mnt/efs
 mount -a
 fi
 
-_TIMER_USER_DATA_MOUNT="$(date -R)"
+_TIMER_USER_DATA_MOUNT="$(date +%T)"
 
 chmod 2770 pub/media var
 chmod +x bin/magento
@@ -69,7 +69,7 @@ debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false
 apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/nginx.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/php.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 
-_TIMER_USER_DATA_LEMP_REPO="$(date -R)"
+_TIMER_USER_DATA_LEMP_REPO="$(date +%T)"
 
 apt-get -qqy install %{ if "${INSTANCE_NAME}" == "admin" }composer mariadb-client phpmyadmin%{ endif } nginx php-pear php${PHP_VERSION} %{ for PHP_PKG in split(" ", "${PHP_PACKAGES_DEB}") ~} php${PHP_VERSION}-${PHP_PKG} %{ endfor }
 
@@ -187,7 +187,7 @@ END
 echo "${WEB_ROOT_PATH}/app/etc/env.php" >> /etc/opcache-default.blacklist
 echo "${WEB_ROOT_PATH}/app/etc/config.php" >> /etc/opcache-default.blacklist
 
-_TIMER_USER_DATA_LEMP_INSTALLED="$(date -R)"
+_TIMER_USER_DATA_LEMP_INSTALLED="$(date +%T)"
 
 cd /etc/nginx
 git init
@@ -221,7 +221,7 @@ systemctl daemon-reload
 systemctl restart nginx.service
 systemctl restart php*fpm.service
 
-_TIMER_USER_DATA_LEMP_READY="$(date -R)"
+_TIMER_USER_DATA_LEMP_READY="$(date +%T)"
 
 hostnamectl set-hostname server.${DOMAIN} --static
 timedatectl set-timezone ${TIMEZONE}
@@ -237,7 +237,7 @@ dpkg -i amazon-cloudwatch-agent.deb
 
 chmod 750 /usr/bin/aws
 
-_TIMER_USER_DATA_END="$(date -R)"
+_TIMER_USER_DATA_END="$(date +%T)"
 
 cat > /tmp/timer_user_data_log <<END
 
