@@ -196,8 +196,6 @@ This takes time and research. You can use this for free. But its not free to cre
 If you are using this project, there are few ways you can support it:
 - [x] Star and sharing the project
 - [x] Open an issue to help make it better
-- [x] [PAYPAL](https://paypal.me/magenx) - You can make one-time donation.  
-
   
 
 <sub>[Magento 2 on the AWS Cloud: Quick Start Deployment](https://www.magenx.com/blog/post/adobe-commerce-cloud-alternative-infrastructure-as-code-terraform-configuration.html)</sub>
