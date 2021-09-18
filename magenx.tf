@@ -813,6 +813,17 @@ EOF
 //////////////////////////////////////////////////////////////[ RDS ]/////////////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create RDS parameter groups
+# # ---------------------------------------------------------------------------------------------------------------------#		
+resource "aws_db_parameter_group" "this" {
+  for_each          = toset(var.rds["name"])
+  name              = "${var.app["brand"]}-${each.key}-parameters"
+  family            = "mariadb10.5"
+  description       = "Parameter group for ${var.app["brand"]} ${each.key} database"
+  tags = {
+    Name = "${var.app["brand"]}-${each.key}-parameters"
+  }
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create RDS instance
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "this" {
@@ -828,7 +839,7 @@ resource "aws_db_instance" "this" {
   name                   = "${var.app["brand"]}_${each.key}"
   username               = var.app["brand"]
   password               = random_password.this["rds"].result
-  parameter_group_name   = var.rds["parameter_group_name"]
+  parameter_group_name   = aws_db_parameter_group.this[each.key].id
   skip_final_snapshot    = var.rds["skip_final_snapshot"]
   vpc_security_group_ids = [aws_security_group.this["rds"].id]
   db_subnet_group_name   = aws_db_subnet_group.this.name
