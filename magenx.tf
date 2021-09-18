@@ -546,6 +546,18 @@ resource "aws_mq_broker" "this" {
 //////////////////////////////////////////////////////////[ ELASTICACHE ]/////////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create ElastiCache parameter groups
+# # ---------------------------------------------------------------------------------------------------------------------#		  
+resource "aws_elasticache_parameter_group" "this" {
+  for_each      = toset(var.redis["name"])
+  name          = "${var.app["brand"]}-${each.key}-parameter"
+  family        = "redis6.x"
+  description   = "Parameter group for ${var.app["domain"]} ${each.key} backend"
+  tags = {
+    Name = "${var.app["brand"]}-${each.key}-parameter"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create ElastiCache - Redis Replication group - session + cache
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticache_replication_group" "this" {
@@ -556,7 +568,7 @@ resource "aws_elasticache_replication_group" "this" {
   replication_group_description = "Replication group for ${var.app["domain"]} ${each.key} backend"
   node_type                     = var.redis["node_type"]
   port                          = 6379
-  parameter_group_name          = var.redis["parameter_group_name"]
+  parameter_group_name          = aws_elasticache_parameter_group.this[each.key].id
   security_group_ids            = [aws_security_group.this[each.key].id]
   subnet_group_name             = aws_elasticache_subnet_group.this.name
   automatic_failover_enabled    = var.redis["automatic_failover_enabled"]
