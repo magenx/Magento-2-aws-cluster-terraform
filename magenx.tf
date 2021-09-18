@@ -553,6 +553,10 @@ resource "aws_elasticache_parameter_group" "this" {
   name          = "${var.app["brand"]}-${each.key}-parameter"
   family        = "redis6.x"
   description   = "Parameter group for ${var.app["domain"]} ${each.key} backend"
+  parameter {
+    name  = "cluster-enabled"
+    value = "no"
+  }
   tags = {
     Name = "${var.app["brand"]}-${each.key}-parameter"
   }
