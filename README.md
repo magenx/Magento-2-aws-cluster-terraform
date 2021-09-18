@@ -192,10 +192,10 @@ We can launch this project for your store in a short time. Many big retailers ha
 <br />
     
 ## :heart_eyes_cat: Support the project  
-This takes time and research. You can use this for free. But for me its not free to create it.
+This takes time and research. You can use this for free. But its not free to create it.
 If you are using this project, there are few ways you can support it:
 - [x] Star and sharing the project
-- [x] Open an issue to help me make it better
+- [x] Open an issue to help make it better
 - [x] [PAYPAL](https://paypal.me/magenx) - You can make one-time donation.  
 
   
