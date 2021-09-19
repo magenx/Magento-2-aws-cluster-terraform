@@ -215,6 +215,20 @@ sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISH}';/" /etc/p
 sed -i "s/localhost/${DATABASE_ENDPOINT}/" /etc/phpmyadmin/config.inc.php
 sed -i "s/PHPMYADMIN_PLACEHOLDER/${MYSQL_PATH}/g" /etc/nginx/conf.d/phpmyadmin.conf
 sed -i "s,#include conf.d/phpmyadmin.conf;,include conf.d/phpmyadmin.conf;," /etc/nginx/sites-available/magento.conf
+
+cat > /etc/logrotate.d/magento <<END
+${WEB_ROOT_PATH}/var/log/*.log
+{
+su ${BRAND} ${PHP_USER}
+create 660 ${BRAND} ${PHP_USER}
+daily
+rotate 7
+notifempty
+missingok
+compress
+}
+END
+
 %{ endif }
 
 systemctl daemon-reload
