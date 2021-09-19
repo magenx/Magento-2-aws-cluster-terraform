@@ -12,7 +12,7 @@ backend default {
 }
 
 acl purge {
-    "localhost";
+    "CIDR";
 }
 
 sub vcl_recv {
