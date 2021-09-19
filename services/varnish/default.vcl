@@ -12,6 +12,7 @@ backend default {
 }
 
 acl purge {
+    "localhost"
     "CIDR";
 }
 
