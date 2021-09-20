@@ -95,6 +95,8 @@ variable "redis" {
   default  = {    
     node_type                  = "cache.m6g.large"
     name                       = ["session", "cache"]
+    engine_version                = "6.x"
+    port                          = "6379"
     automatic_failover_enabled    = true
     multi_az_enabled              = true
   }
