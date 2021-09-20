@@ -1614,7 +1614,7 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
           }
         },
         "log_stream_name": "${var.app["domain"]}",
-        "force_flush_interval" : 5
+        "force_flush_interval" : 60
       }
 }
 EOF
