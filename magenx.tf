@@ -1572,31 +1572,44 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
         "logs_collected": {
           "files": {
             "collect_list": [
-              {
+            %{ if each.key == "varnish" ~}
+            {
                 "file_path": "/var/log/nginx/error.log",
-                "log_group_name": "${var.app["brand"]}_nginx_error_logs",
+                "log_group_name": "${var.app["brand"]}_nginx_proxy_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
-              },
-              {
+            },
+            %{ endif ~}
+            %{ if each.key == "admin" || each.key == "staging" || each.key == "build" ~}
+            {
+                "file_path": "/home/${var.app["brand"]}/public_html/var/log/nginx-error.log",
+                "log_group_name": "${var.app["brand"]}_nginx_app_error_logs",
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
+            },
+            {
                 "file_path": "/home/${var.app["brand"]}/public_html/var/log/php-fpm-error.log",
-                "log_group_name": "${var.app["brand"]}_php_error_logs",
+                "log_group_name": "${var.app["brand"]}_php_app_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
-              },
-              {
+            },
                 "file_path": "/home/${var.app["brand"]}/public_html/var/log/exception.log",
-                "log_group_name": "${var.app["brand"]}_magento_error_logs",
+                "log_group_name": "${var.app["brand"]}_app_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
-              },
-              {
+            },
+            %{ endif ~}
+            {
                 "file_path": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
                 "log_group_name": "${var.app["brand"]}_cloudwatch_agent_log",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
-              },
-              {
+            },
+            {
+                "file_path": "/var/log/apt/history.log",
+                "log_group_name": "${var.app["brand"]}_system_apt_history",
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
+            },
+            {
                 "file_path": "/var/log/syslog",
                 "log_group_name": "${var.app["brand"]}_system_syslog",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
-              }
+            }
             ]
           }
         },
