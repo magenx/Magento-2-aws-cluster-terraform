@@ -568,10 +568,11 @@ resource "aws_elasticache_replication_group" "this" {
   for_each                      = toset(var.redis["name"])
   number_cache_clusters         = length(values(aws_subnet.this).*.id)
   engine                        = "redis"
+  engine_version                = var.redis["engine_version"]
   replication_group_id          = "${var.app["brand"]}-${each.key}-backend"
   replication_group_description = "Replication group for ${var.app["domain"]} ${each.key} backend"
   node_type                     = var.redis["node_type"]
-  port                          = 6379
+  port                          = var.redis["port"]
   parameter_group_name          = aws_elasticache_parameter_group.this[each.key].id
   security_group_ids            = [aws_security_group.this[each.key].id]
   subnet_group_name             = aws_elasticache_subnet_group.this.name
