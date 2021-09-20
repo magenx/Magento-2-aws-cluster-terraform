@@ -200,6 +200,7 @@ mkdir -p /etc/nginx/sites-enabled
 ln -s /etc/nginx/sites-available/magento.conf /etc/nginx/sites-enabled/magento.conf
 
 sed -i "s/user  nginx;/user  ${BRAND};/" /etc/nginx/nginx.conf
+sed -i "s,/var/log/nginx/error.log,${WEB_ROOT_PATH}/var/log/nginx-error.log;," /etc/nginx/nginx.conf
 sed -i "s,CIDR,${CIDR}," /etc/nginx/nginx.conf
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/magento.conf
 sed -i "s/HEALTH_CHECK_LOCATION/${BRAND}-${INSTANCE_NAME}-health-check/" /etc/nginx/sites-available/magento.conf
