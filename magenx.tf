@@ -1584,6 +1584,7 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
                 "log_group_name": "${var.app["brand"]}_php_app_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
             },
+            {
                 "file_path": "/home/${var.app["brand"]}/public_html/var/log/exception.log",
                 "log_group_name": "${var.app["brand"]}_app_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
