@@ -140,6 +140,8 @@ The idea was to create something more complex, with deeper settings, that terrif
 - [x] Configuration settings saved in Parameter Store
 - [x] Live shop in production mode / read-only 
 - [x] Security groups configured for every service and instances
+- [x] phpMyAdmin for easy database editing
+- [x] MariaDB database dump for data analysis
 - [x] Enhanced security in AWS and LEMP 
 - [x] AWS Inspector Assessment templates
 - [x] AWS WAF Protection rules  
