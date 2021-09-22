@@ -1860,6 +1860,7 @@ mainSteps:
       ## minify js and css
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/css/minify_files 1"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/js/minify_files 1"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/js/move_script_to_bottom 1"
       ## enable hsts upgrade headers
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/enable_hsts 1"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/enable_upgrade_insecure 1"
