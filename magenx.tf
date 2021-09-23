@@ -643,59 +643,78 @@ resource "aws_s3_bucket" "this" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create policy for CloudFront and EC2 to limit S3 media bucket access
+# Create IAM user for S3 bucket
+# # ---------------------------------------------------------------------------------------------------------------------#	  
+resource "aws_iam_user" "s3" {
+  name = "${var.app["brand"]}-s3-media-production"
+  tags = {
+    Name = "${var.app["brand"]}-s3-media-production"
+  }
+}
+	  
+resource "aws_iam_access_key" "s3" {
+  user = aws_iam_user.s3.name
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create policy for CloudFront and S3 user to limit S3 media bucket access
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_s3_bucket_policy" "media" {
-  bucket = aws_s3_bucket.this["media"].id
-  policy = jsonencode(
-            {
-              Id        = "PolicyForMediaStorageAccess"
-              Statement = [
-                    {
-                      Action    = "s3:GetObject"
-                      Effect    = "Allow"
-                      Principal = {
-                          AWS = aws_cloudfront_origin_access_identity.this.iam_arn
-                        }
-                      Resource  = [
-                              "${aws_s3_bucket.this["media"].arn}/*.jpg",
-			      "${aws_s3_bucket.this["media"].arn}/*.jpeg",
-			      "${aws_s3_bucket.this["media"].arn}/*.png",
-			      "${aws_s3_bucket.this["media"].arn}/*.gif",
-			      "${aws_s3_bucket.this["media"].arn}/*.webp"
-                     ]
-                    },
-                    {
-                      Action = [
-                          "s3:PutObject",
-                          "s3:GetObject",
-                          "s3:DeleteObject",
-                          "s3:GetObjectAcl"
-                        ],
-                      Effect    = "Allow"
-                      Principal = {
-                          AWS = [ aws_iam_role.ec2["admin"].arn ]
-                        }
-                      Resource  = [
-			      "${aws_s3_bucket.this["media"].arn}",
-                              "${aws_s3_bucket.this["media"].arn}/*"
-                     ]
-                    },
-                    {
-                      Action = [
-                          "s3:GetBucketLocation",
-                          "s3:ListBucket"
-                        ],
-                      Effect    = "Allow"
-                      Principal = {
-                          AWS = [ aws_iam_role.ec2["admin"].arn ]
-                        }
-                      Resource  = "${aws_s3_bucket.this["media"].arn}"
-                    },
-                ]
-              Version   = "2012-10-17"
-            }
-        )
+   bucket = aws_s3_bucket.this["media"].id
+   policy = jsonencode({
+   Id = "PolicyForMediaStorageAccess"
+   Statement = [
+	  {
+         Action = "s3:GetObject"
+         Effect = "Allow"
+         Principal = {
+            AWS = aws_cloudfront_origin_access_identity.this.iam_arn
+         }
+         Resource = [
+            "${aws_s3_bucket.this["media "].arn}/*.jpg",
+            "${aws_s3_bucket.this["media "].arn}/*.jpeg",
+            "${aws_s3_bucket.this["media "].arn}/*.png",
+            "${aws_s3_bucket.this["media "].arn}/*.gif",
+            "${aws_s3_bucket.this["media "].arn}/*.webp"
+         ]
+      }, 
+      {
+         Action = ["s3:PutObject"],
+         Effect = "Allow"
+         Principal = {
+            AWS = [ aws_iam_user.s3.arn ]
+         }
+         Resource = [
+            "${aws_s3_bucket.this["media "].arn}",
+            "${aws_s3_bucket.this["media "].arn}/*"
+         ],
+         Condition = {
+            test     = "StringEquals"
+            variable = "aws:SourceVpc"
+            values   = [ aws_vpc.this.id ]
+         }
+      }, 
+      {
+         Action = ["s3:GetObject", "s3:GetObjectAcl"],
+         Effect = "Allow"
+         Principal = {
+            AWS = [ aws_iam_user.s3.arn ]
+         }
+         Resource = [
+            "${aws_s3_bucket.this["media "].arn}",
+            "${aws_s3_bucket.this["media "].arn}/*"
+         ]
+      }, 
+      {
+         Action = ["s3:GetBucketLocation", "s3:ListBucket"],
+         Effect = "Allow"
+         Principal = {
+            AWS = [ aws_iam_user.s3.arn ]
+         }
+         Resource = "${aws_s3_bucket.this["media "].arn}"
+      }, 
+	  ] 
+	  Version = "2012-10-17"
+   })
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create S3 bucket policy for ALB to write access logs
@@ -1829,6 +1848,8 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set --remote-storage-driver=aws-s3 \
       --remote-storage-bucket=${aws_s3_bucket.this["media"].bucket} \
       --remote-storage-region=${data.aws_region.current.name} \
+      --remote-storage-key=${aws_iam_access_key.s3.id} \
+      --remote-storage-secret="${aws_iam_access_key.s3.secret}" \
       -n"
       ## sync to s3 remote storage
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento remote-storage:sync"
