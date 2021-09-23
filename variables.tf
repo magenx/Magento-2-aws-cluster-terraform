@@ -117,16 +117,16 @@ variable "asp" {
   description      = "Map Autoscaling Policy configuration values"
   default  = {    
     evaluation_periods  = "2"
-    period        = "300"
-    out_threshold = "80"
-    in_threshold  = "25"
+    period              = "300"
+    out_threshold       = "80"
+    in_threshold        = "25"
   }
 }
 
 variable "s3" {
   description = "S3 bucket names"
   type        = set(string)
-  default     = ["media", "system"]
+  default     = ["media", "system", "backup"]
 }
 
 variable "alb" {
