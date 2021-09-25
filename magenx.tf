@@ -47,8 +47,8 @@ resource "random_password" "this" {
 # Generate random string
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_string" "this" {
-  for_each         = toset(["admin_path", "mysql_path", "profiler", "persistent", "id_prefix"])
-  length           = (each.key == "id_prefix" ? 3 : 7)
+  for_each       = toset(["admin_path", "mysql_path", "profiler", "persistent", "id_prefix", "health_check"])
+  length         = (each.key == "id_prefix" ? 3 : 7)
   lower          = true
   number         = true
   special        = false
