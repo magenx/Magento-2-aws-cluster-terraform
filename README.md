@@ -86,11 +86,11 @@ The idea was to create something more complex, with deeper settings, that terrif
    sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
    sudo yum -y install terraform
 ```
-- Create deployment directory:  
+- [x] Create deployment directory:  
 ```
   mkdir magento && cd magento
 ```
-- Clone repo:  
+- [x] Clone repo:  
 > 
 ```
   git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
