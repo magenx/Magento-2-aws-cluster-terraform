@@ -26,15 +26,15 @@ trying to hook you up on a dodgy contract and making you pay 10 times more.
 <img align="right" width="500" src="https://user-images.githubusercontent.com/1591200/130331243-03e6097a-c380-4586-b380-cbc733237d93.png">
 
 ## AWS cloud account pros:
-- Open source Magento
-- Pay as You Go
-- Transparent billing
-- No draconian contracts
-- No sudden overage charges
-- No hardware restrictions
-- No services limitations
-- No hidden bottlenecks
-- No time waste for [support tickets](https://devdocs.magento.com/cloud/project/services.html) 
+- [x] Open source Magento
+- [x] Pay as You Go
+- [x] Transparent billing
+- [x] No draconian contracts
+- [x] No sudden overage charges
+- [x] No hardware restrictions
+- [x] No services limitations
+- [x] No hidden bottlenecks
+- [x] No time waste for [support tickets](https://devdocs.magento.com/cloud/project/services.html) 
   
   
 &nbsp;  
@@ -76,29 +76,29 @@ The idea was to create something more complex, with deeper settings, that terrif
 <br />
 
 # :rocket: Deployment into isolated VPC:
-- Login to AWS Console
-- [Subscribe to Debian 11 ARM](https://aws.amazon.com/marketplace/pp/prodview-jwzxq55gno4p4)
-- Choose an AWS Region
-- Start AWS CloudShell
-- Install Terraform:
+- [x] Login to AWS Console
+- [x] [Subscribe to Debian 11 ARM](https://aws.amazon.com/marketplace/pp/prodview-jwzxq55gno4p4)
+- [x] Choose an AWS Region
+- [x] Start AWS CloudShell
+- [x] Install Terraform:
 ```
    sudo yum install -y yum-utils
    sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
    sudo yum -y install terraform
 ```
-- Create deployment directory:  
+- [x] Create deployment directory:  
 ```
   mkdir magento && cd magento
 ```
-- Clone repo:  
+- [x] Clone repo:  
 > 
 ```
   git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
 ```
-> 
-- Note: Right after `terraform apply` you will receive email from amazon to approve resources
-- Check all user_data, adjust your settings, edit your cidr, brand, domain, email and other vars in `variables.tf`
-- Run:
+>  
+**[ ! ]** Note: Right after `terraform apply` you will receive email from amazon to approve resources  
+**[ ! ]** Check all user_data, adjust your settings, edit your cidr, brand, domain, email and other vars in `variables.tf`  
+- [x] Run:
 ```
    terraform init
    terraform apply
@@ -150,12 +150,12 @@ The idea was to create something more complex, with deeper settings, that terrif
 ![Magento_2_AWS_cloud_auto_scaling_terraform-map](https://user-images.githubusercontent.com/1591200/119973444-66351600-bfab-11eb-82b8-1413c9aa41fc.png)
 
 ## :hammer_and_wrench: Magento 2 development | source code:
-- Local provisioner copy files from https://github.com/magenx/Magento-2
-- Pickup files from your own repo @ [variables.tf#L20](https://github.com/magenx/Magento-2-aws-cluster-terraform/blob/main/variables.tf#L20)
-- Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
-- Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
-- Right after infrastructure deployment the minimal Magento 2 package is ready to install.
-- Check and run SSM Document to install Magento and pre-configure modules (select admin instance)
+- [x] Local provisioner copy files from https://github.com/magenx/Magento-2
+- [x] Pickup files from your own repo @ [variables.tf#L20](https://github.com/magenx/Magento-2-aws-cluster-terraform/blob/main/variables.tf#L20)
+- [x] Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
+- [x] Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
+- [x] Right after infrastructure deployment the minimal Magento 2 package is ready to install.
+- [x] Check and run SSM Document to install Magento and pre-configure modules (select admin instance)
 > Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime.
 > Remove replaced components from `composer.json` in `"replace": {}` and run `composer update`  
 > modules configuration here: https://github.com/magenx/Magento-2/blob/main/composer.json  
@@ -173,11 +173,11 @@ The idea was to create something more complex, with deeper settings, that terrif
 <br />
 
 ## CI/CD scenario:
-- Event driven
-- Services configuration files tracked in CodeCommit repository
-- Changes in CodeCommit repository triggers EventBridge rule.
-- SSM Document pull from CodeCommit repository and cleanup.
-- Change deployment logic to your needs.  
+- [x] Event driven
+- [x] Services configuration files tracked in CodeCommit repository
+- [x] Changes in CodeCommit repository triggers EventBridge rule.
+- [x] SSM Document pull from CodeCommit repository and cleanup.
+- [x] Change deployment logic to your needs.  
    
 <br />
    
