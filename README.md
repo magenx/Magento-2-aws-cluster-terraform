@@ -26,15 +26,15 @@ trying to hook you up on a dodgy contract and making you pay 10 times more.
 <img align="right" width="500" src="https://user-images.githubusercontent.com/1591200/130331243-03e6097a-c380-4586-b380-cbc733237d93.png">
 
 ## AWS cloud account pros:
-- Open source Magento
-- Pay as You Go
-- Transparent billing
-- No draconian contracts
-- No sudden overage charges
-- No hardware restrictions
-- No services limitations
-- No hidden bottlenecks
-- No time waste for [support tickets](https://devdocs.magento.com/cloud/project/services.html) 
+- [x] Open source Magento
+- [x] Pay as You Go
+- [x] Transparent billing
+- [x] No draconian contracts
+- [x] No sudden overage charges
+- [x] No hardware restrictions
+- [x] No services limitations
+- [x] No hidden bottlenecks
+- [x] No time waste for [support tickets](https://devdocs.magento.com/cloud/project/services.html) 
   
   
 &nbsp;  
@@ -76,11 +76,11 @@ The idea was to create something more complex, with deeper settings, that terrif
 <br />
 
 # :rocket: Deployment into isolated VPC:
-- Login to AWS Console
-- [Subscribe to Debian 11 ARM](https://aws.amazon.com/marketplace/pp/prodview-jwzxq55gno4p4)
-- Choose an AWS Region
-- Start AWS CloudShell
-- Install Terraform:
+- [x] Login to AWS Console
+- [x] [Subscribe to Debian 11 ARM](https://aws.amazon.com/marketplace/pp/prodview-jwzxq55gno4p4)
+- [x] Choose an AWS Region
+- [x] Start AWS CloudShell
+- [x] Install Terraform:
 ```
    sudo yum install -y yum-utils
    sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
@@ -95,10 +95,11 @@ The idea was to create something more complex, with deeper settings, that terrif
 ```
   git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
 ```
-> 
-- Note: Right after `terraform apply` you will receive email from amazon to approve resources
-- Check all user_data, adjust your settings, edit your cidr, brand, domain, email and other vars in `variables.tf`
-- Run:
+>  
+**[ ! ]** Right after `terraform apply` you will receive email from amazon to approve resources  
+**[ ! ]** Make sure you have [Fastly](https://www.fastly.com/signup/) account and API token ready: `export FASTLY_API_KEY="addyourfastlyapikey"`  
+- [x] Check all user_data, adjust your settings, edit your cidr, brand, domain, email and other vars in `variables.tf`
+- [x] Run:
 ```
    terraform init
    terraform apply
@@ -109,21 +110,22 @@ The idea was to create something more complex, with deeper settings, that terrif
 <br />
 
 ## Complete setup:
- `5` autoscaling groups with launch templates converted from `user_data`  
- `4` target groups for load balancer (varnish frontend admin staging)  
+ `4` autoscaling groups with launch templates converted from `user_data`  
+ `3` target groups for load balancer (frontend admin staging)  
  `1` build server to compile all the code  
- `2` load balancers (external/internal) with listeners / rules  
+ `1` load balancer external with listeners / rules  
  `2` rds mariadb databases multi AZ production, single AZ staging  
  `1` elasticsearch domain for Magento catalog search  
  `2` redis elasticache cluster for sessions and cache  
  `1` rabbitmq broker to manage queue messages  
- `2` s3 buckets for [media] images and [system] files and logs (with access policy)  
+ `2` s3 buckets for [media] [system] and [backup] (with access policy)  
  `2` codecommit app files repository and services config files repository  
- `1` cloudfront s3 origin distribution  
  `1` efs file system for shared folders, with mount target per AZ  
  `1` sns topic default subscription to receive email alerts  
  `1` ses user access details for smtp module  
- 
+   
+- [x] Fastly service for CDN and Varnish cache
+   
  >resources are grouped into a virtual network, VPC dedicated to your brand  
  >the settings initially imply a large store, and are designed for huge traffic.  
  >services are clustered and replicated thus ready for failover.
@@ -147,15 +149,15 @@ The idea was to create something more complex, with deeper settings, that terrif
 - [x] AWS WAF Protection rules  
 
 ##
-![Magento_2_AWS_cloud_auto_scaling_terraform-map](https://user-images.githubusercontent.com/1591200/119973444-66351600-bfab-11eb-82b8-1413c9aa41fc.png)
+![Magento_2_Fastly_AWS_cloud_auto_scaling_terraform](https://user-images.githubusercontent.com/1591200/134822385-4c90f58f-fbbd-4e1f-8f8c-a9aac2fce7b7.png)
 
 ## :hammer_and_wrench: Magento 2 development | source code:
-- Local provisioner copy files from https://github.com/magenx/Magento-2
-- Pickup files from your own repo @ [variables.tf#L20](https://github.com/magenx/Magento-2-aws-cluster-terraform/blob/main/variables.tf#L20)
-- Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
-- Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
-- Right after infrastructure deployment the minimal Magento 2 package is ready to install.
-- Check and run SSM Document to install Magento and pre-configure modules (select admin instance)
+- [x] Local provisioner copy files from https://github.com/magenx/Magento-2
+- [x] Pickup files from your own repo @ [variables.tf#L20](https://github.com/magenx/Magento-2-aws-cluster-terraform/blob/main/variables.tf#L20)
+- [x] Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
+- [x] Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
+- [x] Right after infrastructure deployment the minimal Magento 2 package is ready to install.
+- [x] Check and run SSM Document to install Magento and pre-configure modules (select admin instance)
 > Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime.
 > Remove replaced components from `composer.json` in `"replace": {}` and run `composer update`  
 > modules configuration here: https://github.com/magenx/Magento-2/blob/main/composer.json  
@@ -165,7 +167,7 @@ The idea was to create something more complex, with deeper settings, that terrif
 |:-----|---|:-----|
 |Faster backend and frontend from 14% upto 50%||[Fooman Email PDF](https://fooman.com/magento-extension-email-attachments-m2.html)|
 |Better memory management upto 15%||[Stripe Payments](https://stripe.com/docs/plugins/magento)|
-|Easy deployments||[Mageplaza SMTP](https://github.com/mageplaza/magento-2-smtp)|
+|Easy deployments||[Fastly CDN for Magento2](https://github.com/fastly/fastly-magento2)|
 |Less dependencies||[Magefan Blog](https://github.com/magefan/module-blog)|
 |Zero maintenance||[Fooman Order#=Invoice#](https://fooman.com/magento-extension-invoice-order-number-m2.html)|
 |Low security risks||[Fooman Print PDF](https://fooman.com/magento-extension-print-order-pdf-m2.html)|
@@ -173,11 +175,11 @@ The idea was to create something more complex, with deeper settings, that terrif
 <br />
 
 ## CI/CD scenario:
-- Event driven
-- Services configuration files tracked in CodeCommit repository
-- Changes in CodeCommit repository triggers EventBridge rule.
-- SSM Document pull from CodeCommit repository and cleanup.
-- Change deployment logic to your needs.  
+- [x] Event driven
+- [x] Services configuration files tracked in CodeCommit repository
+- [x] Changes in CodeCommit repository triggers EventBridge rule.
+- [x] SSM Document pull from CodeCommit repository and cleanup.
+- [x] Change deployment logic to your needs.  
    
 <br />
    
