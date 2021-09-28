@@ -120,7 +120,7 @@ The idea was to create something more complex, with deeper settings, that terrif
  `1` elasticsearch domain for Magento catalog search  
  `2` redis elasticache cluster for sessions and cache  
  `1` rabbitmq broker to manage queue messages  
- `2` s3 buckets for [media] [system] and [backup] (with access policy)  
+ `2` s3 buckets for [media] [system] and [backup] with access policy  
  `2` codecommit app files repository and services config files repository  
  `1` efs file system for shared folders, with mount target per AZ  
  `1` sns topic default subscription to receive email alerts  
