@@ -295,121 +295,7 @@ resource "aws_codecommit_repository" "services" {
           git branch -m nginx_staging
           git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_staging
           rm -rf .git
-
-          cd ${abspath(path.root)}/services/varnish
-          git init
-          git add .
-          git commit -m "varnish_ec2_config"
-          git branch -m varnish
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} varnish
-          rm -rf .git
-
-          cd ${abspath(path.root)}/services/systemd_proxy
-          git init
-          git add .
-          git commit -m "systemd_proxy_ec2_config"
-          git branch -m systemd_proxy
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} systemd_proxy
-          rm -rf .git
-
-          cd ${abspath(path.root)}/services/nginx_proxy
-          git init
-          git add .
-          git commit -m "nginx_proxy_ec2_config"
-          git branch -m nginx_proxy
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_proxy
-          rm -rf .git
 EOF
-  }
-}
-
-
-
-////////////////////////////////////////////////////////[ CLOUDFRONT ]////////////////////////////////////////////////////
-
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create CloudFront distribution with S3 origin
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudfront_origin_access_identity" "this" {
-  comment = "CloudFront origin access identity"
-}
-
-resource "aws_cloudfront_distribution" "this" {
-  enabled             = true
-  is_ipv6_enabled     = true
-  web_acl_id          = aws_wafv2_web_acl.this.arn
-  price_class         = "PriceClass_100"
-  comment             = "${var.app["domain"]} assets"
-  
-  origin {
-    domain_name = aws_s3_bucket.this["media"].bucket_regional_domain_name
-    origin_id   = "${var.app["domain"]}-media-assets"
-
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.this.cloudfront_access_identity_path
-    }
-	  
-    custom_header {
-      name  = "X-Magenx-Header"
-      value = random_uuid.this.result
-    }
-  }
-  
-  default_cache_behavior {
-    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${var.app["domain"]}-media-assets"
-
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.s3.id
-    cache_policy_id          = data.aws_cloudfront_cache_policy.s3.id
-
-    viewer_protocol_policy = "https-only"
-
-  }
-  
-  origin {
-	domain_name = var.app["domain"]
-	origin_id   = "${var.app["domain"]}-static-assets"
-
-	custom_origin_config {
-		http_port              = 80
-		https_port             = 443
-		origin_protocol_policy = "https-only"
-		origin_ssl_protocols   = ["TLSv1.2"]
-	}
-  }
-
-  ordered_cache_behavior {
-	path_pattern     = "/static/*"
-	allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-	cached_methods   = ["GET", "HEAD"]
-	target_origin_id = "${var.app["domain"]}-static-assets"
-	
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.custom.id
-    cache_policy_id          = data.aws_cloudfront_cache_policy.custom.id
-
-    viewer_protocol_policy = "https-only"
-    compress               = true
-}
-  logging_config {
-    include_cookies = false
-    bucket          = aws_s3_bucket.this["system"].bucket_domain_name
-    prefix          = "${var.app["brand"]}-cloudfront-logs"
-  }
-  
-  restrictions {
-    geo_restriction {
-      restriction_type = "none"
-    }
-  }
-
-  viewer_certificate {
-    cloudfront_default_certificate = true
-    minimum_protocol_version = "TLSv1.2_2021"
-  }
-  
-  tags = {
-    Name = "${var.app["brand"]}-cloudfront-production"
   }
 }
 
@@ -656,26 +542,27 @@ resource "aws_iam_access_key" "s3" {
   user = aws_iam_user.s3.name
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create policy for CloudFront and S3 user to limit S3 media bucket access
+# Create policy for S3 user to limit S3 media bucket access
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_s3_bucket_policy" "media" {
    bucket = aws_s3_bucket.this["media"].id
    policy = jsonencode({
    Id = "PolicyForMediaStorageAccess"
    Statement = [
-	  {
+      {
          Action = "s3:GetObject"
-         Effect = "Allow"
+         Effect = "Deny"
          Principal = {
-            AWS = aws_cloudfront_origin_access_identity.this.iam_arn
+            AWS = "*"
          }
          Resource = [
-            "${aws_s3_bucket.this["media "].arn}/*.jpg",
-            "${aws_s3_bucket.this["media "].arn}/*.jpeg",
-            "${aws_s3_bucket.this["media "].arn}/*.png",
-            "${aws_s3_bucket.this["media "].arn}/*.gif",
-            "${aws_s3_bucket.this["media "].arn}/*.webp"
-         ]
+            "${aws_s3_bucket.this["media "].arn}/*"
+         ],
+         Condition = {
+            test     = "StringNotLike"
+            variable = "aws:Referer"
+            values   = [ var.app["domain"] ]
+         }
       }, 
       {
          Action = ["s3:PutObject"],
@@ -1017,12 +904,11 @@ resource "aws_cloudwatch_metric_alarm" "rds_max_connections" {
 # Create Application Load Balancers
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb" "this" {
-  for_each           = var.alb
-  name               = "${var.app["brand"]}-${each.key}-alb"
-  internal           = each.value
+  name               = "${var.app["brand"]}-alb"
+  internal           = false
   load_balancer_type = "application"
   drop_invalid_header_fields = true
-  security_groups    = [aws_security_group.this[each.key].id]
+  security_groups    = [aws_security_group.this["alb"].id]
   subnets            = values(aws_subnet.this).*.id
   access_logs {
     bucket  = aws_s3_bucket.this["system"].bucket
@@ -1030,7 +916,7 @@ resource "aws_lb" "this" {
     enabled = true
   }
   tags = {
-    Name = "${var.app["brand"]}-${each.key}-alb"
+    Name = "${var.app["brand"]}-alb"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -1047,41 +933,10 @@ resource "aws_lb_target_group" "this" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create https:// listener for OUTER Load Balancer - forward to varnish
+# Create default listener for Load Balancer - default response
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener" "outerhttps" {
-  depends_on = [aws_acm_certificate_validation.default]
-  load_balancer_arn = aws_lb.this["outer"].arn
-  port              = "443"
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-FS-1-2-Res-2020-10"
-  certificate_arn   = aws_acm_certificate.default.arn
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this["varnish"].arn
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create http:// listener for OUTER Load Balancer - redirect to https://
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener" "outerhttp" {
-  load_balancer_arn = aws_lb.this["outer"].arn
-  port              = "80"
-  protocol          = "HTTP"
-  default_action {
-    type = "redirect"
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create default listener for INNER Load Balancer - default response
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener" "inner" {
-  load_balancer_arn = aws_lb.this["inner"].arn
+resource "aws_lb_listener" "default" {
+  load_balancer_arn = aws_lb.this.arn
   port              = "80"
   protocol          = "HTTP"
   default_action {
@@ -1094,10 +949,10 @@ resource "aws_lb_listener" "inner" {
     }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for INNER Load Balancer - forward to frontend
+# Create conditional listener rule for Load Balancer - forward to frontend
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "innerfrontend" {
-  listener_arn = aws_lb_listener.inner.arn
+resource "aws_lb_listener_rule" "frontend" {
+  listener_arn = aws_lb_listener.default.arn
   priority     = 30
   action {
     type             = "forward"
@@ -1116,10 +971,10 @@ resource "aws_lb_listener_rule" "innerfrontend" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for INNER Load Balancer - forward to admin
+# Create conditional listener rule for Load Balancer - forward to admin
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "inneradmin" {
-  listener_arn = aws_lb_listener.inner.arn
+resource "aws_lb_listener_rule" "admin" {
+  listener_arn = aws_lb_listener.default.arn
   priority     = 20
   action {
     type             = "forward"
@@ -1138,10 +993,10 @@ resource "aws_lb_listener_rule" "inneradmin" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for INNER Load Balancer - forward to phpmyadmin
+# Create conditional listener rule for Load Balancer - forward to phpmyadmin
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "innermysql" {
-  listener_arn = aws_lb_listener.inner.arn
+resource "aws_lb_listener_rule" "mysql" {
+  listener_arn = aws_lb_listener.default.arn
   priority     = 10
   action {
     type             = "forward"
@@ -1160,10 +1015,10 @@ resource "aws_lb_listener_rule" "innermysql" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for INNER Load Balancer - forward to staging
+# Create conditional listener rule for Load Balancer - forward to staging
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "innerstaging" {
-  listener_arn = aws_lb_listener.inner.arn
+resource "aws_lb_listener_rule" "staging" {
+  listener_arn = aws_lb_listener.default.arn
   priority     = 40
   action {
     type             = "forward"
@@ -1193,7 +1048,7 @@ resource "aws_cloudwatch_metric_alarm" "httpcode_target_5xx_count" {
   
   dimensions = {
     TargetGroup  = aws_lb_target_group.this["frontend"].arn
-    LoadBalancer = aws_lb.this["inner"].arn
+    LoadBalancer = aws_lb.this.arn
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -1213,7 +1068,7 @@ resource "aws_cloudwatch_metric_alarm" "httpcode_elb_5xx_count" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
   
   dimensions = {
-    LoadBalancer = aws_lb.this["outer"].arn
+    LoadBalancer = aws_lb.this.arn
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -1233,7 +1088,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_rps" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    LoadBalancer = aws_lb.this["outer"].arn
+    LoadBalancer = aws_lb.this.arn
   }
 }
 
@@ -1556,10 +1411,7 @@ REDIS_SESSION_BACKEND="${aws_elasticache_replication_group.this["session"].prima
 REDIS_CACHE_BACKEND_RO="${aws_elasticache_replication_group.this["cache"].reader_endpoint_address}"
 REDIS_SESSION_BACKEND_RO="${aws_elasticache_replication_group.this["session"].reader_endpoint_address}"
 	
-OUTER_ALB_DNS_NAME="${aws_lb.this["outer"].dns_name}"
-INNER_ALB_DNS_NAME="${aws_lb.this["inner"].dns_name}"
-
-CLOUDFRONT_ADDRESS=${aws_cloudfront_distribution.this.domain_name}
+ALB_DNS_NAME="${aws_lb.this.dns_name}"
 
 EFS_DNS_TARGET="${values(aws_efs_mount_target.this).0.dns_name}"
 
@@ -1873,11 +1725,9 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/developer/developer_mode 0"
       ## explicitly set the new catalog media url format
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/url/catalog_media_url_format image_optimization_parameters"
-      ## configure cloudfront media / static base url
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/unsecure/base_media_url https://${aws_cloudfront_distribution.this.domain_name}/media/"
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/base_media_url https://${aws_cloudfront_distribution.this.domain_name}/media/"
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/unsecure/base_static_url https://${aws_cloudfront_distribution.this.domain_name}/static/"
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/base_static_url https://${aws_cloudfront_distribution.this.domain_name}/static/"
+      ## configure media
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/unsecure/base_media_url https://${aws_s3_bucket.this["media"].bucket_regional_domain_name}/media/"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/base_media_url https://${aws_s3_bucket.this["media"].bucket_regional_domain_name}/media/"
       ## minify js and css
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/css/minify_files 1"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/js/minify_files 1"
@@ -1911,90 +1761,11 @@ EOT
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_wafv2_web_acl" "this" {
   name        = "${var.app["brand"]}-WAF-Protections"
-  provider    = aws.useast1
-  scope       = "CLOUDFRONT"
+  scope       = "REGIONAL"
   description = "${var.app["brand"]}-WAF-Protections"
 
   default_action {
     allow {
-    }
-  }
-
-  visibility_config {
-    cloudwatch_metrics_enabled = true
-    metric_name = "${var.app["brand"]}-WAF-Protections"
-    sampled_requests_enabled = true
-  }
-
-  rule {
-    name     = "${var.app["brand"]}-Cloudfront-WAF-media-Protection-rate-based"
-    priority = 0
-
-    action {
-      count {}
-    }
-
-    statement {
-      rate_based_statement {
-       limit              = 100
-       aggregate_key_type = "IP"
-       
-       scope_down_statement {
-         byte_match_statement {
-          field_to_match {
-              uri_path   {}
-              }
-          search_string  = "/media/"
-          positional_constraint = "STARTS_WITH"
-
-          text_transformation {
-            priority   = 0
-            type       = "NONE"
-           }
-         }
-       }
-     }
-  }
-      visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "${var.app["brand"]}-Cloudfront-WAF-Protection-rate-based-rule"
-      sampled_requests_enabled   = true
-    }
-   }
-   
-   rule {
-    name     = "${var.app["brand"]}-Cloudfront-WAF-static-Protection-rate-based"
-    priority = 1
-
-    action {
-      count {}
-    }
-
-    statement {
-      rate_based_statement {
-       limit              = 200
-       aggregate_key_type = "IP"
-       
-       scope_down_statement {
-         byte_match_statement {
-          field_to_match {
-              uri_path   {}
-              }
-          search_string  = "/static/"
-          positional_constraint = "STARTS_WITH"
-
-          text_transformation {
-            priority   = 0
-            type       = "NONE"
-           }
-         }
-       }
-     }
-    }
-      visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "${var.app["brand"]}-Cloudfront-WAF-static-Protection-rate-based-rule"
-      sampled_requests_enabled   = true
     }
   }
 
