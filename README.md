@@ -77,6 +77,7 @@ The idea was to create something more complex, with deeper settings, that terrif
 <br />
 
 # :rocket: Deployment into isolated VPC:
+- [x] [Login to Fastly account](https://www.fastly.com/signup/)
 - [x] Login to AWS Console
 - [x] [Subscribe to Debian 11 ARM](https://aws.amazon.com/marketplace/pp/prodview-jwzxq55gno4p4)
 - [x] Choose an AWS Region
