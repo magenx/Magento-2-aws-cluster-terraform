@@ -1,5 +1,5 @@
 ## Magento 2 [auto scaling](https://aws.amazon.com/autoscaling/) cluster with Terraform on AWS cloud
-> Deploy a full-scale secure and flexible e-commerce infrastructure based on Magento 2 Open Source in a matter of seconds.  
+> Deploy a full-scale secure and flexible e-commerce infrastructure based on Magento 2 Open Source in a matter of seconds. 
 > Enterprise-grade solution for companies of all sizes, B2B B2C, providing the best customer experience.  
 
 <img src="https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg" width="150" height="105"> <img src="https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg" width="145" height="135"> <img src="https://user-images.githubusercontent.com/1591200/135067367-c50e6cc3-2a07-4fcd-9a7e-016c1c3950f4.png" width="155" height="90"> <img src="https://user-images.githubusercontent.com/1591200/118028531-158ead80-b35b-11eb-8957-636de16ada34.png" width="200" height="135">
