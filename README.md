@@ -94,7 +94,7 @@ The idea was to create something more complex, with deeper settings, that terrif
 - [x] Clone repo:  
 > 
 ```
-  git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
+  git clone -b fastly https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
 ```
 >  
 **[ ! ]** Right after `terraform apply` you will receive email from amazon to approve resources  
