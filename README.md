@@ -71,7 +71,7 @@ https://aws.amazon.com/cloudshell/
 
 The terraform configuration language and all the files in this repository are intuitively simple and straightforward. They are written in simple text and functions that any beginner can understand. Terraform deployment with zero dependency, no prerequisites, no need to install additional software, no programming required.  
   
-The idea was to create something more complex, with deeper settings, that terrifies competitors at first sight.
+The idea was to create a full-fledged turnkey infrastructure, with deeper settings, so that any ecommerce manager could deploy it and immediately use it for his brand.
 
 <br />
 
