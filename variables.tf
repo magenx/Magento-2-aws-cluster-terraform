@@ -1,7 +1,6 @@
 variable "ec2" {
   description  = "EC2 instances names and types included in AutoScaling groups"
   default      = {
-    varnish    = "m6g.large"
     frontend   = "c6g.xlarge"
     admin      = "c6g.xlarge"
     staging    = "c6g.xlarge"
@@ -129,14 +128,6 @@ variable "s3" {
   default     = ["media", "system", "backup"]
 }
 
-variable "alb" {
-  description = "Application Load Balancer names and type"
-  default     = {
-    outer     = false
-    inner     = true
-    }
-}
-
 variable "ec2_instance_profile_policy" {
   description = "Policy attach to EC2 Instance Profile"
   type        = set(string)
@@ -170,55 +161,28 @@ variable "az_number" {
 }
 
 locals {
-  security_group = setunion(keys(var.alb),var.redis["name"],["ec2","rds","elk","mq","efs"])
+  security_group = setunion(var.redis["name"],["ec2","rds","elk","mq","efs","alb"])
 }
 
 locals {
  security_rule = {
-  outer_alb_https_in = {
-    type        = "ingress"
-    description = "Allow all inbound traffic on the load balancer https listener port"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    security_group_id = aws_security_group.this["outer"].id
-    },
-  outer_alb_http_in = {
-    type        = "ingress"
-    description = "Allow all inbound traffic on the load balancer http listener port"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    security_group_id = aws_security_group.this["outer"].id
-    },
-  outer_alb_http_out = {
-    type        = "egress"
-    description = "Allow outbound traffic to instances on the load balancer listener port"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    source_security_group_id = aws_security_group.this["ec2"].id
-    security_group_id = aws_security_group.this["outer"].id
-    },
-  inner_alb_http_in = {
+  alb_http_in = {
     type        = "ingress"
     description = "Allow inbound traffic from the VPC CIDR on the load balancer listener port"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     source_security_group_id = aws_security_group.this["ec2"].id
-    security_group_id = aws_security_group.this["inner"].id
+    security_group_id = aws_security_group.this["alb"].id
     },
-  inner_alb_http_out = {
+  alb_http_out = {
     type        = "egress"
     description = "Allow outbound traffic to instances on the load balancer listener port"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     source_security_group_id = aws_security_group.this["ec2"].id
-    security_group_id = aws_security_group.this["inner"].id
+    security_group_id = aws_security_group.this["alb"].id
     },
   ec2_https_out = {
     type        = "egress"
@@ -316,7 +280,7 @@ locals {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.this["inner"].id
+    source_security_group_id = aws_security_group.this["alb"].id
     security_group_id = aws_security_group.this["ec2"].id
     },
   ec2_http_in_outer = {
@@ -325,7 +289,7 @@ locals {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.this["outer"].id
+    source_security_group_id = aws_security_group.this["alb"].id
     security_group_id = aws_security_group.this["ec2"].id
     },
   rds_mysql_in = {
