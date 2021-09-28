@@ -64,8 +64,9 @@ Develop and deploy at scale. Webstack delivers top performance on ARM.
 ``` 
 https://devdocs.magento.com/
 https://docs.aws.amazon.com/index.html
-https://www.terraform.io/docs/
 https://aws.amazon.com/cloudshell/
+https://www.terraform.io/docs/
+https://docs.fastly.com/
 ```
 <br />
 
