@@ -1,11 +1,11 @@
 variable "ec2" {
   description  = "EC2 instances names and types included in AutoScaling groups"
   default      = {
-    varnish    = "m6g.large"
-    frontend   = "c6g.xlarge"
-    admin      = "c6g.xlarge"
-    staging    = "c6g.xlarge"
-    build      = "t4g.micro"
+   # varnish    = "m6g.large"
+   # frontend   = "c6g.xlarge"
+     admin      = "c6g.xlarge"
+   # staging    = "c6g.xlarge"
+   # build      = "t4g.micro"
    }
 }
 
@@ -31,7 +31,7 @@ variable "elk" {
     domain_name            = "elk"
     elasticsearch_version  = "7.9"
     instance_type          = "m6g.large.elasticsearch"
-    instance_count         = "3"
+    instance_count         = "1"
     ebs_enabled            = true
     volume_type            = "gp2"
     volume_size            = "20"
@@ -42,7 +42,7 @@ variable "elk" {
 variable "rds" {
   description      = "Map RDS configuration values"
   default  = {
-    name                   = ["production","staging"]
+    name                   = "production"
     allocated_storage      = "50"
     max_allocated_storage  = "100"
     storage_type           = "gp2"
@@ -51,7 +51,7 @@ variable "rds" {
     instance_class_staging = "db.m6g.large"
     engine                 = "mariadb"
     skip_final_snapshot    = true
-    multi_az               = true
+    multi_az               = false
     enabled_cloudwatch_logs_exports = "error"
     performance_insights_enabled = true
     copy_tags_to_snapshot    = true
@@ -93,12 +93,12 @@ variable "mq" {
 variable "redis" {
   description      = "Map ElastiCache Redis configuration values"
   default  = {    
-    node_type                  = "cache.m6g.large"
-    name                       = ["session", "cache"]
+    node_type                     = "cache.m6g.large"
+    name                          = "cache"
     engine_version                = "6.x"
     port                          = "6379"
-    automatic_failover_enabled    = true
-    multi_az_enabled              = true
+    automatic_failover_enabled    = false
+    multi_az_enabled              = false
   }
 }
           
@@ -129,13 +129,13 @@ variable "s3" {
   default     = ["media", "system", "backup"]
 }
 
-variable "alb" {
-  description = "Application Load Balancer names and type"
-  default     = {
-    outer     = false
-    inner     = true
-    }
-}
+#variable "alb" {
+#  description = "Application Load Balancer names and type"
+#  default     = {
+#    outer     = false
+#    inner     = true
+#    }
+#}
 
 variable "ec2_instance_profile_policy" {
   description = "Policy attach to EC2 Instance Profile"
@@ -170,7 +170,7 @@ variable "az_number" {
 }
 
 locals {
-  security_group = setunion(keys(var.alb),var.redis["name"],["ec2","rds","elk","mq","efs"])
+  security_group = setunion(var.redis["name"],["ec2","rds","elk","mq","efs","alb"])
 }
 
 locals {
@@ -182,7 +182,7 @@ locals {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    security_group_id = aws_security_group.this["outer"].id
+    security_group_id = aws_security_group.this["alb"].id
     },
   outer_alb_http_in = {
     type        = "ingress"
@@ -191,7 +191,7 @@ locals {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    security_group_id = aws_security_group.this["outer"].id
+    security_group_id = aws_security_group.this["alb"].id
     },
   outer_alb_http_out = {
     type        = "egress"
@@ -200,7 +200,7 @@ locals {
     to_port     = 80
     protocol    = "tcp"
     source_security_group_id = aws_security_group.this["ec2"].id
-    security_group_id = aws_security_group.this["outer"].id
+    security_group_id = aws_security_group.this["alb"].id
     },
   inner_alb_http_in = {
     type        = "ingress"
@@ -209,7 +209,7 @@ locals {
     to_port     = 80
     protocol    = "tcp"
     source_security_group_id = aws_security_group.this["ec2"].id
-    security_group_id = aws_security_group.this["inner"].id
+    security_group_id = aws_security_group.this["alb"].id
     },
   inner_alb_http_out = {
     type        = "egress"
@@ -218,7 +218,7 @@ locals {
     to_port     = 80
     protocol    = "tcp"
     source_security_group_id = aws_security_group.this["ec2"].id
-    security_group_id = aws_security_group.this["inner"].id
+    security_group_id = aws_security_group.this["alb"].id
     },
   ec2_https_out = {
     type        = "egress"
@@ -262,7 +262,7 @@ locals {
     from_port   = 6379
     to_port     = 6379
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.this["session"].id
+    source_security_group_id = aws_security_group.this["cache"].id
     security_group_id = aws_security_group.this["ec2"].id
     },
   ec2_redis_cache_out = {
@@ -316,7 +316,7 @@ locals {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.this["inner"].id
+    source_security_group_id = aws_security_group.this["alb"].id
     security_group_id = aws_security_group.this["ec2"].id
     },
   ec2_http_in_outer = {
@@ -325,7 +325,7 @@ locals {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.this["outer"].id
+    source_security_group_id = aws_security_group.this["alb"].id
     security_group_id = aws_security_group.this["ec2"].id
     },
   rds_mysql_in = {
@@ -344,7 +344,7 @@ locals {
     to_port     = 6379
     protocol    = "tcp"
     source_security_group_id = aws_security_group.this["ec2"].id
-    security_group_id = aws_security_group.this["session"].id
+    security_group_id = aws_security_group.this["cache"].id
     },
   redis_cache_in = {
     type        = "ingress"
