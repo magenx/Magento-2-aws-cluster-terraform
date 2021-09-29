@@ -288,128 +288,7 @@ resource "aws_codecommit_repository" "services" {
           git add .
           git commit -m "nginx_ec2_config"
           git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_admin
-
-          git branch -m nginx_frontend
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_frontend
-		  
-          git branch -m nginx_staging
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_staging
-          rm -rf .git
-
-          cd ${abspath(path.root)}/services/varnish
-          git init
-          git add .
-          git commit -m "varnish_ec2_config"
-          git branch -m varnish
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} varnish
-          rm -rf .git
-
-          cd ${abspath(path.root)}/services/systemd_proxy
-          git init
-          git add .
-          git commit -m "systemd_proxy_ec2_config"
-          git branch -m systemd_proxy
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} systemd_proxy
-          rm -rf .git
-
-          cd ${abspath(path.root)}/services/nginx_proxy
-          git init
-          git add .
-          git commit -m "nginx_proxy_ec2_config"
-          git branch -m nginx_proxy
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_proxy
-          rm -rf .git
 EOF
-  }
-}
-
-
-
-////////////////////////////////////////////////////////[ CLOUDFRONT ]////////////////////////////////////////////////////
-
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create CloudFront distribution with S3 origin
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudfront_origin_access_identity" "this" {
-  comment = "CloudFront origin access identity"
-}
-
-resource "aws_cloudfront_distribution" "this" {
-  enabled             = true
-  is_ipv6_enabled     = true
-  web_acl_id          = aws_wafv2_web_acl.this.arn
-  price_class         = "PriceClass_100"
-  comment             = "${var.app["domain"]} assets"
-  
-  origin {
-    domain_name = aws_s3_bucket.this["media"].bucket_regional_domain_name
-    origin_id   = "${var.app["domain"]}-media-assets"
-
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.this.cloudfront_access_identity_path
-    }
-	  
-    custom_header {
-      name  = "X-Magenx-Header"
-      value = random_uuid.this.result
-    }
-  }
-  
-  default_cache_behavior {
-    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${var.app["domain"]}-media-assets"
-
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.s3.id
-    cache_policy_id          = data.aws_cloudfront_cache_policy.s3.id
-
-    viewer_protocol_policy = "https-only"
-
-  }
-  
-  origin {
-	domain_name = var.app["domain"]
-	origin_id   = "${var.app["domain"]}-static-assets"
-
-	custom_origin_config {
-		http_port              = 80
-		https_port             = 443
-		origin_protocol_policy = "https-only"
-		origin_ssl_protocols   = ["TLSv1.2"]
-	}
-  }
-
-  ordered_cache_behavior {
-	path_pattern     = "/static/*"
-	allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-	cached_methods   = ["GET", "HEAD"]
-	target_origin_id = "${var.app["domain"]}-static-assets"
-	
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.custom.id
-    cache_policy_id          = data.aws_cloudfront_cache_policy.custom.id
-
-    viewer_protocol_policy = "https-only"
-    compress               = true
-}
-  logging_config {
-    include_cookies = false
-    bucket          = aws_s3_bucket.this["system"].bucket_domain_name
-    prefix          = "${var.app["brand"]}-cloudfront-logs"
-  }
-  
-  restrictions {
-    geo_restriction {
-      restriction_type = "none"
-    }
-  }
-
-  viewer_certificate {
-    cloudfront_default_certificate = true
-    minimum_protocol_version = "TLSv1.2_2021"
-  }
-  
-  tags = {
-    Name = "${var.app["brand"]}-cloudfront-production"
   }
 }
 
@@ -491,12 +370,7 @@ resource "aws_iam_role_policy" "codecommit_access" {
             "codecommit:GitPush"
       ],
       Resource = aws_codecommit_repository.app.arn
-      Condition = {
-                StringEqualsIfExists = {
-                    "codecommit:References" = [(each.key == "admin" || each.key == "frontend" ? "refs/heads/main" : (each.key == "staging" ? "refs/heads/staging" : "refs/heads/build"))]
-    }
-   }
-},
+    },
      {
       Sid    = "codecommitaccessservices${each.key}", 
       Effect = "Allow",
@@ -549,7 +423,7 @@ resource "aws_mq_broker" "this" {
 # Create ElastiCache parameter groups
 # # ---------------------------------------------------------------------------------------------------------------------#		  
 resource "aws_elasticache_parameter_group" "this" {
-  for_each      = toset(var.redis["name"])
+  for_each      = var.redis["name"]
   name          = "${var.app["brand"]}-${each.key}-parameter"
   family        = "redis6.x"
   description   = "Parameter group for ${var.app["domain"]} ${each.key} backend"
@@ -853,7 +727,7 @@ EOF
 # Create RDS parameter groups
 # # ---------------------------------------------------------------------------------------------------------------------#		
 resource "aws_db_parameter_group" "this" {
-  for_each          = toset(var.rds["name"])
+  for_each          = var.rds["name"]
   name              = "${var.app["brand"]}-${each.key}-parameters"
   family            = "mariadb10.5"
   description       = "Parameter group for ${var.app["brand"]} ${each.key} database"
@@ -865,16 +739,15 @@ resource "aws_db_parameter_group" "this" {
 # Create RDS instance
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "this" {
-  for_each               = var.rds["name"]
-  identifier             = "${var.app["brand"]}-${each.key}"
+  identifier             = "${var.app["brand"]}-${var.rds["name"]}"
   allocated_storage      = var.rds["allocated_storage"]
   max_allocated_storage  = var.rds["max_allocated_storage"]
   storage_type           = var.rds["storage_type"] 
   engine                 = var.rds["engine"]
   engine_version         = var.rds["engine_version"]
-  instance_class         = (each.key == "staging" ? var.rds["instance_class_staging"] : var.rds["instance_class"])
-  multi_az               = (each.key == "staging" ? "false" : var.rds["multi_az"])
-  name                   = "${var.app["brand"]}_${each.key}"
+  instance_class         = var.rds["instance_class"]
+  multi_az               = var.rds["multi_az"]
+  name                   = "${var.app["brand"]}_${var.rds["name"]}"
   username               = var.app["brand"]
   password               = random_password.this["rds"].result
   parameter_group_name   = aws_db_parameter_group.this[each.key].id
@@ -888,7 +761,7 @@ resource "aws_db_instance" "this" {
   delete_automated_backups        = var.rds["delete_automated_backups"]
   deletion_protection             = var.rds["deletion_protection"]
   tags = {
-    Name = "${var.app["brand"]}-${each.key}"
+    Name = "${var.app["brand"]}-${var.rds["name"]}"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -898,7 +771,7 @@ resource "aws_db_event_subscription" "db_event_subscription" {
   name      = "${var.app["brand"]}-rds-event-subscription"
   sns_topic = aws_sns_topic.default.arn
   source_type = "db-instance"
-  source_ids = [aws_db_instance.this["production"].id]
+  source_ids = [aws_db_instance.this.id]
   event_categories = [
     "availability",
     "deletion",
@@ -930,7 +803,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.this["production"].id
+    DBInstanceIdentifier = aws_db_instance.this.id
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -950,7 +823,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_memory" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.this["production"].id
+    DBInstanceIdentifier = aws_db_instance.this.id
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -985,7 +858,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_connections_anomaly" {
       unit        = "Count"
 
       dimensions = {
-        DBInstanceIdentifier = aws_db_instance.this["production"].id
+        DBInstanceIdentifier = aws_db_instance.this.id
       }
     }
   }
@@ -1007,7 +880,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_max_connections" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.this["production"].id
+    DBInstanceIdentifier = aws_db_instance.this.id
   }
 }
 
@@ -1207,7 +1080,7 @@ resource "aws_autoscaling_group" "this" {
   vpc_zone_identifier = values(aws_subnet.this).*.id
   desired_capacity    = var.asg["desired_capacity"]
   min_size            = var.asg["min_size"]
-  max_size            = (each.key == "build" ? 1 : var.asg["max_size"])
+  max_size            = var.asg["max_size"]
   health_check_grace_period = var.asg["health_check_grace_period"]
   health_check_type         = var.asg["health_check_type"]
   target_group_arns  = [aws_lb_target_group.this[each.key].arn]
@@ -1238,7 +1111,7 @@ group_names = [
 # Create Autoscaling policy for scale-out
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "scaleout" {
-  for_each               = {for name,type in var.ec2: name => type if name != "build"}
+  for_each               = var.ec2
   name                   = "${var.app["brand"]}-${each.key}-asp-out"
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
@@ -1249,7 +1122,7 @@ resource "aws_autoscaling_policy" "scaleout" {
 # Create CloudWatch alarm metric to execute Autoscaling policy for scale-out
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "scaleout" {
-  for_each            = {for name,type in var.ec2: name => type if name != "build"}
+  for_each            = var.ec2
   alarm_name          = "${var.app["brand"]}-${each.key} scale-out alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.asp["evaluation_periods"]
@@ -1268,7 +1141,7 @@ resource "aws_cloudwatch_metric_alarm" "scaleout" {
 # Create Autoscaling policy for scale-in
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "scalein" {
-  for_each               = {for name,type in var.ec2: name => type if name != "build"}
+  for_each               = var.ec2
   name                   = "${var.app["brand"]}-${each.key}-asp-in"
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
@@ -1279,7 +1152,7 @@ resource "aws_autoscaling_policy" "scalein" {
 # Create CloudWatch alarm metric to execute Autoscaling policy for scale-in
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "scalein" {
-  for_each            = {for name,type in var.ec2: name => type if name != "build"}
+  for_each            = var.ec2
   alarm_name          = "${var.app["brand"]}-${each.key} scale-in alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.asp["evaluation_periods"]
@@ -1779,11 +1652,6 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/developer/developer_mode 0"
       ## explicitly set the new catalog media url format
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/url/catalog_media_url_format image_optimization_parameters"
-      ## configure cloudfront media / static base url
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/unsecure/base_media_url https://${aws_cloudfront_distribution.this.domain_name}/media/"
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/base_media_url https://${aws_cloudfront_distribution.this.domain_name}/media/"
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/unsecure/base_static_url https://${aws_cloudfront_distribution.this.domain_name}/static/"
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/base_static_url https://${aws_cloudfront_distribution.this.domain_name}/static/"
       ## minify js and css
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/css/minify_files 1"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/js/minify_files 1"
@@ -1813,12 +1681,18 @@ EOT
 ///////////////////////////////////////////////////////[ AWS WAFv2 RULES ]////////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create a WAFv2 Web ACL Association with Load Balancer
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_wafv2_web_acl_association" "alb" {
+  resource_arn = aws_lb.this.arn
+  web_acl_arn  = aws_wafv2_web_acl.this.arn
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create AWS WAFv2 rules
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_wafv2_web_acl" "this" {
   name        = "${var.app["brand"]}-WAF-Protections"
-  provider    = aws.useast1
-  scope       = "CLOUDFRONT"
+  scope       = "REGIONAL"
   description = "${var.app["brand"]}-WAF-Protections"
 
   default_action {
@@ -1830,78 +1704,6 @@ resource "aws_wafv2_web_acl" "this" {
     cloudwatch_metrics_enabled = true
     metric_name = "${var.app["brand"]}-WAF-Protections"
     sampled_requests_enabled = true
-  }
-
-  rule {
-    name     = "${var.app["brand"]}-Cloudfront-WAF-media-Protection-rate-based"
-    priority = 0
-
-    action {
-      count {}
-    }
-
-    statement {
-      rate_based_statement {
-       limit              = 100
-       aggregate_key_type = "IP"
-       
-       scope_down_statement {
-         byte_match_statement {
-          field_to_match {
-              uri_path   {}
-              }
-          search_string  = "/media/"
-          positional_constraint = "STARTS_WITH"
-
-          text_transformation {
-            priority   = 0
-            type       = "NONE"
-           }
-         }
-       }
-     }
-  }
-      visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "${var.app["brand"]}-Cloudfront-WAF-Protection-rate-based-rule"
-      sampled_requests_enabled   = true
-    }
-   }
-   
-   rule {
-    name     = "${var.app["brand"]}-Cloudfront-WAF-static-Protection-rate-based"
-    priority = 1
-
-    action {
-      count {}
-    }
-
-    statement {
-      rate_based_statement {
-       limit              = 200
-       aggregate_key_type = "IP"
-       
-       scope_down_statement {
-         byte_match_statement {
-          field_to_match {
-              uri_path   {}
-              }
-          search_string  = "/static/"
-          positional_constraint = "STARTS_WITH"
-
-          text_transformation {
-            priority   = 0
-            type       = "NONE"
-           }
-         }
-       }
-     }
-    }
-      visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "${var.app["brand"]}-Cloudfront-WAF-static-Protection-rate-based-rule"
-      sampled_requests_enabled   = true
-    }
   }
 
   rule {
