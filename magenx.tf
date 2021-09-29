@@ -556,7 +556,7 @@ resource "aws_s3_bucket_policy" "media" {
             AWS = "*"
          }
          Resource = [
-            "${aws_s3_bucket.this["media "].arn}/*"
+            "${aws_s3_bucket.this["media"].arn}/*"
          ],
          Condition = {
             test     = "StringNotLike"
@@ -571,8 +571,8 @@ resource "aws_s3_bucket_policy" "media" {
             AWS = [ aws_iam_user.s3.arn ]
          }
          Resource = [
-            "${aws_s3_bucket.this["media "].arn}",
-            "${aws_s3_bucket.this["media "].arn}/*"
+            "${aws_s3_bucket.this["media"].arn}",
+            "${aws_s3_bucket.this["media"].arn}/*"
          ],
          Condition = {
             test     = "StringEquals"
@@ -587,8 +587,8 @@ resource "aws_s3_bucket_policy" "media" {
             AWS = [ aws_iam_user.s3.arn ]
          }
          Resource = [
-            "${aws_s3_bucket.this["media "].arn}",
-            "${aws_s3_bucket.this["media "].arn}/*"
+            "${aws_s3_bucket.this["media"].arn}",
+            "${aws_s3_bucket.this["media"].arn}/*"
          ]
       }, 
       {
@@ -597,7 +597,7 @@ resource "aws_s3_bucket_policy" "media" {
          Principal = {
             AWS = [ aws_iam_user.s3.arn ]
          }
-         Resource = "${aws_s3_bucket.this["media "].arn}"
+         Resource = "${aws_s3_bucket.this["media"].arn}"
       }, 
 	  ] 
 	  Version = "2012-10-17"
