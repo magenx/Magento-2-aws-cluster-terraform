@@ -1,11 +1,7 @@
 variable "ec2" {
   description  = "EC2 instances names and types included in AutoScaling groups"
   default      = {
-   # varnish    = "m6g.large"
-   # frontend   = "c6g.xlarge"
      admin      = "c6g.xlarge"
-   # staging    = "c6g.xlarge"
-   # build      = "t4g.micro"
    }
 }
 
@@ -48,7 +44,6 @@ variable "rds" {
     storage_type           = "gp2"
     engine_version         = "10.5.12"
     instance_class         = "db.m6g.large"
-    instance_class_staging = "db.m6g.large"
     engine                 = "mariadb"
     skip_final_snapshot    = true
     multi_az               = false
@@ -128,14 +123,6 @@ variable "s3" {
   type        = set(string)
   default     = ["media", "system", "backup"]
 }
-
-#variable "alb" {
-#  description = "Application Load Balancer names and type"
-#  default     = {
-#    outer     = false
-#    inner     = true
-#    }
-#}
 
 variable "ec2_instance_profile_policy" {
   description = "Policy attach to EC2 Instance Profile"
