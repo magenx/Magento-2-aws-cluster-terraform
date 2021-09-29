@@ -9,7 +9,7 @@
 resource "aws_budgets_budget" "all" {
   name              = "${var.app["brand"]}-budget-monthly-forecasted"
   budget_type       = "COST"
-  limit_amount      = "2000"
+  limit_amount      = "500"
   limit_unit        = "USD"
   time_unit         = "MONTHLY"
 
