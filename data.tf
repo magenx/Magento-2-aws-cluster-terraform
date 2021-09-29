@@ -112,10 +112,10 @@ CIDR = "${aws_vpc.this.cidr_block}"
 RESOLVER = "${cidrhost(aws_vpc.this.cidr_block, 2)}"
 AWS_DEFAULT_REGION = "${data.aws_region.current.name}"
 
-ALB_DNS_NAME = "${aws_lb.this["inner"].dns_name}"
+ALB_DNS_NAME = "${aws_lb.this.dns_name}"
 EFS_DNS_TARGET = "${values(aws_efs_mount_target.this).0.dns_name}"
   
-DATABASE_ENDPOINT = "${aws_db_instance.this["production"].endpoint}"
+DATABASE_ENDPOINT = "${aws_db_instance.this.endpoint}"
   
 SNS_TOPIC_ARN = "${aws_sns_topic.default.arn}"
   
