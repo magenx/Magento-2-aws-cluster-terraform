@@ -565,7 +565,7 @@ resource "aws_elasticache_parameter_group" "this" {
 # Create ElastiCache - Redis Replication group - session + cache
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticache_replication_group" "this" {
-  for_each                      = toset(var.redis["name"])
+  for_each                      = var.redis["name"]
   number_cache_clusters         = length(values(aws_subnet.this).*.id)
   engine                        = "redis"
   engine_version                = var.redis["engine_version"]
@@ -663,19 +663,20 @@ resource "aws_s3_bucket_policy" "media" {
    policy = jsonencode({
    Id = "PolicyForMediaStorageAccess"
    Statement = [
-	  {
+      {
          Action = "s3:GetObject"
-         Effect = "Allow"
+         Effect = "Deny"
          Principal = {
-            AWS = aws_cloudfront_origin_access_identity.this.iam_arn
+            AWS = "*"
          }
          Resource = [
-            "${aws_s3_bucket.this["media "].arn}/*.jpg",
-            "${aws_s3_bucket.this["media "].arn}/*.jpeg",
-            "${aws_s3_bucket.this["media "].arn}/*.png",
-            "${aws_s3_bucket.this["media "].arn}/*.gif",
-            "${aws_s3_bucket.this["media "].arn}/*.webp"
-         ]
+            "${aws_s3_bucket.this["media "].arn}/*"
+         ],
+         Condition = {
+            test     = "StringNotLike"
+            variable = "aws:Referer"
+            values   = [ var.app["domain"] ]
+         }
       }, 
       {
          Action = ["s3:PutObject"],
@@ -864,7 +865,7 @@ resource "aws_db_parameter_group" "this" {
 # Create RDS instance
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "this" {
-  for_each               = toset(var.rds["name"])
+  for_each               = var.rds["name"]
   identifier             = "${var.app["brand"]}-${each.key}"
   allocated_storage      = var.rds["allocated_storage"]
   max_allocated_storage  = var.rds["max_allocated_storage"]
@@ -1017,12 +1018,11 @@ resource "aws_cloudwatch_metric_alarm" "rds_max_connections" {
 # Create Application Load Balancers
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb" "this" {
-  for_each           = var.alb
-  name               = "${var.app["brand"]}-${each.key}-alb"
-  internal           = each.value
+  name               = "${var.app["brand"]}-alb"
+  internal           = false
   load_balancer_type = "application"
   drop_invalid_header_fields = true
-  security_groups    = [aws_security_group.this[each.key].id]
+  security_groups    = [aws_security_group.this["alb"].id]
   subnets            = values(aws_subnet.this).*.id
   access_logs {
     bucket  = aws_s3_bucket.this["system"].bucket
@@ -1030,7 +1030,7 @@ resource "aws_lb" "this" {
     enabled = true
   }
   tags = {
-    Name = "${var.app["brand"]}-${each.key}-alb"
+    Name = "${var.app["brand"]}-alb"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -1047,25 +1047,29 @@ resource "aws_lb_target_group" "this" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create https:// listener for OUTER Load Balancer - forward to varnish
+# Create https:// listener for Load Balancer - forward to admin
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener" "outerhttps" {
+resource "aws_lb_listener" "https" {
   depends_on = [aws_acm_certificate_validation.default]
-  load_balancer_arn = aws_lb.this["outer"].arn
+  load_balancer_arn = aws_lb.this.arn
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-FS-1-2-Res-2020-10"
   certificate_arn   = aws_acm_certificate.default.arn
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this["varnish"].arn
-  }
+    type             = "fixed-response"
+    fixed_response {
+        content_type = "text/plain"
+        message_body = "No targets are responding to this request"
+        status_code  = "502"
+        }
+    }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create http:// listener for OUTER Load Balancer - redirect to https://
+# Create http:// listener for Load Balancer - redirect to https://
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener" "outerhttp" {
-  load_balancer_arn = aws_lb.this["outer"].arn
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.this.arn
   port              = "80"
   protocol          = "HTTP"
   default_action {
@@ -1078,70 +1082,10 @@ resource "aws_lb_listener" "outerhttp" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create default listener for INNER Load Balancer - default response
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener" "inner" {
-  load_balancer_arn = aws_lb.this["inner"].arn
-  port              = "80"
-  protocol          = "HTTP"
-  default_action {
-    type             = "fixed-response"
-    fixed_response {
-        content_type = "text/plain"
-        message_body = "No targets are responding to this request"
-        status_code  = "502"
-        }
-    }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for INNER Load Balancer - forward to frontend
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "innerfrontend" {
-  listener_arn = aws_lb_listener.inner.arn
-  priority     = 30
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this["frontend"].arn
-  }
-  condition {
-    host_header {
-      values = [var.app["domain"]]
-    }
-  }
-  condition {
-    http_header {
-      http_header_name = "X-Magenx-Header"
-      values           = [random_uuid.this.result]
-    }
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create conditional listener rule for INNER Load Balancer - forward to admin
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "inneradmin" {
-  listener_arn = aws_lb_listener.inner.arn
-  priority     = 20
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this["admin"].arn
-  }
-  condition {
-    http_header {
-      http_header_name = "X-Magenx-Header"
-      values           = [random_uuid.this.result]
-    }
-  }
-  condition {
-    path_pattern {
-      values = ["/admin_${random_string.this["admin_path"].result}/*"]
-    }
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for INNER Load Balancer - forward to phpmyadmin
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "innermysql" {
-  listener_arn = aws_lb_listener.inner.arn
+resource "aws_lb_listener_rule" "default" {
+  listener_arn = aws_lb_listener.https.arn
   priority     = 10
   action {
     type             = "forward"
@@ -1151,27 +1095,6 @@ resource "aws_lb_listener_rule" "innermysql" {
     http_header {
       http_header_name = "X-Magenx-Header"
       values           = [random_uuid.this.result]
-    }
-  }
-  condition {
-    path_pattern {
-      values = ["/mysql_${random_string.this["mysql_path"].result}/*"]
-    }
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for INNER Load Balancer - forward to staging
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "innerstaging" {
-  listener_arn = aws_lb_listener.inner.arn
-  priority     = 40
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this["staging"].arn
-  }
-  condition {
-    host_header {
-	values = [var.app["staging_domain"]]
     }
   }
 }
@@ -1192,8 +1115,8 @@ resource "aws_cloudwatch_metric_alarm" "httpcode_target_5xx_count" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
   
   dimensions = {
-    TargetGroup  = aws_lb_target_group.this["frontend"].arn
-    LoadBalancer = aws_lb.this["inner"].arn
+    TargetGroup  = aws_lb_target_group.this["admin"].arn
+    LoadBalancer = aws_lb.this.arn
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -1213,7 +1136,7 @@ resource "aws_cloudwatch_metric_alarm" "httpcode_elb_5xx_count" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
   
   dimensions = {
-    LoadBalancer = aws_lb.this["outer"].arn
+    LoadBalancer = aws_lb.this.arn
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -1233,7 +1156,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_rps" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    LoadBalancer = aws_lb.this["outer"].arn
+    LoadBalancer = aws_lb.this.arn
   }
 }
 
@@ -1435,7 +1358,7 @@ resource "aws_cloudwatch_event_target" "codecommit_main" {
  
 run_command_targets {
     key    = "tag:Name"
-    values = [aws_launch_template.this["admin"].tag_specifications[0].tags.Name,aws_launch_template.this["frontend"].tag_specifications[0].tags.Name]
+    values = [aws_launch_template.this["admin"].tag_specifications[0].tags.Name]
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -1534,9 +1457,9 @@ resource "aws_ssm_parameter" "infrastructure_params" {
   type        = "String"
   value       = <<EOF
 
-DATABASE_ENDPOINT="${aws_db_instance.this["production"].endpoint}"
-DATABASE_INSTANCE_NAME="${aws_db_instance.this["production"].name}"
-DATABASE_USER_NAME="${aws_db_instance.this["production"].username}"
+DATABASE_ENDPOINT="${aws_db_instance.this.endpoint}"
+DATABASE_INSTANCE_NAME="${aws_db_instance.this.name}"
+DATABASE_USER_NAME="${aws_db_instance.this.username}"
 DATABASE_PASSWORD='${random_password.this["rds"].result}'
 
 ADMIN_PATH='admin_${random_string.this["admin_path"].result}'
@@ -1552,14 +1475,8 @@ RABBITMQ_PASSWORD='${random_password.this["mq"].result}'
 ELASTICSEARCH_ENDPOINT="https://${aws_elasticsearch_domain.this.endpoint}:443"
 
 REDIS_CACHE_BACKEND="${aws_elasticache_replication_group.this["cache"].primary_endpoint_address}"
-REDIS_SESSION_BACKEND="${aws_elasticache_replication_group.this["session"].primary_endpoint_address}"
-REDIS_CACHE_BACKEND_RO="${aws_elasticache_replication_group.this["cache"].reader_endpoint_address}"
-REDIS_SESSION_BACKEND_RO="${aws_elasticache_replication_group.this["session"].reader_endpoint_address}"
 	
-OUTER_ALB_DNS_NAME="${aws_lb.this["outer"].dns_name}"
-INNER_ALB_DNS_NAME="${aws_lb.this["inner"].dns_name}"
-
-CLOUDFRONT_ADDRESS=${aws_cloudfront_distribution.this.domain_name}
+ALB_DNS_NAME="${aws_lb.this.dns_name}"
 
 EFS_DNS_TARGET="${values(aws_efs_mount_target.this).0.dns_name}"
 
@@ -1597,7 +1514,6 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
                 "log_group_name": "${var.app["brand"]}_nginx_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
             },
-            %{ if each.key == "admin" || each.key == "staging" || each.key == "build" ~}
             {
                 "file_path": "/home/${var.app["brand"]}/public_html/var/log/php-fpm-error.log",
                 "log_group_name": "${var.app["brand"]}_php_app_error_logs",
@@ -1608,7 +1524,6 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
                 "log_group_name": "${var.app["brand"]}_app_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
             },
-            %{ endif ~}
             {
                 "file_path": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
                 "log_group_name": "${var.app["brand"]}_cloudwatch_agent_log",
@@ -1771,9 +1686,9 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:install \
       --base-url=https://${var.app["domain"]}/ \
       --base-url-secure=https://${var.app["domain"]}/ \
-      --db-host=${aws_db_instance.this["production"].endpoint} \
-      --db-name=${aws_db_instance.this["production"].name} \
-      --db-user=${aws_db_instance.this["production"].username} \
+      --db-host=${aws_db_instance.this.endpoint} \
+      --db-name=${aws_db_instance.this.name} \
+      --db-user=${aws_db_instance.this.username} \
       --db-password='${random_password.this["rds"].result}' \
       --admin-firstname=${var.app["brand"]} \
       --admin-lastname=${var.app["brand"]} \
@@ -1815,7 +1730,7 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
       --cache-id-prefix="${random_string.this["id_prefix"].result}_" \
       --cache-backend=redis \
-      --cache-backend-redis-server=${aws_elasticache_replication_group.this["cache"].primary_endpoint_address} \
+      --cache-backend-redis-server=${aws_elasticache_replication_group.this.primary_endpoint_address} \
       --cache-backend-redis-port=6379 \
       --cache-backend-redis-db=0 \
       --cache-backend-redis-compress-data=1 \
@@ -1824,7 +1739,7 @@ mainSteps:
       ## session
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
       --session-save=redis \
-      --session-save-redis-host=${aws_elasticache_replication_group.this["session"].primary_endpoint_address} \
+      --session-save-redis-host=${aws_elasticache_replication_group.this.primary_endpoint_address} \
       --session-save-redis-port=6379 \
       --session-save-redis-log-level=3 \
       --session-save-redis-db=0 \
@@ -1832,7 +1747,7 @@ mainSteps:
       --session-save-redis-persistent-id=${random_string.this["persistent"].result} \
       -n"
       ## add cache optimization
-      sed -i "/${aws_elasticache_replication_group.this["cache"].primary_endpoint_address}/a\            'load_from_slave' => '${aws_elasticache_replication_group.this["cache"].reader_endpoint_address}:6379', \\
+      sed -i "/${aws_elasticache_replication_group.this.primary_endpoint_address}/a\            'load_from_slave' => '${aws_elasticache_replication_group.this.reader_endpoint_address}:6379', \\
             'master_write_only' => '0', \\
             'retry_reads_on_master' => '1', \\
             'persistent' => '${random_string.this["persistent"].result}', \\
@@ -1844,15 +1759,6 @@ mainSteps:
                 ],"  app/etc/env.php
       ## clean cache
       rm -rf var/cache var/page_cache
-      ## enable s3 remote storage
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set --remote-storage-driver=aws-s3 \
-      --remote-storage-bucket=${aws_s3_bucket.this["media"].bucket} \
-      --remote-storage-region=${data.aws_region.current.name} \
-      --remote-storage-key=${aws_iam_access_key.s3.id} \
-      --remote-storage-secret="${aws_iam_access_key.s3.secret}" \
-      -n"
-      ## sync to s3 remote storage
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento remote-storage:sync"
       ## install modules to properly test magento 2 production-ready functionality
       su ${var.app["brand"]} -s /bin/bash -c "composer -n require fooman/sameorderinvoicenumber-m2 fooman/emailattachments-m2 fooman/printorderpdf-m2 mageplaza/module-smtp magefan/module-blog stripe/stripe-payments"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade -n --no-ansi"
