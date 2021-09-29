@@ -670,11 +670,11 @@ resource "aws_s3_bucket_policy" "media" {
             AWS = aws_cloudfront_origin_access_identity.this.iam_arn
          }
          Resource = [
-            "${aws_s3_bucket.this["media "].arn}/*.jpg",
-            "${aws_s3_bucket.this["media "].arn}/*.jpeg",
-            "${aws_s3_bucket.this["media "].arn}/*.png",
-            "${aws_s3_bucket.this["media "].arn}/*.gif",
-            "${aws_s3_bucket.this["media "].arn}/*.webp"
+            "${aws_s3_bucket.this["media"].arn}/*.jpg",
+            "${aws_s3_bucket.this["media"].arn}/*.jpeg",
+            "${aws_s3_bucket.this["media"].arn}/*.png",
+            "${aws_s3_bucket.this["media"].arn}/*.gif",
+            "${aws_s3_bucket.this["media"].arn}/*.webp"
          ]
       }, 
       {
@@ -684,8 +684,8 @@ resource "aws_s3_bucket_policy" "media" {
             AWS = [ aws_iam_user.s3.arn ]
          }
          Resource = [
-            "${aws_s3_bucket.this["media "].arn}",
-            "${aws_s3_bucket.this["media "].arn}/*"
+            "${aws_s3_bucket.this["media"].arn}",
+            "${aws_s3_bucket.this["media"].arn}/*"
          ],
          Condition = {
             test     = "StringEquals"
@@ -700,8 +700,8 @@ resource "aws_s3_bucket_policy" "media" {
             AWS = [ aws_iam_user.s3.arn ]
          }
          Resource = [
-            "${aws_s3_bucket.this["media "].arn}",
-            "${aws_s3_bucket.this["media "].arn}/*"
+            "${aws_s3_bucket.this["media"].arn}",
+            "${aws_s3_bucket.this["media"].arn}/*"
          ]
       }, 
       {
@@ -710,7 +710,7 @@ resource "aws_s3_bucket_policy" "media" {
          Principal = {
             AWS = [ aws_iam_user.s3.arn ]
          }
-         Resource = "${aws_s3_bucket.this["media "].arn}"
+         Resource = "${aws_s3_bucket.this["media"].arn}"
       }, 
 	  ] 
 	  Version = "2012-10-17"
