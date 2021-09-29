@@ -2,8 +2,8 @@
 > Deploy a full-scale secure and flexible e-commerce infrastructure based on Magento 2 in a matter of seconds.  
 > Enterprise-grade solution for companies of all sizes, B2B B2C, providing the best customer experience.  
 
-<img src="https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg" width="150" height="100"> <img src="https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg" width="145" height="135"> <img src="https://user-images.githubusercontent.com/1591200/135247043-9333192c-3939-4f77-9150-2789f0e6ff6c.png" width="175" height="95"> <img src="https://user-images.githubusercontent.com/1591200/118028531-158ead80-b35b-11eb-8957-636de16ada34.png" width="200" height="135">
-<img src="https://user-images.githubusercontent.com/1591200/130320410-91749ce8-5af1-4802-af25-ffb36e7ded98.png" width="100" height="115">
+<img src="https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg" width="200" height="140"> <img src="https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg" width="175" height="145"> <img src="https://user-images.githubusercontent.com/1591200/118028531-158ead80-b35b-11eb-8957-636de16ada34.png" width="250" height="155">
+<img src="https://user-images.githubusercontent.com/1591200/130320410-91749ce8-5af1-4802-af25-ffb36e7ded98.png" width="120" height="135">
 
 <br />
 
@@ -93,7 +93,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Clone repo:  
 > 
 ```
-  git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
+  git clone -b start https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
 ```
 >  
 **[ ! ]** Note: Right after `terraform apply` you will receive email from amazon to approve resources  
@@ -109,17 +109,16 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 <br />
 
 ## Complete setup:
- `5` autoscaling groups with launch templates converted from `user_data`  
- `4` target groups for load balancer (varnish frontend admin staging)  
- `1` build server to compile all the code  
- `2` load balancers (external/internal) with listeners / rules  
- `2` rds mariadb databases multi AZ production, single AZ staging  
+ `1` autoscaling group with launch template converted from admin `user_data`  
+ `1` target group for load balancer [admin]  
+ `1` load balancer external with listeners / rules / https  
+ `1` ssl certificate to enforce https  
+ `1` rds mariadb database single AZ  
  `1` elasticsearch domain for Magento catalog search  
- `2` redis elasticache cluster for sessions and cache  
+ `1` redis elasticache cluster for sessions and cache  
  `1` rabbitmq broker to manage queue messages  
- `2` s3 buckets for [media] images and [system] files and logs (with access policy)  
- `2` codecommit app files repository and services config files repository  
- `1` cloudfront s3 origin distribution  
+ `3` s3 buckets [media] [system] [backup], with access policy  
+ `2` codecommit repository for app and services config files  
  `1` efs file system for shared folders, with mount target per AZ  
  `1` sns topic default subscription to receive email alerts  
  `1` ses user access details for smtp module  
@@ -130,7 +129,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
  
 ##
 - [x] Deployment into isolated Virtual Private Cloud
-- [x] Autoscaling policy per each group, excluding `build` instance
+- [x] Autoscaling policy
 - [x] Managed with [Systems Manager](https://aws.amazon.com/systems-manager/) agent
 - [x] Instance Profile assigned to simplify EC2 management
 - [x] Create and use ssm documents and EventBridge rules to automate tasks
@@ -139,7 +138,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] All Magento files managed with git only
 - [x] Configuration settings saved in Parameter Store
 - [x] Live shop in production mode / read-only 
-- [x] Security groups configured for every service and instances
+- [x] Security groups configured for every service and instance
 - [x] phpMyAdmin for easy database editing
 - [x] MariaDB database dump for data analysis
 - [x] Enhanced security in AWS and LEMP 
@@ -147,15 +146,15 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] AWS WAF Protection rules  
 
 ##
-![Magento_2_AWS_cloud_auto_scaling_terraform-map](https://user-images.githubusercontent.com/1591200/119973444-66351600-bfab-11eb-82b8-1413c9aa41fc.png)
+![Magento_2_AWS_cloud_auto_scaling_terraform-start](https://user-images.githubusercontent.com/1591200/135294164-ab012068-cd41-407b-9d28-1eaa431ff168.png)
 
 ## :hammer_and_wrench: Magento 2 development | source code:
 - [x] Local provisioner copy files from https://github.com/magenx/Magento-2
-- [x] Pickup files from your own repo @ [variables.tf#L20](https://github.com/magenx/Magento-2-aws-cluster-terraform/blob/main/variables.tf#L20)
+- [x] Pickup files from your own repo @ [variables.tf#L16](https://github.com/magenx/Magento-2-aws-cluster-terraform/blob/start/variables.tf#L16)
 - [x] Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
 - [x] Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
 - [x] Right after infrastructure deployment the minimal Magento 2 package is ready to install.
-- [x] Check and run SSM Document to install Magento and pre-configure modules (select admin instance)
+- [x] Check and run SSM Document to install Magento and pre-configure modules.
 > Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime.
 > Remove replaced components from `composer.json` in `"replace": {}` and run `composer update`  
 > modules configuration here: https://github.com/magenx/Magento-2/blob/main/composer.json  
