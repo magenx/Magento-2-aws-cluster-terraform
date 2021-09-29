@@ -423,46 +423,43 @@ resource "aws_mq_broker" "this" {
 # Create ElastiCache parameter groups
 # # ---------------------------------------------------------------------------------------------------------------------#		  
 resource "aws_elasticache_parameter_group" "this" {
-  for_each      = var.redis["name"]
-  name          = "${var.app["brand"]}-${each.key}-parameter"
+  name          = "${var.app["brand"]}-${var.redis["name"]}-parameter"
   family        = "redis6.x"
-  description   = "Parameter group for ${var.app["domain"]} ${each.key} backend"
+  description   = "Parameter group for ${var.app["domain"]} ${var.redis["name"]} backend"
   parameter {
     name  = "cluster-enabled"
     value = "no"
   }
   tags = {
-    Name = "${var.app["brand"]}-${each.key}-parameter"
+    Name = "${var.app["brand"]}-${var.redis["name"]}-parameter"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create ElastiCache - Redis Replication group - session + cache
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticache_replication_group" "this" {
-  for_each                      = var.redis["name"]
-  number_cache_clusters         = length(values(aws_subnet.this).*.id)
+  number_cache_clusters         = var.redis["number_cache_clusters"]
   engine                        = "redis"
   engine_version                = var.redis["engine_version"]
-  replication_group_id          = "${var.app["brand"]}-${each.key}-backend"
-  replication_group_description = "Replication group for ${var.app["domain"]} ${each.key} backend"
+  replication_group_id          = "${var.app["brand"]}-${var.redis["name"]}-backend"
+  replication_group_description = "Replication group for ${var.app["domain"]} ${var.redis["name"]} backend"
   node_type                     = var.redis["node_type"]
   port                          = var.redis["port"]
-  parameter_group_name          = aws_elasticache_parameter_group.this[each.key].id
-  security_group_ids            = [aws_security_group.this[each.key].id]
+  parameter_group_name          = aws_elasticache_parameter_group.this.id
+  security_group_ids            = [aws_security_group.this["redis"].id]
   subnet_group_name             = aws_elasticache_subnet_group.this.name
   automatic_failover_enabled    = var.redis["automatic_failover_enabled"]
   multi_az_enabled              = var.redis["multi_az_enabled"]
   notification_topic_arn        = aws_sns_topic.default.arn
   tags = {
-    Name = "${var.app["brand"]}-${each.key}-backend"
+    Name = "${var.app["brand"]}-${var.redis["name"]}-backend"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch CPU Utilization metrics and email alerts
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "elasticache_cpu" {
-  for_each            = aws_elasticache_replication_group.this
-  alarm_name          = "${var.app["brand"]}-elasticache-${each.key}-cpu-utilization"
+  alarm_name          = "${var.app["brand"]}-elasticache-cpu-utilization"
   alarm_description   = "Redis cluster CPU utilization"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "1"
@@ -475,15 +472,14 @@ resource "aws_cloudwatch_metric_alarm" "elasticache_cpu" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
   
   dimensions = {
-    CacheClusterId = aws_elasticache_replication_group.this[each.key].id
+    CacheClusterId = aws_elasticache_replication_group.this.id
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch Freeable Memory metrics and email alerts
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "elasticache_memory" {
-  for_each            = aws_elasticache_replication_group.this
-  alarm_name          = "${var.app["brand"]}-elasticache-${each.key}-freeable-memory"
+  alarm_name          = "${var.app["brand"]}-elasticache-freeable-memory"
   alarm_description   = "Redis cluster freeable memory"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = "1"
@@ -496,7 +492,7 @@ resource "aws_cloudwatch_metric_alarm" "elasticache_memory" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
   
   dimensions = {
-    CacheClusterId = aws_elasticache_replication_group.this[each.key].id
+    CacheClusterId = aws_elasticache_replication_group.this.id
   }
 }
 
@@ -544,13 +540,13 @@ resource "aws_s3_bucket_policy" "media" {
             AWS = "*"
          }
          Resource = [
-            "${aws_s3_bucket.this["media "].arn}/*"
-         ],
+            "${aws_s3_bucket.this["media"].arn}/*"
+         ]
          Condition = {
-            test     = "StringNotLike"
-            variable = "aws:Referer"
-            values   = [ var.app["domain"] ]
+            StringNotLike = {
+                "aws:Referer" = [ var.app["domain"] ]
          }
+       }
       }, 
       {
          Action = ["s3:PutObject"],
@@ -559,14 +555,14 @@ resource "aws_s3_bucket_policy" "media" {
             AWS = [ aws_iam_user.s3.arn ]
          }
          Resource = [
-            "${aws_s3_bucket.this["media "].arn}",
-            "${aws_s3_bucket.this["media "].arn}/*"
-         ],
+            "${aws_s3_bucket.this["media"].arn}",
+            "${aws_s3_bucket.this["media"].arn}/*"
+         ]
          Condition = {
-            test     = "StringEquals"
-            variable = "aws:SourceVpc"
-            values   = [ aws_vpc.this.id ]
+            StringEquals = {
+                "aws:SourceVpc"  =  [ aws_vpc.this.id ]
          }
+       }
       }, 
       {
          Action = ["s3:GetObject", "s3:GetObjectAcl"],
@@ -575,8 +571,8 @@ resource "aws_s3_bucket_policy" "media" {
             AWS = [ aws_iam_user.s3.arn ]
          }
          Resource = [
-            "${aws_s3_bucket.this["media "].arn}",
-            "${aws_s3_bucket.this["media "].arn}/*"
+            "${aws_s3_bucket.this["media"].arn}",
+            "${aws_s3_bucket.this["media"].arn}/*"
          ]
       }, 
       {
@@ -585,7 +581,7 @@ resource "aws_s3_bucket_policy" "media" {
          Principal = {
             AWS = [ aws_iam_user.s3.arn ]
          }
-         Resource = "${aws_s3_bucket.this["media "].arn}"
+         Resource = "${aws_s3_bucket.this["media"].arn}"
       }, 
 	  ] 
 	  Version = "2012-10-17"
@@ -646,11 +642,6 @@ resource "aws_elasticsearch_domain" "this" {
   cluster_config {
     instance_type  = var.elk["instance_type"]
     instance_count = var.elk["instance_count"]
-    
-    zone_awareness_enabled = true
-    zone_awareness_config {
-        availability_zone_count = var.elk["instance_count"]
-      }
   }
   ebs_options {
     ebs_enabled = var.elk["ebs_enabled"]
@@ -727,12 +718,11 @@ EOF
 # Create RDS parameter groups
 # # ---------------------------------------------------------------------------------------------------------------------#		
 resource "aws_db_parameter_group" "this" {
-  for_each          = var.rds["name"]
-  name              = "${var.app["brand"]}-${each.key}-parameters"
+  name              = "${var.app["brand"]}-${var.rds["name"]}-parameters"
   family            = "mariadb10.5"
-  description       = "Parameter group for ${var.app["brand"]} ${each.key} database"
+  description       = "Parameter group for ${var.app["brand"]} ${var.rds["name"]} database"
   tags = {
-    Name = "${var.app["brand"]}-${each.key}-parameters"
+    Name = "${var.app["brand"]}-${var.rds["name"]}-parameters"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -750,7 +740,7 @@ resource "aws_db_instance" "this" {
   name                   = "${var.app["brand"]}_${var.rds["name"]}"
   username               = var.app["brand"]
   password               = random_password.this["rds"].result
-  parameter_group_name   = aws_db_parameter_group.this[each.key].id
+  parameter_group_name   = aws_db_parameter_group.this.id
   skip_final_snapshot    = var.rds["skip_final_snapshot"]
   vpc_security_group_ids = [aws_security_group.this["rds"].id]
   db_subnet_group_name   = aws_db_subnet_group.this.name
@@ -920,7 +910,7 @@ resource "aws_lb_target_group" "this" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create https:// listener for Load Balancer - forward to admin
+# Create https:// listener for Load Balancer - default response
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener" "https" {
   depends_on = [aws_acm_certificate_validation.default]
@@ -955,7 +945,7 @@ resource "aws_lb_listener" "http" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for INNER Load Balancer - forward to admin
+# Create conditional listener rule for Load Balancer - forward to admin
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener_rule" "default" {
   listener_arn = aws_lb_listener.https.arn
@@ -963,6 +953,11 @@ resource "aws_lb_listener_rule" "default" {
   action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this["admin"].arn
+  }
+  condition {
+    host_header {
+      values = [var.app["domain"]]
+    }
   }
   condition {
     http_header {
@@ -1347,7 +1342,7 @@ RABBITMQ_PASSWORD='${random_password.this["mq"].result}'
 
 ELASTICSEARCH_ENDPOINT="https://${aws_elasticsearch_domain.this.endpoint}:443"
 
-REDIS_CACHE_BACKEND="${aws_elasticache_replication_group.this["cache"].primary_endpoint_address}"
+REDIS_CACHE_BACKEND="${aws_elasticache_replication_group.this.primary_endpoint_address}"
 	
 ALB_DNS_NAME="${aws_lb.this.dns_name}"
 
@@ -1605,7 +1600,7 @@ mainSteps:
       --cache-backend=redis \
       --cache-backend-redis-server=${aws_elasticache_replication_group.this.primary_endpoint_address} \
       --cache-backend-redis-port=6379 \
-      --cache-backend-redis-db=0 \
+      --cache-backend-redis-db=2 \
       --cache-backend-redis-compress-data=1 \
       --cache-backend-redis-compression-lib=l4z \
       -n"
@@ -1615,7 +1610,7 @@ mainSteps:
       --session-save-redis-host=${aws_elasticache_replication_group.this.primary_endpoint_address} \
       --session-save-redis-port=6379 \
       --session-save-redis-log-level=3 \
-      --session-save-redis-db=0 \
+      --session-save-redis-db=1 \
       --session-save-redis-compression-lib=lz4 \
       --session-save-redis-persistent-id=${random_string.this["persistent"].result} \
       -n"

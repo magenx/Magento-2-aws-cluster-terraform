@@ -92,6 +92,7 @@ variable "redis" {
     name                          = "cache"
     engine_version                = "6.x"
     port                          = "6379"
+    number_cache_clusters         = 1
     automatic_failover_enabled    = false
     multi_az_enabled              = false
   }
@@ -157,12 +158,12 @@ variable "az_number" {
 }
 
 locals {
-  security_group = setunion(var.redis["name"],["ec2","rds","elk","mq","efs","alb"])
+  security_group = setunion(["ec2","rds","elk","mq","efs","alb","redis"])
 }
 
 locals {
  security_rule = {
-  outer_alb_https_in = {
+  alb_https_in = {
     type        = "ingress"
     description = "Allow all inbound traffic on the load balancer https listener port"
     from_port   = 443
@@ -171,7 +172,7 @@ locals {
     cidr_blocks = ["0.0.0.0/0"]
     security_group_id = aws_security_group.this["alb"].id
     },
-  outer_alb_http_in = {
+  alb_http_in = {
     type        = "ingress"
     description = "Allow all inbound traffic on the load balancer http listener port"
     from_port   = 80
@@ -180,16 +181,7 @@ locals {
     cidr_blocks = ["0.0.0.0/0"]
     security_group_id = aws_security_group.this["alb"].id
     },
-  outer_alb_http_out = {
-    type        = "egress"
-    description = "Allow outbound traffic to instances on the load balancer listener port"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    source_security_group_id = aws_security_group.this["ec2"].id
-    security_group_id = aws_security_group.this["alb"].id
-    },
-  inner_alb_http_in = {
+  ec2_alb_http_in = {
     type        = "ingress"
     description = "Allow inbound traffic from the VPC CIDR on the load balancer listener port"
     from_port   = 80
@@ -198,7 +190,7 @@ locals {
     source_security_group_id = aws_security_group.this["ec2"].id
     security_group_id = aws_security_group.this["alb"].id
     },
-  inner_alb_http_out = {
+  alb_http_out = {
     type        = "egress"
     description = "Allow outbound traffic to instances on the load balancer listener port"
     from_port   = 80
@@ -243,22 +235,13 @@ locals {
     source_security_group_id = aws_security_group.this["mq"].id
     security_group_id = aws_security_group.this["ec2"].id
     },
-  ec2_redis_session_out = {
-    type        = "egress"
-    description = "Allow outbound traffic on the instance Redis port"
-    from_port   = 6379
-    to_port     = 6379
-    protocol    = "tcp"
-    source_security_group_id = aws_security_group.this["cache"].id
-    security_group_id = aws_security_group.this["ec2"].id
-    },
   ec2_redis_cache_out = {
     type        = "egress"
     description = "Allow outbound traffic on the instance Redis port"
     from_port   = 6379
     to_port     = 6379
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.this["cache"].id
+    source_security_group_id = aws_security_group.this["redis"].id
     security_group_id = aws_security_group.this["ec2"].id
     },
   ec2_efs_out = {
@@ -297,16 +280,7 @@ locals {
     source_security_group_id = aws_security_group.this["ec2"].id
     security_group_id = aws_security_group.this["ec2"].id
     },
-  ec2_http_in_inner = {
-    type        = "ingress"
-    description = "Allow all inbound traffic from the load balancer on http port"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    source_security_group_id = aws_security_group.this["alb"].id
-    security_group_id = aws_security_group.this["ec2"].id
-    },
-  ec2_http_in_outer = {
+  ec2_http_in = {
     type        = "ingress"
     description = "Allow all inbound traffic from the load balancer on http port"
     from_port   = 80
@@ -324,15 +298,6 @@ locals {
     source_security_group_id = aws_security_group.this["ec2"].id
     security_group_id = aws_security_group.this["rds"].id
     },
-  redis_session_in = {
-    type        = "ingress"
-    description = "Allow access instances to Redis Session"
-    from_port   = 6379
-    to_port     = 6379
-    protocol    = "tcp"
-    source_security_group_id = aws_security_group.this["ec2"].id
-    security_group_id = aws_security_group.this["cache"].id
-    },
   redis_cache_in = {
     type        = "ingress"
     description = "Allow access instances to Redis Cache"
@@ -340,7 +305,7 @@ locals {
     to_port     = 6379
     protocol    = "tcp"
     source_security_group_id = aws_security_group.this["ec2"].id
-    security_group_id = aws_security_group.this["cache"].id
+    security_group_id = aws_security_group.this["redis"].id
     },
   rabbitmq_in = {
     type        = "ingress"
