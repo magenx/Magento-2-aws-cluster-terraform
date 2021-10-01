@@ -147,7 +147,7 @@ END
 cp ${PHP_INI} ${PHP_INI}.BACK
 sed -i 's/^\(max_execution_time = \)[0-9]*/\17200/' ${PHP_INI}
 sed -i 's/^\(max_input_time = \)[0-9]*/\17200/' ${PHP_INI}
-sed -i 's/^\(memory_limit = \)[0-9]*M/\1%{ if "${INSTANCE_NAME}" == "admin" }2048M%{ else }756M%{ endif }/' ${PHP_INI}
+sed -i 's/^\(memory_limit = \)[0-9]*M/\1%{ if "${INSTANCE_NAME}" == "admin" }4G%{ else }756M%{ endif }/' ${PHP_INI}
 sed -i 's/^\(post_max_size = \)[0-9]*M/\164M/' ${PHP_INI}
 sed -i 's/^\(upload_max_filesize = \)[0-9]*M/\132M/' ${PHP_INI}
 sed -i 's/expose_php = On/expose_php = Off/' ${PHP_INI}
@@ -180,7 +180,7 @@ php_flag[display_errors] = off
 php_admin_flag[log_errors] = on
 php_admin_value[error_log] = "${WEB_ROOT_PATH}/var/log/php-fpm-error.log"
 php_admin_value[default_charset] = UTF-8
-php_admin_value[memory_limit] = %{ if "${INSTANCE_NAME}" == "admin" }2048M%{ else }756M%{ endif }
+php_admin_value[memory_limit] = %{ if "${INSTANCE_NAME}" == "admin" }4G%{ else }756M%{ endif }
 php_admin_value[date.timezone] = ${TIMEZONE}
 END
 
