@@ -22,6 +22,7 @@ variable "app" {
     currency         = "EUR"
     timezone         = "UTC"
     php_version      = "7.4"
+    volume_size      = "50"
   }
 }
 
