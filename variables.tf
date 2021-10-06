@@ -56,7 +56,7 @@ variable "rds" {
     enabled_cloudwatch_logs_exports = "error"
     performance_insights_enabled = true
     copy_tags_to_snapshot    = true
-    backup_retention_period  = "7"
+    backup_retention_period  = "0"
     delete_automated_backups = true
     deletion_protection      = false
   }
