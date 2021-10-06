@@ -1105,7 +1105,7 @@ resource "aws_launch_template" "this" {
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs { 
-        volume_size = "50"
+        volume_size = var.app["volume_size"]
         volume_type = "gp3"
             }
   }
