@@ -270,7 +270,8 @@ User data timer end:             $${_TIMER_USER_DATA_END}
 
 END
 
-/bin/systemctl status nginx php*fpm >> /tmp/timer_user_data_log
+/bin/systemctl status nginx.service php*fpm.service >> /tmp/timer_user_data_log
+ss -tunlp >> /tmp/timer_user_data_log
 
 aws sns publish \
     --region ${AWS_DEFAULT_REGION} \
