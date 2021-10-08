@@ -1254,6 +1254,9 @@ resource "aws_launch_template" "this" {
         volume_type = "gp3"
             }
   }
+  metadata_options {
+    http_tokens = "required"
+  }
   iam_instance_profile { name = aws_iam_instance_profile.ec2[each.key].name }
   image_id = data.aws_ami.distro.id
   instance_type = each.value
