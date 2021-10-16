@@ -7,9 +7,9 @@
 _TIMER_USER_DATA_START="$(date +%T)"
 
 AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-INSTANCE_LOCAL_IP=$(curl -s -H "X-aws-ec2-metadata-token: $$AWSTOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
-INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $$AWSTOKEN" http://169.254.169.254/latest/meta-data/instance-id)
-INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: $$AWSTOKEN" http://169.254.169.254/latest/meta-data/instance-type)
+INSTANCE_LOCAL_IP=$(curl -s -H "X-aws-ec2-metadata-token: $${AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
+INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
+INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: $${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
 
 ## installation
 apt-get update
