@@ -187,11 +187,6 @@ We can launch this project for your store in a short time. Many big retailers ha
 - [x] Send a private message on [Linkedin](https://www.linkedin.com/in/magenx/)  
     
 <br />
-   
-## ![hyvatheme](https://user-images.githubusercontent.com/1591200/132108893-0fc007b1-87f0-47a1-b8c1-d6dd3a6dda83.png)
-[Hyvä themes](https://hyva.io/hyva-themes-license.html) - Magento 2 frontend alternative to PWA. Hyvä themes is a brand-new frontend for Magento 2 with the best DevOps experience, performance and time to market. With Hyvä, you build your Magento 2 shop quicker and with a lower budget. And the result is a modern and ultra fast browser experience for your visitors. We recommend that you start developing your store using this theme or switch your existing store frontend to this theme.  
-    
-<br />
     
 ## :heart_eyes_cat: Support the project  
 This takes time and research. You can use this for free. But its not free to create it.
