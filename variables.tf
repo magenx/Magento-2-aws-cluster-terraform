@@ -4,7 +4,6 @@ variable "ec2" {
     frontend   = "c6g.xlarge"
     admin      = "c6g.xlarge"
     staging    = "c6g.xlarge"
-    build      = "t4g.micro"
    }
 }
 
