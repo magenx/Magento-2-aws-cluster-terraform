@@ -1287,7 +1287,7 @@ resource "aws_autoscaling_group" "this" {
   vpc_zone_identifier = values(aws_subnet.this).*.id
   desired_capacity    = var.asg["desired_capacity"]
   min_size            = var.asg["min_size"]
-  max_size            = (each.key == "build" ? 1 : var.asg["max_size"])
+  max_size            = var.asg["max_size"]
   health_check_grace_period = var.asg["health_check_grace_period"]
   health_check_type         = var.asg["health_check_type"]
   target_group_arns  = [aws_lb_target_group.this[each.key].arn]
@@ -1318,7 +1318,7 @@ group_names = [
 # Create Autoscaling policy for scale-out
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "scaleout" {
-  for_each               = {for name,type in var.ec2: name => type if name != "build"}
+  for_each               = var.ec2
   name                   = "${var.app["brand"]}-${each.key}-asp-out"
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
@@ -1329,7 +1329,7 @@ resource "aws_autoscaling_policy" "scaleout" {
 # Create CloudWatch alarm metric to execute Autoscaling policy for scale-out
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "scaleout" {
-  for_each            = {for name,type in var.ec2: name => type if name != "build"}
+  for_each            = var.ec2
   alarm_name          = "${var.app["brand"]}-${each.key} scale-out alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.asp["evaluation_periods"]
@@ -1348,7 +1348,7 @@ resource "aws_cloudwatch_metric_alarm" "scaleout" {
 # Create Autoscaling policy for scale-in
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "scalein" {
-  for_each               = {for name,type in var.ec2: name => type if name != "build"}
+  for_each               = var.ec2
   name                   = "${var.app["brand"]}-${each.key}-asp-in"
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
@@ -1359,7 +1359,7 @@ resource "aws_autoscaling_policy" "scalein" {
 # Create CloudWatch alarm metric to execute Autoscaling policy for scale-in
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "scalein" {
-  for_each            = {for name,type in var.ec2: name => type if name != "build"}
+  for_each            = var.ec2
   alarm_name          = "${var.app["brand"]}-${each.key} scale-in alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.asp["evaluation_periods"]
@@ -1568,7 +1568,7 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
                 "log_group_name": "${var.app["brand"]}_nginx_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
             },
-            %{ if each.key == "admin" || each.key == "staging" || each.key == "build" ~}
+            %{ if each.key == "admin" || each.key == "staging" ~}
             {
                 "file_path": "/home/${var.app["brand"]}/public_html/var/log/php-fpm-error.log",
                 "log_group_name": "${var.app["brand"]}_php_app_error_logs",
