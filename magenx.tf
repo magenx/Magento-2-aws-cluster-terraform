@@ -1142,7 +1142,7 @@ resource "aws_autoscaling_group" "this" {
   vpc_zone_identifier = values(aws_subnet.this).*.id
   desired_capacity    = var.asg["desired_capacity"]
   min_size            = var.asg["min_size"]
-  max_size            = (each.key == "build" ? 1 : var.asg["max_size"])
+  max_size            = var.asg["max_size"]
   health_check_grace_period = var.asg["health_check_grace_period"]
   health_check_type         = var.asg["health_check_type"]
   target_group_arns  = [aws_lb_target_group.this[each.key].arn]
@@ -1173,7 +1173,7 @@ group_names = [
 # Create Autoscaling policy for scale-out
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "scaleout" {
-  for_each               = {for name,type in var.ec2: name => type if name != "build"}
+  for_each               = var.ec2
   name                   = "${var.app["brand"]}-${each.key}-asp-out"
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
@@ -1184,7 +1184,7 @@ resource "aws_autoscaling_policy" "scaleout" {
 # Create CloudWatch alarm metric to execute Autoscaling policy for scale-out
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "scaleout" {
-  for_each            = {for name,type in var.ec2: name => type if name != "build"}
+  for_each            = var.ec2
   alarm_name          = "${var.app["brand"]}-${each.key} scale-out alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.asp["evaluation_periods"]
@@ -1203,7 +1203,7 @@ resource "aws_cloudwatch_metric_alarm" "scaleout" {
 # Create Autoscaling policy for scale-in
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "scalein" {
-  for_each               = {for name,type in var.ec2: name => type if name != "build"}
+  for_each               = var.ec2
   name                   = "${var.app["brand"]}-${each.key}-asp-in"
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
@@ -1214,7 +1214,7 @@ resource "aws_autoscaling_policy" "scalein" {
 # Create CloudWatch alarm metric to execute Autoscaling policy for scale-in
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "scalein" {
-  for_each            = {for name,type in var.ec2: name => type if name != "build"}
+  for_each            = var.ec2
   alarm_name          = "${var.app["brand"]}-${each.key} scale-in alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.asp["evaluation_periods"]
@@ -1452,7 +1452,7 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
                 "log_group_name": "${var.app["brand"]}_nginx_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
             },
-            %{ if each.key == "admin" || each.key == "staging" || each.key == "build" ~}
+            %{ if each.key == "admin" || each.key == "staging" ~}
             {
                 "file_path": "/home/${var.app["brand"]}/public_html/var/log/php-fpm-error.log",
                 "log_group_name": "${var.app["brand"]}_php_app_error_logs",
@@ -1554,46 +1554,6 @@ mainSteps:
       systemctl reload php*fpm.service
       systemctl reload nginx.service
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento cache:flush"
-EOT
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create SSM Document runShellScript to pull build branch from CodeCommit to deploy code and static files
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_document" "git_pull_build" {
-  name          = "${var.app["brand"]}-codecommit-pull-build-changes"
-  document_type = "Command"
-  document_format = "YAML"
-  target_type   = "/AWS::EC2::Instance"
-  content = <<EOT
----
-schemaVersion: "2.2"
-description: "Pull code changes from CodeCommit build branch"
-parameters:
-mainSteps:
-- action: "aws:runShellScript"
-  name: "${var.app["brand"]}CodeCommitPullBuildChanges"
-  inputs:
-    runCommand:
-    - |-
-      #!/bin/bash
-      rm -rf /home/${var.app["brand"]}/public_html/{*,.*}
-      cd /home/${var.app["brand"]}/public_html
-      su ${var.app["brand"]} -s /bin/bash -c "git clone -b build codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name} ."
-      ## catch module installation logic here ##
-      su ${var.app["brand"]} -s /bin/bash -c "composer install --optimize-autoloader --prefer-dist --no-dev" >> var/log/php-fpm-error.log
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:di:compile" >> var/log/php-fpm-error.log
-      if [[ $? -ne 0 ]]; then
-      echo
-      echo "Code compilation error" >> var/log/php-fpm-error.log
-      exit 1
-      fi
-      su ${var.app["brand"]} -s /bin/bash -c "composer dump-autoload --no-dev --optimize --apcu" >> var/log/php-fpm-error.log
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:static-content:deploy -f" >> var/log/php-fpm-error.log
-      if [[ $? -ne 0 ]]; then
-      echo
-      echo "Static files compilation error" >> var/log/php-fpm-error.log
-      exit 1
-      fi
 EOT
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
