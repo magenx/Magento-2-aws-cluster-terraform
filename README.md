@@ -110,8 +110,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 
 ## Complete setup:
  `5` autoscaling groups with launch templates converted from `user_data`  
- `4` target groups for load balancer (varnish frontend admin staging)  
- `1` build server to compile all the code  
+ `4` target groups for load balancer (varnish frontend admin staging)   
  `2` load balancers (external/internal) with listeners / rules  
  `2` rds mariadb databases multi AZ production, single AZ staging  
  `1` elasticsearch domain for Magento catalog search  
@@ -130,7 +129,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
  
 ##
 - [x] Deployment into isolated Virtual Private Cloud
-- [x] Autoscaling policy per each group, excluding `build` instance
+- [x] Autoscaling policy per each group
 - [x] Managed with [Systems Manager](https://aws.amazon.com/systems-manager/) agent
 - [x] Instance Profile assigned to simplify EC2 management
 - [x] Create and use ssm documents and EventBridge rules to automate tasks
