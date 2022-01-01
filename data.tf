@@ -147,7 +147,7 @@ data "template_file" "user_data" {
   DOMAIN = "${var.app["domain"]}"
   STAGING_DOMAIN = "${var.app["staging_domain"]}"
   BRAND = "${var.app["brand"]}"
-  PHP_USER=php-${var.app["brand"]}
+  PHP_USER = "php-${var.app["brand"]}"
   WEB_ROOT_PATH = "/home/${var.app["brand"]}/public_html"
   EFS_DNS_TARGET = "${values(aws_efs_mount_target.this).0.dns_name}"
  }
