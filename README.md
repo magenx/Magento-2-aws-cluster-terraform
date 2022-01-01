@@ -3,7 +3,7 @@
 > Enterprise-grade solution for companies of all sizes, B2B B2C, providing the best customer experience.  
 
 <img src="https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg" width="150" height="105"> <img src="https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg" width="145" height="135"> <img src="https://user-images.githubusercontent.com/1591200/135067367-c50e6cc3-2a07-4fcd-9a7e-016c1c3950f4.png" width="155" height="90"> <img src="https://user-images.githubusercontent.com/1591200/118028531-158ead80-b35b-11eb-8957-636de16ada34.png" width="200" height="135">
-<img src="https://user-images.githubusercontent.com/1591200/130320410-91749ce8-5af1-4802-af25-ffb36e7ded98.png" width="100" height="115">
+<img src="https://user-images.githubusercontent.com/1591200/130320410-91749ce8-5af1-4802-af25-ffb36e7ded98.png" width="100" height="115"><img src="https://user-images.githubusercontent.com/1591200/143559434-7593c7bf-79b5-4a1f-b6cc-71060cf0bbec.png" width="165" height="165">
 
 <br />
 
@@ -121,6 +121,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
  `1` rabbitmq broker to manage queue messages  
  `2` s3 buckets for [media] [system] and [backup] with access policy  
  `2` codecommit app files repository and services config files repository  
+ `1` codepipeline for codebuild project to deploy code  
  `1` efs file system for shared folders, with mount target per AZ  
  `1` sns topic default subscription to receive email alerts  
  `1` ses user access details for smtp module  
@@ -140,6 +141,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Simple Email Service authentication + SMTP Magento module
 - [x] CloudWatch agent configured to stream logs
 - [x] All Magento files managed with git only
+- [x] CodePipeline with CodeBuild project
 - [x] Configuration settings saved in Parameter Store
 - [x] Live shop in production mode / read-only 
 - [x] Security groups configured for every service and instances
@@ -179,6 +181,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Event driven
 - [x] Services configuration files tracked in CodeCommit repository
 - [x] Changes in CodeCommit repository triggers EventBridge rule.
+- [x] CodePipeline build code in CodeBuild project and deploy
 - [x] SSM Document pull from CodeCommit repository and cleanup.
 - [x] Change deployment logic to your needs.  
    
