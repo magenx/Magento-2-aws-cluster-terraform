@@ -30,9 +30,9 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:install \
       --base-url=https://${var.app["domain"]}/ \
       --base-url-secure=https://${var.app["domain"]}/ \
-      --db-host=${aws_db_instance.this.endpoint} \
-      --db-name=${aws_db_instance.this.name} \
-      --db-user=${aws_db_instance.this.username} \
+      --db-host=${aws_db_instance.this["production"].endpoint} \
+      --db-name=${aws_db_instance.this["production"].name} \
+      --db-user=${aws_db_instance.this["production"].username} \
       --db-password='${random_password.this["rds"].result}' \
       --admin-firstname=${var.app["brand"]} \
       --admin-lastname=${var.app["brand"]} \
@@ -74,24 +74,24 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
       --cache-id-prefix="${random_string.this["id_prefix"].result}_" \
       --cache-backend=redis \
-      --cache-backend-redis-server=${aws_elasticache_replication_group.this.primary_endpoint_address} \
+      --cache-backend-redis-server=${aws_elasticache_replication_group.this["cache"].primary_endpoint_address} \
       --cache-backend-redis-port=6379 \
-      --cache-backend-redis-db=2 \
+      --cache-backend-redis-db=0 \
       --cache-backend-redis-compress-data=1 \
       --cache-backend-redis-compression-lib=l4z \
       -n"
       ## session
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
       --session-save=redis \
-      --session-save-redis-host=${aws_elasticache_replication_group.this.primary_endpoint_address} \
+      --session-save-redis-host=${aws_elasticache_replication_group.this["session"].primary_endpoint_address} \
       --session-save-redis-port=6379 \
       --session-save-redis-log-level=3 \
-      --session-save-redis-db=1 \
+      --session-save-redis-db=0 \
       --session-save-redis-compression-lib=lz4 \
       --session-save-redis-persistent-id=${random_string.this["persistent"].result} \
       -n"
       ## add cache optimization
-      sed -i "/${aws_elasticache_replication_group.this.primary_endpoint_address}/a\            'load_from_slave' => '${aws_elasticache_replication_group.this.reader_endpoint_address}:6379', \\
+      sed -i "/${aws_elasticache_replication_group.this["cache"].primary_endpoint_address}/a\            'load_from_slave' => '${aws_elasticache_replication_group.this["cache"].reader_endpoint_address}:6379', \\
             'master_write_only' => '0', \\
             'retry_reads_on_master' => '1', \\
             'persistent' => '${random_string.this["persistent"].result}', \\
