@@ -35,7 +35,8 @@ resource "null_resource" "packer" {
 -var AWS_DEFAULT_REGION=${data.aws_region.current.name} \
 -var ALB_DNS_NAME=${aws_lb.this.dns_name} \
 -var EFS_DNS_TARGET=${values(aws_efs_mount_target.this).0.dns_name} \
--var DATABASE_ENDPOINT=${aws_db_instance.this.endpoint} \
+-var PRODUCTION_DATABASE_ENDPOINT=${aws_db_instance.this["production"].endpoint} \
+-var STAGING_DATABASE_ENDPOINT=${aws_db_instance.this["staging"].endpoint} \
 -var SNS_TOPIC_ARN=${aws_sns_topic.default.arn} \
 -var CODECOMMIT_APP_REPO=codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name} \
 -var CODECOMMIT_SERVICES_REPO=codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} \
