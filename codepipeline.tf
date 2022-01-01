@@ -255,7 +255,7 @@ resource "aws_codedeploy_deployment_group" "this" {
     ec2_tag_filter {
       key   = "Name"
       type  = "KEY_AND_VALUE"
-      value = aws_launch_template.this["admin"].tag_specifications[0].tags.Name
+      value = [aws_launch_template.this["admin"].tag_specifications[0].tags.Name,aws_launch_template.this["frontend"].tag_specifications[0].tags.Name]
     }
 
   trigger_configuration {
@@ -486,6 +486,6 @@ resource "aws_cloudwatch_event_target" "codecommit_main" {
  
 run_command_targets {
     key    = "tag:Name"
-    values = [aws_launch_template.this["admin"].tag_specifications[0].tags.Name]
+    values = [aws_launch_template.this["admin"].tag_specifications[0].tags.Name,aws_launch_template.this["frontend"].tag_specifications[0].tags.Name]
   }
 }
