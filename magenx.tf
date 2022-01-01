@@ -35,7 +35,7 @@ resource "random_uuid" "this" {
 # Generate random passwords
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "this" {
-  for_each         = toset(["rds", "mq", "app", "blowfish"])
+  for_each         = toset(["rds", "rabbitmq", "app", "blowfish"])
   length           = (each.key == "blowfish" ? 32 : 16)
   lower            = true
   upper            = true
@@ -167,38 +167,6 @@ resource "aws_sns_topic_subscription" "default" {
 
 
 
-///////////////////////////////////////////////////////[ SECURITY GROUPS ]////////////////////////////////////////////////
-
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create Security Groups
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group" "this" {
-  for_each    = local.security_group
-  name        = "${var.app["brand"]}-${each.key}"
-  description = "${each.key} security group"
-  vpc_id      = aws_vpc.this.id
-  
-    tags = {
-    Name = "${var.app["brand"]}-${each.key}"
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create Security Rules for Security Groups
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group_rule" "this" {
-   for_each =  local.security_rule
-      type             = lookup(each.value, "type", null)
-      description      = lookup(each.value, "description", null)
-      from_port        = lookup(each.value, "from_port", null)
-      to_port          = lookup(each.value, "to_port", null)
-      protocol         = lookup(each.value, "protocol", null)
-      cidr_blocks      = lookup(each.value, "cidr_blocks", null)
-      source_security_group_id = lookup(each.value, "source_security_group_id", null)
-      security_group_id = each.value.security_group_id
-    }
-
-
-
 ///////////////////////////////////////////////////[ AWS CERTIFICATE MANAGER ]////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -238,7 +206,7 @@ resource "aws_efs_mount_target" "this" {
   for_each        = aws_subnet.this
   file_system_id  = aws_efs_file_system.this.id
   subnet_id       = aws_subnet.this[each.key].id
-  security_groups = [aws_security_group.this["efs"].id]
+  security_groups = [aws_security_group.efs.id]
 }
 
 
@@ -406,24 +374,24 @@ resource "aws_iam_instance_profile" "ec2" {
 }
 
 
-/////////////////////////////////////////////////////[ AMAZON MQ BROKER ]/////////////////////////////////////////////////
+/////////////////////////////////////////////////////[ AMAZON RABBITMQ BROKER ]/////////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create RabbitMQ - queue message broker
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_mq_broker" "this" {
-  broker_name = "${var.app["brand"]}-${var.mq["broker_name"]}"
+  broker_name = "${var.app["brand"]}-${var.rabbitmq["broker_name"]}"
   engine_type        = "RabbitMQ"
-  engine_version     = var.mq["engine_version"]
-  host_instance_type = var.mq["host_instance_type"]
-  security_groups    = [aws_security_group.this["mq"].id]
+  engine_version     = var.rabbitmq["engine_version"]
+  host_instance_type = var.rabbitmq["host_instance_type"]
+  security_groups    = [aws_security_group.rabbitmq.id]
   subnet_ids         = [values(aws_subnet.this).0.id]
   user {
     username = var.app["brand"]
-    password = random_password.this["mq"].result
+    password = random_password.this["rabbitmq"].result
   }
   tags = {
-    Name   = "${var.app["brand"]}-${var.mq["broker_name"]}"
+    Name   = "${var.app["brand"]}-${var.rabbitmq["broker_name"]}"
   }
 }
 
@@ -524,6 +492,9 @@ resource "aws_s3_bucket" "this" {
   bucket        = "${var.app["brand"]}-${each.key}-storage"
   force_destroy = true
   acl           = "private"
+  versioning {
+        enabled = (each.value == "state" ? true : false)
+   }
   tags = {
     Name        = "${var.app["brand"]}-${each.key}-storage"
   }
@@ -618,16 +589,55 @@ resource "aws_s3_bucket_policy" "system" {
         "s3:PutObject"
       ],
       Effect = "Allow"
-      Resource = "arn:aws:s3:::${aws_s3_bucket.this["system"].id}/${var.app["brand"]}-alb/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
+      Resource = "${aws_s3_bucket.this["system"].arn}/${var.app["brand"]}-alb/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
       Principal = {
         AWS = [
           data.aws_elb_service_account.current.arn
         ]
       }
+    },
+    {
+      Action = [
+        "s3:PutObject",
+        "s3:GetObject"
+      ],
+      Effect = "Allow"
+      Resource = "${aws_s3_bucket.this["system"].arn}/${var.app["brand"]}-${data.aws_region.current.name}*"
+      Principal = {
+        AWS = [
+          aws_iam_role.codebuild.arn,
+          aws_iam_role.codepipeline.arn
+        ] 
     }
   ]
+  
 }
 )
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create S3 bucket policy for CodePipeline access
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_s3_bucket_policy" "backup" {
+  bucket = aws_s3_bucket.this["backup"].id
+  policy = jsonencode({
+  Id = "PolicyForBackupBucket"
+  Version = "2012-10-17"
+  Statement = [
+    {
+      Action = [
+        "s3:PutObject"
+      ],
+      Effect = "Allow"
+      Resource = "${aws_s3_bucket.this["backup"].arn}/*"
+      Principal = {
+        AWS = [
+          aws_iam_role.codebuild.arn,
+          aws_iam_role.codepipeline.arn,
+          aws_iam_role.codedeploy.arn
+        ]
+      }
+    }
+  ]
+})
 }
 
 
@@ -671,7 +681,7 @@ resource "aws_elasticsearch_domain" "this" {
   }
   vpc_options {
     subnet_ids = slice(values(aws_subnet.this).*.id, 0, var.elk["instance_count"])
-    security_group_ids = [aws_security_group.this["elk"].id]
+    security_group_ids = [aws_security_group.elk.id]
   }
   tags = {
     Name = "${var.app["brand"]}-${var.elk["domain_name"]}"
@@ -908,7 +918,7 @@ resource "aws_lb" "this" {
   internal           = false
   load_balancer_type = "application"
   drop_invalid_header_fields = true
-  security_groups    = [aws_security_group.this["alb"].id]
+  security_groups    = [aws_security_group.alb.id]
   subnets            = values(aws_subnet.this).*.id
   access_logs {
     bucket  = aws_s3_bucket.this["system"].bucket
@@ -936,9 +946,12 @@ resource "aws_lb_target_group" "this" {
 # Create default listener for Load Balancer - default response
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener" "default" {
+													   
   load_balancer_arn = aws_lb.this.arn
   port              = "80"
   protocol          = "HTTP"
+															
+													 
   default_action {
     type             = "fixed-response"
     fixed_response {
@@ -954,6 +967,7 @@ resource "aws_lb_listener" "default" {
 resource "aws_lb_listener_rule" "frontend" {
   listener_arn = aws_lb_listener.default.arn
   priority     = 30
+							
   action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this["frontend"].arn
@@ -1102,24 +1116,13 @@ resource "aws_cloudwatch_metric_alarm" "alb_rps" {
 resource "aws_launch_template" "this" {
   for_each = var.ec2
   name = "${var.app["brand"]}-${each.key}-ltpl"
-  block_device_mappings {
-    device_name = "/dev/xvda"
-    ebs { 
-        volume_size = var.app["volume_size"]
-        volume_type = "gp3"
-            }
-  }
-  metadata_options {
-    http_endpoint  = "enabled"
-    http_tokens    = "required"
-  }
   iam_instance_profile { name = aws_iam_instance_profile.ec2[each.key].name }
-  image_id = data.aws_ami.distro.id
+  image_id = element(values(data.external.packer[each.key].result), 0)
   instance_type = each.value
   monitoring { enabled = false }
   network_interfaces { 
     associate_public_ip_address = true
-    security_groups = [aws_security_group.this["ec2"].id]
+    security_groups = [aws_security_group.ec2.id]
   }
   tag_specifications {
     resource_type = "instance"
@@ -1132,6 +1135,10 @@ resource "aws_launch_template" "this" {
       Name = "${var.app["brand"]}-${each.key}-ec2" }
   }
   user_data = base64encode(data.template_file.user_data[each.key].rendered)
+  update_default_version = true
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create Autoscaling Groups
@@ -1149,6 +1156,12 @@ resource "aws_autoscaling_group" "this" {
   launch_template {
     name    = aws_launch_template.this[each.key].name
     version = "$Latest"
+  }
+  instance_refresh {
+     strategy = "Rolling"
+  }
+  lifecycle {
+    create_before_destroy = true
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -1277,8 +1290,8 @@ resource "aws_cloudwatch_event_rule" "codecommit_main" {
 	"resources": ["${aws_codecommit_repository.app.arn}"],
 	"detail": {
 		"referenceType": ["branch"],
-		"referenceName": ["main"]
-	}
+		"referenceName": ["main"]		 
+	}	 
 }
 EOF
 }
@@ -1386,51 +1399,77 @@ resource "aws_ses_event_destination" "cloudwatch" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Parameter store for aws params
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_parameter" "infrastructure_params" {
-  name        = "${var.app["brand"]}-aws-infrastructure-params"
-  description = "Parameters for AWS infrastructure"
+resource "aws_ssm_parameter" "env" {
+  name        = "${var.app["brand"]}-${data.aws_region.current.name}-env"
+  description = "Environment variables for ${var.app["brand"]} in ${data.aws_region.current.name}"
   type        = "String"
   value       = <<EOF
 
-DATABASE_ENDPOINT="${aws_db_instance.this["production"].endpoint}"
-DATABASE_INSTANCE_NAME="${aws_db_instance.this["production"].name}"
-DATABASE_USER_NAME="${aws_db_instance.this["production"].username}"
-DATABASE_PASSWORD='${random_password.this["rds"].result}'
+AWS_DEFAULT_REGION=${data.aws_region.current.name}
+VPC_ID=${aws_vpc.this.id}
+CIDR=${aws_vpc.this.cidr_block}
+SUBNET_ID=${values(aws_subnet.this).0.id}
+SECURITY_GROUP=${aws_security_group.ec2.id}
 
-ADMIN_PATH='admin_${random_string.this["admin_path"].result}'
-ADMIN_PASSWORD='${random_password.this["app"].result}'
-	
-MYSQL_PATH="mysql_${random_string.this["mysql_path"].result}"
-PROFILER="${random_string.this["profiler"].result}"
+SOURCE_AMI=${data.aws_ami.distro.id}
+VOLUME_SIZE=${var.app["volume_size"]}
 
-RABBITMQ_ENDPOINT="${trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.endpoints.0}", "amqps://"), ":5671")}"
-RABBITMQ_USER="${var.app["brand"]}"
-RABBITMQ_PASSWORD='${random_password.this["mq"].result}'
+RESOLVER=${cidrhost(aws_vpc.this.cidr_block, 2)}
+								   											
+ALB_DNS_NAME=${aws_lb.this.dns_name}
+EFS_DNS_TARGET=${values(aws_efs_mount_target.this).0.dns_name}
+SNS_TOPIC_ARN=${aws_sns_topic.default.arn}
+CODECOMMIT_APP_REPO=codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
+CODECOMMIT_SERVICES_REPO=codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name}
+RABBITMQ_ENDPOINT=${regex("amqps://(.*):5671",aws_mq_broker.this.instances.0.endpoints.0)}
+RABBITMQ_USER=${var.app["brand"]}
+RABBITMQ_PASSWORD=${random_password.this["rabbitmq"].result}
+ELASTICSEARCH_ENDPOINT=https://${aws_elasticsearch_domain.this.endpoint}:443
+REDIS_CACHE_BACKEND=${aws_elasticache_replication_group.this.primary_endpoint_address}
 
-ELASTICSEARCH_ENDPOINT="https://${aws_elasticsearch_domain.this.endpoint}:443"
-
-REDIS_CACHE_BACKEND="${aws_elasticache_replication_group.this["cache"].primary_endpoint_address}"
-REDIS_SESSION_BACKEND="${aws_elasticache_replication_group.this["session"].primary_endpoint_address}"
-REDIS_CACHE_BACKEND_RO="${aws_elasticache_replication_group.this["cache"].reader_endpoint_address}"
-REDIS_SESSION_BACKEND_RO="${aws_elasticache_replication_group.this["session"].reader_endpoint_address}"
-	
-ALB_DNS_NAME="${aws_lb.this.dns_name}"
-
-EFS_DNS_TARGET="${values(aws_efs_mount_target.this).0.dns_name}"
-
-CODECOMMIT_APP_REPO="codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
-CODECOMMIT_SERVICES_REPO="codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name}"
-	  
 SES_KEY=${aws_iam_access_key.ses_smtp_user_access_key.id}
 SES_SECRET=${aws_iam_access_key.ses_smtp_user_access_key.secret}
 SES_PASSWORD=${aws_iam_access_key.ses_smtp_user_access_key.ses_smtp_password_v4}
 
-HTTP_X_HEADER="${random_uuid.this.result}"
+DATABASE_ENDPOINT=${aws_db_instance.this.endpoint}
+DATABASE_INSTANCE_NAME=${aws_db_instance.this.name}
+DATABASE_USER_NAME=${aws_db_instance.this.username}
+DATABASE_PASSWORD=${random_password.this["rds"].result}
+
+ADMIN_PATH=admin_${random_string.this["admin_path"].result}
+ADMIN_PASSWORD=${random_password.this["app"].result}
+
+VERSION=2
+DOMAIN=${var.app["domain"]}
+STAGING_DOMAIN=${var.app["staging_domain"]}
+
+BRAND=${var.app["brand"]}
+PHP_USER=php-${var.app["brand"]}
+
+ADMIN_EMAIL=${var.app["admin_email"]}
+WEB_ROOT_PATH="/home/${var.app["brand"]}/public_html"
+TIMEZONE=${var.app["timezone"]}
+MAGENX_HEADER=${random_uuid.this.result}
+HEALTH_CHECK_LOCATION=${random_string.this["health_check"].result}
+MYSQL_PATH=mysql_${random_string.this["mysql_path"].result}
+PROFILER=${random_string.this["profiler"].result}
+BLOWFISH=${random_password.this["blowfish"].result}
+RESOLVER=${cidrhost(aws_vpc.this.cidr_block, 2)}
+
+PHP_VERSION=${var.app["php_version"]}
+PHP_INI="/etc/php/${var.app["php_version"]}/fpm/php.ini"
+PHP_FPM_POOL="/etc/php/${var.app["php_version"]}/fpm/pool.d/www.conf"
+PHP_OPCACHE_INI="/etc/php/${var.app["php_version"]}/fpm/conf.d/10-opcache.ini"
+HTTP_X_HEADER=${random_uuid.this.result}
+
+EXTRA_PACKAGES_DEB="nfs-common unzip git patch python3-pip acl attr imagemagick snmp"
+PHP_PACKAGES_DEB="cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4 apcu"
+EXCLUDE_PACKAGES_DEB="apache2* *apcu-bc"
 
 EOF
 
   tags = {
-    Name = "${var.app["brand"]}-aws-infrastructure-params"
+    Name = "${var.app["brand"]}-${data.aws_region.current.name}-env"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -1745,6 +1784,12 @@ resource "aws_wafv2_web_acl" "this" {
     allow {
     }
   }
+
+					 
+									 
+													   
+								   
+   
 
   rule {
     name = "AWSManagedRulesCommonRule"
