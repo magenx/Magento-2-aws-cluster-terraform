@@ -5,15 +5,6 @@
 
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create IP address for Packer Builder instance
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_eip" "packer" {
-  vpc  = true
-  tags = {
-    Name = "${var.app["brand"]}-packer-builder-address"
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create custom AMI with Packer Builder
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "null_resource" "packer" {
@@ -23,7 +14,6 @@ resource "null_resource" "packer" {
     command = <<EOF
 /usr/bin/packer build \
 -var VPC_ID=${aws_vpc.this.id} \
--var EIP_ALLOCATION_ID=${aws_eip.packer.allocation_id} \
 -var SOURCE_AMI=${data.aws_ami.distro.id} \
 -var VOLUME_SIZE=${var.app["volume_size"]} \
 -var INSTANCE_NAME=${each.key} \
