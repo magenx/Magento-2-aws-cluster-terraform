@@ -252,12 +252,19 @@ resource "aws_codedeploy_deployment_group" "this" {
   
   deployment_config_name = "CodeDeployDefault.AllAtOnce"
 
+  ec2_tag_set {
     ec2_tag_filter {
-      key   = "Name"
       type  = "KEY_AND_VALUE"
-      value = [aws_launch_template.this["admin"].tag_specifications[0].tags.Name,aws_launch_template.this["frontend"].tag_specifications[0].tags.Name]
+      key   = "Name"
+      value = aws_launch_template.this["admin"].tag_specifications[0].tags.Name
     }
-
+    ec2_tag_filter {
+      type  = "KEY_AND_VALUE"
+      key   = "Name"
+      value = aws_launch_template.this["frontend"].tag_specifications[0].tags.Name
+    }
+  }
+	
   trigger_configuration {
     trigger_events     = ["DeploymentFailure","DeploymentSuccess"]
     trigger_name       = "${var.app["brand"]}-${data.aws_region.current.name}-deployment-alert"
