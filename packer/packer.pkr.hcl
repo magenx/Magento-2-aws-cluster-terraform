@@ -5,8 +5,6 @@
 # regex("MYSQL_PATH=(.*)",aws_secretsmanager("env", null))
 # # ---------------------------------------------------------------------------------------------------------------------#
 variable "IAM_INSTANCE_PROFILE" {}
-variable "EIP_ALLOCATION_ID" {}
-variable "EIP_ADDRESS" {}
 variable "SUBNET_ID" {}
 variable "SECURITY_GROUP" {}
 variable "VOLUME_SIZE" {}
