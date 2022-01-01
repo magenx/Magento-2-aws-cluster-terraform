@@ -428,7 +428,7 @@ resource "aws_elasticache_replication_group" "this" {
   node_type                     = var.redis["node_type"]
   port                          = var.redis["port"]
   parameter_group_name          = aws_elasticache_parameter_group.this[each.key].id
-  security_group_ids            = [aws_security_group.this[each.key].id]
+  security_group_ids            = [aws_security_group.redis.id]
   subnet_group_name             = aws_elasticache_subnet_group.this.name
   automatic_failover_enabled    = var.redis["automatic_failover_enabled"]
   multi_az_enabled              = var.redis["multi_az_enabled"]
@@ -775,7 +775,7 @@ resource "aws_db_instance" "this" {
   password               = random_password.this["rds"].result
   parameter_group_name   = aws_db_parameter_group.this[each.key].id
   skip_final_snapshot    = var.rds["skip_final_snapshot"]
-  vpc_security_group_ids = [aws_security_group.this["rds"].id]
+  vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name   = aws_db_subnet_group.this.name
   enabled_cloudwatch_logs_exports = [var.rds["enabled_cloudwatch_logs_exports"]]
   performance_insights_enabled    = var.rds["performance_insights_enabled"]
@@ -1549,6 +1549,12 @@ resource "aws_wafv2_web_acl" "this" {
   default_action {
     allow {
     }
+  }
+	
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name = "${var.app["brand"]}-WAF-Protections"
+    sampled_requests_enabled = true
   }
 
   rule {
