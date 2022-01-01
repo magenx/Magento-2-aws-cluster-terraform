@@ -23,10 +23,12 @@ sudo usermod -g ${PHP_USER} ${BRAND}
 sudo mkdir -p ${WEB_ROOT_PATH}
 sudo chmod 711 /home/${BRAND}
 sudo mkdir -p /home/${BRAND}/{.config,.cache,.local,.composer}
-sudo chown -R ${BRAND}:${PHP_USER} ${WEB_ROOT_PATH} /home/${BRAND}/{.config,.cache,.local,.composer}
-sudo chmod 2770 ${WEB_ROOT_PATH}
+sudo chown -R ${BRAND}:${PHP_USER} ${WEB_ROOT_PATH}
+sudo chown -R ${BRAND}:${BRAND} /home/${BRAND}/{.config,.cache,.local,.composer}
+sudo chmod 2770 ${WEB_ROOT_PATH} /home/${BRAND}/{.config,.cache,.local,.composer}
 sudo setfacl -R -m u:${BRAND}:rwX,g:${PHP_USER}:r-X,o::-,d:u:${BRAND}:rwX,d:g:${PHP_USER}:r-X,d:o::- ${WEB_ROOT_PATH}
- 
+sudo setfacl -R -m u:nginx:r-X,g:nginx:r-X,d:u:nginx:r-X ${WEB_ROOT_PATH}
+
 if [ ${INSTANCE_NAME} != "staging" ]; then
   sudo sh -c "echo '${EFS_DNS_TARGET}:/production/var ${WEB_ROOT_PATH}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
   sudo sh -c "echo '${EFS_DNS_TARGET}:/production/pub/media ${WEB_ROOT_PATH}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
@@ -54,7 +56,7 @@ sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/php.list" -o Dir
 _PHP_PACKAGES_DEB+=(${PHP_PACKAGES_DEB})
 sudo apt-get -qqy install nginx php-pear php${PHP_VERSION} ${_PHP_PACKAGES_DEB[@]/#/php${PHP_VERSION}-}
  
-if [ ${INSTANCE_NAME} == "admin" ]; then
+if [[ "${INSTANCE_NAME}" =~ (admin|staging) ]]; then
 sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/internal/skip-preseed boolean true"
 sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/reconfigure-webserver multiselect"
 sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false"
@@ -204,7 +206,6 @@ sudo git checkout -t origin/nginx_${INSTANCE_NAME}
 sudo mkdir -p /etc/nginx/sites-enabled
 sudo ln -s /etc/nginx/sites-available/magento.conf /etc/nginx/sites-enabled/magento.conf
  
-sudo sed -i "s/user  nginx;/user  ${BRAND};/" /etc/nginx/nginx.conf
 sudo sed -i "s,CIDR,${CIDR}," /etc/nginx/nginx.conf
 sudo sed -i "s/HEALTH_CHECK_LOCATION/${HEALTH_CHECK_LOCATION}/" /etc/nginx/sites-available/magento.conf
 sudo sed -i "s,/var/www/html,${WEB_ROOT_PATH},g" /etc/nginx/conf.d/maps.conf
