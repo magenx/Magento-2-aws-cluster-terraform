@@ -127,6 +127,8 @@ variable "asp" {
 variable "s3" {
   description = "S3 bucket names"
   type        = set(string)
+  default     = ["media", "system", "backup", "state"]
+}
 
 variable "ec2" {
   description  = "EC2 instances names and types included in AutoScaling groups"
