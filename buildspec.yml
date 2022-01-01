@@ -1,0 +1,39 @@
+version: 0.2
+
+env:
+  shell: bash
+
+phases:
+  install:
+    runtime-versions:
+        php: ${PHP_VERSION}
+  pre_build:
+    commands:
+      - echo Running Pre-Build at $(date)
+      - php -m
+      - php -v
+  build:
+    on-failure: ABORT
+    commands:
+      - echo Build started at $(date)
+      - cd $${CODEBUILD_SRC_DIR}
+      - ls
+      - composer -n -q config -g http-basic.repo.magento.com ${COMPOSER_USER} ${COMPOSER_PASS}
+      - chmod +x bin/magento
+      - composer install --optimize-autoloader --prefer-dist --no-dev
+      - bin/magento setup:di:compile
+      - composer dump-autoload --no-dev --optimize --apcu
+      - bin/magento setup:static-content:deploy -f
+  post_build:
+    commands:
+      - git config --global user.email "${ADMIN_EMAIL}"
+      - git config --global user.name "${BRAND}"
+      - git add . -A
+      - git commit -m "$${CODEBUILD_BUILD_ID#*:} $${CODEBUILD_RESOLVED_SOURCE_VERSION}"
+      - git branch -m main
+      - git push origin main --force
+      - echo Build completed at $(date)
+artifacts:
+    files:
+      - '**/*'
+    name: ${BRAND}.zip
