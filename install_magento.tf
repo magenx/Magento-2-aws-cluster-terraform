@@ -103,6 +103,24 @@ mainSteps:
                 ],"  app/etc/env.php
       ## clean cache
       rm -rf var/cache var/page_cache
+      ## enable s3 remote storage
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set --remote-storage-driver=aws-s3 \
+      --remote-storage-bucket=${aws_s3_bucket.this["media"].bucket} \
+      --remote-storage-region=${data.aws_region.current.name} \
+      --remote-storage-key=${aws_iam_access_key.s3.id} \
+      --remote-storage-secret="${aws_iam_access_key.s3.secret}" \
+      -n"
+      ## sync to s3 remote storage
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento remote-storage:sync"
+      ## install modules to properly test magento 2 production-ready functionality
+      su ${var.app["brand"]} -s /bin/bash -c "composer -n require \
+      fooman/sameorderinvoicenumber-m2 \
+      fooman/emailattachments-m2 \
+      fooman/printorderpdf-m2 \
+      mageplaza/module-smtp \
+      magefan/module-blog \
+      stripe/stripe-payments \
+      fastly/magento2"
       ## install modules to properly test magento 2 production-ready functionality
       su ${var.app["brand"]} -s /bin/bash -c "composer -n require fooman/sameorderinvoicenumber-m2 fooman/emailattachments-m2 fooman/printorderpdf-m2 mageplaza/module-smtp magefan/module-blog stripe/stripe-payments"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade -n --no-ansi"
@@ -123,6 +141,9 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set smtp/developer/developer_mode 0"
       ## explicitly set the new catalog media url format
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/url/catalog_media_url_format image_optimization_parameters"
+      ## configure media
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/unsecure/base_media_url https://${aws_s3_bucket.this["media"].bucket_regional_domain_name}/media/"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/base_media_url https://${aws_s3_bucket.this["media"].bucket_regional_domain_name}/media/"
       ## minify js and css
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/css/minify_files 1"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/js/minify_files 1"
