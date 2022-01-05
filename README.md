@@ -152,7 +152,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] AWS WAF Protection rules  
 
 ##
-![Magento_2_Fastly_AWS_cloud_auto_scaling_terraform](https://user-images.githubusercontent.com/1591200/134822385-4c90f58f-fbbd-4e1f-8f8c-a9aac2fce7b7.png)
+![Magento_2_Fastly_AWS_cloud_auto_scaling_terraform](https://user-images.githubusercontent.com/1591200/148275348-ca136c2d-0443-466e-afb9-8b1c124ee10c.png)
 
 ## :hammer_and_wrench: Magento 2 development | source code:
 - [x] Local provisioner copy files from https://github.com/magenx/Magento-2
