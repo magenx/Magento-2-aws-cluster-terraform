@@ -1445,7 +1445,7 @@ BRAND=${var.app["brand"]}
 PHP_USER=php-${var.app["brand"]}
 
 ADMIN_EMAIL=${var.app["admin_email"]}
-WEB_ROOT_PATH="/home/${var.app["brand"]}/public_html"
+WEB_ROOT_PATH=/home/${var.app["brand"]}/public_html
 TIMEZONE=${var.app["timezone"]}
 MAGENX_HEADER=${random_uuid.this.result}
 HEALTH_CHECK_LOCATION=${random_string.this["health_check"].result}
@@ -1455,14 +1455,14 @@ BLOWFISH=${random_password.this["blowfish"].result}
 RESOLVER=${cidrhost(aws_vpc.this.cidr_block, 2)}
 
 PHP_VERSION=${var.app["php_version"]}
-PHP_INI="/etc/php/${var.app["php_version"]}/fpm/php.ini"
-PHP_FPM_POOL="/etc/php/${var.app["php_version"]}/fpm/pool.d/www.conf"
-PHP_OPCACHE_INI="/etc/php/${var.app["php_version"]}/fpm/conf.d/10-opcache.ini"
+PHP_INI=/etc/php/${var.app["php_version"]}/fpm/php.ini"
+PHP_FPM_POOL=/etc/php/${var.app["php_version"]}/fpm/pool.d/www.conf
+PHP_OPCACHE_INI=/etc/php/${var.app["php_version"]}/fpm/conf.d/10-opcache.ini
 HTTP_X_HEADER=${random_uuid.this.result}
 
-EXTRA_PACKAGES_DEB="nfs-common unzip git patch python3-pip acl attr imagemagick snmp"
-PHP_PACKAGES_DEB="cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4 apcu"
-EXCLUDE_PACKAGES_DEB="apache2* *apcu-bc"
+EXTRA_PACKAGES_DEB=nfs-common unzip git patch python3-pip acl attr imagemagick snmp
+PHP_PACKAGES_DEB=cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4 apcu
+EXCLUDE_PACKAGES_DEB=apache2* *apcu-bc
 
 EOF
 
