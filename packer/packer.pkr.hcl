@@ -2,7 +2,6 @@
 # pre-build custom ami from debian 11 arm
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Packer variables
-# regex("MYSQL_PATH=(.*)",aws_secretsmanager("env", null))
 # # ---------------------------------------------------------------------------------------------------------------------#
 variable "IAM_INSTANCE_PROFILE" {}
 variable "SUBNET_ID" {}
