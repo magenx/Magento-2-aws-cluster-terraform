@@ -27,7 +27,6 @@ sudo chown -R ${BRAND}:${PHP_USER} ${WEB_ROOT_PATH}
 sudo chown -R ${BRAND}:${BRAND} /home/${BRAND}/{.config,.cache,.local,.composer}
 sudo chmod 2770 ${WEB_ROOT_PATH} /home/${BRAND}/{.config,.cache,.local,.composer}
 sudo setfacl -R -m u:${BRAND}:rwX,g:${PHP_USER}:r-X,o::-,d:u:${BRAND}:rwX,d:g:${PHP_USER}:r-X,d:o::- ${WEB_ROOT_PATH}
-sudo setfacl -R -m u:nginx:r-X,g:nginx:r-X,d:u:nginx:r-X ${WEB_ROOT_PATH}
 
 if [ ${INSTANCE_NAME} != "staging" ]; then
   sudo sh -c "echo '${EFS_DNS_TARGET}:/production/var ${WEB_ROOT_PATH}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
@@ -40,7 +39,6 @@ fi
 sudo mkdir -p ${WEB_ROOT_PATH}/{pub/media,var}
 sudo chown -R ${BRAND}:${PHP_USER} ${WEB_ROOT_PATH}/
 sudo chmod 2770 ${WEB_ROOT_PATH}/{pub/media,var}
-sudo chmod +x ${WEB_ROOT_PATH}/bin/magento
 
 ## install nginx
 curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
@@ -55,34 +53,8 @@ sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/php.list" -o Dir
  
 _PHP_PACKAGES_DEB+=(${PHP_PACKAGES_DEB})
 sudo apt-get -qqy install nginx php-pear php${PHP_VERSION} ${_PHP_PACKAGES_DEB[@]/#/php${PHP_VERSION}-}
- 
-if [[ "${INSTANCE_NAME}" =~ (admin|staging) ]]; then
-sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/internal/skip-preseed boolean true"
-sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/reconfigure-webserver multiselect"
-sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false"
 
-sudo apt-get -qqy install composer mariadb-client phpmyadmin
- 
-sudo sh -c "cp /usr/share/phpmyadmin/config.sample.inc.php /etc/phpmyadmin/config.inc.php"
-sudo sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISH}';/" /etc/phpmyadmin/config.inc.php
-sudo sed -i "s/localhost/${DATABASE_ENDPOINT}/" /etc/phpmyadmin/config.inc.php
-sudo sed -i "s/PHPMYADMIN_PLACEHOLDER/${MYSQL_PATH}/g" /etc/nginx/conf.d/phpmyadmin.conf
-sudo sed -i "s,#include conf.d/phpmyadmin.conf;,include conf.d/phpmyadmin.conf;," /etc/nginx/sites-available/magento.conf
- 
-sudo sh -c 'cat > /etc/logrotate.d/magento <<END
-${WEB_ROOT_PATH}/var/log/*.log
-{
-su ${BRAND} ${PHP_USER}
-create 660 ${BRAND} ${PHP_USER}
-daily
-rotate 7
-notifempty
-missingok
-compress
-}
-END
-'
-fi
+sudo setfacl -R -m u:nginx:r-X,g:nginx:r-X,d:u:nginx:r-X ${WEB_ROOT_PATH}
 
 sudo sh -c "cat > /etc/sysctl.conf <<END
 fs.file-max = 1000000
@@ -203,6 +175,34 @@ sudo git fetch
 sudo git reset --hard origin/nginx_${INSTANCE_NAME}
 sudo git checkout -t origin/nginx_${INSTANCE_NAME}
 
+if [[ "${INSTANCE_NAME}" =~ (admin|staging) ]]; then
+sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/internal/skip-preseed boolean true"
+sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/reconfigure-webserver multiselect"
+sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false"
+
+sudo apt-get -qqy install composer mariadb-client phpmyadmin
+ 
+sudo sh -c "cp /usr/share/phpmyadmin/config.sample.inc.php /etc/phpmyadmin/config.inc.php"
+sudo sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISH}';/" /etc/phpmyadmin/config.inc.php
+sudo sed -i "s/localhost/${DATABASE_ENDPOINT}/" /etc/phpmyadmin/config.inc.php
+sudo sed -i "s/PHPMYADMIN_PLACEHOLDER/${MYSQL_PATH}/g" /etc/nginx/conf.d/phpmyadmin.conf
+sudo sed -i "s,#include conf.d/phpmyadmin.conf;,include conf.d/phpmyadmin.conf;," /etc/nginx/sites-available/magento.conf
+ 
+sudo sh -c 'cat > /etc/logrotate.d/magento <<END
+${WEB_ROOT_PATH}/var/log/*.log
+{
+su ${BRAND} ${PHP_USER}
+create 660 ${BRAND} ${PHP_USER}
+daily
+rotate 7
+notifempty
+missingok
+compress
+}
+END
+'
+fi
+
 sudo mkdir -p /etc/nginx/sites-enabled
 sudo ln -s /etc/nginx/sites-available/magento.conf /etc/nginx/sites-enabled/magento.conf
  
@@ -220,12 +220,11 @@ else
   sudo sed -i "s/example.com/${STAGING_DOMAIN}/g" /etc/nginx/nginx.conf
 fi
  
-sudo hostnamectl set-hostname server.${DOMAIN} --static
 sudo timedatectl set-timezone ${TIMEZONE}
  
 sudo wget https://aws-codedeploy-${AWS_DEFAULT_REGION}.s3.amazonaws.com/latest/install
 sudo chmod +x ./install
-sudo bash ./install auto
+sudo ./install auto
  
 sudo wget https://s3.${AWS_DEFAULT_REGION}.amazonaws.com/amazon-ssm-${AWS_DEFAULT_REGION}/latest/debian_arm64/amazon-ssm-agent.deb
 sudo dpkg -i amazon-ssm-agent.deb
