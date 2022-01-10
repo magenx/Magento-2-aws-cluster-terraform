@@ -11,7 +11,7 @@ INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.25
 
 ## installation
 sudo apt-get update
-sudo apt-get -qqy install ${EXTRA_PACKAGES_DEB}
+sudo apt-get -qqy install ${LINUX_PACKAGES}
 sudo pip3 install git-remote-codecommit
 
 ## create user
@@ -51,8 +51,8 @@ sudo sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > 
 sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/nginx.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/php.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
  
-_PHP_PACKAGES_DEB+=(${PHP_PACKAGES_DEB})
-sudo apt-get -qqy install nginx php-pear php${PHP_VERSION} ${_PHP_PACKAGES_DEB[@]/#/php${PHP_VERSION}-}
+_PHP_PACKAGES+=(${PHP_PACKAGES})
+sudo apt-get -qqy install nginx php-pear php${PHP_VERSION} ${_PHP_PACKAGES[@]/#/php${PHP_VERSION}-}
 
 sudo setfacl -R -m u:nginx:r-X,g:nginx:r-X,d:u:nginx:r-X ${WEB_ROOT_PATH}
 
