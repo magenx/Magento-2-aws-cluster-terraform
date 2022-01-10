@@ -420,7 +420,7 @@ resource "aws_elasticache_parameter_group" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticache_replication_group" "this" {
   for_each                      = toset(var.redis["name"])
-  number_cache_clusters         = length(values(aws_subnet.this).*.id)
+  number_cache_clusters         = var.redis["number_cache_clusters"]
   engine                        = "redis"
   engine_version                = var.redis["engine_version"]
   replication_group_id          = "${var.app["brand"]}-${each.key}-backend"
@@ -669,10 +669,13 @@ resource "aws_elasticsearch_domain" "this" {
     instance_type  = var.elk["instance_type"]
     instance_count = var.elk["instance_count"]
     
-    zone_awareness_enabled = true
-    zone_awareness_config {
-        availability_zone_count = var.elk["instance_count"]
-      }
+    zone_awareness_enabled = var.elk["instance_count"] > 1 ? true : false
+    dynamic "zone_awareness_config" {
+       for_each = var.elk["instance_count"] > 1 ? [var.elk["instance_count"]] : []
+       content {
+          availability_zone_count = var.elk["instance_count"]
+       }
+    }
   }
   ebs_options {
     ebs_enabled = var.elk["ebs_enabled"]
