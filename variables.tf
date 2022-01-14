@@ -111,6 +111,7 @@ variable "redis" {
 variable "asg" {
   description      = "Map Autoscaling Group configuration values"
   default  = {
+    warm_pool             = "disabled"
     desired_capacity      = "1"
     min_size              = "1"
     max_size              = "5"
