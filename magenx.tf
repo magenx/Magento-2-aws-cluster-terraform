@@ -632,7 +632,8 @@ resource "aws_s3_bucket_policy" "backup" {
         AWS = [
           aws_iam_role.codebuild.arn,
           aws_iam_role.codepipeline.arn,
-          aws_iam_role.codedeploy.arn
+          aws_iam_role.codedeploy.arn,
+	  aws_iam_instance_profile.ec2["admin"].arn
         ]
       }
     }
