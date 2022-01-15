@@ -500,9 +500,9 @@ resource "aws_s3_bucket" "this" {
 # Create IAM user for S3 bucket
 # # ---------------------------------------------------------------------------------------------------------------------#	  
 resource "aws_iam_user" "s3" {
-  name = "${var.app["brand"]}-s3-media-production"
+  name = "${var.app["brand"]}-s3-media"
   tags = {
-    Name = "${var.app["brand"]}-s3-media-production"
+    Name = "${var.app["brand"]}-s3-media"
   }
 }
 	  
@@ -749,20 +749,18 @@ EOF
 # Create RDS parameter groups
 # # ---------------------------------------------------------------------------------------------------------------------#		
 resource "aws_db_parameter_group" "this" {
-  for_each          = toset(var.rds["name"])
-  name              = "${var.app["brand"]}-${each.key}-parameters"
+  name              = "${var.app["brand"]}-parameters"
   family            = "mariadb10.5"
-  description       = "Parameter group for ${var.app["brand"]} ${each.key} database"
+  description       = "Parameter group for ${var.app["brand"]} database"
   tags = {
-    Name = "${var.app["brand"]}-${each.key}-parameters"
+    Name = "${var.app["brand"]}-parameters"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create RDS instance
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "this" {
-  for_each               = toset(var.rds["name"])
-  identifier             = "${var.app["brand"]}-${each.key}"
+  identifier             = "${var.app["brand"]}"
   allocated_storage      = var.rds["allocated_storage"]
   max_allocated_storage  = var.rds["max_allocated_storage"]
   storage_type           = var.rds["storage_type"] 
@@ -770,10 +768,10 @@ resource "aws_db_instance" "this" {
   engine_version         = var.rds["engine_version"]
   instance_class         = var.rds["instance_class"]
   multi_az               = var.rds["multi_az"]
-  name                   = "${var.app["brand"]}_${each.key}"
+  name                   = "${var.app["brand"]}"
   username               = var.app["brand"]
   password               = random_password.this["rds"].result
-  parameter_group_name   = aws_db_parameter_group.this[each.key].id
+  parameter_group_name   = aws_db_parameter_group.this.id
   skip_final_snapshot    = var.rds["skip_final_snapshot"]
   vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name   = aws_db_subnet_group.this.name
@@ -784,7 +782,7 @@ resource "aws_db_instance" "this" {
   delete_automated_backups        = var.rds["delete_automated_backups"]
   deletion_protection             = var.rds["deletion_protection"]
   tags = {
-    Name = "${var.app["brand"]}-${each.key}"
+    Name = "${var.app["brand"]}"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -794,7 +792,7 @@ resource "aws_db_event_subscription" "db_event_subscription" {
   name      = "${var.app["brand"]}-rds-event-subscription"
   sns_topic = aws_sns_topic.default.arn
   source_type = "db-instance"
-  source_ids = [aws_db_instance.this["production"].id]
+  source_ids = [aws_db_instance.this.id]
   event_categories = [
     "availability",
     "deletion",
@@ -826,7 +824,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.this["production"].id
+    DBInstanceIdentifier = aws_db_instance.this.id
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -846,7 +844,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_memory" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.this["production"].id
+    DBInstanceIdentifier = aws_db_instance.this.id
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -881,7 +879,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_connections_anomaly" {
       unit        = "Count"
 
       dimensions = {
-        DBInstanceIdentifier = aws_db_instance.this["production"].id
+        DBInstanceIdentifier = aws_db_instance.this.id
       }
     }
   }
@@ -903,7 +901,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_max_connections" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.this["production"].id
+    DBInstanceIdentifier = aws_db_instance.this.id
   }
 }
 
@@ -1085,9 +1083,9 @@ resource "aws_ssm_parameter" "env" {
 "SES_KEY" : "${aws_iam_access_key.ses_smtp_user_access_key.id}",
 "SES_SECRET" : "${aws_iam_access_key.ses_smtp_user_access_key.secret}",
 "SES_PASSWORD" : "${aws_iam_access_key.ses_smtp_user_access_key.ses_smtp_password_v4}",
-"DATABASE_ENDPOINT" : "${aws_db_instance.this["production"].endpoint}",
-"DATABASE_INSTANCE_NAME" : "${aws_db_instance.this["production"].name}",
-"DATABASE_USER_NAME" : "${aws_db_instance.this["production"].username}",
+"DATABASE_ENDPOINT" : "${aws_db_instance.this.endpoint}",
+"DATABASE_INSTANCE_NAME" : "${aws_db_instance.this.name}",
+"DATABASE_USER_NAME" : "${aws_db_instance.this.username}",
 "DATABASE_PASSWORD" : "${random_password.this["rds"].result}",
 "ADMIN_PATH" : "admin_${random_string.this["admin_path"].result}",
 "ADMIN_PASSWORD" : "${random_password.this["app"].result}",
