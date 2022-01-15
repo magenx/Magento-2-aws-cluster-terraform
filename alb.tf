@@ -122,22 +122,6 @@ resource "aws_lb_listener_rule" "mysql" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for Load Balancer - forward to staging
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "staging" {
-  listener_arn = aws_lb_listener.default.arn
-  priority     = 40
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this["staging"].arn
-  }
-  condition {
-    host_header {
-	values = [var.app["staging_domain"]]
-    }
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch HTTP 5XX metrics and email alerts
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "httpcode_target_5xx_count" {
