@@ -15,7 +15,7 @@ _TIMER_USER_DATA_START="$(date +%T)"
 if [ $(stat -f -L -c %T ${WEB_ROOT_PATH}/pub/media) != "nfs" ]; then
 mkdir -p /mnt/efs
 mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${EFS_DNS_TARGET}:/ /mnt/efs
-mkdir -p /mnt/efs/{production,staging,build}/{var,pub/media}
+mkdir -p /mnt/efs/data/{var,pub/media}
 chown -R ${BRAND}:${PHP_USER} /mnt/efs/
 find /mnt/efs -type d -exec chmod 2770 {} \;
 umount /mnt/efs
@@ -23,10 +23,10 @@ mount -a
 fi
 
 cd ${WEB_ROOT_PATH}
-su ${BRAND} -s /bin/bash -c "git init -b %{ if "${INSTANCE_NAME}" != "staging" }main%{ else }staging%{ endif }"
+su ${BRAND} -s /bin/bash -c "git init -b main"
 su ${BRAND} -s /bin/bash -c "git remote add origin ${CODECOMMIT_APP_REPO}"
-su ${BRAND} -s /bin/bash -c "git fetch origin %{ if "${INSTANCE_NAME}" != "staging" }main%{ else }staging%{ endif }"
-su ${BRAND} -s /bin/bash -c "git reset origin/%{ if "${INSTANCE_NAME}" != "staging" }main%{ else }staging%{ endif } --hard"
+su ${BRAND} -s /bin/bash -c "git fetch origin main"
+su ${BRAND} -s /bin/bash -c "git reset origin/main --hard"
 
 sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/magento.conf
 systemctl restart nginx
