@@ -112,14 +112,14 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 <br />
 
 ## Complete setup:
- `4` autoscaling groups with launch templates converted from `user_data`  
- `3` target groups for load balancer (frontend admin staging)  
+ `2` autoscaling groups with launch templates converted from `user_data`  
+ `2` target groups for load balancer (frontend admin)  
  `1` load balancer external with listeners / rules  
- `2` rds mariadb databases multi AZ production, single AZ staging  
+ `1` rds mariadb databases multi AZ
  `1` elasticsearch domain for Magento catalog search  
  `2` redis elasticache cluster for sessions and cache  
  `1` rabbitmq broker to manage queue messages  
- `2` s3 buckets for [media] [system] and [backup] with access policy  
+ `3` s3 buckets for [media] [system] and [backup] with access policy  
  `2` codecommit app files repository and services config files repository  
  `1` codepipeline for codebuild project to deploy code  
  `1` efs file system for shared folders, with mount target per AZ  
