@@ -28,13 +28,8 @@ sudo chown -R ${BRAND}:${BRAND} /home/${BRAND}/{.config,.cache,.local,.composer}
 sudo chmod 2770 ${WEB_ROOT_PATH} /home/${BRAND}/{.config,.cache,.local,.composer}
 sudo setfacl -R -m u:${BRAND}:rwX,g:${PHP_USER}:r-X,o::-,d:u:${BRAND}:rwX,d:g:${PHP_USER}:r-X,d:o::- ${WEB_ROOT_PATH}
 
-if [ ${INSTANCE_NAME} != "staging" ]; then
-  sudo sh -c "echo '${EFS_DNS_TARGET}:/production/var ${WEB_ROOT_PATH}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
-  sudo sh -c "echo '${EFS_DNS_TARGET}:/production/pub/media ${WEB_ROOT_PATH}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
-else
-  sudo sh -c "echo '${EFS_DNS_TARGET}:/staging/var ${WEB_ROOT_PATH}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
-  sudo sh -c "echo '${EFS_DNS_TARGET}:/staging/pub/media ${WEB_ROOT_PATH}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
-fi
+sudo sh -c "echo '${EFS_DNS_TARGET}:/data/var ${WEB_ROOT_PATH}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
+sudo sh -c "echo '${EFS_DNS_TARGET}:/data/pub/media ${WEB_ROOT_PATH}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
 
 sudo mkdir -p ${WEB_ROOT_PATH}/{pub/media,var}
 sudo chown -R ${BRAND}:${PHP_USER} ${WEB_ROOT_PATH}/
@@ -175,7 +170,7 @@ sudo git fetch
 sudo git reset --hard origin/nginx_${INSTANCE_NAME}
 sudo git checkout -t origin/nginx_${INSTANCE_NAME}
 
-if [[ "${INSTANCE_NAME}" =~ (admin|staging) ]]; then
+if [ "${INSTANCE_NAME}" == "admin" ]; then
 sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/internal/skip-preseed boolean true"
 sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/reconfigure-webserver multiselect"
 sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false"
@@ -212,13 +207,8 @@ sudo sed -i "s,/var/www/html,${WEB_ROOT_PATH},g" /etc/nginx/conf.d/maps.conf
 sudo sed -i "s/PROFILER_PLACEHOLDER/${PROFILER}/" /etc/nginx/conf.d/maps.conf
 sudo sh -c "echo '' > /etc/nginx/conf.d/default.conf"
  
-if [ ${INSTANCE_NAME} != "staging" ]; then
-  sudo sed -i "s/example.com/${DOMAIN}/g" /etc/nginx/sites-available/magento.conf
-  sudo sed -i "s/example.com/${DOMAIN}/g" /etc/nginx/nginx.conf
-else
-  sudo sed -i "s/example.com/${STAGING_DOMAIN}/g" /etc/nginx/sites-available/magento.conf
-  sudo sed -i "s/example.com/${STAGING_DOMAIN}/g" /etc/nginx/nginx.conf
-fi
+sudo sed -i "s/example.com/${DOMAIN}/g" /etc/nginx/sites-available/magento.conf
+sudo sed -i "s/example.com/${DOMAIN}/g" /etc/nginx/nginx.conf
  
 sudo timedatectl set-timezone ${TIMEZONE}
  
