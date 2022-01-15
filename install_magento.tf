@@ -30,9 +30,9 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:install \
       --base-url=https://${var.app["domain"]}/ \
       --base-url-secure=https://${var.app["domain"]}/ \
-      --db-host=${aws_db_instance.this["production"].endpoint} \
-      --db-name=${aws_db_instance.this["production"].name} \
-      --db-user=${aws_db_instance.this["production"].username} \
+      --db-host=${aws_db_instance.this.endpoint} \
+      --db-name=${aws_db_instance.this.name} \
+      --db-user=${aws_db_instance.this.username} \
       --db-password='${random_password.this["rds"].result}' \
       --admin-firstname=${var.app["brand"]} \
       --admin-lastname=${var.app["brand"]} \
