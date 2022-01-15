@@ -145,7 +145,6 @@ data "template_file" "user_data" {
   CODECOMMIT_APP_REPO = "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
   CODECOMMIT_SERVICES_REPO = "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name}"
   DOMAIN = "${var.app["domain"]}"
-  STAGING_DOMAIN = "${var.app["staging_domain"]}"
   BRAND = "${var.app["brand"]}"
   PHP_USER = "php-${var.app["brand"]}"
   WEB_ROOT_PATH = "/home/${var.app["brand"]}/public_html"
