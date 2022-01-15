@@ -259,9 +259,6 @@ resource "aws_codecommit_repository" "services" {
 
           git branch -m nginx_frontend
           git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_frontend
-		  
-          git branch -m nginx_staging
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_staging
           rm -rf .git
 EOF
   }
@@ -347,7 +344,7 @@ resource "aws_iam_role_policy" "codecommit_access" {
       Resource = aws_codecommit_repository.app.arn
       Condition = {
                 StringEqualsIfExists = {
-                    "codecommit:References" = [(each.key == "admin" || each.key == "frontend" ? "refs/heads/main" : (each.key == "staging" ? "refs/heads/staging" : "refs/heads/build"))]
+                    "codecommit:References" = ["refs/heads/main"]
     }
    }
 },
@@ -771,8 +768,8 @@ resource "aws_db_instance" "this" {
   storage_type           = var.rds["storage_type"] 
   engine                 = var.rds["engine"]
   engine_version         = var.rds["engine_version"]
-  instance_class         = (each.key == "staging" ? var.rds["instance_class_staging"] : var.rds["instance_class"])
-  multi_az               = (each.key == "staging" ? "false" : var.rds["multi_az"])
+  instance_class         = var.rds["instance_class"]
+  multi_az               = var.rds["multi_az"]
   name                   = "${var.app["brand"]}_${each.key}"
   username               = var.app["brand"]
   password               = random_password.this["rds"].result
@@ -1096,7 +1093,6 @@ resource "aws_ssm_parameter" "env" {
 "ADMIN_PASSWORD" : "${random_password.this["app"].result}",
 "VERSION" : "${var.app["app_version"]}",
 "DOMAIN" : "${var.app["domain"]}",
-"STAGING_DOMAIN" : "${var.app["staging_domain"]}",
 "BRAND" : "${var.app["brand"]}",
 "PHP_USER" : "php-${var.app["brand"]}",
 "ADMIN_EMAIL" : "${var.app["admin_email"]}",
@@ -1142,7 +1138,7 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
                 "log_group_name": "${var.app["brand"]}_nginx_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
             },
-            %{ if each.key == "admin" || each.key == "staging" ~}
+            %{ if each.key == "admin" ~}
             {
                 "file_path": "/home/${var.app["brand"]}/public_html/var/log/php-fpm-error.log",
                 "log_group_name": "${var.app["brand"]}_php_app_error_logs",
