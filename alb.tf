@@ -148,8 +148,8 @@ resource "aws_cloudwatch_metric_alarm" "httpcode_target_5xx_count" {
   namespace           = "AWS/ApplicationELB"
   period              = 300
   statistic           = "Sum"
-  threshold           = "25"
-  alarm_description   = "HTTPCode 5XX count for frontend instances over 25"
+  threshold           = var.alb["5xx_threshold"]
+  alarm_description   = "HTTPCode 5XX count for frontend instances over ${var.alb["5xx_threshold"]}"
   alarm_actions       = ["${aws_sns_topic.default.arn}"]
   ok_actions          = ["${aws_sns_topic.default.arn}"]
   
@@ -169,8 +169,8 @@ resource "aws_cloudwatch_metric_alarm" "httpcode_elb_5xx_count" {
   namespace           = "AWS/ApplicationELB"
   period              = 300
   statistic           = "Sum"
-  threshold           = "25"
-  alarm_description   = "HTTPCode 5XX count for loadbalancer over 25"
+  threshold           = var.alb["5xx_threshold"]
+  alarm_description   = "HTTPCode 5XX count for loadbalancer over ${var.alb["5xx_threshold"]}"
   alarm_actions       = ["${aws_sns_topic.default.arn}"]
   ok_actions          = ["${aws_sns_topic.default.arn}"]
   
@@ -189,8 +189,8 @@ resource "aws_cloudwatch_metric_alarm" "alb_rps" {
   namespace           = "AWS/ApplicationELB"
   period              = "120"
   statistic           = "Sum"
-  threshold           = "5000"
-  alarm_description   = "The number of requests processed over 2 minutes greater than 5000"
+  threshold           = var.alb["rps_threshold"]
+  alarm_description   = "The number of requests processed over 2 minutes greater than ${var.alb["rps_threshold"]}"
   alarm_actions       = ["${aws_sns_topic.default.arn}"]
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
