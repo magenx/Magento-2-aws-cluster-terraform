@@ -130,6 +130,14 @@ variable "asp" {
   }
 }
 
+variable "alb" {
+  description      = "Map Application Load Balancer configuration values"
+  default  = {
+    rps_threshold       = "5000"
+    5xx_threshold       = "25"
+  }
+}
+
 variable "s3" {
   description = "S3 bucket names"
   type        = set(string)
