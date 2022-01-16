@@ -146,7 +146,8 @@ variable "ec2_instance_profile_policy" {
   type        = set(string)
   default     = [
   "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
-  "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+  "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
   ]
 }
 
