@@ -19,7 +19,12 @@ variable "app" {
     currency         = "EUR"
     timezone         = "UTC"
     php_version      = "7.4"
+    php_packages     = "cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4 apcu"
+    linux_packages   = "nfs-common unzip git patch python3-pip acl attr imagemagick snmp"
+    exclude_linux_packages = "apache2* *apcu-bc"
     volume_size      = "50"
+    composer_user    = "8c681734f22763b50ea0c29dff9e7af2"
+    composer_pass    = "02dfee497e669b5db1fe1c8d481d6974"
   }
 }
 
@@ -102,6 +107,7 @@ variable "redis" {
 variable "asg" {
   description      = "Map Autoscaling Group configuration values"
   default  = {
+    warm_pool             = "disabled"
     desired_capacity      = "1"
     min_size              = "1"
     max_size              = "5"
@@ -127,10 +133,11 @@ variable "s3" {
 }
 
 variable "alb" {
-  description = "Application Load Balancer names and type"
+  description = "Application Load Balancer configuration values"
   default     = {
-    outer     = false
-    inner     = true
+    type               = ["inner","outer"]
+    rps_threshold      = "5000"
+    error_threshold    = "25"
     }
 }
 
