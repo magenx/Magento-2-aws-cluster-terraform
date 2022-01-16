@@ -167,38 +167,6 @@ resource "aws_sns_topic_subscription" "default" {
 
 
 
-///////////////////////////////////////////////////////[ SECURITY GROUPS ]////////////////////////////////////////////////
-
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create Security Groups
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group" "this" {
-  for_each    = local.security_group
-  name        = "${var.app["brand"]}-${each.key}"
-  description = "${each.key} security group"
-  vpc_id      = aws_vpc.this.id
-  
-    tags = {
-    Name = "${var.app["brand"]}-${each.key}"
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create Security Rules for Security Groups
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group_rule" "this" {
-   for_each =  local.security_rule
-      type             = lookup(each.value, "type", null)
-      description      = lookup(each.value, "description", null)
-      from_port        = lookup(each.value, "from_port", null)
-      to_port          = lookup(each.value, "to_port", null)
-      protocol         = lookup(each.value, "protocol", null)
-      cidr_blocks      = lookup(each.value, "cidr_blocks", null)
-      source_security_group_id = lookup(each.value, "source_security_group_id", null)
-      security_group_id = each.value.security_group_id
-    }
-
-
-
 ///////////////////////////////////////////////////[ AWS CERTIFICATE MANAGER ]////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -238,7 +206,7 @@ resource "aws_efs_mount_target" "this" {
   for_each        = aws_subnet.this
   file_system_id  = aws_efs_file_system.this.id
   subnet_id       = aws_subnet.this[each.key].id
-  security_groups = [aws_security_group.this["efs"].id]
+  security_groups = [aws_security_group.efs.id]
 }
 
 
@@ -527,7 +495,7 @@ resource "aws_mq_broker" "this" {
   engine_type        = "RabbitMQ"
   engine_version     = var.rabbitmq["engine_version"]
   host_instance_type = var.rabbitmq["host_instance_type"]
-  security_groups    = [aws_security_group.this["rabbitmq"].id]
+  security_groups    = [aws_security_group.rabbitmq.id]
   subnet_ids         = [values(aws_subnet.this).0.id]
   user {
     username = var.app["brand"]
@@ -571,7 +539,7 @@ resource "aws_elasticache_replication_group" "this" {
   node_type                     = var.redis["node_type"]
   port                          = var.redis["port"]
   parameter_group_name          = aws_elasticache_parameter_group.this[each.key].id
-  security_group_ids            = [aws_security_group.this[each.key].id]
+  security_group_ids            = [aws_security_group.redis.id]
   subnet_group_name             = aws_elasticache_subnet_group.this.name
   automatic_failover_enabled    = var.redis["automatic_failover_enabled"]
   multi_az_enabled              = var.redis["multi_az_enabled"]
@@ -781,7 +749,7 @@ resource "aws_elasticsearch_domain" "this" {
   }
   vpc_options {
     subnet_ids = slice(values(aws_subnet.this).*.id, 0, var.elk["instance_count"])
-    security_group_ids = [aws_security_group.this["elk"].id]
+    security_group_ids = [aws_security_group.elk.id]
   }
   tags = {
     Name = "${var.app["brand"]}-${var.elk["domain_name"]}"
@@ -861,7 +829,6 @@ resource "aws_db_parameter_group" "this" {
 # Create RDS instance
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "this" {
-  for_each               = var.rds["name"]
   identifier             = "${var.app["brand"]}"
   allocated_storage      = var.rds["allocated_storage"]
   max_allocated_storage  = var.rds["max_allocated_storage"]
@@ -875,7 +842,7 @@ resource "aws_db_instance" "this" {
   password               = random_password.this["rds"].result
   parameter_group_name   = aws_db_parameter_group.this.id
   skip_final_snapshot    = var.rds["skip_final_snapshot"]
-  vpc_security_group_ids = [aws_security_group.this["rds"].id]
+  vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name   = aws_db_subnet_group.this.name
   enabled_cloudwatch_logs_exports = [var.rds["enabled_cloudwatch_logs_exports"]]
   performance_insights_enabled    = var.rds["performance_insights_enabled"]
@@ -1131,54 +1098,68 @@ resource "aws_ses_event_destination" "cloudwatch" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Parameter store for aws params
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_parameter" "infrastructure_params" {
-  name        = "${var.app["brand"]}-aws-infrastructure-params"
-  description = "Parameters for AWS infrastructure"
+resource "aws_ssm_parameter" "env" {
+  name        = "${var.app["brand"]}-${data.aws_region.current.name}-env"
+  description = "Environment variables for ${var.app["brand"]} in ${data.aws_region.current.name}"
   type        = "String"
   value       = <<EOF
-
-DATABASE_ENDPOINT="${aws_db_instance.this.endpoint}"
-DATABASE_INSTANCE_NAME="${aws_db_instance.this.name}"
-DATABASE_USER_NAME="${aws_db_instance.this.username}"
-DATABASE_PASSWORD='${random_password.this["rds"].result}'
-
-ADMIN_PATH='admin_${random_string.this["admin_path"].result}'
-ADMIN_PASSWORD='${random_password.this["app"].result}'
-	
-MYSQL_PATH="mysql_${random_string.this["mysql_path"].result}"
-PROFILER="${random_string.this["profiler"].result}"
-
-RABBITMQ_ENDPOINT="${trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.endpoints.0}", "amqps://"), ":5671")}"
-RABBITMQ_USER="${var.app["brand"]}"
-RABBITMQ_PASSWORD='${random_password.this["rabbitmq"].result}'
-
-ELASTICSEARCH_ENDPOINT="https://${aws_elasticsearch_domain.this.endpoint}:443"
-
-REDIS_CACHE_BACKEND="${aws_elasticache_replication_group.this["cache"].primary_endpoint_address}"
-REDIS_SESSION_BACKEND="${aws_elasticache_replication_group.this["session"].primary_endpoint_address}"
-REDIS_CACHE_BACKEND_RO="${aws_elasticache_replication_group.this["cache"].reader_endpoint_address}"
-REDIS_SESSION_BACKEND_RO="${aws_elasticache_replication_group.this["session"].reader_endpoint_address}"
-	
-OUTER_ALB_DNS_NAME="${aws_lb.this["outer"].dns_name}"
-INNER_ALB_DNS_NAME="${aws_lb.this["inner"].dns_name}"
-
-CLOUDFRONT_ADDRESS=${aws_cloudfront_distribution.this.domain_name}
-
-EFS_DNS_TARGET="${values(aws_efs_mount_target.this).0.dns_name}"
-
-CODECOMMIT_APP_REPO="codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
-CODECOMMIT_SERVICES_REPO="codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name}"
-	  
-SES_KEY=${aws_iam_access_key.ses_smtp_user_access_key.id}
-SES_SECRET=${aws_iam_access_key.ses_smtp_user_access_key.secret}
-SES_PASSWORD=${aws_iam_access_key.ses_smtp_user_access_key.ses_smtp_password_v4}
-
-HTTP_X_HEADER="${random_uuid.this.result}"
-
+{
+"AWS_DEFAULT_REGION" : "${data.aws_region.current.name}",
+"VPC_ID" : "${aws_vpc.this.id}",
+"CIDR" : "${aws_vpc.this.cidr_block}",
+"SUBNET_ID" : "${values(aws_subnet.this).0.id}",
+"SECURITY_GROUP" : "${aws_security_group.ec2.id}",
+"SOURCE_AMI" : "${data.aws_ami.distro.id}",
+"VOLUME_SIZE" : "${var.app["volume_size"]}",
+"EFS_DNS_TARGET" : "${values(aws_efs_mount_target.this).0.dns_name}",
+"SNS_TOPIC_ARN" : "${aws_sns_topic.default.arn}",
+"CODECOMMIT_APP_REPO" : "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}",
+"CODECOMMIT_SERVICES_REPO" : "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name}",
+"RABBITMQ_ENDPOINT" : "${trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.endpoints.0}", "amqps://"), ":5671")}",
+"RABBITMQ_USER" : "${var.app["brand"]}",
+"RABBITMQ_PASSWORD" : "${random_password.this["rabbitmq"].result}",
+"ELASTICSEARCH_ENDPOINT" : "https://${aws_elasticsearch_domain.this.endpoint}:443",
+"REDIS_CACHE_BACKEND" : "${aws_elasticache_replication_group.this["cache"].primary_endpoint_address}",
+"REDIS_SESSION_BACKEND" : "${aws_elasticache_replication_group.this["session"].primary_endpoint_address}",
+"REDIS_CACHE_BACKEND_RO" : "${aws_elasticache_replication_group.this["cache"].reader_endpoint_address}",
+"REDIS_SESSION_BACKEND_RO" : "${aws_elasticache_replication_group.this["session"].reader_endpoint_address}",
+"OUTER_ALB_DNS_NAME" : "${aws_lb.this["outer"].dns_name}",
+"INNER_ALB_DNS_NAME" : "${aws_lb.this["inner"].dns_name}",
+"SES_KEY" : "${aws_iam_access_key.ses_smtp_user_access_key.id}",
+"SES_SECRET" : "${aws_iam_access_key.ses_smtp_user_access_key.secret}",
+"SES_PASSWORD" : "${aws_iam_access_key.ses_smtp_user_access_key.ses_smtp_password_v4}",
+"DATABASE_ENDPOINT" : "${aws_db_instance.this.endpoint}",
+"DATABASE_INSTANCE_NAME" : "${aws_db_instance.this.name}",
+"DATABASE_USER_NAME" : "${aws_db_instance.this.username}",
+"DATABASE_PASSWORD" : "${random_password.this["rds"].result}",
+"ADMIN_PATH" : "admin_${random_string.this["admin_path"].result}",
+"ADMIN_PASSWORD" : "${random_password.this["app"].result}",
+"VERSION" : "${var.app["app_version"]}",
+"DOMAIN" : "${var.app["domain"]}",
+"BRAND" : "${var.app["brand"]}",
+"PHP_USER" : "php-${var.app["brand"]}",
+"ADMIN_EMAIL" : "${var.app["admin_email"]}",
+"WEB_ROOT_PATH" : "/home/${var.app["brand"]}/public_html",
+"TIMEZONE" : "${var.app["timezone"]}",
+"MAGENX_HEADER" : "${random_uuid.this.result}",
+"HEALTH_CHECK_LOCATION" : "${random_string.this["health_check"].result}",
+"MYSQL_PATH" : "mysql_${random_string.this["mysql_path"].result}",
+"PROFILER" : "${random_string.this["profiler"].result}",
+"BLOWFISH" : "${random_password.this["blowfish"].result}",
+"RESOLVER" : "${cidrhost(aws_vpc.this.cidr_block, 2)}",
+"PHP_VERSION" : "${var.app["php_version"]}",
+"PHP_INI" : "/etc/php/${var.app["php_version"]}/fpm/php.ini",
+"PHP_FPM_POOL" : "/etc/php/${var.app["php_version"]}/fpm/pool.d/www.conf",
+"PHP_OPCACHE_INI" : "/etc/php/${var.app["php_version"]}/fpm/conf.d/10-opcache.ini",
+"HTTP_X_HEADER" : "${random_uuid.this.result}",
+"LINUX_PACKAGES" : "${var.app["linux_packages"]}",
+"PHP_PACKAGES" : "${var.app["php_packages"]}",
+"EXCLUDE_LINUX_PACKAGES" : "${var.app["exclude_linux_packages"]}"
+}
 EOF
 
   tags = {
-    Name = "${var.app["brand"]}-aws-infrastructure-params"
+    Name = "${var.app["brand"]}-${data.aws_region.current.name}-env"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
