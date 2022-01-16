@@ -1068,7 +1068,7 @@ resource "aws_ssm_parameter" "env" {
 "SUBNET_ID" : "${values(aws_subnet.this).0.id}",
 "SECURITY_GROUP" : "${aws_security_group.ec2.id}",
 "SOURCE_AMI" : "${data.aws_ami.distro.id}",
-"VOLUME_SIZE" : "${var.app["volume_size"]}							   											",
+"VOLUME_SIZE" : "${var.app["volume_size"]}",
 "ALB_DNS_NAME" : "${aws_lb.this.dns_name}",
 "EFS_DNS_TARGET" : "${values(aws_efs_mount_target.this).0.dns_name}",
 "SNS_TOPIC_ARN" : "${aws_sns_topic.default.arn}",
