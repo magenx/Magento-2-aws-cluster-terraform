@@ -1103,7 +1103,7 @@ resource "aws_ssm_parameter" "env" {
 "BLOWFISH" : "${random_password.this["blowfish"].result}",
 "RESOLVER" : "${cidrhost(aws_vpc.this.cidr_block, 2)}",
 "PHP_VERSION" : "${var.app["php_version"]}",
-"PHP_INI" : "/etc/php/${var.app["php_version"]}/fpm/php.ini"",
+"PHP_INI" : "/etc/php/${var.app["php_version"]}/fpm/php.ini",
 "PHP_FPM_POOL" : "/etc/php/${var.app["php_version"]}/fpm/pool.d/www.conf",
 "PHP_OPCACHE_INI" : "/etc/php/${var.app["php_version"]}/fpm/conf.d/10-opcache.ini",
 "HTTP_X_HEADER" : "${random_uuid.this.result}",
