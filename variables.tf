@@ -83,7 +83,7 @@ variable "max_connection_count" {
   }
 }
       
-variable "mq" {
+variable "rabbitmq" {
   description      = "Map RabbitMQ configuration values"
   default  = {
     broker_name            = "queue"
