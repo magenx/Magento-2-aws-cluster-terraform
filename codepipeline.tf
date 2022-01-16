@@ -493,6 +493,6 @@ resource "aws_cloudwatch_event_target" "codecommit_main" {
  
 run_command_targets {
     key    = "tag:Name"
-    values = [aws_launch_template.this["admin"].tag_specifications[0].tags.Name,aws_launch_template.this["frontend"].tag_specifications[0].tags.Name]
+    values = values(aws_launch_template.this)[*].tag_specifications[0].tags.Name
   }
 }
