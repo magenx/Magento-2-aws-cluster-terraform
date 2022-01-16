@@ -178,7 +178,7 @@ resource "aws_security_group_rule" "ec2_http_outer" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.alb["outer_alb"].id
+    source_security_group_id = aws_security_group.outer_alb.id
     security_group_id = aws_security_group.ec2.id
     }
 
@@ -188,7 +188,7 @@ resource "aws_security_group_rule" "ec2_http_inner" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.alb["inner_alb"].id
+    source_security_group_id = aws_security_group.inner_alb.id
     security_group_id = aws_security_group.ec2.id
     }
 
