@@ -212,6 +212,7 @@ sudo sed -i "s/example.com/${DOMAIN}/g" /etc/nginx/nginx.conf
  
 sudo timedatectl set-timezone ${TIMEZONE}
  
+cd /tmp
 sudo wget https://aws-codedeploy-${AWS_DEFAULT_REGION}.s3.amazonaws.com/latest/install
 sudo chmod +x ./install
 sudo ./install auto
