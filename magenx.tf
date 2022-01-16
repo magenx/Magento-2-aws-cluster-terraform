@@ -35,7 +35,7 @@ resource "random_uuid" "this" {
 # Generate random passwords
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "this" {
-  for_each         = toset(["rds", "mq", "app", "blowfish"])
+  for_each         = toset(["rds", "rabbitmq", "app", "blowfish"])
   length           = (each.key == "blowfish" ? 32 : 16)
   lower            = true
   upper            = true
@@ -523,18 +523,18 @@ resource "aws_iam_instance_profile" "ec2" {
 # Create RabbitMQ - queue message broker
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_mq_broker" "this" {
-  broker_name = "${var.app["brand"]}-${var.mq["broker_name"]}"
+  broker_name = "${var.app["brand"]}-${var.rabbitmq["broker_name"]}"
   engine_type        = "RabbitMQ"
-  engine_version     = var.mq["engine_version"]
-  host_instance_type = var.mq["host_instance_type"]
-  security_groups    = [aws_security_group.this["mq"].id]
+  engine_version     = var.rabbitmq["engine_version"]
+  host_instance_type = var.rabbitmq["host_instance_type"]
+  security_groups    = [aws_security_group.this["rabbitmq"].id]
   subnet_ids         = [values(aws_subnet.this).0.id]
   user {
     username = var.app["brand"]
-    password = random_password.this["mq"].result
+    password = random_password.this["rabbitmq"].result
   }
   tags = {
-    Name   = "${var.app["brand"]}-${var.mq["broker_name"]}"
+    Name   = "${var.app["brand"]}-${var.rabbitmq["broker_name"]}"
   }
 }
 
@@ -1150,7 +1150,7 @@ PROFILER="${random_string.this["profiler"].result}"
 
 RABBITMQ_ENDPOINT="${trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.endpoints.0}", "amqps://"), ":5671")}"
 RABBITMQ_USER="${var.app["brand"]}"
-RABBITMQ_PASSWORD='${random_password.this["mq"].result}'
+RABBITMQ_PASSWORD='${random_password.this["rabbitmq"].result}'
 
 ELASTICSEARCH_ENDPOINT="https://${aws_elasticsearch_domain.this.endpoint}:443"
 
