@@ -15,7 +15,7 @@ resource "aws_launch_template" "this" {
   monitoring { enabled = false }
   network_interfaces { 
     associate_public_ip_address = true
-    security_groups = [aws_security_group.this["ec2"].id]
+    security_groups = [aws_security_group.ec2.id]
   }
   tag_specifications {
     resource_type = "instance"
