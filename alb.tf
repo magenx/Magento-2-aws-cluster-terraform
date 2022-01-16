@@ -12,11 +12,11 @@ resource "aws_lb" "this" {
   internal           = (each.key == "inner" ? true : false)
   load_balancer_type = "application"
   drop_invalid_header_fields = true
-  security_groups    = [aws_security_group.this[each.key].id]
+  security_groups    = [aws_security_group.alb[each.key].id]
   subnets            = values(aws_subnet.this).*.id
   access_logs {
     bucket  = aws_s3_bucket.this["system"].bucket
-    prefix  = "${var.app["brand"]}-alb"
+    prefix  = "${var.app["brand"]}-${each.key}-alb"
     enabled = true
   }
   tags = {
