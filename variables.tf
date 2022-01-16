@@ -131,7 +131,7 @@ variable "alb" {
   description      = "Map Application Load Balancer configuration values"
   default  = {
     rps_threshold       = "5000"
-    5xx_threshold       = "25"
+    error_threshold     = "25"
   }
 }
 
