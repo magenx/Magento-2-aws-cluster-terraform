@@ -99,51 +99,55 @@ data "aws_ami" "distro" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Get AMI image_id generated from manifest with external data script
+# # ---------------------------------------------------------------------------------------------------------------------#
+data "external" "packer" {
+   depends_on = [null_resource.packer]
+   for_each = var.ec2
+   program = ["/bin/bash", "${abspath(path.root)}/packer/ami_id.sh"] 
+   query = {
+    INSTANCE_NAME = each.key
+  }
+ }
+# # ---------------------------------------------------------------------------------------------------------------------#
+#  Get IP address where Packer Builder is running to add to EC2 security group to allow ssh access
+# # ---------------------------------------------------------------------------------------------------------------------#
+data "http" "packer" {
+  url = "https://ifconfig.co/json"
+  request_headers = {
+    Accept = "application/json"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create buildspec.yml template for CodeBuild
+# # ---------------------------------------------------------------------------------------------------------------------#
+data "template_file" "buildspec" {
+  template = file("${abspath(path.root)}/codepipeline/buildspec.yml")
+  vars = {
+  COMPOSER_USER = "${var.app["composer_user"]}"
+  COMPOSER_PASS = "${var.app["composer_pass"]}"
+  PHP_VERSION = "${var.app["php_version"]}"
+  BRAND = "${var.app["brand"]}"
+  ADMIN_EMAIL = "${var.app["admin_email"]}"
+  CODECOMMIT_APP_REPO = "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Variables for user_data templates generation
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "template_file" "user_data" {
-for_each = var.ec2
-template = file("./user_data/${each.key}")
-
-vars = {
-  
-INSTANCE_NAME = "${each.key}"
-CIDR = "${aws_vpc.this.cidr_block}"
-RESOLVER = "${cidrhost(aws_vpc.this.cidr_block, 2)}"
-AWS_DEFAULT_REGION = "${data.aws_region.current.name}"
-
-ALB_DNS_NAME = "${aws_lb.this["inner"].dns_name}"
-EFS_DNS_TARGET = "${values(aws_efs_mount_target.this).0.dns_name}"
-  
-DATABASE_ENDPOINT = "${aws_db_instance.this["production"].endpoint}"
-  
-SNS_TOPIC_ARN = "${aws_sns_topic.default.arn}"
-  
-CODECOMMIT_APP_REPO = "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
-CODECOMMIT_SERVICES_REPO = "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name}"
-  
-EXTRA_PACKAGES_DEB = "nfs-common unzip git patch python3-pip acl attr imagemagick snmp"
-PHP_PACKAGES_DEB = "cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4 apcu"
-EXCLUDE_PACKAGES_DEB = "apache2* *apcu-bc"
-
-PHP_VERSION = "${var.app["php_version"]}"
-PHP_INI = "/etc/php/${var.app["php_version"]}/fpm/php.ini"
-PHP_FPM_POOL = "/etc/php/${var.app["php_version"]}/fpm/pool.d/www.conf"
-PHP_OPCACHE_INI = "/etc/php/${var.app["php_version"]}/fpm/conf.d/10-opcache.ini"
-
-VERSION = "2"
-DOMAIN = "${var.app["domain"]}"
-STAGING_DOMAIN = "${var.app["staging_domain"]}"
-BRAND = "${var.app["brand"]}"
-PHP_USER = "php-${var.app["brand"]}"
-ADMIN_EMAIL = "${var.app["admin_email"]}"
-WEB_ROOT_PATH = "/home/${var.app["brand"]}/public_html"
-TIMEZONE = "${var.app["timezone"]}"
-MAGENX_HEADER = "${random_uuid.this.result}"
-HEALTH_CHECK_LOCATION = "${random_string.this["health_check"].result}"
-MYSQL_PATH = "mysql_${random_string.this["mysql_path"].result}"
-PROFILER = "${random_string.this["profiler"].result}"
-BLOWFISH = "${random_password.this["blowfish"].result}"
-
+  for_each = var.ec2
+  template = file("./user_data/${each.key}")
+  vars = {
+  INSTANCE_NAME = "${each.key}"
+  AWS_DEFAULT_REGION = "${data.aws_region.current.name}"
+  SNS_TOPIC_ARN = "${aws_sns_topic.default.arn}"
+  CODECOMMIT_APP_REPO = "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
+  CODECOMMIT_SERVICES_REPO = "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name}"
+  DOMAIN = "${var.app["domain"]}"
+  BRAND = "${var.app["brand"]}"
+  PHP_USER = "php-${var.app["brand"]}"
+  WEB_ROOT_PATH = "/home/${var.app["brand"]}/public_html"
+  EFS_DNS_TARGET = "${values(aws_efs_mount_target.this).0.dns_name}"
  }
 }
