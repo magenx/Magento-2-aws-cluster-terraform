@@ -132,8 +132,8 @@ resource "aws_cloudwatch_metric_alarm" "httpcode_target_5xx_count" {
   namespace           = "AWS/ApplicationELB"
   period              = 300
   statistic           = "Sum"
-  threshold           = var.alb["5xx_threshold"]
-  alarm_description   = "HTTPCode 5XX count for frontend instances over ${var.alb["5xx_threshold"]}"
+  threshold           = var.alb["error_threshold"]
+  alarm_description   = "HTTPCode 5XX count for frontend instances over ${var.alb["error_threshold"]}"
   alarm_actions       = ["${aws_sns_topic.default.arn}"]
   ok_actions          = ["${aws_sns_topic.default.arn}"]
   
@@ -153,8 +153,8 @@ resource "aws_cloudwatch_metric_alarm" "httpcode_elb_5xx_count" {
   namespace           = "AWS/ApplicationELB"
   period              = 300
   statistic           = "Sum"
-  threshold           = var.alb["5xx_threshold"]
-  alarm_description   = "HTTPCode 5XX count for loadbalancer over ${var.alb["5xx_threshold"]}"
+  threshold           = var.alb["error_threshold"]
+  alarm_description   = "HTTPCode 5XX count for loadbalancer over ${var.alb["error_threshold"]}"
   alarm_actions       = ["${aws_sns_topic.default.arn}"]
   ok_actions          = ["${aws_sns_topic.default.arn}"]
   
