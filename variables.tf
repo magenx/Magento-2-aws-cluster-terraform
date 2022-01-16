@@ -4,7 +4,6 @@ variable "ec2" {
     varnish    = "m6g.large"
     frontend   = "c6g.xlarge"
     admin      = "c6g.xlarge"
-    staging    = "c6g.xlarge"
    }
 }
 
@@ -15,7 +14,6 @@ variable "app" {
     brand            = "magenx"
     domain           = "magenx.org"
     admin_email      = "admin@magenx.org"
-    staging_domain   = "staging.magenx.org"
     source           = "https://github.com/magenx/Magento-2.git"
     language         = "en_US"
     currency         = "EUR"
@@ -42,13 +40,12 @@ variable "elk" {
 variable "rds" {
   description      = "Map RDS configuration values"
   default  = {
-    name                   = ["production","staging"]
+    name                   = "production"
     allocated_storage      = "50"
     max_allocated_storage  = "100"
     storage_type           = "gp2"
     engine_version         = "10.5.12"
     instance_class         = "db.m6g.large"
-    instance_class_staging = "db.m6g.large"
     engine                 = "mariadb"
     skip_final_snapshot    = true
     multi_az               = true
