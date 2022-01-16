@@ -291,9 +291,6 @@ resource "aws_codecommit_repository" "services" {
 
           git branch -m nginx_frontend
           git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_frontend
-		  
-          git branch -m nginx_staging
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_staging
           rm -rf .git
 
           cd ${abspath(path.root)}/services/varnish
@@ -409,7 +406,7 @@ resource "aws_cloudfront_distribution" "this" {
   }
   
   tags = {
-    Name = "${var.app["brand"]}-cloudfront-production"
+    Name = "${var.app["brand"]}-cloudfront"
   }
 }
 
@@ -493,7 +490,7 @@ resource "aws_iam_role_policy" "codecommit_access" {
       Resource = aws_codecommit_repository.app.arn
       Condition = {
                 StringEqualsIfExists = {
-                    "codecommit:References" = [(each.key == "admin" || each.key == "frontend" ? "refs/heads/main" : (each.key == "staging" ? "refs/heads/staging" : "refs/heads/build"))]
+                    "codecommit:References" = ["refs/heads/main"]
     }
    }
 },
@@ -646,9 +643,9 @@ resource "aws_s3_bucket" "this" {
 # Create IAM user for S3 bucket
 # # ---------------------------------------------------------------------------------------------------------------------#	  
 resource "aws_iam_user" "s3" {
-  name = "${var.app["brand"]}-s3-media-production"
+  name = "${var.app["brand"]}-s3-media"
   tags = {
-    Name = "${var.app["brand"]}-s3-media-production"
+    Name = "${var.app["brand"]}-s3-media"
   }
 }
 	  
@@ -852,31 +849,31 @@ EOF
 # Create RDS parameter groups
 # # ---------------------------------------------------------------------------------------------------------------------#		
 resource "aws_db_parameter_group" "this" {
-  for_each          = toset(var.rds["name"])
-  name              = "${var.app["brand"]}-${each.key}-parameters"
+  for_each          = var.rds["name"]
+  name              = "${var.app["brand"]}-parameters"
   family            = "mariadb10.5"
-  description       = "Parameter group for ${var.app["brand"]} ${each.key} database"
+  description       = "Parameter group for ${var.app["brand"]} database"
   tags = {
-    Name = "${var.app["brand"]}-${each.key}-parameters"
+    Name = "${var.app["brand"]}-parameters"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create RDS instance
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "this" {
-  for_each               = toset(var.rds["name"])
-  identifier             = "${var.app["brand"]}-${each.key}"
+  for_each               = var.rds["name"]
+  identifier             = "${var.app["brand"]}"
   allocated_storage      = var.rds["allocated_storage"]
   max_allocated_storage  = var.rds["max_allocated_storage"]
   storage_type           = var.rds["storage_type"] 
   engine                 = var.rds["engine"]
   engine_version         = var.rds["engine_version"]
-  instance_class         = (each.key == "staging" ? var.rds["instance_class_staging"] : var.rds["instance_class"])
-  multi_az               = (each.key == "staging" ? "false" : var.rds["multi_az"])
-  name                   = "${var.app["brand"]}_${each.key}"
+  instance_class         = var.rds["instance_class"]
+  multi_az               = var.rds["multi_az"]
+  name                   = "${var.app["brand"]}"
   username               = var.app["brand"]
   password               = random_password.this["rds"].result
-  parameter_group_name   = aws_db_parameter_group.this[each.key].id
+  parameter_group_name   = aws_db_parameter_group.this.id
   skip_final_snapshot    = var.rds["skip_final_snapshot"]
   vpc_security_group_ids = [aws_security_group.this["rds"].id]
   db_subnet_group_name   = aws_db_subnet_group.this.name
@@ -897,7 +894,7 @@ resource "aws_db_event_subscription" "db_event_subscription" {
   name      = "${var.app["brand"]}-rds-event-subscription"
   sns_topic = aws_sns_topic.default.arn
   source_type = "db-instance"
-  source_ids = [aws_db_instance.this["production"].id]
+  source_ids = [aws_db_instance.this.id]
   event_categories = [
     "availability",
     "deletion",
@@ -929,7 +926,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.this["production"].id
+    DBInstanceIdentifier = aws_db_instance.this.id
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -949,7 +946,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_memory" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.this["production"].id
+    DBInstanceIdentifier = aws_db_instance.this.id
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -984,7 +981,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_connections_anomaly" {
       unit        = "Count"
 
       dimensions = {
-        DBInstanceIdentifier = aws_db_instance.this["production"].id
+        DBInstanceIdentifier = aws_db_instance.this.id
       }
     }
   }
@@ -1006,7 +1003,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_max_connections" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.this["production"].id
+    DBInstanceIdentifier = aws_db_instance.this.id
   }
 }
 
@@ -1156,22 +1153,6 @@ resource "aws_lb_listener_rule" "innermysql" {
   condition {
     path_pattern {
       values = ["/mysql_${random_string.this["mysql_path"].result}/*"]
-    }
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for INNER Load Balancer - forward to staging
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "innerstaging" {
-  listener_arn = aws_lb_listener.inner.arn
-  priority     = 40
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this["staging"].arn
-  }
-  condition {
-    host_header {
-	values = [var.app["staging_domain"]]
     }
   }
 }
@@ -1505,9 +1486,9 @@ resource "aws_ssm_parameter" "infrastructure_params" {
   type        = "String"
   value       = <<EOF
 
-DATABASE_ENDPOINT="${aws_db_instance.this["production"].endpoint}"
-DATABASE_INSTANCE_NAME="${aws_db_instance.this["production"].name}"
-DATABASE_USER_NAME="${aws_db_instance.this["production"].username}"
+DATABASE_ENDPOINT="${aws_db_instance.this.endpoint}"
+DATABASE_INSTANCE_NAME="${aws_db_instance.this.name}"
+DATABASE_USER_NAME="${aws_db_instance.this.username}"
 DATABASE_PASSWORD='${random_password.this["rds"].result}'
 
 ADMIN_PATH='admin_${random_string.this["admin_path"].result}'
@@ -1568,7 +1549,7 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
                 "log_group_name": "${var.app["brand"]}_nginx_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
             },
-            %{ if each.key == "admin" || each.key == "staging" ~}
+            %{ if each.key == "admin" ~}
             {
                 "file_path": "/home/${var.app["brand"]}/public_html/var/log/php-fpm-error.log",
                 "log_group_name": "${var.app["brand"]}_php_app_error_logs",
@@ -1639,9 +1620,9 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:install \
       --base-url=https://${var.app["domain"]}/ \
       --base-url-secure=https://${var.app["domain"]}/ \
-      --db-host=${aws_db_instance.this["production"].endpoint} \
-      --db-name=${aws_db_instance.this["production"].name} \
-      --db-user=${aws_db_instance.this["production"].username} \
+      --db-host=${aws_db_instance.this.endpoint} \
+      --db-name=${aws_db_instance.this.name} \
+      --db-user=${aws_db_instance.this.username} \
       --db-password='${random_password.this["rds"].result}' \
       --admin-firstname=${var.app["brand"]} \
       --admin-lastname=${var.app["brand"]} \
