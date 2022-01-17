@@ -34,10 +34,10 @@ mainSteps:
       --db-name=${aws_db_instance.this.name} \
       --db-user=${aws_db_instance.this.username} \
       --db-password='${random_password.this["rds"].result}' \
-      --admin-firstname=${var.app["brand"]} \
-      --admin-lastname=${var.app["brand"]} \
+      --admin-firstname=${var.app["admin_firstname"]} \
+      --admin-lastname=${var.app["admin_lastname"]} \
       --admin-email=${var.app["admin_email"]} \
-      --admin-user=admin \
+      --admin-user=${var.app["admin_login"]} \
       --admin-password='${random_password.this["app"].result}' \
       --backend-frontname='admin_${random_string.this["admin_path"].result}' \
       --language=${var.app["language"]} \
