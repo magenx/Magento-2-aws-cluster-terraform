@@ -14,6 +14,15 @@ sudo apt-get update
 sudo apt-get -qqy install ${LINUX_PACKAGES}
 sudo pip3 install git-remote-codecommit
 
+
+
+//////////////////////////////////////////////////////////[ FRONTEND ]////////////////////////////////////////////////////
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Frontend and admin instance configuration
+# # ---------------------------------------------------------------------------------------------------------------------#
+
+if [ "${INSTANCE_NAME}" != "varnish" ]; then
 ## create user
 sudo useradd -d /home/${BRAND} -s /sbin/nologin ${BRAND}
 ## create root php user
@@ -45,7 +54,7 @@ sudo sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > 
 
 sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/nginx.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/php.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
- 
+
 _PHP_PACKAGES+=(${PHP_PACKAGES})
 sudo apt-get -qqy install nginx php-pear php${PHP_VERSION} ${_PHP_PACKAGES[@]/#/php${PHP_VERSION}-}
 
@@ -209,7 +218,60 @@ sudo sh -c "echo '' > /etc/nginx/conf.d/default.conf"
  
 sudo sed -i "s/example.com/${DOMAIN}/g" /etc/nginx/sites-available/magento.conf
 sudo sed -i "s/example.com/${DOMAIN}/g" /etc/nginx/nginx.conf
- 
+
+fi
+
+
+
+//////////////////////////////////////////////////////////[ VARNISH ]/////////////////////////////////////////////////////
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Varnish instance configuration
+# # ---------------------------------------------------------------------------------------------------------------------#
+
+if [ "${INSTANCE_NAME}" == "varnish" ]; then
+## install nginx
+curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list'
+sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/nginx.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+
+apt-get -qqy install varnish nginx nginx-module-geoip
+
+systemctl stop nginx varnish
+
+cd /etc/varnish
+git init
+git remote add origin ${CODECOMMIT_SERVICES_REPO}
+git fetch
+git reset --hard origin/varnish
+git checkout -t origin/varnish
+
+uuidgen > /etc/varnish/secret
+
+cd /etc/systemd/system/
+git init
+git remote add origin ${CODECOMMIT_SERVICES_REPO}
+git fetch
+git reset --hard origin/systemd_proxy
+git checkout -t origin/systemd_proxy
+
+cd /etc/nginx
+git init
+git remote add origin ${CODECOMMIT_SERVICES_REPO}
+git fetch
+git reset --hard origin/nginx_proxy
+git checkout -t origin/nginx_proxy
+
+sed -i "s,CIDR,${CIDR}," /etc/nginx/nginx.conf
+sed -i "s/RESOLVER/${RESOLVER}/" /etc/nginx/nginx.conf
+sed -i "s/DOMAIN/${DOMAIN} ${STAGING_DOMAIN}/" /etc/nginx/nginx.conf
+sed -i "s/MAGENX_HEADER/${MAGENX_HEADER}/" /etc/nginx/nginx.conf
+sed -i "s/HEALTH_CHECK_LOCATION/${BRAND}-${INSTANCE_NAME}-health-check/" /etc/nginx/nginx.conf
+sed -i "s/ALB_DNS_NAME/${ALB_DNS_NAME}/" /etc/nginx/conf.d/alb.conf
+sed -i "s/example.com/${DOMAIN}/" /etc/nginx/conf.d/maps.conf
+
+fi
+
 sudo timedatectl set-timezone ${TIMEZONE}
  
 cd /tmp
