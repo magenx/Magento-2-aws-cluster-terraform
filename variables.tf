@@ -17,7 +17,6 @@ variable "app" {
     admin_login      = "admin"
     admin_firstname  = "Hereis"
     admin_lastname   = "Myname"
-    source           = "https://github.com/magenx/Magento-2.git"
     language         = "en_US"
     currency         = "EUR"
     timezone         = "UTC"
