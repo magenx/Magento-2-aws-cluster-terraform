@@ -26,6 +26,7 @@ mainSteps:
       cd /tmp && mkdir magento && chmod 2770 magento
       chown -R ${var.app["brand"]}:php-${var.app["brand"]} magento
       setfacl -R -m u:${var.app["brand"]}:rwX,g:php-${var.app["brand"]}:r-X,o::-,d:u:${var.app["brand"]}:rwX,d:g:php-${var.app["brand"]}:r-X,d:o::- magento
+      setfacl -R -m u:nginx:r-X,g:nginx:r-X,d:u:nginx:r-X magento
       cd /tmp/magento
       su ${var.app["brand"]} -s /bin/bash -c "composer -n -q config -g http-basic.repo.magento.com ${var.app["composer_user"]} ${var.app["composer_pass"]}"
       su ${var.app["brand"]} -s /bin/bash -c "composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition . --no-install"
