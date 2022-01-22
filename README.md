@@ -155,10 +155,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 ![Magento_2_Fastly_AWS_cloud_auto_scaling_terraform](https://user-images.githubusercontent.com/1591200/149624739-711fb6ba-7c00-48e3-bb80-7b7dc6cd4edc.png)
 
 ## :hammer_and_wrench: Magento 2 development | source code:
-- [x] Local provisioner copy files from https://github.com/magenx/Magento-2
-- [x] Pickup files from your own repo @ [variables.tf#L20](https://github.com/magenx/Magento-2-aws-cluster-terraform/blob/main/variables.tf#L20)
-- [x] Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
-- [x] Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
+- [x] EC2 instance user_data configured on boot to clone files from CodeCommit branch.
 - [x] Right after infrastructure deployment the minimal Magento 2 package is ready to install.
 - [x] Check and run SSM Document to install Magento and pre-configure modules (select admin instance)
 > Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime.
