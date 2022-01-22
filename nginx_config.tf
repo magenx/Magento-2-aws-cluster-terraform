@@ -28,7 +28,7 @@ mainSteps:
       git fetch origin nginx_${each.key}
       git reset --hard origin/nginx_${each.key}
       git checkout -t origin/nginx_${each.key}
-	    if nginx -t 2>/dev/null; then systemctl restart nginx; else exit 1; fi
+      if nginx -t 2>/dev/null; then systemctl restart nginx; else exit 1; fi
 EOT
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
