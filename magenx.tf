@@ -222,17 +222,6 @@ resource "aws_codecommit_repository" "app" {
     tags = {
     Name = "${var.app["brand"]}-${var.app["domain"]}"
   }
-  provisioner "local-exec" {
-  interpreter = ["/bin/bash", "-c"]
-  command = <<EOF
-          git clone ${var.app["source"]} /tmp/magento
-          cd /tmp/magento
-          git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
-          git branch -m main
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name} main
-          rm -rf /tmp/magento
-EOF
-  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CodeCommit repository for services configuration
