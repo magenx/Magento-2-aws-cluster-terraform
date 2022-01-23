@@ -244,15 +244,15 @@ cd /etc/systemd/system/
 git init
 git remote add origin ${CODECOMMIT_SERVICES_REPO}
 git fetch
-git reset --hard origin/systemd_proxy
-git checkout -t origin/systemd_proxy
+git reset --hard origin/systemd_varnish
+git checkout -t origin/systemd_varnish
 
 cd /etc/nginx
 git init
 git remote add origin ${CODECOMMIT_SERVICES_REPO}
 git fetch
-git reset --hard origin/nginx_proxy
-git checkout -t origin/nginx_proxy
+git reset --hard origin/nginx_varnish
+git checkout -t origin/nginx_varnish
 
 sed -i "s,CIDR,${CIDR}," /etc/nginx/nginx.conf
 sed -i "s/RESOLVER/${RESOLVER}/" /etc/nginx/nginx.conf
