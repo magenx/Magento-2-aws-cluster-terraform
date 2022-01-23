@@ -269,20 +269,20 @@ resource "aws_codecommit_repository" "services" {
           git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} varnish
           rm -rf .git
 
-          cd ${abspath(path.root)}/services/systemd_proxy
+          cd ${abspath(path.root)}/services/systemd_varnish
           git init
           git add .
-          git commit -m "systemd_proxy_ec2_config"
-          git branch -m systemd_proxy
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} systemd_proxy
+          git commit -m "systemd_varnish_ec2_config"
+          git branch -m systemd_varnish
+          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} systemd_varnish
           rm -rf .git
 
-          cd ${abspath(path.root)}/services/nginx_proxy
+          cd ${abspath(path.root)}/services/nginx_varnish
           git init
           git add .
-          git commit -m "nginx_proxy_ec2_config"
-          git branch -m nginx_proxy
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_proxy
+          git commit -m "nginx_varnish_ec2_config"
+          git branch -m nginx_varnish
+          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_varnish
           rm -rf .git
 EOF
   }
