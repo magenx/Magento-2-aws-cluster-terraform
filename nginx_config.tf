@@ -62,7 +62,7 @@ resource "aws_cloudwatch_event_target" "codecommit_nginx" {
  
 run_command_targets {
     key    = "tag:Name"
-    values = aws_launch_template.this[each.key].tag_specifications[0].tags.Name
+    values = [aws_launch_template.this[each.key].tag_specifications[0].tags.Name]
   }
 }
       
