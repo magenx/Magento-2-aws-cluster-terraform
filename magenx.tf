@@ -54,8 +54,10 @@ resource "random_string" "this" {
   special        = false
   upper          = false
 }
-
-
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Generate random id
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "random_id" "this" { byte_length = 1 }
 
 ////////////////////////////////////////////////////////[ VPC NETWORKING ]////////////////////////////////////////////////
 
@@ -475,7 +477,7 @@ resource "aws_cloudwatch_metric_alarm" "elasticache_memory" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_s3_bucket" "this" {
   for_each      = var.s3
-  bucket        = "${var.app["brand"]}-${each.key}-storage"
+  bucket        = "${var.app["brand"]}-${each.key}-storage-${random_id.this.id}"
   force_destroy = true
   acl           = "private"
   versioning {
