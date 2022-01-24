@@ -1,3 +1,12 @@
+variable "env" {
+  type         = string
+  description  = "Project environment settings - production : staging"
+  validation {
+    condition     = can(regex("production|staging", var.env))
+    error_message = "The env value must be either \"production\" or \"staging\""
+  }
+}
+
 variable "ec2" {
   description  = "EC2 instances names and types included in AutoScaling groups"
   default      = {
