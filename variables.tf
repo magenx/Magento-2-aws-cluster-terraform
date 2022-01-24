@@ -1,9 +1,9 @@
 variable "env" {
   type         = string
-  description  = "Project environment settings - prod or staging"
+  description  = "Project environment settings - production or staging"
   validation {
     condition     = can(regex("production|staging", var.env))
-    error_message = "The env value must be either \"prod\" or \"staging\"."
+    error_message = "The env value must be either \"production\" or \"staging\"."
   }
 }
 
