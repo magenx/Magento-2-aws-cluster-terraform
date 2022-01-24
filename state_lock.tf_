@@ -9,7 +9,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 terraform {
   backend "s3" {
-    bucket         = aws_s3_bucket.this.state
+    bucket         = "state"
     key            = "${var.app["brand"]}/${data.aws_region.current.name}/terraform.tfstate"
     region         = data.aws_region.current.name
     dynamodb_table = aws_dynamodb_table.lock.id
