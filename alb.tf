@@ -7,7 +7,7 @@
 # Create Application Load Balancers
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb" "this" {
-  name               = "${var.app["brand"]}-alb"
+  name               = local.project
   internal           = false
   load_balancer_type = "application"
   drop_invalid_header_fields = true
@@ -15,11 +15,11 @@ resource "aws_lb" "this" {
   subnets            = values(aws_subnet.this).*.id
   access_logs {
     bucket  = aws_s3_bucket.this["system"].bucket
-    prefix  = "${var.app["brand"]}-alb"
+    prefix  = aws_lb.this.name
     enabled = true
   }
   tags = {
-    Name = "${var.app["brand"]}-alb"
+    Name = "${local.project}"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -27,7 +27,7 @@ resource "aws_lb" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_target_group" "this" {
   for_each    = var.ec2
-  name        = "${var.app["brand"]}-${each.key}-target"
+  name        = "${local.project}-${each.key}-target"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.this.id
@@ -125,7 +125,7 @@ resource "aws_lb_listener_rule" "mysql" {
 # Create CloudWatch HTTP 5XX metrics and email alerts
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "httpcode_target_5xx_count" {
-  alarm_name          = "${var.app["brand"]}-http-5xx-errors-from-target"
+  alarm_name          = "${local.project}-http-5xx-errors-from-target"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "1"
   metric_name         = "HTTPCode_Target_5XX_Count"
@@ -146,7 +146,7 @@ resource "aws_cloudwatch_metric_alarm" "httpcode_target_5xx_count" {
 # Create CloudWatch HTTP 5XX metrics and email alerts
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "httpcode_elb_5xx_count" {
-  alarm_name          = "${var.app["brand"]}-http-5xx-errors-from-loadbalancer"
+  alarm_name          = "${local.project}-http-5xx-errors-from-loadbalancer"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "1"
   metric_name         = "HTTPCode_ELB_5XX_Count"
@@ -166,7 +166,7 @@ resource "aws_cloudwatch_metric_alarm" "httpcode_elb_5xx_count" {
 # Create CloudWatch RequestCount metrics and email alerts
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "alb_rps" {
-  alarm_name          = "${var.app["brand"]}-loadbalancer-rps"
+  alarm_name          = "${local.project}-loadbalancer-rps"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "1"
   metric_name         = "RequestCount"
