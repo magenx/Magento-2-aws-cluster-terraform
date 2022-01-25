@@ -589,7 +589,7 @@ resource "aws_s3_bucket_policy" "system" {
         "s3:PutObject"
       ],
       Effect = "Allow"
-      Resource = "${aws_s3_bucket.this["system"].arn}/${aws_lb.this.name}/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
+      Resource = "${aws_s3_bucket.this["system"].arn}/ALB/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
       Principal = {
         AWS = [
           data.aws_elb_service_account.current.arn
@@ -602,7 +602,7 @@ resource "aws_s3_bucket_policy" "system" {
         "s3:GetObject"
       ],
       Effect = "Allow"
-      Resource = "${aws_s3_bucket.this["system"].arn}/${local.project}*"
+      Resource = "${aws_s3_bucket.this["system"].arn}/deploy/*"
       Principal = {
         AWS = [
           aws_iam_role.codebuild.arn,
