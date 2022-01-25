@@ -31,8 +31,8 @@ locals {
 # Create AMI Builder (EBS backed)
 # # ---------------------------------------------------------------------------------------------------------------------#
 source "amazon-ebs" "latest-ami" {
-  ami_name        = "${local.var["BRAND"]}-${var.INSTANCE_NAME}-${local.var["AWS_DEFAULT_REGION"]}-${local.timestamp}"
-  ami_description = "AMI for ${local.var["BRAND"]} ${var.INSTANCE_NAME} - Packer Build ${local.timestamp}"
+  ami_name        = "${local.var["PROJECT"]}-${var.INSTANCE_NAME}-${local.timestamp}"
+  ami_description = "AMI for ${local.var["PROJECT"]} ${var.INSTANCE_NAME} - Packer Build ${local.timestamp}"
   region          = "${local.var["AWS_DEFAULT_REGION"]}"
   source_ami      = "${local.var["SOURCE_AMI"]}"
   iam_instance_profile = "${var.IAM_INSTANCE_PROFILE}"
@@ -52,7 +52,7 @@ source "amazon-ebs" "latest-ami" {
     http_put_response_hop_limit = 1
   }
   snapshot_tags = {
-    Name = "${local.var["BRAND"]}-${var.INSTANCE_NAME}-${local.var["AWS_DEFAULT_REGION"]}-${local.timestamp}"
+    Name = "${local.var["PROJECT"]}-${var.INSTANCE_NAME}-${local.timestamp}"
   }
 }
 
