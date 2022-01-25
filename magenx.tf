@@ -7,7 +7,7 @@
 # Create alert when your budget thresholds are forecasted to exceed
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_budgets_budget" "all" {
-  name              = "${var.app["brand"]}-budget-monthly-forecasted"
+  name              = "${local.project}-budget-monthly-forecasted"
   budget_type       = "COST"
   limit_amount      = "2000"
   limit_unit        = "USD"
@@ -70,7 +70,7 @@ resource "aws_vpc" "this" {
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
-    Name = "${var.app["brand"]}-vpc"
+    Name = "${local.project}-vpc"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -83,29 +83,29 @@ resource "aws_subnet" "this" {
   cidr_block              = cidrsubnet(aws_vpc.this.cidr_block, 4, var.az_number[each.value.name_suffix])
   map_public_ip_on_launch = true
   tags = {
-    Name = "${var.app["brand"]}-subnet"
+    Name = "${local.project}-subnet"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create RDS subnet group in our dedicated VPC
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_subnet_group" "this" {
-  name       = "${var.app["brand"]}-db-subnet"
-  description = "${var.app["brand"]} RDS Subnet"
+  name       = "${local.project}-db-subnet"
+  description = "RDS Subnet for ${replace(local.project),"-"," "}"
   subnet_ids = values(aws_subnet.this).*.id
   tags = {
-    Name = "${var.app["brand"]}-db-subnet"
+    Name = "${local.project}-db-subnet"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create ElastiCache subnet group in our dedicated VPC
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticache_subnet_group" "this" {
-  description = "${var.app["brand"]} ElastiCache Subnet"
-  name       = "${var.app["brand"]}-elasticache-subnet"
+  description = "ElastiCache Subnet for ${replace(local.project),"-"," "}"
+  name       = "${local.project}-elasticache-subnet"
   subnet_ids = values(aws_subnet.this).*.id 
   tags = {
-    Name = "${var.app["brand"]}-elasticache-subnet"
+    Name = "${local.project}-elasticache-subnet"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -114,7 +114,7 @@ resource "aws_elasticache_subnet_group" "this" {
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
   tags = {
-    Name = "${var.app["brand"]}-igw"
+    Name = "${local.project}-internet-gateway"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -140,7 +140,7 @@ resource "aws_vpc_dhcp_options" "this" {
   domain_name          = "${data.aws_region.current.name}.compute.internal"
   domain_name_servers  = ["AmazonProvidedDNS"]
   tags = {
-    Name = "${var.app["brand"]}-dhcp"
+    Name = "${local.project}-dhcp"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -159,7 +159,7 @@ resource "aws_vpc_dhcp_options_association" "this" {
 # Create SNS topic and email subscription (confirm email right after resource creation)
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_sns_topic" "default" {
-  name = "${var.app["brand"]}-email-alerts"
+  name = "${local.project}-email-alerts"
 }
 resource "aws_sns_topic_subscription" "default" {
   topic_arn = aws_sns_topic.default.arn
@@ -196,9 +196,9 @@ resource "aws_acm_certificate_validation" "default" {
 # Create EFS file system
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_efs_file_system" "this" {
-  creation_token = "${var.app["brand"]}-efs-storage"
+  creation_token = "${local.project}-efs-storage"
   tags = {
-    Name = "${var.app["brand"]}-efs-storage"
+    Name = "${local.project}-efs-storage"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -222,7 +222,7 @@ resource "aws_codecommit_repository" "app" {
   repository_name = var.app["domain"]
   description     = "Magento 2.x code for ${var.app["domain"]}"
     tags = {
-    Name = "${var.app["brand"]}-${var.app["domain"]}"
+      Name = "${local.project}-${var.app["domain"]}"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -232,7 +232,7 @@ resource "aws_codecommit_repository" "services" {
   repository_name = "${var.app["brand"]}-services-config"
   description     = "EC2 linux and services configurations"
     tags = {
-    Name = "${var.app["brand"]}-services-config"
+      Name = "${local.project}-services-config"
   }
   provisioner "local-exec" {
   interpreter = ["/bin/bash", "-c"]
@@ -264,7 +264,7 @@ EOF
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role" "ec2" {
   for_each = var.ec2
-  name = "${var.app["brand"]}-EC2InstanceRole-${each.key}-${data.aws_region.current.name}"
+  name = "${local.project}-EC2InstanceRole-${each.key}"
   description = "Allows EC2 instances to call AWS services on your behalf"
   assume_role_policy = <<EOF
 {
@@ -295,7 +295,7 @@ resource "aws_iam_role_policy_attachment" "ec2" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role_policy" "sns_publish" {
   for_each = var.ec2
-  name = "EC2ProfileSNSPublishPolicy${title(each.key)}"
+  name = "${local.project}EC2ProfileSNS${title(each.key)}"
   role = aws_iam_role.ec2[each.key].id
 
   policy = jsonencode({
@@ -316,7 +316,7 @@ resource "aws_iam_role_policy" "sns_publish" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role_policy" "codecommit_access" {
   for_each = var.ec2
-  name = "PolicyForCodeCommitAccess${title(each.key)}"
+  name = "${local.project}PolicyForCodeCommitAccess${title(each.key)}"
   role = aws_iam_role.ec2[each.key].id
 
   policy = jsonencode({
@@ -357,7 +357,7 @@ resource "aws_iam_role_policy" "codecommit_access" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_instance_profile" "ec2" {
   for_each = var.ec2
-  name     = "${var.app["brand"]}-EC2InstanceProfile-${each.key}"
+  name     = "${local.project}-EC2InstanceProfile-${each.key}"
   role     = aws_iam_role.ec2[each.key].name
 }
 
@@ -368,7 +368,7 @@ resource "aws_iam_instance_profile" "ec2" {
 # Create RabbitMQ - queue message broker
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_mq_broker" "this" {
-  broker_name = "${var.app["brand"]}-${var.rabbitmq["broker_name"]}"
+  broker_name = "${local.project}-${var.rabbitmq["broker_name"]}"
   engine_type        = "RabbitMQ"
   engine_version     = var.rabbitmq["engine_version"]
   host_instance_type = var.rabbitmq["host_instance_type"]
@@ -379,7 +379,7 @@ resource "aws_mq_broker" "this" {
     password = random_password.this["rabbitmq"].result
   }
   tags = {
-    Name   = "${var.app["brand"]}-${var.rabbitmq["broker_name"]}"
+    Name   = "${local.project}-${var.rabbitmq["broker_name"]}"
   }
 }
 
@@ -392,7 +392,7 @@ resource "aws_mq_broker" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#		  
 resource "aws_elasticache_parameter_group" "this" {
   for_each      = toset(var.redis["name"])
-  name          = "${var.app["brand"]}-${each.key}-parameter"
+  name          = "${local.project}-${each.key}-parameter"
   family        = "redis6.x"
   description   = "Parameter group for ${var.app["domain"]} ${each.key} backend"
   parameter {
@@ -400,7 +400,7 @@ resource "aws_elasticache_parameter_group" "this" {
     value = "no"
   }
   tags = {
-    Name = "${var.app["brand"]}-${each.key}-parameter"
+    Name = "${local.project}-${each.key}-parameter"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -411,7 +411,7 @@ resource "aws_elasticache_replication_group" "this" {
   number_cache_clusters         = var.redis["number_cache_clusters"]
   engine                        = "redis"
   engine_version                = var.redis["engine_version"]
-  replication_group_id          = "${var.app["brand"]}-${each.key}-backend"
+  replication_group_id          = "${local.project}-${each.key}-backend"
   replication_group_description = "Replication group for ${var.app["domain"]} ${each.key} backend"
   node_type                     = var.redis["node_type"]
   port                          = var.redis["port"]
@@ -422,7 +422,7 @@ resource "aws_elasticache_replication_group" "this" {
   multi_az_enabled              = var.redis["multi_az_enabled"]
   notification_topic_arn        = aws_sns_topic.default.arn
   tags = {
-    Name = "${var.app["brand"]}-${each.key}-backend"
+    Name = "${local.project}-${each.key}-backend"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -430,7 +430,7 @@ resource "aws_elasticache_replication_group" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "elasticache_cpu" {
   for_each            = aws_elasticache_replication_group.this
-  alarm_name          = "${var.app["brand"]}-elasticache-${each.key}-cpu-utilization"
+  alarm_name          = "${local.project}-elasticache-${each.key}-cpu-utilization"
   alarm_description   = "Redis cluster CPU utilization"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "1"
@@ -451,7 +451,7 @@ resource "aws_cloudwatch_metric_alarm" "elasticache_cpu" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "elasticache_memory" {
   for_each            = aws_elasticache_replication_group.this
-  alarm_name          = "${var.app["brand"]}-elasticache-${each.key}-freeable-memory"
+  alarm_name          = "${local.project}-elasticache-${each.key}-freeable-memory"
   alarm_description   = "Redis cluster freeable memory"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = "1"
@@ -477,23 +477,23 @@ resource "aws_cloudwatch_metric_alarm" "elasticache_memory" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_s3_bucket" "this" {
   for_each      = var.s3
-  bucket        = "${var.app["brand"]}-${each.key}-storage-${random_id.this.id}"
+  bucket        = "${local.project}-${each.key}-storage"
   force_destroy = true
   acl           = "private"
   versioning {
         enabled = (each.value == "state" ? true : false)
    }
   tags = {
-    Name        = "${var.app["brand"]}-${each.key}-storage"
+    Name        = "${local.project}-${each.key}-storage"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create IAM user for S3 bucket
 # # ---------------------------------------------------------------------------------------------------------------------#	  
 resource "aws_iam_user" "s3" {
-  name = "${var.app["brand"]}-s3-media"
+  name = "${local.project}-s3-media"
   tags = {
-    Name = "${var.app["brand"]}-s3-media"
+    Name = "${local.project}-s3-media"
   }
 }
 	  
@@ -577,7 +577,7 @@ resource "aws_s3_bucket_policy" "system" {
         "s3:PutObject"
       ],
       Effect = "Allow"
-      Resource = "${aws_s3_bucket.this["system"].arn}/${var.app["brand"]}-alb/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
+      Resource = "${aws_s3_bucket.this["system"].arn}/${aws_lb.this.name}/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
       Principal = {
         AWS = [
           data.aws_elb_service_account.current.arn
@@ -590,7 +590,7 @@ resource "aws_s3_bucket_policy" "system" {
         "s3:GetObject"
       ],
       Effect = "Allow"
-      Resource = "${aws_s3_bucket.this["system"].arn}/${var.app["brand"]}-${data.aws_region.current.name}*"
+      Resource = "${aws_s3_bucket.this["system"].arn}/${local.project}*"
       Principal = {
         AWS = [
           aws_iam_role.codebuild.arn,
@@ -651,7 +651,7 @@ EOF
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticsearch_domain" "this" {
   depends_on = [null_resource.es]
-  domain_name           = "${var.app["brand"]}-${var.elk["domain_name"]}"
+  domain_name           = "${local.project}-${var.elk["domain_name"]}"
   elasticsearch_version = var.elk["elasticsearch_version"]
   cluster_config {
     instance_type  = var.elk["instance_type"]
@@ -675,7 +675,7 @@ resource "aws_elasticsearch_domain" "this" {
     security_group_ids = [aws_security_group.elk.id]
   }
   tags = {
-    Name = "${var.app["brand"]}-${var.elk["domain_name"]}"
+    Name = "${local.project}-${var.elk["domain_name"]}"
   }
   log_publishing_options {
     cloudwatch_log_group_arn = aws_cloudwatch_log_group.elk.arn
@@ -695,7 +695,7 @@ resource "aws_elasticsearch_domain" "this" {
       "Action": [
         "es:*"
       ],
-      "Resource": "arn:aws:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/${var.app["brand"]}-${var.elk["domain_name"]}/*"
+      "Resource": "arn:aws:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/${aws_elasticsearch_domain.this.domain_name}/*"
     }
   ]
 }
@@ -705,11 +705,11 @@ EOF
 # Create CloudWatch log group for ElasticSearch log stream
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_log_group" "elk" {
-  name = "${var.app["brand"]}-${var.elk["domain_name"]}"
+  name = "${local.project}-${var.elk["domain_name"]}"
 }
 
 resource "aws_cloudwatch_log_resource_policy" "elk" {
-  policy_name = "${var.app["brand"]}-${var.elk["domain_name"]}"
+  policy_name = "${local.project}-${var.elk["domain_name"]}"
 
   policy_document = <<EOF
 {
@@ -740,18 +740,18 @@ EOF
 # Create RDS parameter groups
 # # ---------------------------------------------------------------------------------------------------------------------#		
 resource "aws_db_parameter_group" "this" {
-  name              = "${var.app["brand"]}-parameters"
+  name              = "${local.project}-parameters"
   family            = "mariadb10.5"
-  description       = "Parameter group for ${var.app["brand"]} database"
+  description       = "Parameter group for ${local.project} database"
   tags = {
-    Name = "${var.app["brand"]}-parameters"
+    Name = "${local.project}-parameters"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create RDS instance
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "this" {
-  identifier             = "${var.app["brand"]}"
+  identifier             = local.project
   allocated_storage      = var.rds["allocated_storage"]
   max_allocated_storage  = var.rds["max_allocated_storage"]
   storage_type           = var.rds["storage_type"] 
@@ -773,14 +773,14 @@ resource "aws_db_instance" "this" {
   delete_automated_backups        = var.rds["delete_automated_backups"]
   deletion_protection             = var.rds["deletion_protection"]
   tags = {
-    Name = "${var.app["brand"]}"
+    Name = "${local.project}"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create RDS instance event subscription
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_event_subscription" "db_event_subscription" {
-  name      = "${var.app["brand"]}-rds-event-subscription"
+  name      = "${local.project}-rds-event-subscription"
   sns_topic = aws_sns_topic.default.arn
   source_type = "db-instance"
   source_ids = [aws_db_instance.this.id]
@@ -802,7 +802,7 @@ resource "aws_db_event_subscription" "db_event_subscription" {
 # Create CloudWatch CPU Utilization metrics and email alerts
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
-  alarm_name          = "${var.app["brand"]} rds cpu utilization too high"
+  alarm_name          = "${local.project} rds cpu utilization too high"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "1"
   metric_name         = "CPUUtilization"
@@ -822,7 +822,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
 # Create CloudWatch Freeable Memory metrics and email alerts
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "rds_memory" {
-  alarm_name          = "${var.app["brand"]} rds freeable memory too low"
+  alarm_name          = "${local.project} rds freeable memory too low"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = "1"
   metric_name         = "FreeableMemory"
@@ -842,7 +842,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_memory" {
 # Create CloudWatch Connections Anomaly metrics and email alerts
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "rds_connections_anomaly" {
-  alarm_name          = "${var.app["brand"]} rds connections anomaly"
+  alarm_name          = "${local.project} rds connections anomaly"
   comparison_operator = "GreaterThanUpperThreshold"
   evaluation_periods  = "5"
   threshold_metric_id = "e1"
@@ -879,7 +879,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_connections_anomaly" {
 # Create CloudWatch Max Connections metrics and email alerts
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "rds_max_connections" {
-  alarm_name          = "${var.app["brand"]} rds connections over last 10 minutes is too high"
+  alarm_name          = "${local.project} rds connections over last 10 minutes is too high"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "1"
   metric_name         = "DatabaseConnections"
@@ -904,7 +904,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_max_connections" {
 # Create EventBridge service role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role" "eventbridge_service_role" {
-  name = "${var.app["brand"]}-EventBridgeServiceRole"
+  name = "${local.project}-EventBridgeServiceRole"
   description = "Provides EventBridge manage events on your behalf."
   assume_role_policy = <<EOF
 {
@@ -926,7 +926,7 @@ EOF
 # Create policy for EventBridge role to start CodePipeline
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_policy" "eventbridge_service_role" {
-  name = "${var.app["brand"]}-${data.aws_region.current.name}-start-codepipeline"
+  name = "${local.project}-start-codepipeline"
   path = "/service-role/"
   policy = <<EOF
 {
@@ -961,7 +961,7 @@ resource "aws_iam_role_policy_attachment" "eventbridge_service_role" {
 # Create EventBridge rule to run Magento cronjob
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "cronjob" {
-  name        = "${var.app["brand"]}-EventBridge-Rule-Run-Magento-Cronjob"
+  name        = "${local.project}-EventBridge-Rule-Run-Magento-Cronjob"
   description = "EventBridge rule to run Magento cronjob every minute"
   schedule_expression = "rate(1 minute)"
 }
@@ -970,7 +970,7 @@ resource "aws_cloudwatch_event_rule" "cronjob" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "cronjob" {
   rule      = aws_cloudwatch_event_rule.cronjob.name
-  target_id = "${var.app["brand"]}-EventBridge-Target-Admin-Instance-Cron"
+  target_id = "${local.project}-EventBridge-Target-Admin-Instance-Cron"
   arn       = "arn:aws:ssm:${data.aws_region.current.name}::document/AWS-RunShellScript"
   role_arn  = aws_iam_role.eventbridge_service_role.arn
   input     = "{\"commands\":[\"su ${var.app["brand"]} -s /bin/bash -c '/home/${var.app["brand"]}/public_html/bin/magento cron:run 2>&1'\"],\"executionTimeout\":[\"180\"]}"
@@ -989,7 +989,7 @@ run_command_targets {
 # Create SES user credentials, Configuration Set to stream SES metrics to CloudWatch
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_user" "ses_smtp_user" {
-  name = "${var.app["brand"]}-ses-smtp-user"
+  name = "${local.project}-ses-smtp-user"
 }
 	
 resource "aws_ses_email_identity" "ses_email_identity" {
@@ -997,7 +997,7 @@ resource "aws_ses_email_identity" "ses_email_identity" {
 }
 
 resource "aws_iam_user_policy" "ses_smtp_user_policy" {
-  name = "${var.app["brand"]}-ses-smtp-user-policy"
+  name = "${local.project}-ses-smtp-user-policy"
   user = aws_iam_user.ses_smtp_user.name
   
   policy = jsonencode({
@@ -1020,7 +1020,7 @@ resource "aws_iam_access_key" "ses_smtp_user_access_key" {
 }
 
 resource "aws_ses_configuration_set" "this" {
-  name = "${var.app["brand"]}-ses-events"
+  name = "${local.project}-ses-events"
   reputation_metrics_enabled = true
   delivery_options {
     tls_policy = "Require"
@@ -1028,7 +1028,7 @@ resource "aws_ses_configuration_set" "this" {
 }
 
 resource "aws_ses_event_destination" "cloudwatch" {
-  name                   = "${var.app["brand"]}-ses-event-destination-cloudwatch"
+  name                   = "${local.project}-ses-event-destination-cloudwatch"
   configuration_set_name = aws_ses_configuration_set.this.name
   enabled                = true
   matching_types         = ["bounce", "send", "complaint", "delivery"]
@@ -1048,8 +1048,8 @@ resource "aws_ses_event_destination" "cloudwatch" {
 # Create SSM Parameter store for aws params
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_parameter" "env" {
-  name        = "${var.app["brand"]}-${data.aws_region.current.name}-env"
-  description = "Environment variables for ${var.app["brand"]} in ${data.aws_region.current.name}"
+  name        = "${local.project}-env"
+  description = "Environment variables for ${local.project} in ${data.aws_region.current.name}"
   type        = "String"
   value       = <<EOF
 {
@@ -1105,7 +1105,7 @@ resource "aws_ssm_parameter" "env" {
 EOF
 
   tags = {
-    Name = "${var.app["brand"]}-${data.aws_region.current.name}-env"
+    Name = "${local.project}-env"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
