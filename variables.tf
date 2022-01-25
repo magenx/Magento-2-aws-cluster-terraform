@@ -2,7 +2,7 @@
 
 locals {
    # Create global project name to be assigned to all resources
-   project = "${var.app["brand"]}-${var.env}-${random_id.this.id}"
+   project = lower("${var.app["brand"]}-${var.env}-${random_id.this.id}")
 }
 
 variable "env" {
