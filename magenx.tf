@@ -1053,6 +1053,7 @@ resource "aws_ssm_parameter" "env" {
   type        = "String"
   value       = <<EOF
 {
+"PROJECT" : "${local.project}"
 "AWS_DEFAULT_REGION" : "${data.aws_region.current.name}",
 "VPC_ID" : "${aws_vpc.this.id}",
 "CIDR" : "${aws_vpc.this.cidr_block}",
