@@ -436,7 +436,7 @@ resource "aws_codepipeline" "this" {
 # Create SSM Document runShellScript to pull main branch from CodeCommit
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "git_pull_main" {
-  name          = "${local.project}-codecommit-pull-main-changes"
+  name          = "${local.project}-codecommit-pull-app-changes"
   document_type = "Command"
   document_format = "YAML"
   target_type   = "/AWS::EC2::Instance"
