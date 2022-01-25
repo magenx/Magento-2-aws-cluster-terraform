@@ -91,7 +91,7 @@ resource "aws_subnet" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_subnet_group" "this" {
   name       = "${local.project}-db-subnet"
-  description = "RDS Subnet for ${replace(local.project),"-"," "}"
+  description = "RDS Subnet for ${replace(local.project,"-"," ")}"
   subnet_ids = values(aws_subnet.this).*.id
   tags = {
     Name = "${local.project}-db-subnet"
@@ -101,7 +101,7 @@ resource "aws_db_subnet_group" "this" {
 # Create ElastiCache subnet group in our dedicated VPC
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticache_subnet_group" "this" {
-  description = "ElastiCache Subnet for ${replace(local.project),"-"," "}"
+  description = "ElastiCache Subnet for ${replace(local.project,"-"," ")}"
   name       = "${local.project}-elasticache-subnet"
   subnet_ids = values(aws_subnet.this).*.id 
   tags = {
