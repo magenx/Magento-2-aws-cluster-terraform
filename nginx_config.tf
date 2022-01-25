@@ -36,7 +36,7 @@ EOT
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "codecommit_nginx" {
   for_each      = var.ec2
-  name          = "${local.project}-CodeCommit-Nginx-${title(each.key)}-Repository-State-Change"
+  name          = "${local.project}-Nginx-${title(each.key)}-Repo-State"
   description   = "CloudWatch monitor nginx ${each.key} repository state change"
   event_pattern = <<EOF
 {
