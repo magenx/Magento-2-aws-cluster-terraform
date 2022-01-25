@@ -14,9 +14,9 @@ resource "aws_wafv2_web_acl_association" "alb" {
 # Create AWS WAFv2 rules
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_wafv2_web_acl" "this" {
-  name        = "${var.app["brand"]}-WAF-Protections"
+  name        = "${local.project}-WAF-Protections"
   scope       = "REGIONAL"
-  description = "${var.app["brand"]}-WAF-Protections"
+  description = "${local.project}-WAF-Protections"
 
   default_action {
     allow {
@@ -25,7 +25,7 @@ resource "aws_wafv2_web_acl" "this" {
 	
   visibility_config {
     cloudwatch_metrics_enabled = true
-    metric_name = "${var.app["brand"]}-WAF-Protections"
+    metric_name = "${local.project}-WAF-Protections"
     sampled_requests_enabled = true
   }
 
@@ -44,7 +44,7 @@ resource "aws_wafv2_web_acl" "this" {
     }
     visibility_config {
       cloudwatch_metrics_enabled = true
-      metric_name = "${var.app["brand"]}-AWSManagedRulesCommonRule"
+      metric_name = "${local.project}-AWSManagedRulesCommonRule"
       sampled_requests_enabled = true
     }
   }
@@ -63,7 +63,7 @@ resource "aws_wafv2_web_acl" "this" {
     }
     visibility_config {
       cloudwatch_metrics_enabled = true
-      metric_name = "${var.app["brand"]}-AWSManagedRulesAmazonIpReputation"
+      metric_name = "${local.project}-AWSManagedRulesAmazonIpReputation"
       sampled_requests_enabled = true
     }
   }
@@ -82,7 +82,7 @@ resource "aws_wafv2_web_acl" "this" {
     }
     visibility_config {
       cloudwatch_metrics_enabled = true
-      metric_name = "${var.app["brand"]}-AWSManagedRulesBotControlRule"
+      metric_name = "${local.project}-AWSManagedRulesBotControlRule"
       sampled_requests_enabled = true
     }
   }
