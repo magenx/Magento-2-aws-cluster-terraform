@@ -1,11 +1,18 @@
-#variable "env" {
-#  type         = string
-#  description  = "Project environment settings - production or staging"
-#  validation {
-#    condition     = can(regex("production|staging", var.env))
-#    error_message = "The env value must be either \"production\" or \"staging\"."
-#  }
-#}
+
+
+locals {
+   # Create global project name to be assigned to all resources
+   project = "${var.app["brand"]}-${var.env}-${random_id.this.id}"
+}
+
+variable "env" {
+  type         = string
+  description  = "Project environment settings - prod or dev"
+  validation {
+    condition     = can(regex("prod|dev", var.env))
+    error_message = "The env value must be either \"prod\" or \"dev\"."
+  }
+}
 
 variable "ec2" {
   description  = "EC2 instances names and types included in AutoScaling groups"
