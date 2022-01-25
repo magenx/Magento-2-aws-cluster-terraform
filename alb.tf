@@ -15,7 +15,7 @@ resource "aws_lb" "this" {
   subnets            = values(aws_subnet.this).*.id
   access_logs {
     bucket  = aws_s3_bucket.this["system"].bucket
-    prefix  = local.project
+    prefix  = "ALB"
     enabled = true
   }
   tags = {
