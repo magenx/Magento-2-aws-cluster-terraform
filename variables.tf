@@ -9,7 +9,6 @@ variable "env" {
   type         = string
   description  = "Project environment settings - prod or dev"
   default      = "prod"
-  }
 }
 
 variable "ec2" {
