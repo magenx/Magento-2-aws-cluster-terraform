@@ -485,6 +485,17 @@ resource "aws_s3_bucket" "this" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Block public access acl for internal S3 buckets
+# # ---------------------------------------------------------------------------------------------------------------------#	  
+resource "aws_s3_bucket_public_access_block" "this" {
+  for_each = {for name in var.s3: name => name if name != "media"}
+  bucket = "${local.project}-${each.key}-storage"  
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create IAM user for S3 bucket
 # # ---------------------------------------------------------------------------------------------------------------------#	  
 resource "aws_iam_user" "s3" {
