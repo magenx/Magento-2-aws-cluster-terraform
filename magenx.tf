@@ -29,13 +29,12 @@ resource "aws_budgets_budget" "all" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Generate random uuid string that is intended to be used as unique identifier
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "random_uuid" "this" {
-}
+resource "random_uuid" "this" {}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Generate random passwords
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "this" {
-  for_each         = toset(["rds", "rabbitmq", "app", "blowfish"])
+  for_each         = toset(var.password)
   length           = (each.key == "blowfish" ? 32 : 16)
   lower            = true
   upper            = true
@@ -47,19 +46,15 @@ resource "random_password" "this" {
 # Generate random string
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_string" "this" {
-  for_each       = toset(["admin_path", "mysql_path", "profiler", "persistent", "id_prefix", "health_check"])
+  for_each       = toset(var.string)
   length         = (each.key == "id_prefix" ? 3 : 7)
   lower          = true
   number         = true
   special        = false
   upper          = false
 }
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Generate random id
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "random_id" "this" { 
-  byte_length = 8
-}
+
+
 
 ////////////////////////////////////////////////////////[ VPC NETWORKING ]////////////////////////////////////////////////
 
@@ -488,17 +483,6 @@ resource "aws_s3_bucket" "this" {
   tags = {
     Name        = "${local.project}-${each.key}-storage"
   }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Block public access options for S3 bucket
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_s3_bucket_public_access_block" "this" {
-  for_each                = toset(values(aws_s3_bucket.this).*.id)
-  bucket                  = each.key
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create IAM user for S3 bucket
