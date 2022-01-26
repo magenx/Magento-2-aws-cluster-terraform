@@ -8,9 +8,7 @@ locals {
 variable "env" {
   type         = string
   description  = "Project environment settings - prod or dev"
-  validation {
-    condition     = can(regex("prod|dev", var.env))
-    error_message = "The env value must be either \"prod\" or \"dev\"."
+  default      = "prod"
   }
 }
 
