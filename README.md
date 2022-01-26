@@ -100,7 +100,8 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 >  
 **[ ! ]** Right after `terraform apply` you will receive email from amazon to approve resources  
 **[ ! ]** Make sure you have [Fastly](https://www.fastly.com/signup/) account and API token ready: `export FASTLY_API_KEY="addyourfastlyapikey"`  
-- [x] Check all user_data, adjust your settings, edit your cidr, brand, domain, email and other vars in `variables.tf`
+- [x] Check all user_data, adjust your settings, edit your [cidr], [brand], [domain], [email] and other vars in `variables.tf`
+- [x] Define either [prod] or [dev] environment variable in `variables.tf`
 - [x] Run:
 ```
    terraform init
@@ -175,10 +176,10 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 <br />
 
 ## CI/CD scenario:
-- [x] Event driven
-- [x] Services configuration files tracked in CodeCommit repository
+- [x] Event driven.
+- [x] Services configuration files tracked in CodeCommit repository.
 - [x] Changes in CodeCommit repository triggers EventBridge rule.
-- [x] CodePipeline build code in CodeBuild project and deploy
+- [x] CodePipeline build code in CodeBuild project and deploy to main branch.
 - [x] SSM Document pull from CodeCommit repository and cleanup.
 - [x] Change deployment logic to your needs.  
    
