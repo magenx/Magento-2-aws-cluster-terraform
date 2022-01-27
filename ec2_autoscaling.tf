@@ -8,7 +8,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_launch_template" "this" {
   for_each = var.ec2
-  name = "${var.app["brand"]}-${each.key}-ltpl"
+  name = "${local.project}-${each.key}-ltpl"
   iam_instance_profile { name = aws_iam_instance_profile.ec2[each.key].name }
   image_id = element(values(data.external.packer[each.key].result), 0)
   instance_type = each.value
@@ -20,12 +20,12 @@ resource "aws_launch_template" "this" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name = "${var.app["brand"]}-${each.key}-ec2" }
+      Name = "${local.project}-${each.key}-ec2" }
   }
   tag_specifications {
     resource_type = "volume"
     tags = {
-      Name = "${var.app["brand"]}-${each.key}-ec2" }
+      Name = "${local.project}-${each.key}-ec2" }
   }
   user_data = base64encode(data.template_file.user_data[each.key].rendered)
   update_default_version = true
@@ -38,7 +38,7 @@ resource "aws_launch_template" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_group" "this" {
   for_each = var.ec2
-  name = "${var.app["brand"]}-${each.key}-asg"
+  name = "${local.project}-${each.key}-asg"
   vpc_zone_identifier = values(aws_subnet.this).*.id
   desired_capacity    = var.asg["desired_capacity"]
   min_size            = var.asg["min_size"]
@@ -88,7 +88,7 @@ group_names = [
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "scaleout" {
   for_each               = var.ec2
-  name                   = "${var.app["brand"]}-${each.key}-asp-out"
+  name                   = "${local.project}-${each.key}-asp-out"
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
@@ -99,7 +99,7 @@ resource "aws_autoscaling_policy" "scaleout" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "scaleout" {
   for_each            = var.ec2
-  alarm_name          = "${var.app["brand"]}-${each.key} scale-out alarm"
+  alarm_name          = "${local.project}-${each.key} scale-out alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.asp["evaluation_periods"]
   metric_name         = "CPUUtilization"
@@ -118,7 +118,7 @@ resource "aws_cloudwatch_metric_alarm" "scaleout" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "scalein" {
   for_each               = var.ec2
-  name                   = "${var.app["brand"]}-${each.key}-asp-in"
+  name                   = "${local.project}-${each.key}-asp-in"
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
@@ -129,7 +129,7 @@ resource "aws_autoscaling_policy" "scalein" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "scalein" {
   for_each            = var.ec2
-  alarm_name          = "${var.app["brand"]}-${each.key} scale-in alarm"
+  alarm_name          = "${local.project}-${each.key} scale-in alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.asp["evaluation_periods"]
   metric_name         = "CPUUtilization"
