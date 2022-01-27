@@ -77,7 +77,6 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 <br />
 
 # :rocket: Deployment into isolated VPC:
-- [x] [Login to Fastly account](https://www.fastly.com/signup/)
 - [x] Login to AWS Console
 - [x] [Subscribe to Debian 11 ARM](https://aws.amazon.com/marketplace/pp/prodview-jwzxq55gno4p4)
 - [x] Choose an AWS Region
@@ -98,8 +97,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
   git clone -b fastly https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
 ```
 >  
-**[ ! ]** Right after `terraform apply` you will receive email from amazon to approve resources  
-**[ ! ]** Make sure you have [Fastly](https://www.fastly.com/signup/) account and API token ready: `export FASTLY_API_KEY="addyourfastlyapikey"`  
+**[ ! ]** Right after `terraform apply` you will receive email from amazon to approve resources    
 - [x] Check all user_data, adjust your settings, edit your [cidr], [brand], [domain], [email] and other vars in `variables.tf`
 - [x] Define either [prod] or [dev] environment variable in `variables.tf`
 - [x] Run:
@@ -127,7 +125,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
  `1` sns topic default subscription to receive email alerts  
  `1` ses user access details for smtp module  
    
-- [x] Fastly service for CDN and Varnish cache
+- [x] Configure **Fastly** service for CDN and Varnish cache
    
  >resources are grouped into a virtual network, VPC dedicated to your brand  
  >the settings initially imply a large store, and are designed for huge traffic.  
