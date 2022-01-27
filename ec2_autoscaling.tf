@@ -12,7 +12,7 @@ resource "aws_launch_template" "this" {
   iam_instance_profile { name = aws_iam_instance_profile.ec2[each.key].name }
   image_id = element(values(data.external.packer[each.key].result), 0)
   instance_type = each.value
-  monitoring { enabled = false }
+  monitoring { enabled = var.asg["monitoring"] }
   network_interfaces { 
     associate_public_ip_address = true
     security_groups = [aws_security_group.ec2.id]
