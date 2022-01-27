@@ -7,8 +7,8 @@
 # Create security group and rules for outer ALB
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "outer_alb" {
-  name        = "${var.app["brand"]}-outer-alb-sg"
-  description = "Security group rules for ${var.app["brand"]} ALB"
+  name        = "${local.project}-outer-alb-sg"
+  description = "Security group rules for ${local.project} ALB"
   vpc_id      = aws_vpc.this.id
 
   ingress {
@@ -36,7 +36,7 @@ resource "aws_security_group" "outer_alb" {
     }
 
   tags = {
-    Name = "${var.app["brand"]}-outer-alb-sg"
+    Name = "${local.project}-outer-alb-sg"
   }
 }
 
@@ -44,8 +44,8 @@ resource "aws_security_group" "outer_alb" {
 # Create security group and rules for inner ALB
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "inner_alb" {
-  name        = "${var.app["brand"]}-inner-alb-sg"
-  description = "Security group rules for ${var.app["brand"]} ALB"
+  name        = "${local.project}-inner-alb-sg"
+  description = "Security group rules for ${local.project} ALB"
   vpc_id      = aws_vpc.this.id
   
   ingress {
@@ -65,7 +65,7 @@ resource "aws_security_group" "inner_alb" {
     }
 
   tags = {
-    Name = "${var.app["brand"]}-inner-alb-sg"
+    Name = "${local.project}-inner-alb-sg"
   }
 }
 
@@ -73,12 +73,12 @@ resource "aws_security_group" "inner_alb" {
 # Create security group and rules for EC2
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "ec2" {
-  name        = "${var.app["brand"]}-ec2-sg"
-  description = "Security group rules for ${var.app["brand"]} EC2"
+  name        = "${local.project}-ec2-sg"
+  description = "Security group rules for ${local.project} EC2"
   vpc_id      = aws_vpc.this.id
   
   tags = {
-    Name = "${var.app["brand"]}-ec2-sg"
+    Name = "${local.project}-ec2-sg"
   }
 }
 
@@ -206,8 +206,8 @@ resource "aws_security_group_rule" "packer_ssh" {
 # Create security group and rules for RDS
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "rds" {
-  name        = "${var.app["brand"]}-rds-sg"
-  description = "Security group rules for ${var.app["brand"]} RDS"
+  name        = "${local.project}-rds-sg"
+  description = "Security group rules for ${local.project} RDS"
   vpc_id      = aws_vpc.this.id
 
   ingress {
@@ -219,7 +219,7 @@ resource "aws_security_group" "rds" {
     }
 
   tags = {
-    Name = "${var.app["brand"]}-rds-sg"
+    Name = "${local.project}-rds-sg"
   }
 }
 
@@ -227,8 +227,8 @@ resource "aws_security_group" "rds" {
 # Create security group and rules for ElastiCache
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "redis" {
-  name        = "${var.app["brand"]}-redis-sg"
-  description = "Security group rules for ${var.app["brand"]} ElastiCache"
+  name        = "${local.project}-redis-sg"
+  description = "Security group rules for ${local.project} ElastiCache"
   vpc_id      = aws_vpc.this.id
 
   ingress {
@@ -240,7 +240,7 @@ resource "aws_security_group" "redis" {
     }
 
   tags = {
-    Name = "${var.app["brand"]}-redis-sg"
+    Name = "${local.project}-redis-sg"
   }
 }
 
@@ -248,8 +248,8 @@ resource "aws_security_group" "redis" {
 # Create security group and rules for RabbitMQ
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "rabbitmq" {
-  name        = "${var.app["brand"]}-rabbitmq-sg"
-  description = "Security group rules for ${var.app["brand"]} RabbitMQ"
+  name        = "${local.project}-rabbitmq-sg"
+  description = "Security group rules for ${local.project} RabbitMQ"
   vpc_id      = aws_vpc.this.id
 
   ingress {
@@ -261,7 +261,7 @@ resource "aws_security_group" "rabbitmq" {
     }
 
   tags = {
-    Name = "${var.app["brand"]}-rabbitmq-sg"
+    Name = "${local.project}-rabbitmq-sg"
   }
 }
 
@@ -269,8 +269,8 @@ resource "aws_security_group" "rabbitmq" {
 # Create security group and rules for EFS
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "efs" {
-  name        = "${var.app["brand"]}-efs-sg"
-  description = "Security group rules for ${var.app["brand"]} EFS"
+  name        = "${local.project}-efs-sg"
+  description = "Security group rules for ${local.project} EFS"
   vpc_id      = aws_vpc.this.id
 
   ingress {
@@ -290,7 +290,7 @@ resource "aws_security_group" "efs" {
     }
 
   tags = {
-    Name = "${var.app["brand"]}-efs-sg"
+    Name = "${local.project}-efs-sg"
   }
 }
 
@@ -298,8 +298,8 @@ resource "aws_security_group" "efs" {
 # Create security group and rules for ELK
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "elk" {
-  name        = "${var.app["brand"]}-elk-sg"
-  description = "Security group rules for ${var.app["brand"]} ELK"
+  name        = "${local.project}-elk-sg"
+  description = "Security group rules for ${local.project} ELK"
   vpc_id      = aws_vpc.this.id
 
   ingress {
@@ -319,6 +319,6 @@ resource "aws_security_group" "elk" {
     }
 
   tags = {
-    Name = "${var.app["brand"]}-elk-sg"
+    Name = "${local.project}-elk-sg"
   }
 }
