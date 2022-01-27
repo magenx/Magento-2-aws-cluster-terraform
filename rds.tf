@@ -19,7 +19,7 @@ resource "aws_db_subnet_group" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#		
 resource "aws_db_parameter_group" "this" {
   name              = "${local.project}-parameters"
-  family            = "mariadb10.5"
+  family            = var.rds["family"]
   description       = "Parameter group for ${local.project} database"
   tags = {
     Name = "${local.project}-parameters"
