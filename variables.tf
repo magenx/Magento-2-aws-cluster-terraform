@@ -1,3 +1,25 @@
+
+locals {
+   # Create global project name to be assigned to all resources
+   project = lower("${var.app["brand"]}-${var.env}-${random_string.this["project"].result}")
+}
+
+variable "env" {
+  type         = string
+  description  = "Project environment settings - prod or dev"
+  default      = "prod"
+}
+
+variable "password" {
+   description = "Generate password for these resources"
+   default     = ["rds", "rabbitmq", "app", "blowfish"]
+}
+
+variable "string" {
+   description = "Generate random string for these resources"
+   default     = ["admin_path", "mysql_path", "profiler", "persistent", "id_prefix", "health_check", "project"]
+}
+
 variable "ec2" {
   description  = "EC2 instances names and types included in AutoScaling groups"
   default      = {
