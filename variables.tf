@@ -73,10 +73,10 @@ variable "rds" {
     allocated_storage      = "50"
     max_allocated_storage  = "100"
     storage_type           = "gp2"
-    family                 = "mariadb10.5"
-    engine_version         = "10.5.12"
-    instance_class         = "db.m6g.large"
     engine                 = "mariadb"
+    engine_version         = "10.5.12"
+    family                 = "mariadb10.5"
+    instance_class         = "db.m6g.large"
     skip_final_snapshot    = true
     multi_az               = true
     enabled_cloudwatch_logs_exports = "error"
