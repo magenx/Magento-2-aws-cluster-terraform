@@ -114,7 +114,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
  `2` autoscaling groups with launch templates converted from `user_data`  
  `2` target groups for load balancer (frontend admin)  
  `1` load balancer external with listeners / rules  
- `1` rds mariadb databases multi AZ
+ `1` rds mariadb databases multi AZ  
  `1` elasticsearch domain for Magento catalog search  
  `2` redis elasticache cluster for sessions and cache  
  `1` rabbitmq broker to manage queue messages  
