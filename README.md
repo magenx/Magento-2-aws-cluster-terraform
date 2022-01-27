@@ -106,7 +106,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
    terraform apply
 ```
 > to destroy infrastructure: ```terraform destroy```  
-> resources created outside of terraform must be deleted manually, for example CloudWatch logs
+> resources created outside of terraform must be deleted manually, for example CloudWatch logs, AMI, Snapshots
 
 <br />
 
