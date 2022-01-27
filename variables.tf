@@ -47,7 +47,6 @@ variable "app" {
     php_packages     = "cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4 apcu"
     linux_packages   = "nfs-common unzip git patch python3-pip acl attr imagemagick snmp"
     exclude_linux_packages = "apache2* *apcu-bc"
-    volume_size      = "50"
     composer_user    = "8c681734f22763b50ea0c29dff9e7af2"
     composer_pass    = "02dfee497e669b5db1fe1c8d481d6974"
   }
@@ -133,6 +132,7 @@ variable "redis" {
 variable "asg" {
   description      = "Map Autoscaling Group configuration values"
   default  = {
+    volume_size           = "50"
     monitoring            = false
     warm_pool             = "disabled"
     desired_capacity      = "1"
