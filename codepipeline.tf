@@ -7,7 +7,7 @@
 # Create CodeDeploy role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role" "codedeploy" {
-  name = "${var.app["brand"]}-${data.aws_region.current.name}-codedeploy-role"
+  name = "${local.project}-codedeploy-role"
   description  = "Allows CodeDeploy to call AWS services on your behalf."
   path = "/service-role/"
   assume_role_policy = jsonencode(
@@ -26,14 +26,14 @@ resource "aws_iam_role" "codedeploy" {
     }
   )
   tags = {
-     Name = "${var.app["brand"]}-${data.aws_region.current.name}-codedeploy-role"
+     Name = "${local.project}-codedeploy-role"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create policy for CodeDeploy role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_policy" "codedeploy" {
-  name = "${var.app["brand"]}-${data.aws_region.current.name}-codedeploy-policy"
+  name = "${local.project}-codedeploy-policy"
   path = "/service-role/"
   policy = <<EOF
 {
@@ -60,7 +60,7 @@ resource "aws_iam_role_policy_attachment" "codedeploy" {
 # Create CodeBuild role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role" "codebuild" {
-  name = "${var.app["brand"]}-${data.aws_region.current.name}-codebuild-role"
+  name = "${local.project}-codebuild-role"
   description = "Allows CodeBuild to call AWS services on your behalf."
   path = "/service-role/"
   assume_role_policy = jsonencode(
@@ -79,14 +79,14 @@ resource "aws_iam_role" "codebuild" {
     }
   )
   tags = {
-     Name = "${var.app["brand"]}-${data.aws_region.current.name}-codebuild-role"
+     Name = "${local.project}-codebuild-role"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create policy for CodeBuild role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_policy" "codebuild" {
-  name = "${var.app["brand"]}-${data.aws_region.current.name}-codebuild-policy"
+  name = "${local.project}-codebuild-policy"
   path = "/service-role/"
   policy = <<EOF
 {
@@ -124,14 +124,14 @@ resource "aws_iam_role_policy_attachment" "codebuild" {
 # Create CloudWatch log group and log stream for CodeBuild logs
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_log_group" "codebuild" {
-  name = "${var.app["brand"]}-${data.aws_region.current.name}-codebuild-project"
+  name = "${local.project}-codebuild-project"
   tags = {
-    Name = "${var.app["brand"]}-${data.aws_region.current.name}-codebuild-project"
+    Name = "${local.project}-codebuild-project"
   }
 }
 
 resource "aws_cloudwatch_log_stream" "codebuild" {
-  name = "${var.app["brand"]}-${data.aws_region.current.name}-codebuild-project"
+  name = "${local.project}-codebuild-project"
   log_group_name = aws_cloudwatch_log_group.codebuild.name
 }
 
@@ -139,7 +139,7 @@ resource "aws_cloudwatch_log_stream" "codebuild" {
 # Create CodePipeline role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role" "codepipeline" {
-  name = "${var.app["brand"]}-${data.aws_region.current.name}-codepipeline-role"
+  name = "${local.project}-codepipeline-role"
   description = "Allows CodePipeline to call AWS services on your behalf."
   path = "/service-role/"
   assume_role_policy = jsonencode(
@@ -158,14 +158,14 @@ resource "aws_iam_role" "codepipeline" {
     }
   )
   tags = {
-     Name = "${var.app["brand"]}-${data.aws_region.current.name}-codepipeline-role"
+     Name = "${local.project}-codepipeline-role"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create policy for CodePipeline role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_policy" "codepipeline" {
-  name = "${var.app["brand"]}-${data.aws_region.current.name}-codepipeline-policy"
+  name = "${local.project}-codepipeline-policy"
   path = "/service-role/"
   policy = <<EOF
 {
@@ -207,7 +207,7 @@ resource "aws_iam_role_policy_attachment" "codepipeline" {
 # Create EventBridge rule to monitor CodeCommit repository state
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "codecommit_build" {
-  name        = "${var.app["brand"]}-CodeCommit-Repository-State-Change-Build"
+  name        = "${local.project}-CodeCommit-Repository-State-Change-Build"
   description = "CloudWatch monitor magento repository state change build branch"
   event_pattern = <<EOF
 {
@@ -229,7 +229,7 @@ EOF
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "codepipeline_build" {
   rule      = aws_cloudwatch_event_rule.codecommit_build.name
-  target_id = "${var.app["brand"]}-Start-CodePipeline"
+  target_id = "${local.project}-Start-CodePipeline"
   arn       = aws_codepipeline.this.arn
   role_arn  = aws_iam_role.eventbridge_service_role.arn
 }
@@ -237,9 +237,9 @@ resource "aws_cloudwatch_event_target" "codepipeline_build" {
 # Create CodeDeploy app
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codedeploy_app" "this" {
-  name = "${var.app["brand"]}-${data.aws_region.current.name}-deployment-app"
+  name = "${local.project}-deployment-app"
   tags = {
-    Name = "${var.app["brand"]}-${data.aws_region.current.name}-deployment-app"
+    Name = "${local.project}-deployment-app"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -247,7 +247,7 @@ resource "aws_codedeploy_app" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codedeploy_deployment_group" "this" {
   app_name              = aws_codedeploy_app.this.name
-  deployment_group_name = "${var.app["brand"]}-${data.aws_region.current.name}-deployment-group"
+  deployment_group_name = "${local.project}-deployment-group"
   service_role_arn      = aws_iam_role.codedeploy.arn
   
   deployment_config_name = "CodeDeployDefault.AllAtOnce"
@@ -267,7 +267,7 @@ resource "aws_codedeploy_deployment_group" "this" {
 	
   trigger_configuration {
     trigger_events     = ["DeploymentFailure","DeploymentSuccess"]
-    trigger_name       = "${var.app["brand"]}-${data.aws_region.current.name}-deployment-alert"
+    trigger_name       = "${local.project}-deployment-alert"
     trigger_target_arn = aws_sns_topic.default.arn
   }
 
@@ -276,7 +276,7 @@ resource "aws_codedeploy_deployment_group" "this" {
   }
   
   tags = {
-    Name = "${var.app["brand"]}-${data.aws_region.current.name}-deployment-group"
+    Name = "${local.project}-deployment-group"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -285,19 +285,19 @@ resource "aws_codedeploy_deployment_group" "this" {
 resource "aws_codebuild_project" "this" {
   badge_enabled          = false
   build_timeout          = 60
-  description            = "${var.app["brand"]}-${data.aws_region.current.name}-codebuild-project"
-  name                   = "${var.app["brand"]}-${data.aws_region.current.name}-codebuild-project"
+  description            = "${local.project}-codebuild-project"
+  name                   = "${local.project}-codebuild-project"
   queued_timeout         = 480
   depends_on             = [aws_iam_role.codebuild]
   service_role           = aws_iam_role.codebuild.arn
 	
   tags = {
-    Name = "${var.app["brand"]}-${data.aws_region.current.name}-codebuild-project"
+    Name = "${local.project}-codebuild-project"
   }
 
   artifacts {
     encryption_disabled    = false
-    name                   = "${var.app["brand"]}-${data.aws_region.current.name}-codebuild-project"
+    name                   = "${local.project}-codebuild-project"
     override_artifact_name = false
     packaging              = "NONE"
     type                   = "CODEPIPELINE"
@@ -340,11 +340,11 @@ resource "aws_codebuild_project" "this" {
 # Create CodePipeline configuration
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codepipeline" "this" {
-  name       = "${var.app["brand"]}-${data.aws_region.current.name}-codepipeline"
+  name       = "${local.project}-codepipeline"
   depends_on = [aws_iam_role.codepipeline]
   role_arn   = aws_iam_role.codepipeline.arn
   tags       = {
-     Name = "${var.app["brand"]}-${data.aws_region.current.name}-codepipeline"
+     Name = "${local.project}-codepipeline"
   }
 
   artifact_store {
@@ -416,7 +416,7 @@ resource "aws_codepipeline" "this" {
       configuration = {
                 BucketName = aws_s3_bucket.this["backup"].bucket
                 Extract    = false
-                ObjectKey  = "deploy/{datetime}/${var.app["brand"]}.zip"
+                ObjectKey  = "deploy/{datetime}/${local.project}.zip"
                 }
       input_artifacts = [
         "BuildArtifact",
@@ -436,7 +436,7 @@ resource "aws_codepipeline" "this" {
 # Create SSM Document runShellScript to pull main branch from CodeCommit
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "git_pull_main" {
-  name          = "${var.app["brand"]}-codecommit-pull-main-changes"
+  name          = "${local.project}-codecommit-pull-main-changes"
   document_type = "Command"
   document_format = "YAML"
   target_type   = "/AWS::EC2::Instance"
@@ -447,7 +447,7 @@ description: "Pull code changes from CodeCommit main branch"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
-  name: "${var.app["brand"]}CodeCommitPullMainChanges"
+  name: "${local.project}CodeCommitPullMainChanges"
   inputs:
     runCommand:
     - |-
@@ -468,7 +468,7 @@ EOT
 # Create EventBridge rule to monitor CodeCommit repository state
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "codecommit_main" {
-  name        = "${var.app["brand"]}-CodeCommit-Repository-State-Change-Main"
+  name        = "${local.project}-CodeCommit-Repository-State-Change-Main"
   description = "CloudWatch monitor magento repository state change main branch"
   event_pattern = <<EOF
 {
@@ -487,7 +487,7 @@ EOF
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "codecommit_main" {
   rule      = aws_cloudwatch_event_rule.codecommit_main.name
-  target_id = "${var.app["brand"]}-App-Deployment-Script"
+  target_id = "${local.project}-App-Deployment-Script"
   arn       = aws_ssm_document.git_pull_main.arn
   role_arn  = aws_iam_role.eventbridge_service_role.arn
  
