@@ -8,7 +8,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "codecommit_nginx" {
   for_each        = var.ec2
-  name            = "${var.app["brand"]}-codecommit-pull-nginx-${each.key}-config-changes"
+  name            = "${local.project}-codecommit-pull-nginx-${each.key}-config-changes"
   document_type   = "Command"
   document_format = "YAML"
   target_type     = "/AWS::EC2::Instance"
@@ -36,7 +36,7 @@ EOT
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "codecommit_nginx" {
   for_each      = var.ec2
-  name          = "${var.app["brand"]}-CodeCommit-Nginx-${title(each.key)}-Repository-State-Change"
+  name          = "${local.project}-Nginx-${title(each.key)}-Repo-State-Change"
   description   = "CloudWatch monitor nginx ${each.key} repository state change"
   event_pattern = <<EOF
 {
@@ -56,7 +56,7 @@ EOF
 resource "aws_cloudwatch_event_target" "codecommit_nginx" {
   for_each  = var.ec2
   rule      = aws_cloudwatch_event_rule.codecommit_nginx[each.key].name
-  target_id = "${var.app["brand"]}-Nginx-${title(each.key)}-Config-Deployment-Script"
+  target_id = "${local.project}-Nginx-${title(each.key)}-Config-Deployment-Script"
   arn       = aws_ssm_document.codecommit_nginx[each.key].arn
   role_arn  = aws_iam_role.eventbridge_service_role.arn
  
