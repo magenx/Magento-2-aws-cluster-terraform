@@ -7,7 +7,7 @@
 # Create CodeCommit repository for application code
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codecommit_repository" "app" {
-  repository_name = var.app["domain"]
+  repository_name = local.project
   description     = "Magento 2.x code for ${var.app["domain"]}"
     tags = {
       Name = "${local.project}-${var.app["domain"]}"
@@ -17,7 +17,7 @@ resource "aws_codecommit_repository" "app" {
 # Create CodeCommit repository for services configuration
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codecommit_repository" "services" {
-  repository_name = "${var.app["brand"]}-services-config"
+  repository_name = "${local.project}-services-config"
   description     = "EC2 linux and services configurations"
     tags = {
       Name = "${local.project}-services-config"
@@ -38,6 +38,13 @@ resource "aws_codecommit_repository" "services" {
 
           git branch -m nginx_frontend
           git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_frontend
+          rm -rf .git
+
+          cd ${abspath(path.root)}/services/varnish
+          git branch -m varnish
+          git add .
+          git commit -m "varnish_ec2_config"
+          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} varnish
           rm -rf .git
 EOF
   }
