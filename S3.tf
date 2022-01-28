@@ -75,11 +75,6 @@ resource "aws_s3_bucket_policy" "media" {
             "${aws_s3_bucket.this["media"].arn}",
             "${aws_s3_bucket.this["media"].arn}/*"
          ]
-         Condition = {
-            StringEquals = {
-                "aws:SourceVpc" = [ aws_vpc.this.id ]
-         }
-       }
       }, 
       {
          Action = ["s3:GetObject", "s3:GetObjectAcl"],
