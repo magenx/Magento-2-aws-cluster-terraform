@@ -125,7 +125,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
  `1` sns topic default subscription to receive email alerts  
  `1` ses user access details for smtp module  
    
-- [x] Configure **Fastly** service for CDN and Varnish cache
+- [x] Configure **Fastly** service for CDN and cache, if Fastly disabled in variables, then Varnish cache will be installed locally on EC2 frontend instance.
    
  >resources are grouped into a virtual network, VPC dedicated to your brand  
  >the settings initially imply a large store, and are designed for huge traffic.  
