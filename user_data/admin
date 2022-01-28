@@ -28,7 +28,7 @@ su ${BRAND} -s /bin/bash -c "git remote add origin ${CODECOMMIT_APP_REPO}"
 su ${BRAND} -s /bin/bash -c "git fetch origin main"
 su ${BRAND} -s /bin/bash -c "git reset origin/main --hard"
 
-if [ "${FASTLY}" == "disabled" ]; then
+if [ "${FASTLY}" == "disabled" ] && [ "${INSTANCE_NAME}" != "admin" ]; then
 sed -i "s/INSTANCE_LOCAL_IP:80/$${INSTANCE_LOCAL_IP}:8080/" /etc/nginx/sites-available/magento.conf
 else
 sed -i "s/INSTANCE_LOCAL_IP:80/$${INSTANCE_LOCAL_IP}:80/" /etc/nginx/sites-available/magento.conf
