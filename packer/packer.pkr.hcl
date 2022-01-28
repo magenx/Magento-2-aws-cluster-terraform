@@ -68,6 +68,7 @@ build {
     timeout      = "60s"
     environment_vars = [
 "INSTANCE_NAME=${var.INSTANCE_NAME}",
+"FASTLY=${local.var["FASTLY"]}",
 "CIDR=${local.var["CIDR"]}",
 "RESOLVER=${local.var["RESOLVER"]}",
 "AWS_DEFAULT_REGION=${local.var["AWS_DEFAULT_REGION"]}",
