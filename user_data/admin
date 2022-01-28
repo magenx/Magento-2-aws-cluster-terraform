@@ -30,6 +30,8 @@ su ${BRAND} -s /bin/bash -c "git reset origin/main --hard"
 
 if [ "${FASTLY}" == "disabled" ] && [ "${INSTANCE_NAME}" != "admin" ]; then
 sed -i "s/INSTANCE_LOCAL_IP:80/$${INSTANCE_LOCAL_IP}:8080/" /etc/nginx/sites-available/magento.conf
+uuidgen > /etc/varnish/secret
+systemctl restart varnish
 else
 sed -i "s/INSTANCE_LOCAL_IP:80/$${INSTANCE_LOCAL_IP}:80/" /etc/nginx/sites-available/magento.conf
 fi
@@ -47,7 +49,7 @@ Brand: ${BRAND}
 Uptime since:  $(uptime -s)
 END
 
-/bin/systemctl status nginx.service php*fpm.service >> /tmp/timer_user_data_log
+/bin/systemctl status nginx.service php*fpm.service varnish.service >> /tmp/timer_user_data_log
 ss -tunlp >> /tmp/timer_user_data_log
 
 aws sns publish \
