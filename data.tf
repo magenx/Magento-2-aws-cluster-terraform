@@ -139,6 +139,7 @@ data "template_file" "user_data" {
   for_each = var.ec2
   template = file("./user_data/${each.key}")
   vars = {
+  FASTLY = "${var.fastly}"
   INSTANCE_NAME = "${each.key}"
   AWS_DEFAULT_REGION = "${data.aws_region.current.name}"
   SNS_TOPIC_ARN = "${aws_sns_topic.default.arn}"
