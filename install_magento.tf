@@ -134,8 +134,10 @@ mainSteps:
       fooman/printorderpdf-m2 \
       mageplaza/module-smtp \
       magefan/module-blog \
-      stripe/stripe-payments \
-      fastly/magento2"
+      stripe/stripe-payments"
+      if [ "${var.fastly}" == "enabled" ]; then
+      su ${var.app["brand"]} -s /bin/bash -c "composer -n require fastly/magento2"
+      fi
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade -n --no-ansi"
       ## correct general contact name and email address
       su ${var.app["brand"]} -s /bin/bash -c 'bin/magento config:set trans_email/ident_general/name ${var.app["brand"]}'
@@ -166,6 +168,10 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set web/secure/enable_upgrade_insecure 1"
       ## enable eav cache
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set dev/caching/cache_user_defined_attributes 1"
+      ## enable local varnish cache yay!
+      if [ "${var.fastly}" == "disabled" ]; then
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set --scope=default --scope-code=0 system/full_page_cache/caching_application 2"
+      fi
       ## git push to codecommit build branch to trigger codepipeline build
       git add . -A
       git commit -m ${var.app["brand"]}-init-$(date +'%y%m%d-%H%M%S')
