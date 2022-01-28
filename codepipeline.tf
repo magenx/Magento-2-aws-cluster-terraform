@@ -447,7 +447,7 @@ description: "Pull code changes from CodeCommit main branch"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
-  name: "${local.project}CodeCommitPullMainChanges"
+  name: "${replace(local.project,"-","")}CodeCommitPullMainChanges"
   inputs:
     runCommand:
     - |-
