@@ -35,12 +35,12 @@ mainSteps:
       r composer_replace
       N
       }' composer.json
-      sed -i "s/2-4/2-5/" app/etc/di.xml
       su ${var.app["brand"]} -s /bin/bash -c "composer install -n"
       cd /home/${var.app["brand"]}/public_html
       su ${var.app["brand"]} -s /bin/bash -c "rsync --remove-source-files -aA /tmp/magento/ ."
       su ${var.app["brand"]} -s /bin/bash -c "echo 007 > magento_umask"
       su ${var.app["brand"]} -s /bin/bash -c "echo -e '/pub/media/*\n/var/*'" > .gitignore
+      sed -i "s/2-4/2-5/" app/etc/di.xml
       chmod +x bin/magento
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:install \
       --base-url=https://${var.app["domain"]}/ \
