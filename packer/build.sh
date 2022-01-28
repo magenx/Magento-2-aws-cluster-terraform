@@ -45,7 +45,7 @@ sudo sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > 
 
 sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/nginx.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/php.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
- 
+
 _PHP_PACKAGES+=(${PHP_PACKAGES})
 sudo apt-get -qqy install nginx php-pear php${PHP_VERSION} ${_PHP_PACKAGES[@]/#/php${PHP_VERSION}-}
 
@@ -162,6 +162,22 @@ php_admin_value[memory_limit] = 2048M
 php_admin_value[date.timezone] = ${TIMEZONE}
 END
 '
+
+if [ "${FASTLY}" == "disabled" ] && [ "${INSTANCE_NAME}" != "admin" ]; then
+
+sudo apt-get -qqy install varnish
+
+cd /etc/varnish
+
+sudo git init
+sudo git remote add origin ${CODECOMMIT_SERVICES_REPO}
+sudo git fetch
+sudo git reset --hard origin/varnish
+sudo git checkout -t origin/varnish
+
+cp varnish.service /etc/systemd/system/
+
+fi
 
 cd /etc/nginx
 sudo git init
