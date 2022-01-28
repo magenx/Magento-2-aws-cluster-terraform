@@ -28,7 +28,12 @@ su ${BRAND} -s /bin/bash -c "git remote add origin ${CODECOMMIT_APP_REPO}"
 su ${BRAND} -s /bin/bash -c "git fetch origin main"
 su ${BRAND} -s /bin/bash -c "git reset origin/main --hard"
 
-sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/magento.conf
+if [ "${FASTLY}" == "disabled" ]; then
+sed -i "s/INSTANCE_LOCAL_IP:80/$${INSTANCE_LOCAL_IP}:8080/" /etc/nginx/sites-available/magento.conf
+else
+sed -i "s/INSTANCE_LOCAL_IP:80/$${INSTANCE_LOCAL_IP}:80/" /etc/nginx/sites-available/magento.conf
+fi
+
 systemctl restart nginx
 
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
