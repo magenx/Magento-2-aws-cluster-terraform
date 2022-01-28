@@ -29,6 +29,11 @@ variable "ec2" {
    }
 }
 
+variable "fastly" {
+  description  = "Enable Fastly. If disable = Varnish cache will be installed locally on EC2 frontend"
+  default      = "enabled"
+}
+
 variable "app" {
   description      = "Map application params | Magento 2"
   default          = {
