@@ -171,6 +171,7 @@ mainSteps:
       ## enable local varnish cache yay!
       if [ "${var.fastly}" == "disabled" ]; then
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set --scope=default --scope-code=0 system/full_page_cache/caching_application 2"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set --http-cache-hosts=127.0.0.1:80"
       fi
       ## git push to codecommit build branch to trigger codepipeline build
       git add . -A
