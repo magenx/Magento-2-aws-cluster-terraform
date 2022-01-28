@@ -174,10 +174,17 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set --http-cache-hosts=127.0.0.1:80"
       fi
       ## git push to codecommit build branch to trigger codepipeline build
-      git add . -A
-      git commit -m ${var.app["brand"]}-init-$(date +'%y%m%d-%H%M%S')
-      git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
-      git checkout -b build
-      git push origin build
+      cat > ../.gitconfig<<EOF
+      [user]
+            name = ${var.app["admin_firstname"]}
+            email = ${var.app["admin_email"]}
+      EOF
+      chown ${var.app["brand"]} ../.gitconfig
+      su ${var.app["brand"]} -s /bin/bash -c "git init -b main"
+      su ${var.app["brand"]} -s /bin/bash -c "git add . -A"
+      su ${var.app["brand"]} -s /bin/bash -c "git commit -m ${var.app["brand"]}-init-$(date +'%y%m%d-%H%M%S')"
+      su ${var.app["brand"]} -s /bin/bash -c "git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
+      su ${var.app["brand"]} -s /bin/bash -c "git checkout -b build"
+      su ${var.app["brand"]} -s /bin/bash -c "git push origin build"
 EOT
 }
