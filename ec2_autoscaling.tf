@@ -60,7 +60,7 @@ resource "aws_iam_role_policy" "sns_publish" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role_policy" "codecommit_access" {
   for_each = var.ec2
-  name = "${local.project}PolicyForCodeCommitAccess${title(each.key)}"
+  name = "${local.project}PolicyCodeCommitAccess${title(each.key)}"
   role = aws_iam_role.ec2[each.key].id
 
   policy = jsonencode({
@@ -73,15 +73,9 @@ resource "aws_iam_role_policy" "codecommit_access" {
             "codecommit:Get*",
             "codecommit:List*",
             "codecommit:Merge*",
-            "codecommit:GitPull",
-            "codecommit:GitPush"
+            "codecommit:GitPull"
       ],
       Resource = aws_codecommit_repository.app.arn
-      Condition = {
-                StringEqualsIfExists = {
-                    "codecommit:References" = ["refs/heads/main"]
-    }
-   }
 },
      {
       Sid    = "codecommitaccessservices${each.key}", 
@@ -90,6 +84,7 @@ resource "aws_iam_role_policy" "codecommit_access" {
             "codecommit:Get*",
             "codecommit:List*",
             "codecommit:Describe*",
+            "codecommit:Merge*",
             "codecommit:GitPull"
       ],
       Resource = aws_codecommit_repository.services.arn
