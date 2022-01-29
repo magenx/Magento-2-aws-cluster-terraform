@@ -184,7 +184,5 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "git add . -A"
       su ${var.app["brand"]} -s /bin/bash -c "git commit -m ${var.app["brand"]}-init-$(date +'%y%m%d-%H%M%S')"
       su ${var.app["brand"]} -s /bin/bash -c "git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
-      su ${var.app["brand"]} -s /bin/bash -c "git checkout -b build"
-      su ${var.app["brand"]} -s /bin/bash -c "git push origin build"
 EOT
 }
