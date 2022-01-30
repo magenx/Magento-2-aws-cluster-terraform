@@ -16,23 +16,12 @@ resource "aws_codecommit_repository" "app" {
   interpreter = ["/bin/bash", "-c"]
   command = <<EOF
           mkdir -p /tmp/magento && cd /tmp/magento
-          composer -n -q config -g http-basic.repo.magento.com ${var.app["composer_user"]} ${var.app["composer_pass"]}
-          composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition . --no-install
-          curl -sO https://raw.githubusercontent.com/magenx/Magento-2-server-installation/master/composer_replace
-          sed -i '/"conflict":/ {
-          r composer_replace
-          N
-          }' composer.json
+          git clone https://github.com/magenx/Magento-2 .
           echo 007 > magento_umask
-          echo -e '/pub/media/*\n/var/*'" > .gitignore
-          composer install -n
-          sed -i "s/2-4/2-5/" app/etc/di.xml
-          git init -b main
+          echo -e '/pub/media/*\n/var/*' > .gitignore
           git config --global user.name "${var.app["admin_firstname"]}"
           git config --global user.email "${var.app["admin_email"]}"
-          git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
-          git add . -A
-          git commit -m "init"
+          git remote set-url origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
           git push origin main
           git checkout -b build
           git push origin build
