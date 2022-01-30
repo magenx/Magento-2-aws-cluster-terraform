@@ -25,8 +25,8 @@ resource "aws_codecommit_repository" "app" {
           }' composer.json
           echo 007 > magento_umask
           echo -e '/pub/media/*\n/var/*'" > .gitignore
-          sed -i "s/2-4/2-5/" app/etc/di.xml
           composer install -n
+          sed -i "s/2-4/2-5/" app/etc/di.xml
           git config --global user.name "${var.app["admin_firstname"]}"
           git config --global user.email "${var.app["admin_email"]}"
           git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
