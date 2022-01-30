@@ -10,6 +10,7 @@ resource "aws_lb" "this" {
   name               = local.project
   internal           = false
   load_balancer_type = "application"
+  enable_deletion_protection = var.alb["enable_deletion_protection"]
   drop_invalid_header_fields = true
   security_groups    = [aws_security_group.alb.id]
   subnets            = values(aws_subnet.this).*.id
