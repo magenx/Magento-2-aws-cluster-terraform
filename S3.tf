@@ -127,7 +127,7 @@ resource "aws_s3_bucket_policy" "system" {
         "s3:GetObject"
       ],
       Effect = "Allow"
-      Resource = "${aws_s3_bucket.this["system"].arn}/deploy/*"
+      Resource = "${aws_s3_bucket.this["system"].arn}/*"
       Principal = {
         AWS = [
           aws_iam_role.codebuild.arn,
