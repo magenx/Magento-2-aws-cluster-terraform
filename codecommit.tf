@@ -68,6 +68,7 @@ resource "aws_codecommit_repository" "services" {
           rm -rf .git
 
           cd ${abspath(path.root)}/services/varnish
+          git init
           git branch -m varnish
           git add .
           git commit -m "varnish_ec2_config"
