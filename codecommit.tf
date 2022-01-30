@@ -27,10 +27,12 @@ resource "aws_codecommit_repository" "app" {
           echo -e '/pub/media/*\n/var/*'" > .gitignore
           composer install -n
           sed -i "s/2-4/2-5/" app/etc/di.xml
+          git init -b main
           git config --global user.name "${var.app["admin_firstname"]}"
           git config --global user.email "${var.app["admin_email"]}"
           git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
-          git branch -m main
+          git add . -A
+          git commit -m "init"
           git push origin main
           git checkout -b build
           git push origin build
