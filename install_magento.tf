@@ -23,24 +23,7 @@ mainSteps:
     runCommand:
     - |-
       #!/bin/bash
-      cd /tmp && mkdir magento && chmod 2770 magento
-      chown -R ${var.app["brand"]}:php-${var.app["brand"]} magento
-      setfacl -R -m u:${var.app["brand"]}:rwX,g:php-${var.app["brand"]}:r-X,o::-,d:u:${var.app["brand"]}:rwX,d:g:php-${var.app["brand"]}:r-X,d:o::- magento
-      setfacl -R -m u:nginx:r-X,g:nginx:r-X,d:u:nginx:r-X magento
-      cd /tmp/magento
-      su ${var.app["brand"]} -s /bin/bash -c "composer -n -q config -g http-basic.repo.magento.com ${var.app["composer_user"]} ${var.app["composer_pass"]}"
-      su ${var.app["brand"]} -s /bin/bash -c "composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition . --no-install"
-      curl -sO https://raw.githubusercontent.com/magenx/Magento-2-server-installation/master/composer_replace
-      sed -i '/"conflict":/ {
-      r composer_replace
-      N
-      }' composer.json
-      su ${var.app["brand"]} -s /bin/bash -c "composer install -n"
       cd /home/${var.app["brand"]}/public_html
-      su ${var.app["brand"]} -s /bin/bash -c "rsync --remove-source-files -aA /tmp/magento/ ."
-      su ${var.app["brand"]} -s /bin/bash -c "echo 007 > magento_umask"
-      su ${var.app["brand"]} -s /bin/bash -c "echo -e '/pub/media/*\n/var/*'" > .gitignore
-      sed -i "s/2-4/2-5/" app/etc/di.xml
       chmod +x bin/magento
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:install \
       --base-url=https://${var.app["domain"]}/ \
@@ -139,6 +122,12 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "composer -n require fastly/magento2"
       fi
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade -n --no-ansi"
+      ## module initialization check
+      if [[ $? -ne 0 ]]; then
+      echo
+      echo "Module initialization error - check command output log"
+      exit 1
+      fi
       ## correct general contact name and email address
       su ${var.app["brand"]} -s /bin/bash -c 'bin/magento config:set trans_email/ident_general/name ${var.app["brand"]}'
       su ${var.app["brand"]} -s /bin/bash -c 'bin/magento config:set trans_email/ident_general/email ${var.app["admin_email"]}'
@@ -173,16 +162,5 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento config:set --scope=default --scope-code=0 system/full_page_cache/caching_application 2"
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set --http-cache-hosts=127.0.0.1:80"
       fi
-      ## git push to codecommit build branch to trigger codepipeline build
-      cat > ../.gitconfig<<EOF
-      [user]
-            name = ${var.app["admin_firstname"]}
-            email = ${var.app["admin_email"]}
-      EOF
-      chown ${var.app["brand"]} ../.gitconfig
-      su ${var.app["brand"]} -s /bin/bash -c "git init -b main"
-      su ${var.app["brand"]} -s /bin/bash -c "git add . -A"
-      su ${var.app["brand"]} -s /bin/bash -c "git commit -m ${var.app["brand"]}-init-$(date +'%y%m%d-%H%M%S')"
-      su ${var.app["brand"]} -s /bin/bash -c "git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
 EOT
 }
