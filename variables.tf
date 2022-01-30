@@ -161,6 +161,7 @@ variable "asp" {
 variable "alb" {
   description      = "Map Application Load Balancer configuration values"
   default  = {
+    enable_deletion_protection = false
     rps_threshold       = "5000"
     error_threshold     = "25"
   }
