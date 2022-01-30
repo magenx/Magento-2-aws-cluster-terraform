@@ -22,6 +22,8 @@ resource "aws_codecommit_repository" "app" {
           git config --global user.name "${var.app["admin_firstname"]}"
           git config --global user.email "${var.app["admin_email"]}"
           git remote set-url origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
+          git add . -A
+          git commit -m "init"
           git push origin main
           git checkout -b build
           git push origin build
