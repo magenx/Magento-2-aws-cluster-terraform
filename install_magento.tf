@@ -47,7 +47,7 @@ mainSteps:
       --use-secure=1 \
       --use-secure-admin=1 \
       --consumers-wait-for-messages=0 \
-      --amqp-host=${trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.endpoints.0}", "amqps://"), ":5671")} \
+      --amqp-host=${regex("amqps://(.*):5671",aws_mq_broker.this.instances.0.endpoints.0)[0]} \
       --amqp-port=5671 \
       --amqp-user=${var.app["brand"]} \
       --amqp-password='${random_password.this["rabbitmq"].result}' \
