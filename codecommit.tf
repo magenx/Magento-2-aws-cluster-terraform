@@ -7,10 +7,35 @@
 # Create CodeCommit repository for application code
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codecommit_repository" "app" {
-  repository_name = local.project
-  description     = "Magento 2.x code for ${var.app["domain"]}"
+  repository_name = var.app["domain"]
+  description     = "Magento 2.x code for ${local.project}"
     tags = {
-      Name = "${local.project}-${var.app["domain"]}"
+    Name = "${local.project}"
+  }
+  provisioner "local-exec" {
+  interpreter = ["/bin/bash", "-c"]
+  command = <<EOF
+          mkdir -p /tmp/magento && cd /tmp/magento
+          composer -n -q config -g http-basic.repo.magento.com ${var.app["composer_user"]} ${var.app["composer_pass"]}
+          composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition . --no-install
+          curl -sO https://raw.githubusercontent.com/magenx/Magento-2-server-installation/master/composer_replace
+          sed -i '/"conflict":/ {
+          r composer_replace
+          N
+          }' composer.json
+          echo 007 > magento_umask
+          echo -e '/pub/media/*\n/var/*'" > .gitignore
+          sed -i "s/2-4/2-5/" app/etc/di.xml
+          composer install -n
+          git config --global user.name "${var.app["admin_firstname"]}"
+          git config --global user.email "${var.app["admin_email"]}"
+          git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
+          git branch -m main
+          git push origin main
+          git checkout -b build
+          git push origin build
+          rm -rf /tmp/magento
+EOF
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
