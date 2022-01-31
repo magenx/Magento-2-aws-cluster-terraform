@@ -102,6 +102,9 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Configure **Fastly** service for CDN and cache.
 - [x] if Fastly disabled in variables, then Varnish cache will be installed locally on EC2 frontend instance.
 - [x] Define either [prod] or [dev] environment variable in `variables.tf`
+  
+ **[ ! ]** ```For production deployment make sure to enable deletion protection and backup retention```  
+   
 - [x] Run:
 ```
    terraform init
@@ -131,7 +134,8 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
  >resources are grouped into a virtual network, VPC dedicated to your brand  
  >the settings initially imply a large store, and are designed for huge traffic.  
  >services are clustered and replicated thus ready for failover.
- 
+   
+   
 ##
 - [x] Deployment into isolated Virtual Private Cloud
 - [x] Autoscaling policy per each group
@@ -147,7 +151,8 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Security groups configured for every service and instances
 - [x] phpMyAdmin for easy database editing
 - [x] MariaDB database dump for data analysis
-- [x] Enhanced security in AWS and LEMP 
+- [x] Enhanced security in AWS and LEMP
+- [x] Default encryption enabled for EBS, S3, RDS
 - [x] AWS Inspector Assessment templates
 - [x] AWS WAF Protection rules  
 
