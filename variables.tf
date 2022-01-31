@@ -77,6 +77,7 @@ variable "rds" {
     allocated_storage      = "50"
     max_allocated_storage  = "100"
     storage_type           = "gp2"
+    storage_encrypted      = true
     engine                 = "mariadb"
     engine_version         = "10.5.12"
     family                 = "mariadb10.5"
