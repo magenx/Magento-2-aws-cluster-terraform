@@ -7,18 +7,18 @@
 # Create SSM Document runShellScript to install magento, push to codecommit, build and deploy
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "install_magento" {
-  name          = "${local.project}-install-magento-push-codecommit"
+  name          = "${local.project}-install-magento"
   document_type = "Command"
   document_format = "YAML"
   target_type   = "/AWS::EC2::Instance"
   content = <<EOT
 ---
 schemaVersion: "2.2"
-description: "Configure git, install magento, push to codecommit"
+description: "Configure git, install magento"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
-  name: "${var.app["brand"]}InstallMagentoPushCodecommit"
+  name: "${var.app["brand"]}InstallMagento"
   inputs:
     runCommand:
     - |-
