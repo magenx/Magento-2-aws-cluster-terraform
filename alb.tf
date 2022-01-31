@@ -37,15 +37,15 @@ resource "aws_lb_target_group" "this" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create default listener for Load Balancer - default response
+# Create HTTPS listener for Load Balancer with default response
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener" "default" {
-													   
+resource "aws_lb_listener" "https" {
+  depends_on = [aws_acm_certificate_validation.default]
   load_balancer_arn = aws_lb.this.arn
-  port              = "80"
-  protocol          = "HTTP"
-															
-													 
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-FS-1-2-Res-2020-10"
+  certificate_arn   = aws_acm_certificate.default.arn
   default_action {
     type             = "fixed-response"
     fixed_response {
@@ -56,10 +56,26 @@ resource "aws_lb_listener" "default" {
     }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create HTTP listener for Load Balancer with redirect to HTTPS
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.this.arn
+  port              = "80"
+  protocol          = "HTTP"
+  default_action {
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create conditional listener rule for Load Balancer - forward to frontend
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener_rule" "frontend" {
-  listener_arn = aws_lb_listener.default.arn
+  listener_arn = aws_lb_listener.https.arn
   priority     = 30
 							
   action {
@@ -82,7 +98,7 @@ resource "aws_lb_listener_rule" "frontend" {
 # Create conditional listener rule for Load Balancer - forward to admin
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener_rule" "admin" {
-  listener_arn = aws_lb_listener.default.arn
+  listener_arn = aws_lb_listener.https.arn
   priority     = 20
   action {
     type             = "forward"
@@ -104,7 +120,7 @@ resource "aws_lb_listener_rule" "admin" {
 # Create conditional listener rule for Load Balancer - forward to phpmyadmin
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_listener_rule" "mysql" {
-  listener_arn = aws_lb_listener.default.arn
+  listener_arn = aws_lb_listener.https.arn
   priority     = 10
   action {
     type             = "forward"
