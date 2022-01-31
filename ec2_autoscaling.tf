@@ -76,6 +76,11 @@ resource "aws_iam_role_policy" "codecommit_access" {
             "codecommit:GitPull"
       ],
       Resource = aws_codecommit_repository.app.arn
+      Condition = {
+                StringEqualsIfExists = {
+                    "codecommit:References" = ["refs/heads/main"]
+      }
+   }
 },
      {
       Sid    = "codecommitaccessservices${each.key}", 
