@@ -32,7 +32,8 @@ resource "aws_db_instance" "this" {
   identifier             = local.project
   allocated_storage      = var.rds["allocated_storage"]
   max_allocated_storage  = var.rds["max_allocated_storage"]
-  storage_type           = var.rds["storage_type"] 
+  storage_type           = var.rds["storage_type"]
+  storage_encrypted      = var.rds["storage_encrypted"]
   engine                 = var.rds["engine"]
   engine_version         = var.rds["engine_version"]
   instance_class         = var.rds["instance_class"]
