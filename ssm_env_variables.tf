@@ -26,7 +26,7 @@ resource "aws_ssm_parameter" "env" {
 "SNS_TOPIC_ARN" : "${aws_sns_topic.default.arn}",
 "CODECOMMIT_APP_REPO" : "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}",
 "CODECOMMIT_SERVICES_REPO" : "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name}",
-"RABBITMQ_ENDPOINT" : "${trimsuffix(trimprefix("${aws_mq_broker.this.instances.0.endpoints.0}", "amqps://"), ":5671")}",
+"RABBITMQ_ENDPOINT" : "${regex("amqps://(.*):5671",aws_mq_broker.this.instances.0.endpoints.0)[0]}",
 "RABBITMQ_USER" : "${var.app["brand"]}",
 "RABBITMQ_PASSWORD" : "${random_password.this["rabbitmq"].result}",
 "ELASTICSEARCH_ENDPOINT" : "https://${aws_elasticsearch_domain.this.endpoint}:443",
