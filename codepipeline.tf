@@ -416,7 +416,7 @@ resource "aws_codepipeline" "this" {
       configuration = {
                 BucketName = aws_s3_bucket.this["backup"].bucket
                 Extract    = false
-                ObjectKey  = "deploy/{datetime}/${local.project}.zip"
+                ObjectKey  = "deploy/${local.project}.zip"
                 }
       input_artifacts = [
         "BuildArtifact",
