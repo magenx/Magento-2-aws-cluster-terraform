@@ -133,6 +133,7 @@ variable "redis" {
     port                          = "6379"
     automatic_failover_enabled    = true
     multi_az_enabled              = true
+    at_rest_encryption_enabled    = true
   }
 }
           
