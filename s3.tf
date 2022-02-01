@@ -8,23 +8,21 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_s3_bucket" "this" {
   for_each      = var.s3
-  bucket        = "${local.project}-${each.key}-storage"
+  bucket        = "${local.project}${random_string.s3[each.key].id}-${each.key}"
   force_destroy = true
   acl           = "private"
   versioning {
         enabled = (each.value == "state" ? true : false)
-   }
-	
+   }	
   server_side_encryption_configuration {
         rule {
           apply_server_side_encryption_by_default {
              sse_algorithm = "AES256"
           }
       }
-  }
-	
+  }	
   tags = {
-    Name        = "${local.project}-${each.key}-storage"
+    Name        = "${local.project}${random_string.s3[each.key].id}-${each.key}"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -32,7 +30,7 @@ resource "aws_s3_bucket" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#	  
 resource "aws_s3_bucket_public_access_block" "this" {
   for_each = {for name in var.s3: name => name if name != "media"}
-  bucket = "${local.project}-${each.key}-storage"  
+  bucket = "${local.project}${random_string.s3[each.key].id}-${each.key}"  
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
