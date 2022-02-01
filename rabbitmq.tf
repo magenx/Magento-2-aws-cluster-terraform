@@ -12,7 +12,8 @@ resource "aws_mq_broker" "this" {
   engine_version     = var.rabbitmq["engine_version"]
   host_instance_type = var.rabbitmq["host_instance_type"]
   security_groups    = [aws_security_group.rabbitmq.id]
-  subnet_ids         = [values(aws_subnet.this).0.id]
+  deployment_mode    = "ACTIVE_STANDBY_MULTI_AZ"
+  subnet_ids         = [values(aws_subnet.this).*.id]
   user {
     username = var.app["brand"]
     password = random_password.this["rabbitmq"].result
