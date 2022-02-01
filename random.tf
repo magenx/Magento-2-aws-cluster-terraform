@@ -32,10 +32,14 @@ resource "random_string" "this" {
   upper          = false
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Generate random name alias
+# Generate random stirng for s3
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "random_pet" "this" {
-  for_each        = var.s3
-  length          = 1
+resource "random_string" "s3" {
+  for_each       = var.s3
+  length         = 3
+  lower          = true
+  number         = true
+  special        = false
+  upper          = false
 }
 
