@@ -28,6 +28,6 @@ resource "aws_dynamodb_table" "lock" {
         type = "S"
     }
     tags = {
-        Name = "${var.app["brand"]} ${data.aws_region.current.name} terraform state lock"
+        Name = "${local.project} terraform state lock"
     }
 }
