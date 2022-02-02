@@ -152,7 +152,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] phpMyAdmin for easy database editing
 - [x] MariaDB database dump for data analysis
 - [x] Enhanced security in AWS and LEMP
-- [x] Default encryption enabled for EBS, S3, RDS
+- [x] Default encryption enabled for EBS, S3, RDS, ElastiCache
 - [x] AWS Inspector Assessment templates
 - [x] AWS WAF Protection rules  
 
