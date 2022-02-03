@@ -119,7 +119,8 @@ variable "rabbitmq" {
   default  = {
     broker_name            = "queue"
     engine_version         = "3.8.11"
-    host_instance_type     = "mq.t3.micro"
+    deployment_mode        = "CLUSTER_MULTI_AZ"
+    host_instance_type     = "mq.m5.large"
   }
 }
 
