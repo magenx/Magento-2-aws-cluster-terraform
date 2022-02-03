@@ -111,6 +111,7 @@ mainSteps:
       ## sync to s3 remote storage
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento remote-storage:sync"
       ## install modules to properly test magento 2 production-ready functionality
+      su ${var.app["brand"]} -s /bin/bash -c "composer -n -q config -g http-basic.repo.magento.com ${var.app["composer_user"]} ${var.app["composer_pass"]}"
       su ${var.app["brand"]} -s /bin/bash -c "composer -n require \
       fooman/sameorderinvoicenumber-m2 \
       fooman/emailattachments-m2 \
