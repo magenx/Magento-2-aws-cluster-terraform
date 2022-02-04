@@ -132,8 +132,6 @@ variable "redis" {
     name                       = ["session", "cache"]
     engine_version                = "6.x"
     port                          = "6379"
-    automatic_failover_enabled    = true
-    multi_az_enabled              = true
     at_rest_encryption_enabled    = true
   }
 }
