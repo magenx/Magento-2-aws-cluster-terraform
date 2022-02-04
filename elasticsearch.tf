@@ -27,9 +27,6 @@ resource "aws_elasticsearch_domain" "this" {
   cluster_config {
     instance_type  = var.elk["instance_type"]
     instance_count = var.elk["instance_count"]
-  encrypt_at_rest {
-    enabled = true
-  }
   zone_awareness_enabled = var.elk["instance_count"] > 1 ? true : false
   dynamic "zone_awareness_config" {
      for_each = var.elk["instance_count"] > 1 ? [var.elk["instance_count"]] : []
@@ -37,6 +34,9 @@ resource "aws_elasticsearch_domain" "this" {
         availability_zone_count = var.elk["instance_count"]
       }
     }
+  }
+  encrypt_at_rest {
+    enabled = true
   }
   ebs_options {
     ebs_enabled = var.elk["ebs_enabled"]
