@@ -124,15 +124,14 @@ resource "aws_launch_template" "this" {
     associate_public_ip_address = true
     security_groups = [aws_security_group.ec2.id]
   }
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      Name = "${local.project}-${each.key}-ec2" }
-  }
-  tag_specifications {
-    resource_type = "volume"
-    tags = {
-      Name = "${local.project}-${each.key}-ec2" }
+  dynamic "tag_specifications" {
+    for_each = toset(["instance","volume"])
+    content {
+       resource_type = each.key
+       tags = {
+         Name = "${local.project}-${each.key}-ec2"  
+      }
+    }
   }
   user_data = base64encode(data.template_file.user_data[each.key].rendered)
   update_default_version = true
