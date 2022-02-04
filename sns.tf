@@ -8,6 +8,9 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_sns_topic" "default" {
   name = "${local.project}-email-alerts"
+  tags = {
+    Name = "${local.project}-email-alerts"
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SNS email subscription (confirm email right after resource creation)
