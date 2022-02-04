@@ -7,9 +7,9 @@
 # Create EFS file system
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_efs_file_system" "this" {
-  creation_token = "${local.project}-efs-storage"
+  creation_token = "${local.project}-efs"
   tags = {
-    Name = "${local.project}-efs-storage"
+    Name = "${local.project}-efs"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
