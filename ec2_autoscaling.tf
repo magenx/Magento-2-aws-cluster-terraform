@@ -129,7 +129,9 @@ resource "aws_launch_template" "this" {
     content {
        resource_type = tag_specifications.key
        tags = {
-         Name = "${local.project}-${each.key}-ec2"  
+         Name      = "${local.project}-${each.key}-ec2"
+         Config    = "magenx"
+         Terraform = true
       }
     }
   }
