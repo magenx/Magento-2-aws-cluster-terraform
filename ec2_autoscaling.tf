@@ -127,7 +127,7 @@ resource "aws_launch_template" "this" {
   dynamic "tag_specifications" {
     for_each = toset(["instance","volume"])
     content {
-       resource_type = each.key
+       resource_type = tag_specifications.key
        tags = {
          Name = "${local.project}-${each.key}-ec2"  
       }
