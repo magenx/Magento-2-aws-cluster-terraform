@@ -139,6 +139,9 @@ resource "aws_launch_template" "this" {
   lifecycle {
     create_before_destroy = true
   }
+  tags = {
+    Name = "${local.project}-${each.key}-ltpl"
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create Autoscaling Groups
@@ -170,6 +173,14 @@ resource "aws_autoscaling_group" "this" {
   }
   lifecycle {
     create_before_destroy = true
+  }
+  dynamic "tag" {
+    for_each = var.ec2
+    content {
+      key                 = "Name"
+      value               = "${local.project}-${each.key}-asg"
+      propagate_at_launch = false
+    }
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
