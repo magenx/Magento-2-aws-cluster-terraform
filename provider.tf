@@ -29,7 +29,14 @@ terraform {
 }
 
 
-provider "aws" {}
+provider "aws" {
+default_tags {
+   tags = {
+     Terraform  = true
+     Config     = "magenx"
+    }
+  }
+}
 provider "null" {}
 provider "random" {}
 provider "template" {}
