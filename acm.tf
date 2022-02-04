@@ -11,8 +11,11 @@ resource "aws_acm_certificate" "default" {
   subject_alternative_names = ["*.${var.app["domain"]}"]
   validation_method         = "EMAIL"
 
-lifecycle {
+  lifecycle {
     create_before_destroy   = true
+  }
+  tags = {
+    Name = "${local.project}-${var.app["domain"]}-cert"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
