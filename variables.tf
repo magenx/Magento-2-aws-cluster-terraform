@@ -16,6 +16,7 @@ variable "default_tags" {
  default     = {
    Terraform = true
    Config    = "magenx"
+ }
 }
 
 variable "password" {
