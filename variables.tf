@@ -11,6 +11,13 @@ variable "env" {
   default      = "prod"
 }
 
+variable "default_tags" {
+ description = "Default tags to simplify global tag management"
+ default     = {
+   Terraform = true
+   Config    = "magenx"
+}
+
 variable "password" {
    description = "Generate password for these resources"
    default     = ["rds", "rabbitmq", "app", "blowfish"]
