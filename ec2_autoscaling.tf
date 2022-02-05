@@ -128,11 +128,7 @@ resource "aws_launch_template" "this" {
     for_each = toset(["instance","volume"])
     content {
        resource_type = tag_specifications.key
-       tags = {
-         Name      = "${local.project}-${each.key}-ec2"
-         Config    = "magenx"
-         Terraform = true
-      }
+       tags = merge(var.default_tags,{ Name = "${local.project}-${each.key}-ec2" })
     }
   }
   user_data = base64encode(data.template_file.user_data[each.key].rendered)
