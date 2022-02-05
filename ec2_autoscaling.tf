@@ -175,7 +175,7 @@ resource "aws_autoscaling_group" "this" {
       key                 = "Name"
       value               = "${local.project}-${each.key}-asg"
       propagate_at_launch = false
-    }
+  }
   dynamic "tag" {
     for_each = [for key,value in var.default_tags: {
                key = key
