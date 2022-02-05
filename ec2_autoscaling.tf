@@ -171,11 +171,19 @@ resource "aws_autoscaling_group" "this" {
   lifecycle {
     create_before_destroy = true
   }
-  dynamic "tag" {
-    for_each = var.ec2
-    content {
+  tag {
       key                 = "Name"
       value               = "${local.project}-${each.key}-asg"
+      propagate_at_launch = false
+    }
+  dynamic "tag" {
+    for_each = [for key,value in var.default_tags: {
+               key = key
+               value = value
+    }]
+    content {
+      key                 = tag.value.key
+      value               = tag.value.value
       propagate_at_launch = false
     }
   }
