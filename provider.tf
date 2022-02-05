@@ -31,10 +31,7 @@ terraform {
 
 provider "aws" {
 default_tags {
-   tags = {
-     Terraform  = true
-     Config     = "magenx"
-    }
+   tags = var.default_tags
   }
 }
 provider "null" {}
