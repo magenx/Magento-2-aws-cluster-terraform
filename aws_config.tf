@@ -8,9 +8,10 @@
 # Create AWS config rules
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_config_config_rule" "this" {
-  depends_on = [aws_config_configuration_recorder.this]
-  for_each   = toset(var.aws_config_rule)
-  name       = "${local.project}-${each.key}"
+  depends_on  = [aws_config_configuration_recorder.this]
+  for_each    = toset(var.aws_config_rule)
+  name        = "${local.project}-${each.key}"
+  description = "Evaluate your AWS resource configurations for ${each.key} rule"
   source {
     owner             = "AWS"
     source_identifier = each.value
