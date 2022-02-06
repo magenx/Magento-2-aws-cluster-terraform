@@ -203,6 +203,22 @@ variable "eventbridge_policy" {
   ]
 }
 
+variable "aws_config_rule" {
+  description = "Use AWS Config to evaluate critical configuration settings for your AWS resources."
+  default = [
+  "ROOT_ACCOUNT_MFA_ENABLED",
+  "MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS",
+  "INCOMING_SSH_DISABLED",
+  "DB_INSTANCE_BACKUP_ENABLED",
+  "RDS_SNAPSHOTS_PUBLIC_PROHIBITED",
+  "RDS_INSTANCE_DELETION_PROTECTION_ENABLED",
+  "EC2_IMDSV2_CHECK",
+  "EC2_VOLUME_INUSE_CHECK",
+  "EC2_STOPPED_INSTANCE",
+  "ELB_DELETION_PROTECTION_ENABLED"
+  ]
+}
+
 variable "az_number" {
   description = "Assign a number to each AZ letter used in secondary cidr/subnets configuration"
   default = {
