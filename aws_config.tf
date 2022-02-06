@@ -14,7 +14,10 @@ resource "aws_config_config_rule" "this" {
   description = "Evaluate your AWS resource configurations for ${each.key} rule"
   source {
     owner             = "AWS"
-    source_identifier = each.value
+    source_identifier = each.key
+  }
+  scope {
+    compliance_resource_types = [each.value]
   }
   tags = {
     Name = "${local.project}-${each.key}"
