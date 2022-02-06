@@ -138,7 +138,8 @@ resource "aws_s3_bucket_policy" "system" {
       Principal = {
         AWS = [
           aws_iam_role.codebuild.arn,
-          aws_iam_role.codepipeline.arn
+          aws_iam_role.codepipeline.arn,
+	  aws_iam_role.config.arn
         ] 
      }
   }
