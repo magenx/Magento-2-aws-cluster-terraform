@@ -154,6 +154,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Enhanced security in AWS and LEMP
 - [x] Default encryption enabled for EBS, S3, RDS, ELK, ElastiCache
 - [x] AWS Inspector Assessment templates
+- [x] AWS Config resource configuraton rules 
 - [x] AWS WAF Protection rules  
 
 ##
