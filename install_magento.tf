@@ -4,7 +4,7 @@
 ///////////////////////////////////////////////////////[ MAGENTO INSTALLATION ]///////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create SSM Document runShellScript to install magento, push to codecommit, build and deploy
+# Create SSM Document runShellScript to install Magento 2
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "install_magento" {
   name          = "${local.project}-install-magento"
@@ -14,7 +14,7 @@ resource "aws_ssm_document" "install_magento" {
   content = <<EOT
 ---
 schemaVersion: "2.2"
-description: "Configure git, install magento"
+description: "Install Magento 2"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
