@@ -12,8 +12,11 @@ resource "aws_s3_bucket" "this" {
   force_destroy = true
   acl           = "private"
   versioning {
-        enabled = (each.value == "state" ? true : false)
-   }	
+    enabled = (each.value == "state" ? true : false)
+   }
+  object_lock_configuration {
+    object_lock_enabled = (each.value == "backup" ? "Enabled" : "Disabled")
+  }
   server_side_encryption_configuration {
         rule {
           apply_server_side_encryption_by_default {
