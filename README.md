@@ -172,12 +172,12 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
    
 |**Performance and security enhancements**||**Enabled modules for test requirements**|
 |:-----|---|:-----|
-|Faster backend and frontend from 14% upto 50%||[Fooman Email PDF](https://fooman.com/magento-extension-email-attachments-m2.html)|
-|Better memory management upto 15%||[Stripe Payments](https://stripe.com/docs/plugins/magento)|
-|Easy deployments||[Fastly CDN for Magento2](https://github.com/fastly/fastly-magento2)|
-|Less dependencies||[Magefan Blog](https://github.com/magefan/module-blog)|
-|Zero maintenance||[Fooman Order#=Invoice#](https://fooman.com/magento-extension-invoice-order-number-m2.html)|
-|Low security risks||[Fooman Print PDF](https://fooman.com/magento-extension-print-order-pdf-m2.html)|
+|Faster backend and frontend from 14% upto 50%||[Fastly CDN](https://github.com/fastly/fastly-magento2)|
+|Better memory management upto 15%||[Mageplaza SMTP](https://github.com/mageplaza/magento-2-smtp)|
+|Easy deployments|| |
+|Less dependencies|| |
+|Zero maintenance|| |
+|Low security risks|| |
 
 <br />
 
