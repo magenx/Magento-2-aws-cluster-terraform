@@ -93,12 +93,21 @@ resource "aws_iam_policy" "codebuild" {
     "Version": "2012-10-17",
     "Statement": [
         {
-      "Sid": "AllowCodeBuildGitPullActions",
+      "Sid": "AllowCodeBuildGitActions",
       "Effect": "Allow",
       "Action": [
         "codecommit:GitPull"
       ],
       "Resource": "${aws_codecommit_repository.app.arn}"
+    },
+    {
+      "Sid": "AllowCodeBuildGetParameters",
+      "Effect": "Allow",
+      "Action": [
+	"ssm:GetParameter",
+        "ssm:GetParameters"
+      ],
+      "Resource": "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/*"
     },
     {
       "Sid": "AllowCodebuildCreateLogs",
