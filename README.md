@@ -66,6 +66,7 @@ https://devdocs.magento.com/
 https://docs.aws.amazon.com/index.html
 https://aws.amazon.com/cloudshell/
 https://www.terraform.io/docs/
+https://www.packer.io/docs
 https://docs.fastly.com/
 ```
 <br />
