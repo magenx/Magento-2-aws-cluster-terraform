@@ -112,13 +112,7 @@ mainSteps:
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento remote-storage:sync"
       ## install modules to properly test magento 2 production-ready functionality
       su ${var.app["brand"]} -s /bin/bash -c "composer -n -q config -g http-basic.repo.magento.com ${var.app["composer_user"]} ${var.app["composer_pass"]}"
-      su ${var.app["brand"]} -s /bin/bash -c "composer -n require \
-      fooman/sameorderinvoicenumber-m2 \
-      fooman/emailattachments-m2 \
-      fooman/printorderpdf-m2 \
-      mageplaza/module-smtp \
-      magefan/module-blog \
-      stripe/stripe-payments"
+      su ${var.app["brand"]} -s /bin/bash -c "composer -n require mageplaza/module-smtp"
       if [ "${var.fastly}" == "enabled" ]; then
       su ${var.app["brand"]} -s /bin/bash -c "composer -n require fastly/magento2"
       fi
