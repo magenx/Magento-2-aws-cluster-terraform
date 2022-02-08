@@ -92,7 +92,7 @@ resource "aws_iam_policy" "codebuild" {
 {
     "Version": "2012-10-17",
     "Statement": [
-        {
+    {
       "Sid": "AllowCodeBuildGitActions",
       "Effect": "Allow",
       "Action": [
@@ -115,7 +115,7 @@ resource "aws_iam_policy" "codebuild" {
       "Action": [
          "logs:PutLogEvents",
          "logs:CreateLogStream"
-            ],
+      ],
       "Resource": "${aws_cloudwatch_log_group.codebuild.arn}:*"
      }
   ]
