@@ -75,7 +75,9 @@ resource "aws_ssm_parameter" "env" {
 "HTTP_X_HEADER" : "${random_uuid.this.result}",
 "LINUX_PACKAGES" : "${var.app["linux_packages"]}",
 "PHP_PACKAGES" : "${var.app["php_packages"]}",
-"EXCLUDE_LINUX_PACKAGES" : "${var.app["exclude_linux_packages"]}"
+"EXCLUDE_LINUX_PACKAGES" : "${var.app["exclude_linux_packages"]}",
+"COMPOSER_USER" : "${var.app["composer_user"]}",
+"COMPOSER_PASS" : "${var.app["composer_pass"]}"
 }
 EOF
 
