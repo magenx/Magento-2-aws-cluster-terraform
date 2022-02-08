@@ -26,7 +26,7 @@ variable "password" {
 
 variable "string" {
    description = "Generate random string for these resources"
-   default     = ["admin_path", "mysql_path", "profiler", "persistent", "id_prefix", "health_check", "project"]
+   default     = ["admin_path", "mysql_path", "profiler", "session_persistent", "cache_prefix", "health_check", "project"]
 }
 
 variable "ec2" {
