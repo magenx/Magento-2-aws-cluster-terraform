@@ -101,6 +101,20 @@ resource "aws_iam_policy" "codebuild" {
       "Resource": "${aws_codecommit_repository.app.arn}"
     },
     {
+      "Sid": "AllowCodeBuildGitActions",
+      "Effect": "Allow",
+      "Action": [
+        "codecommit:GitPush"
+      ],
+      "Resource": "${aws_codecommit_repository.app.arn}",
+      "Condition": {
+                "StringEqualsIfExists": {
+                    "codecommit:References": [
+                        "refs/heads/build"
+                     ]
+                }
+    },
+    {
       "Sid": "AllowCodeBuildGetParameters",
       "Effect": "Allow",
       "Action": [
