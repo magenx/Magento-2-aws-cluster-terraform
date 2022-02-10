@@ -7,26 +7,39 @@ locals {
 
 variable "env" {
   type         = string
-  description  = "Project environment settings - prod or dev"
-  default      = "prod"
+  description  = "Project environment settings - production or development"
+  default      = "production"
 }
 
 variable "default_tags" {
  description = "Default tags to simplify global tag management"
  default     = {
-   Terraform = true
+   Managed   = "terraform"
    Config    = "magenx"
  }
 }
 
 variable "password" {
-   description = "Generate password for these resources"
-   default     = ["rds", "rabbitmq", "app", "blowfish"]
+   description = "Generate password"
+   default     = [
+      "rds", 
+      "rabbitmq", 
+      "app", 
+      "blowfish"
+   ]
 }
 
 variable "string" {
-   description = "Generate random string for these resources"
-   default     = ["admin_path", "mysql_path", "profiler", "session_persistent", "cache_prefix", "health_check", "project"]
+   description = "Generate random string"
+   default     = [
+      "admin_path", 
+      "mysql_path", 
+      "profiler", 
+      "session_persistent", 
+      "cache_prefix", 
+      "health_check", 
+      "project"
+   ]
 }
 
 variable "ec2" {
