@@ -113,6 +113,7 @@ resource "aws_iam_policy" "codebuild" {
                         "refs/heads/build"
                      ]
                 }
+          }
     },
     {
       "Sid": "AllowCodeBuildGetParameters",
