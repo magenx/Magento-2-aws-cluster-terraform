@@ -167,10 +167,11 @@ variable "asg" {
 variable "asp" {
   description      = "Map Autoscaling Policy configuration values"
   default  = {    
-    evaluation_periods  = "2"
-    period              = "300"
-    out_threshold       = "80"
-    in_threshold        = "25"
+    evaluation_periods_in  = "2"
+    evaluation_periods_out = "1"
+    period                 = "300"
+    out_threshold          = "80"
+    in_threshold           = "25"
   }
 }
 
