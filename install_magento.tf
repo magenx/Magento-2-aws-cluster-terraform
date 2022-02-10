@@ -70,7 +70,7 @@ mainSteps:
       fi
       ## cache backend
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:config:set \
-      --cache-id-prefix="${random_string.this["id_prefix"].result}_" \
+      --cache-id-prefix="${random_string.this["cache_prefix"].result}_" \
       --cache-backend=redis \
       --cache-backend-redis-server=${aws_elasticache_replication_group.this["cache"].primary_endpoint_address} \
       --cache-backend-redis-port=6379 \
@@ -86,18 +86,18 @@ mainSteps:
       --session-save-redis-log-level=3 \
       --session-save-redis-db=0 \
       --session-save-redis-compression-lib=lz4 \
-      --session-save-redis-persistent-id=${random_string.this["persistent"].result} \
+      --session-save-redis-persistent-id=${random_string.this["session_persistent"].result} \
       -n"
       ## add cache optimization
       sed -i "/${aws_elasticache_replication_group.this["cache"].primary_endpoint_address}/a\            'load_from_slave' => '${aws_elasticache_replication_group.this["cache"].reader_endpoint_address}:6379', \\
             'master_write_only' => '0', \\
             'retry_reads_on_master' => '1', \\
-            'persistent' => '${random_string.this["persistent"].result}', \\
+            'persistent' => '${random_string.this["session_persistent"].result}', \\
             'preload_keys' => [ \\
-                    '${random_string.this["id_prefix"].result}_EAV_ENTITY_TYPES', \\
-                    '${random_string.this["id_prefix"].result}_GLOBAL_PLUGIN_LIST', \\
-                    '${random_string.this["id_prefix"].result}_DB_IS_UP_TO_DATE', \\
-                    '${random_string.this["id_prefix"].result}_SYSTEM_DEFAULT', \\
+                    '${random_string.this["cache_prefix"].result}_EAV_ENTITY_TYPES', \\
+                    '${random_string.this["cache_prefix"].result}_GLOBAL_PLUGIN_LIST', \\
+                    '${random_string.this["cache_prefix"].result}_DB_IS_UP_TO_DATE', \\
+                    '${random_string.this["cache_prefix"].result}_SYSTEM_DEFAULT', \\
                 ],"  app/etc/env.php
       ## clean cache
       rm -rf var/cache var/page_cache
