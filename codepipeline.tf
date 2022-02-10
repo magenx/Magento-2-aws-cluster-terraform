@@ -409,9 +409,9 @@ resource "aws_codepipeline" "this" {
         "EnvironmentVariables" = jsonencode(
           [
             {
-              name  = "OPTIONAL_VARIABLE"
+              name  = "PARAMETERSTORE"
+              value = "${aws_ssm_parameter.env.name}"
               type  = "PLAINTEXT"
-              value = "VALUE"
             },
           ]
         )
