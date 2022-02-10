@@ -76,7 +76,6 @@ variable "app" {
 variable "elk" {
   description      = "Map ElasticSearch configuration values"
   default  = {
-    domain_name            = "elk"
     elasticsearch_version  = "7.9"
     instance_type          = "m6g.large.elasticsearch"
     instance_count         = "3"
@@ -133,7 +132,6 @@ variable "max_connection_count" {
 variable "rabbitmq" {
   description      = "Map RabbitMQ configuration values"
   default  = {
-    broker_name            = "queue"
     engine_version         = "3.8.11"
     deployment_mode        = "CLUSTER_MULTI_AZ"
     host_instance_type     = "mq.m5.large"
