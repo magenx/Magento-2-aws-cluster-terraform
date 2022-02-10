@@ -338,6 +338,12 @@ resource "aws_codebuild_project" "this" {
     image_pull_credentials_type = "CODEBUILD"
     privileged_mode             = false
     type                        = "LINUX_CONTAINER"
+	  
+    environment_variable {
+      name  = "PARAMETER"
+      value = "${aws_ssm_parameter.env.name}"
+      type  = "PARAMETER_STORE"
+    }
   }
 
   logs_config {
