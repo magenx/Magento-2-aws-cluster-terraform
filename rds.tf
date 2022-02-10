@@ -29,7 +29,7 @@ resource "aws_db_parameter_group" "this" {
 # Create RDS instance
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "this" {
-  identifier             = local.project
+  identifier             = "${local.project}-rds"
   allocated_storage      = var.rds["allocated_storage"]
   max_allocated_storage  = var.rds["max_allocated_storage"]
   storage_type           = var.rds["storage_type"]
