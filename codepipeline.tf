@@ -238,12 +238,12 @@ resource "aws_cloudwatch_event_rule" "codecommit_build" {
 	"source": ["aws.codecommit"],
 	"detail-type": ["CodeCommit Repository State Change"],
 	"resources": ["${aws_codecommit_repository.app.arn}"],
-    "detail": {
-     "event": [
-       "referenceUpdated"
-      ],
-		 "referenceType": ["branch"],
-		 "referenceName": ["build"]
+	"detail": {
+		"event": [
+			"referenceUpdated"
+		],
+		"referenceType": ["branch"],
+		"referenceName": ["build"]
 	}
 }
 EOF
