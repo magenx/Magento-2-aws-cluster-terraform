@@ -353,7 +353,7 @@ resource "aws_codebuild_project" "this" {
   }
 
   source {
-    buildspec           = data.template_file.buildspec.rendered
+    buildspec           = "${file("${abspath(path.root)}/codepipeline/buildspec.yml")}"
     git_clone_depth     = 0
     insecure_ssl        = false
     report_build_status = false
