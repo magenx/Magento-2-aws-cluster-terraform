@@ -36,7 +36,7 @@ resource "random_string" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_string" "s3" {
   for_each       = var.s3
-  length         = 3
+  length         = 7
   lower          = true
   number         = true
   special        = false
