@@ -119,20 +119,6 @@ data "http" "packer" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create buildspec.yml template for CodeBuild
-# # ---------------------------------------------------------------------------------------------------------------------#
-data "template_file" "buildspec" {
-  template = file("${abspath(path.root)}/codepipeline/buildspec.yml")
-  vars = {
-  COMPOSER_USER = "${var.app["composer_user"]}"
-  COMPOSER_PASS = "${var.app["composer_pass"]}"
-  PHP_VERSION = "${var.app["php_version"]}"
-  BRAND = "${var.app["brand"]}"
-  ADMIN_EMAIL = "${var.app["admin_email"]}"
-  CODECOMMIT_APP_REPO = "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Variables for user_data templates generation
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "template_file" "user_data" {
