@@ -417,7 +417,7 @@ resource "aws_codepipeline" "this" {
             {
               name  = "PARAMETERSTORE"
               value = "${aws_ssm_parameter.env.name}"
-              type  = "PLAINTEXT"
+              type  = "PARAMETER_STORE"
             },
           ]
         )
