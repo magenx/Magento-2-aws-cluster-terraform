@@ -8,7 +8,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_s3_bucket" "this" {
   for_each      = var.s3
-  bucket        = "${local.project}${random_string.s3[each.key].id}-${each.key}"
+  bucket        = "${local.project}-${random_string.s3[each.key].id}-${each.key}"
   force_destroy = true
   acl           = "private"
   versioning {
@@ -25,7 +25,7 @@ resource "aws_s3_bucket" "this" {
       }
   }	
   tags = {
-    Name        = "${local.project}${random_string.s3[each.key].id}-${each.key}"
+    Name        = "${local.project}-${random_string.s3[each.key].id}-${each.key}"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -33,7 +33,7 @@ resource "aws_s3_bucket" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#	  
 resource "aws_s3_bucket_public_access_block" "this" {
   for_each = {for name in var.s3: name => name if name != "media"}
-  bucket = "${local.project}${random_string.s3[each.key].id}-${each.key}"  
+  bucket = "${local.project}-${random_string.s3[each.key].id}-${each.key}"  
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
