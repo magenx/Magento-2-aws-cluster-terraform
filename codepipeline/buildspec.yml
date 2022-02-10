@@ -31,7 +31,7 @@ phases:
   post_build:
     commands:
       - git config --global user.email "${parameter[ADMIN_EMAIL]}"
-      - git config --global user.name "${parameter[[BRAND]}"
+      - git config --global user.name "${parameter[BRAND]}"
       - git add . -A
       - git commit -m "${CODEBUILD_BUILD_ID#*:} ${CODEBUILD_RESOLVED_SOURCE_VERSION}"
       - git branch -m main
