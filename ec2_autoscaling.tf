@@ -224,7 +224,7 @@ resource "aws_cloudwatch_metric_alarm" "scaleout" {
   for_each            = var.ec2
   alarm_name          = "${local.project} ${each.key} scale-out alarm"
   comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = var.asp["evaluation_periods"]
+  evaluation_periods  = var.asp["evaluation_periods_out"]
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
   period              = var.asp["period"]
@@ -254,7 +254,7 @@ resource "aws_cloudwatch_metric_alarm" "scalein" {
   for_each            = var.ec2
   alarm_name          = "${local.project}-${each.key} scale-in alarm"
   comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = var.asp["evaluation_periods"]
+  evaluation_periods  = var.asp["evaluation_periods_in"]
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
   period              = var.asp["period"]
