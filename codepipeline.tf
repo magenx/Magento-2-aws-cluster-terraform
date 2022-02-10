@@ -340,7 +340,7 @@ resource "aws_codebuild_project" "this" {
     type                        = "LINUX_CONTAINER"
 	  
     environment_variable {
-      name  = "PARAMETER"
+      name  = "PARAMETERSTORE"
       value = "${aws_ssm_parameter.env.name}"
       type  = "PARAMETER_STORE"
     }
