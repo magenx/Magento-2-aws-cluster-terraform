@@ -7,7 +7,7 @@
 # Create Application Load Balancers
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb" "this" {
-  name               = local.project
+  name               = "${local.project}-alb"
   internal           = false
   load_balancer_type = "application"
   enable_deletion_protection = var.alb["enable_deletion_protection"]
@@ -20,7 +20,7 @@ resource "aws_lb" "this" {
     enabled = true
   }
   tags = {
-    Name = "${local.project}"
+    Name = "${local.project}-alb"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
