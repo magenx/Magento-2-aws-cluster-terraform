@@ -2,8 +2,6 @@ version: 0.2
 
 env:
   shell: bash
-  parameter-store:
-    PARAMETER: "${PARAMETERSTORE}"
 
 phases:
   install:
@@ -13,7 +11,7 @@ phases:
     commands:
       - echo Running Pre-Build at $(date)
       - typeset -A parameter
-      - while IFS== read -r key value; do parameter["$key"]="$value"; done < <(jq -r 'to_entries[] | .key + "=" + .value' ${PARAMETER})
+      - while IFS== read -r key value; do parameter["$key"]="$value"; done < <(jq -r 'to_entries[] | .key + "=" + .value' ${PARAMETERSTORE})
       - php -m
       - php -v
   build:
