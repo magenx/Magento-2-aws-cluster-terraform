@@ -344,6 +344,12 @@ resource "aws_codebuild_project" "this" {
       value = "${aws_ssm_parameter.env.name}"
       type  = "PARAMETER_STORE"
     }
+    
+    environment_variable {
+      name  = "PHP_VERSION"
+      value = "${var.app["php_version"]}"
+      type  = "PLAINTEXT"
+    }
   }
 
   logs_config {
@@ -412,15 +418,6 @@ resource "aws_codepipeline" "this" {
     action {
       category = "Build"
       configuration = {
-        "EnvironmentVariables" = jsonencode(
-          [
-            {
-              name  = "PARAMETERSTORE"
-              value = "${aws_ssm_parameter.env.name}"
-              type  = "PARAMETER_STORE"
-            },
-          ]
-        )
         "ProjectName" = aws_codebuild_project.this.id
       }
       input_artifacts = [
