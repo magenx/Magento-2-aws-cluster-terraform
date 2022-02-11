@@ -193,30 +193,42 @@ resource "aws_iam_policy" "codepipeline" {
   path = "/service-role/"
   policy = <<EOF
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-      "Sid": "AllowCodeCommitActions",
-      "Effect": "Allow",
-      "Action": [
-        "codecommit:GetCommit",
-        "codecommit:GetRepository",
-        "codecommit:GetBranch"
-      ],
-      "Resource": "${aws_codecommit_repository.app.arn}"
-        },
-        {
-      "Sid": "AllowCodeBuildActions",
-      "Effect": "Allow",
-      "Action": [
-        "codebuild:StartBuild",
-        "codebuild:StartBuildBatch",
-        "codebuild:BatchGetBuilds",
-        "codebuild:BatchGetBuildBatches"
-      ],
-      "Resource": "${aws_codebuild_project.this.arn}"
-    }
-    ]
+	"Version": "2012-10-17",
+	"Statement": [{
+			"Sid": "AllowCodeCommitActions",
+			"Effect": "Allow",
+			"Action": [
+				"codecommit:GetCommit",
+				"codecommit:GetRepository",
+				"codecommit:GetBranch"
+			],
+			"Resource": "${aws_codecommit_repository.app.arn}"
+		},
+		{
+			"Sid": "AllowCodeStarConnectionActions",
+			"Effect": "Allow",
+			"Action": [
+				"codestar-connections:UseConnection"
+			],
+			"Resource": aws_codestarconnections_connection.github.arn,
+			"Condition": {
+				"ForAllValues:StringEquals": {
+					"codestar-connections:FullRepositoryId": var.app["source_repo"]
+				}
+			}
+		},
+		{
+			"Sid": "AllowCodeBuildActions",
+			"Effect": "Allow",
+			"Action": [
+				"codebuild:StartBuild",
+				"codebuild:StartBuildBatch",
+				"codebuild:BatchGetBuilds",
+				"codebuild:BatchGetBuildBatches"
+			],
+			"Resource": "${aws_codebuild_project.this.arn}"
+		}
+	]
 }
 EOF
 }
@@ -412,6 +424,7 @@ resource "aws_codepipeline" "this" {
       version   = "1"
     }
   }
+	
   stage {
     name = "Build"
 
@@ -435,6 +448,7 @@ resource "aws_codepipeline" "this" {
       version   = "1"
     }
   }
+	
   stage {
     name = "Deploy"
 
