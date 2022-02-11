@@ -289,15 +289,13 @@ resource "aws_codedeploy_deployment_group" "this" {
   deployment_config_name = "CodeDeployDefault.AllAtOnce"
 
   ec2_tag_set {
-    ec2_tag_filter {
-      type  = "KEY_AND_VALUE"
-      key   = "Name"
-      value = aws_launch_template.this["admin"].tag_specifications[0].tags.Name
-    }
-    ec2_tag_filter {
-      type  = "KEY_AND_VALUE"
-      key   = "Name"
-      value = aws_launch_template.this["frontend"].tag_specifications[0].tags.Name
+    dynamic "ec2_tag_filter" {
+      for_each = var.ec2
+      content {
+        key   = "Name"
+        type  = "KEY_AND_VALUE"
+        value = aws_launch_template.this[ec2_tag_filter.key].tag_specifications[0].tags.Name
+      }
     }
   }
 	
