@@ -7,7 +7,6 @@
 # Create CodeStarSourceConnection
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codestarconnections_connection" "github" {
-  for_each      = var.app["install"] == "enabled" ? [1] : []
   name          = "${local.project}-codestar-connection"
   provider_type = "GitHub"
   
@@ -19,7 +18,6 @@ resource "aws_codestarconnections_connection" "github" {
 # Create CodeBuild project
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codebuild_project" "install" {
-  for_each               = var.app["install"] == "enabled" ? [1] : []
   badge_enabled          = false
   build_timeout          = 60
   description            = "${local.project}-codebuild-install-project"
@@ -97,7 +95,6 @@ resource "aws_codebuild_project" "install" {
 # Create CodePipeline configuration
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codepipeline" "install" {
-  for_each   = var.app["install"] == "enabled" ? [1] : []
   name       = "${local.project}-codepipeline-install"
   depends_on = [aws_iam_role.codepipeline]
   role_arn   = aws_iam_role.codepipeline.arn
