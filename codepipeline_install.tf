@@ -141,7 +141,7 @@ resource "aws_codepipeline" "install" {
       provider = "Manual"
       version  = "1"
       run_order = 1
-      configuration {
+      configuration = {
         NotificationArn = aws_sns_topic.default.arn
         CustomData      = "Run CodePipeline to install your app?"
       }
