@@ -7,6 +7,7 @@
 # Create CodeStarSourceConnection
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codestarconnections_connection" "github" {
+  for_each      = var.app["install"] == "enabled" ? toset(["enabled"]) : []
   name          = "${local.project}-codestar-connection"
   provider_type = "GitHub"
   
@@ -18,6 +19,7 @@ resource "aws_codestarconnections_connection" "github" {
 # Create CodeBuild project
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codebuild_project" "install" {
+  for_each      = var.app["install"] == "enabled" ? toset(["enabled"]) : []
   badge_enabled          = false
   build_timeout          = 60
   description            = "${local.project}-codebuild-install-project"
@@ -25,7 +27,7 @@ resource "aws_codebuild_project" "install" {
   queued_timeout         = 480
   depends_on             = [aws_iam_role.codebuild]
   service_role           = aws_iam_role.codebuild.arn
-	
+
   tags = {
     Name = "${local.project}-codebuild-install-project"
   }
@@ -49,7 +51,7 @@ resource "aws_codebuild_project" "install" {
     image_pull_credentials_type = "CODEBUILD"
     privileged_mode             = false
     type                        = "LINUX_CONTAINER"
-	  
+          
     environment_variable {
       name  = "PARAMETERSTORE"
       value = "${aws_ssm_parameter.env.name}"
@@ -62,7 +64,7 @@ resource "aws_codebuild_project" "install" {
       type  = "PLAINTEXT"
     }
   }
-	
+
   vpc_config {
     vpc_id             = aws_vpc.this.id
     subnets            = values(aws_subnet.this).*.id
@@ -95,6 +97,7 @@ resource "aws_codebuild_project" "install" {
 # Create CodePipeline configuration
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codepipeline" "install" {
+  for_each      = var.app["install"] == "enabled" ? toset(["enabled"]) : []
   name       = "${local.project}-codepipeline-install"
   depends_on = [aws_iam_role.codepipeline]
   role_arn   = aws_iam_role.codepipeline.arn
@@ -113,7 +116,7 @@ resource "aws_codepipeline" "install" {
     action {
       category = "Source"
       configuration = {
-        "ConnectionArn"         = aws_codestarconnections_connection.github.arn
+        "ConnectionArn"         = aws_codestarconnections_connection.github[each.key].arn
         "FullRepositoryId"      = var.app["source_repo"]
         "BranchName"            = "main"
         "OutputArtifactFormat"  = "CODEBUILD_CLONE_REF"
@@ -130,7 +133,7 @@ resource "aws_codepipeline" "install" {
       version   = "1"
     }
   }
-	
+
   stage {
     name = "Build"
 
@@ -150,7 +153,7 @@ resource "aws_codepipeline" "install" {
     action {
       category = "Build"
       configuration = {
-        "ProjectName" = aws_codebuild_project.install.id
+        "ProjectName" = aws_codebuild_project.install[each.key].id
       }
       input_artifacts = [
         "SourceArtifact",
@@ -167,7 +170,7 @@ resource "aws_codepipeline" "install" {
       version   = "1"
     }
   }
-	
+
   stage {
     name = "Deploy"
 
