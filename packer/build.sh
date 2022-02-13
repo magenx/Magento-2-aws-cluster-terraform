@@ -13,8 +13,9 @@ sudo apt-get remove awscli
 cd /usr/local/src
 sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
 sudo apt-get install unzip
-sudo unzip awscliv2.zip
-sudo ./aws/install --bin-dir /usr/bin --install-dir /usr/local/aws-cli --update
+sudo unzip awscliv2.zip -d /root/
+sudo rm awscliv2.zip
+sudo ./aws/install --bin-dir /usr/bin --install-dir /root/aws --update
 
 PARAMETER=$(sudo aws ssm get-parameter --name "${PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
 declare -A parameter
@@ -252,5 +253,5 @@ sudo wget https://s3.${parameter["AWS_DEFAULT_REGION"]}.amazonaws.com/amazonclou
 sudo dpkg -i amazon-cloudwatch-agent.deb
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
 
-sudo chmod 750 /usr/bin/aws
+sudo chmod 750 /usr/bin/aws /root/aws
 sudo apt-get clean
