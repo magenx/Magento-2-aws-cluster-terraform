@@ -9,10 +9,14 @@ AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-m
 INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
 INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
 
+# remove old aws cli v1
 sudo apt-get remove awscli
+sudo apt-get update
+sudo apt-get -qqy install jq unzip
+
+# get latest aws cli v2
 cd /usr/local/src
 sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
-sudo apt-get install unzip
 sudo unzip awscliv2.zip -d /root/
 sudo rm awscliv2.zip
 sudo ./aws/install --bin-dir /usr/bin --install-dir /root/aws --update
@@ -22,7 +26,6 @@ declare -A parameter
 while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
 
 ## installation
-sudo apt-get update
 sudo apt-get -qqy install ${parameter["LINUX_PACKAGES"]}
 sudo pip3 install git-remote-codecommit
 
