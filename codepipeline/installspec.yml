@@ -14,7 +14,7 @@ phases:
       echo Installation started at $(date)
       cd ${CODEBUILD_SRC_DIR}
       declare -A parameter
-      while IFS== read -r key value; do parameter["$key"]="$value"; done < <(jq -r 'to_entries[] | .key + "=" + .value' ${PARAMETERSTORE})
+      while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETERSTORE} | jq -r 'to_entries[] | .key + "=" + .value')
       composer -n -q config -g http-basic.repo.magento.com ${parameter[COMPOSER_USER]} ${parameter[COMPOSER_PASS]}
       composer install -n
       ## make magento 2 great again
