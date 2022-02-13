@@ -13,7 +13,7 @@ phases:
     - |-
       echo Installation started at $(date)
       cd ${CODEBUILD_SRC_DIR}
-      typeset -A parameter
+      declare -A parameter
       while IFS== read -r key value; do parameter["$key"]="$value"; done < <(jq -r 'to_entries[] | .key + "=" + .value' ${PARAMETERSTORE})
       composer -n -q config -g http-basic.repo.magento.com ${parameter[COMPOSER_USER]} ${parameter[COMPOSER_PASS]}
       composer install -n
