@@ -10,7 +10,7 @@ phases:
   pre_build:
     commands:
       - echo Running Pre-Build at $(date)
-      - typeset -A parameter
+      - declare -A parameter
       - while IFS== read -r key value; do parameter["$key"]="$value"; done < <(jq -r 'to_entries[] | .key + "=" + .value' ${PARAMETERSTORE})
       - php -m
       - php -v
