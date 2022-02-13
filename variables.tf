@@ -54,6 +54,7 @@ variable "app" {
   description      = "Map application params | Magento 2"
   default          = {
     source_repo      = "magenx/Magento-2"
+    install          = "disabled"
     app_version      = "2"
     cidr_block       = "172.30.0.0/16"
     brand            = "magenx"
