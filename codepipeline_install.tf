@@ -7,6 +7,7 @@
 # Create CodeStarSourceConnection
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codestarconnections_connection" "github" {
+  for_each      = var.app["install"] == "enabled" ? [1] : []
   name          = "${local.project}-codestar-connection"
   provider_type = "GitHub"
   
@@ -18,6 +19,7 @@ resource "aws_codestarconnections_connection" "github" {
 # Create CodeBuild project
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codebuild_project" "install" {
+  for_each               = var.app["install"] == "enabled" ? [1] : []
   badge_enabled          = false
   build_timeout          = 60
   description            = "${local.project}-codebuild-install-project"
@@ -95,6 +97,7 @@ resource "aws_codebuild_project" "install" {
 # Create CodePipeline configuration
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codepipeline" "install" {
+  for_each   = var.app["install"] == "enabled" ? [1] : []
   name       = "${local.project}-codepipeline-install"
   depends_on = [aws_iam_role.codepipeline]
   role_arn   = aws_iam_role.codepipeline.arn
@@ -135,6 +138,19 @@ resource "aws_codepipeline" "install" {
     name = "Build"
 
     action {
+      name     = "Approval"
+      category = "Approval"
+      owner    = "AWS"
+      provider = "Manual"
+      version  = "1"
+      run_order = 1
+      configuration {
+        NotificationArn = aws_sns_topic.default.arn
+        CustomData      = "Run CodePipeline to install your app?"
+      }
+    }
+
+    action {
       category = "Build"
       configuration = {
         "ProjectName" = aws_codebuild_project.install.id
@@ -150,7 +166,7 @@ resource "aws_codepipeline" "install" {
       owner     = "AWS"
       provider  = "CodeBuild"
       region    = data.aws_region.current.name
-      run_order = 1
+      run_order = 2
       version   = "1"
     }
   }
