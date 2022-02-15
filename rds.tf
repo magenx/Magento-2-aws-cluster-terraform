@@ -19,7 +19,7 @@ resource "aws_db_subnet_group" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#		
 resource "aws_db_parameter_group" "this" {
   name              = "${local.project}-parameters"
-  family            = "mariadb10.5"
+  family            = var.rds["family"]
   description       = "Parameter group for ${local.project} database"
   tags = {
     Name = "${local.project}-parameters"
@@ -29,15 +29,16 @@ resource "aws_db_parameter_group" "this" {
 # Create RDS instance
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_db_instance" "this" {
-  identifier             = local.project
+  identifier             = "${local.project}-rds"
   allocated_storage      = var.rds["allocated_storage"]
   max_allocated_storage  = var.rds["max_allocated_storage"]
-  storage_type           = var.rds["storage_type"] 
+  storage_type           = var.rds["storage_type"]
+  storage_encrypted      = var.rds["storage_encrypted"]
   engine                 = var.rds["engine"]
   engine_version         = var.rds["engine_version"]
   instance_class         = var.rds["instance_class"]
   multi_az               = var.rds["multi_az"]
-  name                   = "${var.app["brand"]}"
+  name                   = var.rds["name"]
   username               = var.app["brand"]
   password               = random_password.this["rds"].result
   parameter_group_name   = aws_db_parameter_group.this.id
