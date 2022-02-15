@@ -34,6 +34,7 @@ resource "aws_ssm_parameter" "env" {
 "REDIS_SESSION_BACKEND_RO" : "${aws_elasticache_replication_group.this["session"].reader_endpoint_address}",
 "OUTER_ALB_DNS_NAME" : "${aws_lb.this["outer"].dns_name}",
 "INNER_ALB_DNS_NAME" : "${aws_lb.this["inner"].dns_name}",
+"CLOUDFRONT_DOMAIN" : "${aws_cloudfront_distribution.this.domain_name}",
 "SES_KEY" : "${aws_iam_access_key.ses_smtp_user_access_key.id}",
 "SES_SECRET" : "${aws_iam_access_key.ses_smtp_user_access_key.secret}",
 "SES_PASSWORD" : "${aws_iam_access_key.ses_smtp_user_access_key.ses_smtp_password_v4}",
