@@ -103,7 +103,12 @@ resource "aws_iam_instance_profile" "ec2" {
   name     = "${local.project}-EC2InstanceProfile-${each.key}"
   role     = aws_iam_role.ec2[each.key].name
 }
-
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create EC2 ebs default encryption
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_ebs_encryption_by_default" "this" {
+  enabled = true
+}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create Launch Template for Autoscaling Groups - user_data converted
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -113,25 +118,25 @@ resource "aws_launch_template" "this" {
   iam_instance_profile { name = aws_iam_instance_profile.ec2[each.key].name }
   image_id = element(values(data.external.packer[each.key].result), 0)
   instance_type = each.value
-  monitoring { enabled = false }
+  monitoring { enabled = var.asg["monitoring"] }
   network_interfaces { 
     associate_public_ip_address = true
     security_groups = [aws_security_group.ec2.id]
   }
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      Name = "${local.project}-${each.key}-ec2" }
-  }
-  tag_specifications {
-    resource_type = "volume"
-    tags = {
-      Name = "${local.project}-${each.key}-ec2" }
+  dynamic "tag_specifications" {
+    for_each = toset(["instance","volume"])
+    content {
+       resource_type = tag_specifications.key
+       tags = merge(var.default_tags,{ Name = "${local.project}-${each.key}-ec2" })
+    }
   }
   user_data = base64encode(data.template_file.user_data[each.key].rendered)
   update_default_version = true
   lifecycle {
     create_before_destroy = true
+  }
+  tags = {
+    Name = "${local.project}-${each.key}-ltpl"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -164,6 +169,19 @@ resource "aws_autoscaling_group" "this" {
   }
   lifecycle {
     create_before_destroy = true
+  }
+  tag {
+      key                 = "Name"
+      value               = "${local.project}-${each.key}-asg"
+      propagate_at_launch = false
+  }
+  dynamic "tag" {
+    for_each = var.default_tags
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = false
+    }
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -202,7 +220,7 @@ resource "aws_cloudwatch_metric_alarm" "scaleout" {
   for_each            = var.ec2
   alarm_name          = "${local.project}-${each.key} scale-out alarm"
   comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = var.asp["evaluation_periods"]
+  evaluation_periods  = var.asp["evaluation_periods_out"]
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
   period              = var.asp["period"]
@@ -232,7 +250,7 @@ resource "aws_cloudwatch_metric_alarm" "scalein" {
   for_each            = var.ec2
   alarm_name          = "${local.project}-${each.key} scale-in alarm"
   comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = var.asp["evaluation_periods"]
+  evaluation_periods  = var.asp["evaluation_periods_in"]
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
   period              = var.asp["period"]
