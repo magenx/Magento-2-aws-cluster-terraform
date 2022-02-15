@@ -27,12 +27,16 @@ terraform {
   }
 }
 
+
+provider "aws" {
+  alias  = "useast1"
+  region = "us-east-1"
+  default_tags {
+   tags = var.default_tags
+  }
+}
 provider "null" {}
 provider "random" {}
 provider "template" {}
 provider "external" {}
 
-provider "aws" {
-  alias  = "useast1"
-  region = "us-east-1"
-}
