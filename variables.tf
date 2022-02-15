@@ -1,23 +1,40 @@
 
+
 locals {
    # Create global project name to be assigned to all resources
-   project = lower("${var.app["brand"]}-${var.env}-${random_string.this["project"].result}")
+   project = lower("${var.app["brand"]}-${random_string.this["project"].result}")
 }
 
-variable "env" {
-  type         = string
-  description  = "Project environment settings - prod or dev"
-  default      = "prod"
+variable "default_tags" {
+ description    = "Default tags to simplify global tag management"
+ default        = {
+   Managed      = "terraform"
+   Config       = "magenx"
+   Environment  = "production"
+ }
 }
 
 variable "password" {
-   description = "Generate password for these resources"
-   default     = ["rds", "rabbitmq", "app", "blowfish"]
+   description = "Generate password"
+   default     = [
+      "rds", 
+      "rabbitmq", 
+      "app", 
+      "blowfish"
+   ]
 }
 
 variable "string" {
-   description = "Generate random string for these resources"
-   default     = ["admin_path", "mysql_path", "profiler", "persistent", "id_prefix", "health_check", "project"]
+   description = "Generate random string"
+   default     = [
+      "admin_path", 
+      "mysql_path", 
+      "profiler", 
+      "session_persistent", 
+      "cache_prefix", 
+      "health_check", 
+      "project"
+   ]
 }
 
 variable "ec2" {
@@ -32,6 +49,8 @@ variable "ec2" {
 variable "app" {
   description      = "Map application params | Magento 2"
   default          = {
+    source_repo      = "magenx/Magento-2"
+    install          = "disabled"
     app_version      = "2"
     cidr_block       = "172.30.0.0/16"
     brand            = "magenx"
@@ -57,7 +76,6 @@ variable "app" {
 variable "elk" {
   description      = "Map ElasticSearch configuration values"
   default  = {
-    domain_name            = "elk"
     elasticsearch_version  = "7.9"
     instance_type          = "m6g.large.elasticsearch"
     instance_count         = "3"
@@ -71,13 +89,15 @@ variable "elk" {
 variable "rds" {
   description      = "Map RDS configuration values"
   default  = {
-    name                   = "production"
+    name                   = "m2_magenx_live"
     allocated_storage      = "50"
     max_allocated_storage  = "100"
     storage_type           = "gp2"
-    engine_version         = "10.5.12"
-    instance_class         = "db.m6g.large"
+    storage_encrypted      = true
     engine                 = "mariadb"
+    engine_version         = "10.5.12"
+    family                 = "mariadb10.5"
+    instance_class         = "db.m6g.large"
     skip_final_snapshot    = true
     multi_az               = true
     enabled_cloudwatch_logs_exports = "error"
@@ -112,27 +132,29 @@ variable "max_connection_count" {
 variable "rabbitmq" {
   description      = "Map RabbitMQ configuration values"
   default  = {
-    broker_name            = "queue"
     engine_version         = "3.8.11"
+    deployment_mode        = "CLUSTER_MULTI_AZ"
     host_instance_type     = "mq.t3.micro"
   }
 }
 
 variable "redis" {
   description      = "Map ElastiCache Redis configuration values"
-  default  = {    
+  default  = {
+    number_cache_clusters      = "3"
     node_type                  = "cache.m6g.large"
     name                       = ["session", "cache"]
     engine_version                = "6.x"
     port                          = "6379"
-    automatic_failover_enabled    = true
-    multi_az_enabled              = true
+    at_rest_encryption_enabled    = true
   }
 }
           
 variable "asg" {
   description      = "Map Autoscaling Group configuration values"
   default  = {
+    volume_size           = "50"
+    monitoring            = false
     warm_pool             = "disabled"
     desired_capacity      = "1"
     min_size              = "1"
@@ -145,17 +167,18 @@ variable "asg" {
 variable "asp" {
   description      = "Map Autoscaling Policy configuration values"
   default  = {    
-    evaluation_periods  = "2"
-    period              = "300"
-    out_threshold       = "80"
-    in_threshold        = "25"
+    evaluation_periods_in  = "2"
+    evaluation_periods_out = "1"
+    period                 = "300"
+    out_threshold          = "80"
+    in_threshold           = "25"
   }
 }
 
 variable "s3" {
   description = "S3 bucket names"
   type        = set(string)
-  default     = ["media", "system", "backup"]
+  default     = ["media", "system", "backup", "state"]
 }
 
 variable "alb" {
@@ -185,6 +208,22 @@ variable "eventbridge_policy" {
   "arn:aws:iam::aws:policy/service-role/CloudWatchEventsInvocationAccess",
   "arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole"
   ]
+}
+
+variable "aws_config_rule" {
+  description = "Use AWS Config to evaluate critical configuration settings for your AWS resources."
+  default     = {
+  ROOT_ACCOUNT_MFA_ENABLED                  = ""
+  MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS        = ""
+  INCOMING_SSH_DISABLED                     = "AWS::EC2::SecurityGroup"
+  DB_INSTANCE_BACKUP_ENABLED                = "AWS::RDS::DBInstance"
+  RDS_SNAPSHOTS_PUBLIC_PROHIBITED           = "AWS::RDS::DBSnapshot"
+  RDS_INSTANCE_DELETION_PROTECTION_ENABLED  = "AWS::RDS::DBInstance"
+  EC2_IMDSV2_CHECK                          = "AWS::EC2::Instance"
+  EC2_VOLUME_INUSE_CHECK                    = "AWS::EC2::Volume"
+  EC2_STOPPED_INSTANCE                      = ""
+  ELB_DELETION_PROTECTION_ENABLED           = "AWS::ElasticLoadBalancingV2::LoadBalancer"
+  }
 }
 
 variable "az_number" {
