@@ -8,7 +8,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb" "this" {
   for_each           = toset(var.alb["type"])
-  name               = "${local.project}-${each.key}"
+  name               = "${local.project}-${each.key}-alb"
   internal           = (each.key == "inner" ? true : false)
   load_balancer_type = "application"
   drop_invalid_header_fields = true
@@ -20,7 +20,7 @@ resource "aws_lb" "this" {
     enabled = true
   }
   tags = {
-    Name = "${local.project}-${each.key}"
+    Name = "${local.project}-${each.key}-alb"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
