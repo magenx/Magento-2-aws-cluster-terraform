@@ -72,7 +72,6 @@ resource "aws_iam_role_policy" "codecommit_access" {
       Action = [
             "codecommit:Get*",
             "codecommit:List*",
-            "codecommit:Merge*",
             "codecommit:GitPull"
       ],
       Resource = aws_codecommit_repository.app.arn
@@ -88,7 +87,6 @@ resource "aws_iam_role_policy" "codecommit_access" {
       Action = [
             "codecommit:Get*",
             "codecommit:List*",
-            "codecommit:Describe*",
             "codecommit:GitPull"
       ],
       Resource = aws_codecommit_repository.services.arn
