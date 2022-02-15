@@ -151,6 +151,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] MariaDB database dump for data analysis
 - [x] Enhanced security in AWS and LEMP 
 - [x] AWS Inspector Assessment templates
+- [x] AWS Config resource configuraton rules
 - [x] AWS WAF Protection rules  
 
 ##
