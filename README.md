@@ -100,9 +100,10 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 >  
 **[ ! ]** Right after `terraform apply` you will receive email from amazon to approve resources    
 - [x] Adjust your settings, edit your [cidr], [brand], [domain], [email] and other vars in `variables.tf`
+- [x] Define your source repository or use default and enable minimal Magento 2 package to install.
 - [x] Configure **Fastly** service for CDN and cache.
 - [x] if Fastly disabled in variables, then Varnish cache will be installed locally on EC2 frontend instance.
-- [x] Define either [prod] or [dev] environment variable in `variables.tf`
+- [x] Define either [production] or [development] environment variable in `variables.tf`
   
  **[ ! ]** ```For production deployment make sure to enable deletion protection and backup retention```  
    
@@ -162,9 +163,9 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 ![Magento_2_Fastly_AWS_cloud_auto_scaling_terraform](https://user-images.githubusercontent.com/1591200/149624739-711fb6ba-7c00-48e3-bb80-7b7dc6cd4edc.png)
 
 ## :hammer_and_wrench: Magento 2 development | source code:
+- [x] Define your source repository or use default and enable minimal Magento 2 package to install.
+- [x] Check CodePipeline to install Magento 2 and pre-configure modules.
 - [x] EC2 instance user_data configured on boot to clone files from CodeCommit branch.
-- [x] Right after infrastructure deployment the minimal Magento 2 package is ready to install.
-- [x] Check and run SSM Document to install Magento and pre-configure modules (select admin instance)
 > Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime.
 > Remove replaced components from `composer.json` in `"replace": {}` and run `composer update`  
 > modules configuration here: https://github.com/magenx/Magento-2/blob/main/composer.json  
