@@ -35,7 +35,8 @@ resource "aws_elasticache_parameter_group" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticache_replication_group" "this" {
   for_each                      = toset(var.redis["name"])
-  number_cache_clusters         = length(values(aws_subnet.this).*.id)
+  number_cache_clusters         = var.redis["number_cache_clusters"]
+  at_rest_encryption_enabled    = var.redis["at_rest_encryption_enabled"]
   engine                        = "redis"
   engine_version                = var.redis["engine_version"]
   replication_group_id          = "${local.project}-${each.key}-backend"
@@ -45,8 +46,8 @@ resource "aws_elasticache_replication_group" "this" {
   parameter_group_name          = aws_elasticache_parameter_group.this[each.key].id
   security_group_ids            = [aws_security_group.redis.id]
   subnet_group_name             = aws_elasticache_subnet_group.this.name
-  automatic_failover_enabled    = var.redis["automatic_failover_enabled"]
-  multi_az_enabled              = var.redis["multi_az_enabled"]
+  automatic_failover_enabled    = var.redis["number_cache_clusters"] > 1 ? true : false
+  multi_az_enabled              = var.redis["number_cache_clusters"] > 1 ? true : false
   notification_topic_arn        = aws_sns_topic.default.arn
   tags = {
     Name = "${local.project}-${each.key}-backend"
