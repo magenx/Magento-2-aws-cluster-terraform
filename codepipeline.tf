@@ -92,8 +92,8 @@ resource "aws_iam_policy" "codebuild" {
 {
     "Version": "2012-10-17",
     "Statement": [
-        {
-      "Sid": "AllowCodeBuildGitPullActions",
+    {
+      "Sid": "AllowCodeBuildGitActions",
       "Effect": "Allow",
       "Action": [
         "codecommit:GitPull"
@@ -101,12 +101,36 @@ resource "aws_iam_policy" "codebuild" {
       "Resource": "${aws_codecommit_repository.app.arn}"
     },
     {
+      "Sid": "AllowCodeBuildGitActions",
+      "Effect": "Allow",
+      "Action": [
+        "codecommit:GitPush"
+      ],
+      "Resource": "${aws_codecommit_repository.app.arn}",
+      "Condition": {
+                "StringEqualsIfExists": {
+                    "codecommit:References": [
+                        "refs/heads/build"
+                     ]
+                }
+          }
+    },
+    {
+      "Sid": "AllowCodeBuildGetParameters",
+      "Effect": "Allow",
+      "Action": [
+	"ssm:GetParameter",
+        "ssm:GetParameters"
+      ],
+      "Resource": "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/*"
+    },
+    {
       "Sid": "AllowCodebuildCreateLogs",
       "Effect": "Allow",
       "Action": [
          "logs:PutLogEvents",
          "logs:CreateLogStream"
-            ],
+      ],
       "Resource": "${aws_cloudwatch_log_group.codebuild.arn}:*"
      }
   ]
@@ -169,30 +193,42 @@ resource "aws_iam_policy" "codepipeline" {
   path = "/service-role/"
   policy = <<EOF
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-      "Sid": "AllowCodeCommitActions",
-      "Effect": "Allow",
-      "Action": [
-        "codecommit:GetCommit",
-        "codecommit:GetRepository",
-        "codecommit:GetBranch"
-      ],
-      "Resource": "${aws_codecommit_repository.app.arn}"
-        },
-        {
-      "Sid": "AllowCodeBuildActions",
-      "Effect": "Allow",
-      "Action": [
-        "codebuild:StartBuild",
-        "codebuild:StartBuildBatch",
-        "codebuild:BatchGetBuilds",
-        "codebuild:BatchGetBuildBatches"
-      ],
-      "Resource": "${aws_codebuild_project.this.arn}"
-    }
-    ]
+	"Version": "2012-10-17",
+	"Statement": [{
+			"Sid": "AllowCodeCommitActions",
+			"Effect": "Allow",
+			"Action": [
+				"codecommit:GetCommit",
+				"codecommit:GetRepository",
+				"codecommit:GetBranch"
+			],
+			"Resource": "${aws_codecommit_repository.app.arn}"
+		},
+		{
+			"Sid": "AllowCodeStarConnectionActions",
+			"Effect": "Allow",
+			"Action": [
+				"codestar-connections:UseConnection"
+			],
+			"Resource": aws_codestarconnections_connection.github.arn,
+			"Condition": {
+				"ForAllValues:StringEquals": {
+					"codestar-connections:FullRepositoryId": var.app["source_repo"]
+				}
+			}
+		},
+		{
+			"Sid": "AllowCodeBuildActions",
+			"Effect": "Allow",
+			"Action": [
+				"codebuild:StartBuild",
+				"codebuild:StartBuildBatch",
+				"codebuild:BatchGetBuilds",
+				"codebuild:BatchGetBuildBatches"
+			],
+			"Resource": "${aws_codebuild_project.this.arn}"
+		}
+	]
 }
 EOF
 }
@@ -253,15 +289,13 @@ resource "aws_codedeploy_deployment_group" "this" {
   deployment_config_name = "CodeDeployDefault.AllAtOnce"
 
   ec2_tag_set {
-    ec2_tag_filter {
-      type  = "KEY_AND_VALUE"
-      key   = "Name"
-      value = aws_launch_template.this["admin"].tag_specifications[0].tags.Name
-    }
-    ec2_tag_filter {
-      type  = "KEY_AND_VALUE"
-      key   = "Name"
-      value = aws_launch_template.this["frontend"].tag_specifications[0].tags.Name
+    dynamic "ec2_tag_filter" {
+      for_each = {for name,type in var.ec2: name => type if name != "varnish"}
+      content {
+        key   = "Name"
+        type  = "KEY_AND_VALUE"
+        value = aws_launch_template.this[ec2_tag_filter.key].tag_specifications[0].tags.Name
+      }
     }
   }
 	
@@ -314,8 +348,28 @@ resource "aws_codebuild_project" "this" {
     image_pull_credentials_type = "CODEBUILD"
     privileged_mode             = false
     type                        = "LINUX_CONTAINER"
+	  
+    environment_variable {
+      name  = "PARAMETERSTORE"
+      value = "${aws_ssm_parameter.env.name}"
+      type  = "PARAMETER_STORE"
+    }
+    
+    environment_variable {
+      name  = "PHP_VERSION"
+      value = "${var.app["php_version"]}"
+      type  = "PLAINTEXT"
+    }
   }
-
+	
+  vpc_config {
+    vpc_id             = aws_vpc.this.id
+    subnets            = values(aws_subnet.this).*.id
+    security_group_ids = [
+      aws_security_group.ec2.id
+    ]
+  }
+	
   logs_config {
     cloudwatch_logs {
       group_name  = aws_cloudwatch_log_group.codebuild.name
@@ -329,7 +383,7 @@ resource "aws_codebuild_project" "this" {
   }
 
   source {
-    buildspec           = data.template_file.buildspec.rendered
+    buildspec           = "${file("${abspath(path.root)}/codepipeline/buildspec.yml")}"
     git_clone_depth     = 0
     insecure_ssl        = false
     report_build_status = false
@@ -382,15 +436,6 @@ resource "aws_codepipeline" "this" {
     action {
       category = "Build"
       configuration = {
-        "EnvironmentVariables" = jsonencode(
-          [
-            {
-              name  = "OPTIONAL_VARIABLE"
-              type  = "PLAINTEXT"
-              value = "VALUE"
-            },
-          ]
-        )
         "ProjectName" = aws_codebuild_project.this.id
       }
       input_artifacts = [
@@ -447,7 +492,7 @@ description: "Pull code changes from CodeCommit main branch"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
-  name: "${local.project}CodeCommitPullMainChanges"
+  name: "${replace(local.project,"-","")}CodeCommitPullMainChanges"
   inputs:
     runCommand:
     - |-
@@ -459,8 +504,8 @@ mainSteps:
       if [[ $? -ne 0 ]]; then
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade --keep-generated --no-ansi -n"
       fi
-      systemctl reload php*fpm.service
-      systemctl reload nginx.service
+      systemctl restart php*fpm.service
+      systemctl restart nginx.service
       su ${var.app["brand"]} -s /bin/bash -c "bin/magento cache:flush"
 EOT
 }
@@ -491,9 +536,12 @@ resource "aws_cloudwatch_event_target" "codecommit_main" {
   arn       = aws_ssm_document.git_pull_main.arn
   role_arn  = aws_iam_role.eventbridge_service_role.arn
  
-run_command_targets {
-    key    = "tag:Name"
-    values = [aws_launch_template.this["admin"].tag_specifications[0].tags.Name,aws_launch_template.this["frontend"].tag_specifications[0].tags.Name]
+dynamic "run_command_targets" {
+    for_each = {for name,type in var.ec2: name => type if name != "varnish"}
+    content {
+      key      = "tag:Name"
+      values   = [aws_launch_template.this[run_command_targets.key].tag_specifications[0].tags.Name]
+    }
   }
 }
 
