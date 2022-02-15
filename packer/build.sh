@@ -9,36 +9,52 @@ AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-m
 INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
 INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
 
-## installation
+# remove old aws cli v1
+sudo apt-get remove awscli
 sudo apt-get update
-sudo apt-get -qqy install ${LINUX_PACKAGES}
+sudo apt-get -qqy install jq unzip
+
+# get latest aws cli v2
+cd /tmp
+sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+sudo unzip awscliv2.zip -d /root/
+sudo rm awscliv2.zip
+cd /root
+sudo ./aws/install --bin-dir /usr/bin --install-dir /root/aws --update
+
+PARAMETER=$(sudo aws ssm get-parameter --name "${PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
+declare -A parameter
+while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
+
+## installation
+sudo apt-get -qqy install ${parameter["LINUX_PACKAGES"]}
 sudo pip3 install git-remote-codecommit
 
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Frontend and admin instance configuration
 # # ---------------------------------------------------------------------------------------------------------------------#
 
-if [ "${INSTANCE_NAME}" != "varnish" ]; then
+if [ "${parameter["INSTANCE_NAME"]}" != "varnish" ]; then
 ## create user
-sudo useradd -d /home/${BRAND} -s /sbin/nologin ${BRAND}
+sudo useradd -d /home/${parameter["BRAND"]} -s /sbin/nologin ${parameter["BRAND"]}
 ## create root php user
-sudo useradd -M -s /sbin/nologin -d /home/${BRAND} ${PHP_USER}
-sudo usermod -g ${PHP_USER} ${BRAND}
+sudo useradd -M -s /sbin/nologin -d /home/${parameter["BRAND"]} ${parameter["PHP_USER"]}
+sudo usermod -g ${parameter["PHP_USER"]} ${parameter["BRAND"]}
  
-sudo mkdir -p ${WEB_ROOT_PATH}
-sudo chmod 711 /home/${BRAND}
-sudo mkdir -p /home/${BRAND}/{.config,.cache,.local,.composer}
-sudo chown -R ${BRAND}:${PHP_USER} ${WEB_ROOT_PATH}
-sudo chown -R ${BRAND}:${BRAND} /home/${BRAND}/{.config,.cache,.local,.composer}
-sudo chmod 2770 ${WEB_ROOT_PATH} /home/${BRAND}/{.config,.cache,.local,.composer}
-sudo setfacl -R -m u:${BRAND}:rwX,g:${PHP_USER}:r-X,o::-,d:u:${BRAND}:rwX,d:g:${PHP_USER}:r-X,d:o::- ${WEB_ROOT_PATH}
+sudo mkdir -p ${parameter["WEB_ROOT_PATH"]}
+sudo chmod 711 /home/${parameter["BRAND"]}
+sudo mkdir -p /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
+sudo chown -R ${parameter["BRAND"]}:${parameter["PHP_USER"]} ${parameter["WEB_ROOT_PATH"]}
+sudo chown -R ${parameter["BRAND"]}:${parameter["BRAND"]} /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
+sudo chmod 2770 ${parameter["WEB_ROOT_PATH"]} /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
+sudo setfacl -R -m u:${parameter["BRAND"]}:rwX,g:${parameter["PHP_USER"]}:r-X,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:${parameter["PHP_USER"]}:r-X,d:o::- ${parameter["WEB_ROOT_PATH"]}
 
-sudo sh -c "echo '${EFS_DNS_TARGET}:/data/var ${WEB_ROOT_PATH}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
-sudo sh -c "echo '${EFS_DNS_TARGET}:/data/pub/media ${WEB_ROOT_PATH}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
+sudo sh -c "echo '${parameter["EFS_DNS_TARGET"]}:/data/var ${parameter["WEB_ROOT_PATH"]}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
+sudo sh -c "echo '${parameter["EFS_DNS_TARGET"]}:/data/pub/media ${parameter["WEB_ROOT_PATH"]}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
 
-sudo mkdir -p ${WEB_ROOT_PATH}/{pub/media,var}
-sudo chown -R ${BRAND}:${PHP_USER} ${WEB_ROOT_PATH}/
-sudo chmod 2770 ${WEB_ROOT_PATH}/{pub/media,var}
+sudo mkdir -p ${parameter["WEB_ROOT_PATH"]}/{pub/media,var}
+sudo chown -R ${parameter["BRAND"]}:${parameter["PHP_USER"]} ${parameter["WEB_ROOT_PATH"]}/
+sudo chmod 2770 ${parameter["WEB_ROOT_PATH"]}/{pub/media,var}
 
 ## install nginx
 curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
@@ -51,10 +67,10 @@ sudo sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > 
 sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/nginx.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/php.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 
-_PHP_PACKAGES+=(${PHP_PACKAGES})
-sudo apt-get -qqy install nginx php-pear php${PHP_VERSION} ${_PHP_PACKAGES[@]/#/php${PHP_VERSION}-}
+_PHP_PACKAGES+=(${parameter["PHP_PACKAGES"]})
+sudo apt-get -qqy install nginx php-pear php${parameter["PHP_VERSION"]} ${_PHP_PACKAGES[@]/#/php${parameter["PHP_VERSION"]}-}
 
-sudo setfacl -R -m u:nginx:r-X,g:nginx:r-X,d:u:nginx:r-X ${WEB_ROOT_PATH}
+sudo setfacl -R -m u:nginx:r-X,g:nginx:r-X,d:u:nginx:r-X ${parameter["WEB_ROOT_PATH"]}
 
 sudo sh -c "cat > /etc/sysctl.conf <<END
 fs.file-max = 1000000
@@ -95,7 +111,7 @@ END
 "
 
 
-sudo sh -c "cat > ${PHP_OPCACHE_INI} <<END
+sudo sh -c "cat > ${parameter["PHP_OPCACHE_INI"]} <<END
 zend_extension=opcache.so
 opcache.enable = 1
 opcache.enable_cli = 1
@@ -127,50 +143,50 @@ opcache.protect_memory = 0
 END
 "
 
-sudo sh -c "cp ${PHP_INI} ${PHP_INI}.BACK"
-sudo sed -i 's/^\(max_execution_time = \)[0-9]*/\17200/' ${PHP_INI}
-sudo sed -i 's/^\(max_input_time = \)[0-9]*/\17200/' ${PHP_INI}
-sudo sed -i 's/^\(memory_limit = \)[0-9]*M/\12048M/' ${PHP_INI}
-sudo sed -i 's/^\(post_max_size = \)[0-9]*M/\164M/' ${PHP_INI}
-sudo sed -i 's/^\(upload_max_filesize = \)[0-9]*M/\132M/' ${PHP_INI}
-sudo sed -i 's/expose_php = On/expose_php = Off/' ${PHP_INI}
-sudo sed -i 's/;realpath_cache_size =.*/realpath_cache_size = 5M/' ${PHP_INI}
-sudo sed -i 's/;realpath_cache_ttl =.*/realpath_cache_ttl = 86400/' ${PHP_INI}
-sudo sed -i 's/short_open_tag = Off/short_open_tag = On/' ${PHP_INI}
-sudo sed -i 's/;max_input_vars =.*/max_input_vars = 50000/' ${PHP_INI}
-sudo sed -i 's/session.gc_maxlifetime = 1440/session.gc_maxlifetime = 28800/' ${PHP_INI}
-sudo sed -i 's/mysql.allow_persistent = On/mysql.allow_persistent = Off/' ${PHP_INI}
-sudo sed -i 's/mysqli.allow_persistent = On/mysqli.allow_persistent = Off/' ${PHP_INI}
-sudo sed -i 's/pm = dynamic/pm = ondemand/' ${PHP_FPM_POOL}
-sudo sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' ${PHP_FPM_POOL}
-sudo sed -i 's/^\(pm.max_children = \)[0-9]*/\1100/' ${PHP_FPM_POOL}
+sudo sh -c "cp ${parameter["PHP_INI"]} ${parameter["PHP_INI"]}.BACK"
+sudo sed -i 's/^\(max_execution_time = \)[0-9]*/\17200/' ${parameter["PHP_INI"]}
+sudo sed -i 's/^\(max_input_time = \)[0-9]*/\17200/' ${parameter["PHP_INI"]}
+sudo sed -i 's/^\(memory_limit = \)[0-9]*M/\12048M/' ${parameter["PHP_INI"]}
+sudo sed -i 's/^\(post_max_size = \)[0-9]*M/\164M/' ${parameter["PHP_INI"]}
+sudo sed -i 's/^\(upload_max_filesize = \)[0-9]*M/\132M/' ${parameter["PHP_INI"]}
+sudo sed -i 's/expose_php = On/expose_php = Off/' ${parameter["PHP_INI"]}
+sudo sed -i 's/;realpath_cache_size =.*/realpath_cache_size = 5M/' ${parameter["PHP_INI"]}
+sudo sed -i 's/;realpath_cache_ttl =.*/realpath_cache_ttl = 86400/' ${parameter["PHP_INI"]}
+sudo sed -i 's/short_open_tag = Off/short_open_tag = On/' ${parameter["PHP_INI"]}
+sudo sed -i 's/;max_input_vars =.*/max_input_vars = 50000/' ${parameter["PHP_INI"]}
+sudo sed -i 's/session.gc_maxlifetime = 1440/session.gc_maxlifetime = 28800/' ${parameter["PHP_INI"]}
+sudo sed -i 's/mysql.allow_persistent = On/mysql.allow_persistent = Off/' ${parameter["PHP_INI"]}
+sudo sed -i 's/mysqli.allow_persistent = On/mysqli.allow_persistent = Off/' ${parameter["PHP_INI"]}
+sudo sed -i 's/pm = dynamic/pm = ondemand/' ${parameter["PHP_FPM_POOL"]}
+sudo sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' ${parameter["PHP_FPM_POOL"]}
+sudo sed -i 's/^\(pm.max_children = \)[0-9]*/\1100/' ${parameter["PHP_FPM_POOL"]}
 
-sudo sed -i "s/\[www\]/\[${BRAND}\]/" ${PHP_FPM_POOL}
-sudo sed -i "s/^user =.*/user = ${PHP_USER}/" ${PHP_FPM_POOL}
-sudo sed -i "s/^group =.*/group = ${PHP_USER}/" ${PHP_FPM_POOL}
-sudo sed -ri "s/;?listen.owner =.*/listen.owner = ${BRAND}/" ${PHP_FPM_POOL}
-sudo sed -ri "s/;?listen.group =.*/listen.group = ${PHP_USER}/" ${PHP_FPM_POOL}
-sudo sed -ri "s/;?listen.mode = 0660/listen.mode = 0660/" ${PHP_FPM_POOL}
-sudo sed -ri "s/;?listen.allowed_clients =.*/listen.allowed_clients = 127.0.0.1/" ${PHP_FPM_POOL}
-sudo sed -i '/sendmail_path/,$d' ${PHP_FPM_POOL}
-sudo sed -i '/PHPSESSID/d' ${PHP_INI}
-sudo sed -i "s,.*date.timezone.*,date.timezone = ${TIMEZONE}," ${PHP_INI}
+sudo sed -i "s/\[www\]/\[${parameter["BRAND"]}\]/" ${parameter["PHP_FPM_POOL"]}
+sudo sed -i "s/^user =.*/user = ${parameter["PHP_USER"]}/" ${parameter["PHP_FPM_POOL"]}
+sudo sed -i "s/^group =.*/group = ${parameter["PHP_USER"]}/" ${parameter["PHP_FPM_POOL"]}
+sudo sed -ri "s/;?listen.owner =.*/listen.owner = ${parameter["BRAND"]}/" ${parameter["PHP_FPM_POOL"]}
+sudo sed -ri "s/;?listen.group =.*/listen.group = ${parameter["PHP_USER"]}/" ${parameter["PHP_FPM_POOL"]}
+sudo sed -ri "s/;?listen.mode = 0660/listen.mode = 0660/" ${parameter["PHP_FPM_POOL"]}
+sudo sed -ri "s/;?listen.allowed_clients =.*/listen.allowed_clients = 127.0.0.1/" ${parameter["PHP_FPM_POOL"]}
+sudo sed -i '/sendmail_path/,$d' ${parameter["PHP_FPM_POOL"]}
+sudo sed -i '/PHPSESSID/d' ${parameter["PHP_INI"]}
+sudo sed -i "s,.*date.timezone.*,date.timezone = ${parameter["TIMEZONE"]}," ${parameter["PHP_INI"]}
 
-sudo sh -c 'cat >> ${PHP_FPM_POOL} <<END
+sudo sh -c 'cat >> ${parameter["PHP_FPM_POOL"]} <<END
 ;;
 ;; Custom pool settings
 php_flag[display_errors] = off
 php_admin_flag[log_errors] = on
-php_admin_value[error_log] = "${WEB_ROOT_PATH}/var/log/php-fpm-error.log"
+php_admin_value[error_log] = "${parameter["WEB_ROOT_PATH"]}/var/log/php-fpm-error.log"
 php_admin_value[default_charset] = UTF-8
 php_admin_value[memory_limit] = 2048M
-php_admin_value[date.timezone] = ${TIMEZONE}
+php_admin_value[date.timezone] = ${parameter["TIMEZONE"]}
 END
 '
 
 cd /etc/nginx
 sudo git init
-sudo git remote add origin ${CODECOMMIT_SERVICES_REPO}
+sudo git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
 sudo git fetch
 sudo git reset --hard origin/nginx_${INSTANCE_NAME}
 sudo git checkout -t origin/nginx_${INSTANCE_NAME}
@@ -183,16 +199,16 @@ sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean 
 sudo apt-get -qqy install composer mariadb-client phpmyadmin
  
 sudo sh -c "cp /usr/share/phpmyadmin/config.sample.inc.php /etc/phpmyadmin/config.inc.php"
-sudo sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISH}';/" /etc/phpmyadmin/config.inc.php
-sudo sed -i "s/localhost/${DATABASE_ENDPOINT}/" /etc/phpmyadmin/config.inc.php
-sudo sed -i "s/PHPMYADMIN_PLACEHOLDER/${MYSQL_PATH}/g" /etc/nginx/conf.d/phpmyadmin.conf
+sudo sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${parameter["BLOWFISH"]}';/" /etc/phpmyadmin/config.inc.php
+sudo sed -i "s/localhost/${parameter["DATABASE_ENDPOINT"]}/" /etc/phpmyadmin/config.inc.php
+sudo sed -i "s/PHPMYADMIN_PLACEHOLDER/${parameter["MYSQL_PATH"]}/g" /etc/nginx/conf.d/phpmyadmin.conf
 sudo sed -i "s,#include conf.d/phpmyadmin.conf;,include conf.d/phpmyadmin.conf;," /etc/nginx/sites-available/magento.conf
  
 sudo sh -c 'cat > /etc/logrotate.d/magento <<END
-${WEB_ROOT_PATH}/var/log/*.log
+${parameter["WEB_ROOT_PATH"]}/var/log/*.log
 {
-su ${BRAND} ${PHP_USER}
-create 660 ${BRAND} ${PHP_USER}
+su ${parameter["BRAND"]} ${parameter["PHP_USER"]}
+create 660 ${parameter["BRAND"]} ${parameter["PHP_USER"]}
 daily
 rotate 7
 notifempty
@@ -206,14 +222,14 @@ fi
 sudo mkdir -p /etc/nginx/sites-enabled
 sudo ln -s /etc/nginx/sites-available/magento.conf /etc/nginx/sites-enabled/magento.conf
  
-sudo sed -i "s,CIDR,${CIDR}," /etc/nginx/nginx.conf
-sudo sed -i "s/HEALTH_CHECK_LOCATION/${HEALTH_CHECK_LOCATION}/" /etc/nginx/sites-available/magento.conf
-sudo sed -i "s,/var/www/html,${WEB_ROOT_PATH},g" /etc/nginx/conf.d/maps.conf
-sudo sed -i "s/PROFILER_PLACEHOLDER/${PROFILER}/" /etc/nginx/conf.d/maps.conf
+sudo sed -i "s,CIDR,${parameter["CIDR"]}," /etc/nginx/nginx.conf
+sudo sed -i "s/HEALTH_CHECK_LOCATION/${parameter["HEALTH_CHECK_LOCATION"]}/" /etc/nginx/sites-available/magento.conf
+sudo sed -i "s,/var/www/html,${parameter["WEB_ROOT_PATH"]},g" /etc/nginx/conf.d/maps.conf
+sudo sed -i "s/PROFILER_PLACEHOLDER/${parameter["PROFILER"]}/" /etc/nginx/conf.d/maps.conf
 sudo sh -c "echo '' > /etc/nginx/conf.d/default.conf"
  
-sudo sed -i "s/example.com/${DOMAIN}/g" /etc/nginx/sites-available/magento.conf
-sudo sed -i "s/example.com/${DOMAIN}/g" /etc/nginx/nginx.conf
+sudo sed -i "s/example.com/${parameter["DOMAIN"]}/g" /etc/nginx/sites-available/magento.conf
+sudo sed -i "s/example.com/${parameter["DOMAIN"]}/g" /etc/nginx/nginx.conf
 
 fi
 
@@ -233,7 +249,7 @@ systemctl stop nginx varnish
 
 cd /etc/varnish
 git init
-git remote add origin ${CODECOMMIT_SERVICES_REPO}
+git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
 git fetch
 git reset --hard origin/varnish
 git checkout -t origin/varnish
@@ -242,42 +258,42 @@ uuidgen > /etc/varnish/secret
 
 cd /etc/systemd/system/
 git init
-git remote add origin ${CODECOMMIT_SERVICES_REPO}
+git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
 git fetch
 git reset --hard origin/systemd_varnish
 git checkout -t origin/systemd_varnish
 
 cd /etc/nginx
 git init
-git remote add origin ${CODECOMMIT_SERVICES_REPO}
+git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
 git fetch
 git reset --hard origin/nginx_varnish
 git checkout -t origin/nginx_varnish
 
-sed -i "s,CIDR,${CIDR}," /etc/nginx/nginx.conf
-sed -i "s/RESOLVER/${RESOLVER}/" /etc/nginx/nginx.conf
-sed -i "s/DOMAIN/${DOMAIN} ${STAGING_DOMAIN}/" /etc/nginx/nginx.conf
-sed -i "s/MAGENX_HEADER/${MAGENX_HEADER}/" /etc/nginx/nginx.conf
-sed -i "s/HEALTH_CHECK_LOCATION/${BRAND}-${INSTANCE_NAME}-health-check/" /etc/nginx/nginx.conf
-sed -i "s/ALB_DNS_NAME/${ALB_DNS_NAME}/" /etc/nginx/conf.d/alb.conf
-sed -i "s/example.com/${DOMAIN}/" /etc/nginx/conf.d/maps.conf
+sed -i "s,CIDR,${parameter["CIDR"]}," /etc/nginx/nginx.conf
+sed -i "s/RESOLVER/${parameter["RESOLVER"]}/" /etc/nginx/nginx.conf
+sed -i "s/DOMAIN/${parameter["DOMAIN"]} ${parameter["STAGING_DOMAIN"]}/" /etc/nginx/nginx.conf
+sed -i "s/MAGENX_HEADER/${parameter["MAGENX_HEADER"]}/" /etc/nginx/nginx.conf
+sed -i "s/HEALTH_CHECK_LOCATION/${parameter["HEALTH_CHECK_LOCATION"]}/" /etc/nginx/nginx.conf
+sed -i "s/ALB_DNS_NAME/${parameter["ALB_DNS_NAME"]}/" /etc/nginx/conf.d/alb.conf
+sed -i "s/example.com/${parameter["DOMAIN"]}/" /etc/nginx/conf.d/maps.conf
 
 fi
 
-sudo timedatectl set-timezone ${TIMEZONE}
+sudo timedatectl set-timezone ${parameter["TIMEZONE"]}
  
 cd /tmp
-sudo wget https://aws-codedeploy-${AWS_DEFAULT_REGION}.s3.amazonaws.com/latest/install
+sudo wget https://aws-codedeploy-${parameter["AWS_DEFAULT_REGION"]}.s3.amazonaws.com/latest/install
 sudo chmod +x ./install
 sudo ./install auto
  
-sudo wget https://s3.${AWS_DEFAULT_REGION}.amazonaws.com/amazon-ssm-${AWS_DEFAULT_REGION}/latest/debian_arm64/amazon-ssm-agent.deb
+sudo wget https://s3.${parameter["AWS_DEFAULT_REGION"]}.amazonaws.com/amazon-ssm-${parameter["AWS_DEFAULT_REGION"]}/latest/debian_arm64/amazon-ssm-agent.deb
 sudo dpkg -i amazon-ssm-agent.deb
 sudo systemctl enable amazon-ssm-agent
 
-sudo wget https://s3.${AWS_DEFAULT_REGION}.amazonaws.com/amazoncloudwatch-agent-${AWS_DEFAULT_REGION}/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb
+sudo wget https://s3.${parameter["AWS_DEFAULT_REGION"]}.amazonaws.com/amazoncloudwatch-agent-${parameter["AWS_DEFAULT_REGION"]}/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb
 sudo dpkg -i amazon-cloudwatch-agent.deb
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
 
-sudo chmod 750 /usr/bin/aws
+sudo chmod 750 /usr/bin/aws /root/aws
 sudo apt-get clean
