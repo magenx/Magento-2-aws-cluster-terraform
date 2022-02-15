@@ -55,7 +55,7 @@ data "aws_subnets" "default" {
 data "aws_vpcs" "available" {}
 
 data "aws_vpc" "all" {
-  for_each = data.aws_vpcs.available.ids
+  for_each = toset(data.aws_vpcs.available.ids)
   id = each.key
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
