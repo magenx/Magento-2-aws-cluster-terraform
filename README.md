@@ -100,8 +100,6 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 **[ ! ]** Right after `terraform apply` you will receive email from amazon to approve resources    
 - [x] Adjust your settings, edit your [cidr], [brand], [domain], [email] and other vars in `variables.tf`
 - [x] Define your source repository or use default and enable minimal Magento 2 package to install.
-- [x] Configure **Fastly** service for CDN and cache.
-- [x] if Fastly disabled in variables, then Varnish cache will be installed locally on EC2 frontend instance.
 - [x] Define either [production] or [development] environment variable in `variables.tf`
   
  **[ ! ]** ```For production deployment make sure to enable deletion protection and backup retention```  
