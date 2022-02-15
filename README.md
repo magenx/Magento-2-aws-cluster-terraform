@@ -97,8 +97,15 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
   git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
 ```
 >  
-**[ ! ]** Note: Right after `terraform apply` you will receive email from amazon to approve resources  
-**[ ! ]** Check all user_data, adjust your settings, edit your cidr, brand, domain, email and other vars in `variables.tf`  
+**[ ! ]** Right after `terraform apply` you will receive email from amazon to approve resources    
+- [x] Adjust your settings, edit your [cidr], [brand], [domain], [email] and other vars in `variables.tf`
+- [x] Define your source repository or use default and enable minimal Magento 2 package to install.
+- [x] Configure **Fastly** service for CDN and cache.
+- [x] if Fastly disabled in variables, then Varnish cache will be installed locally on EC2 frontend instance.
+- [x] Define either [production] or [development] environment variable in `variables.tf`
+  
+ **[ ! ]** ```For production deployment make sure to enable deletion protection and backup retention```  
+   
 - [x] Run:
 ```
    terraform init
@@ -150,12 +157,9 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 ![Magento_2_AWS_cloud_auto_scaling_terraform-map](https://user-images.githubusercontent.com/1591200/149658151-d2da3630-e7cc-466e-868d-d9e341aad29e.png)
 
 ## :hammer_and_wrench: Magento 2 development | source code:
-- [x] Local provisioner copy files from https://github.com/magenx/Magento-2
-- [x] Pickup files from your own repo @ [variables.tf#L20](https://github.com/magenx/Magento-2-aws-cluster-terraform/blob/main/variables.tf#L20)
-- [x] Files saved to AWS CloudShell /tmp directory and pushed to CodeCommit.
-- [x] Later on EC2 instance user_data configured on boot to clone files from CodeCommit branch.
-- [x] Right after infrastructure deployment the minimal Magento 2 package is ready to install.
-- [x] Check and run SSM Document to install Magento and pre-configure modules (select admin instance)
+- [x] Define your source repository or use default and enable minimal Magento 2 package to install.
+- [x] Check CodePipeline to install Magento 2 and pre-configure modules.
+- [x] EC2 instance user_data configured on boot to clone files from CodeCommit branch.
 > Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime.
 > Remove replaced components from `composer.json` in `"replace": {}` and run `composer update`  
 > modules configuration here: https://github.com/magenx/Magento-2/blob/main/composer.json  
@@ -163,12 +167,12 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
    
 |**Performance and security enhancements**||**Enabled modules for test requirements**|
 |:-----|---|:-----|
-|Faster backend and frontend from 14% upto 50%||[Fooman Email PDF](https://fooman.com/magento-extension-email-attachments-m2.html)|
-|Better memory management upto 15%||[Stripe Payments](https://stripe.com/docs/plugins/magento)|
-|Easy deployments||[Mageplaza SMTP](https://github.com/mageplaza/magento-2-smtp)|
-|Less dependencies||[Magefan Blog](https://github.com/magefan/module-blog)|
-|Zero maintenance||[Fooman Order#=Invoice#](https://fooman.com/magento-extension-invoice-order-number-m2.html)|
-|Low security risks||[Fooman Print PDF](https://fooman.com/magento-extension-print-order-pdf-m2.html)|
+|Faster backend and frontend from 14% upto 50%||[Mageplaza SMTP](https://github.com/mageplaza/magento-2-smtp)|
+|Better memory management upto 15%|| |
+|Easy deployments|| |
+|Less dependencies|| |
+|Zero maintenance|| |
+|Low security risks|| |
 
 <br />
 
