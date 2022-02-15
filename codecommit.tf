@@ -9,17 +9,22 @@
 resource "aws_codecommit_repository" "app" {
   repository_name = var.app["domain"]
   description     = "Magento 2.x code for ${local.project}"
-    tags = {
+  tags = {
     Name = "${local.project}"
   }
   provisioner "local-exec" {
   interpreter = ["/bin/bash", "-c"]
   command = <<EOF
-          git clone ${var.app["source"]} /tmp/magento
-          cd /tmp/magento
-          git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
+          mkdir -p /tmp/magento && cd /tmp/magento
+          git init
+          git config --global user.name "${var.app["admin_firstname"]}"
+          git config --global user.email "${var.app["admin_email"]}"
+          git remote set-url origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
+          git commit --allow-empty -m "init"
           git branch -m main
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name} main
+          git push origin main
+          git checkout -b build
+          git push origin build
           rm -rf /tmp/magento
 EOF
   }
