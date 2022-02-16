@@ -25,7 +25,7 @@ phases:
       --base-url=https://${parameter["DOMAIN"]}/ \
       --base-url-secure=https://${parameter["DOMAIN"]}/ \
       --db-host=${parameter["DATABASE_ENDPOINT"]} \
-      --db-name=${parameter["DATABASE_INSTANCE_NAME"]} \
+      --db-name=${parameter["DATABASE_NAME"]} \
       --db-user=${parameter["DATABASE_USER_NAME"]} \
       --db-password=${parameter["DATABASE_PASSWORD"]} \
       --admin-firstname=${parameter["ADMIN_FIRSTNAME"]} \
