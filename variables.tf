@@ -8,9 +8,9 @@ locals {
 variable "default_tags" {
  description    = "Default tags to simplify global tag management"
  default        = {
-   Managed      = "terraform"
-   Config       = "magenx"
-   Environment  = "production"
+   managed      = "terraform"
+   config       = "magenx"
+   environment  = "production"
  }
 }
 
