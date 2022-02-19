@@ -130,6 +130,26 @@ variable "max_connection_count" {
      "db.r6g.16xlarge" = "43691"
   }
 }
+
+variable "rds_memory" {
+  description = "Map 6g. class RDS memory gb"
+  default = {
+     "db.m6g.large"    = "8"
+     "db.r6g.large"    = "16"
+     "db.m6g.xlarge"   = "16"
+     "db.r6g.xlarge"   = "32"
+     "db.m6g.2xlarge"  = "32"
+     "db.r6g.2xlarge"  = "64"
+     "db.m6g.4xlarge"  = "64"
+     "db.m6g.8xlarge"  = "128"
+     "db.r6g.4xlarge"  = "128"
+     "db.m6g.12xlarge" = "192"
+     "db.m6g.16xlarge" = "256"
+     "db.r6g.8xlarge"  = "256"
+     "db.r6g.12xlarge" = "384"
+     "db.r6g.16xlarge" = "512"
+  }
+}
       
 variable "rabbitmq" {
   description      = "Map RabbitMQ configuration values"
