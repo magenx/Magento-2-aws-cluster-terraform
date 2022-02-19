@@ -52,7 +52,7 @@ resource "aws_db_instance" "this" {
   delete_automated_backups        = var.rds["delete_automated_backups"]
   deletion_protection             = var.rds["deletion_protection"]
   tags = {
-    Name = "${local.project}"
+    Name = "${local.project}-rds"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
