@@ -10,19 +10,38 @@ resource "aws_s3_bucket" "this" {
   for_each      = var.s3
   bucket        = "${local.project}-${random_string.s3[each.key].id}-${each.key}"
   force_destroy = true
-  acl           = "private"
-  versioning {
-    enabled = (each.value == "state" ? true : false)
-   }
-  server_side_encryption_configuration {
-        rule {
-          apply_server_side_encryption_by_default {
-             sse_algorithm = "AES256"
-          }
-      }
-  }	
   tags = {
     Name        = "${local.project}-${random_string.s3[each.key].id}-${each.key}"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create S3 bucket ACL
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_s3_bucket_acl" "this" {
+  for_each = var.s3
+  bucket   = "${local.project}-${random_string.s3[each.key].id}-${each.key}"
+  acl      = "private"
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create S3 bucket versioning
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_s3_bucket_versioning" "this" {
+  bucket   = aws_s3_bucket.this["state"].id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create S3 bucket encryption
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
+  for_each = var.s3
+  bucket   = "${local.project}-${random_string.s3[each.key].id}-${each.key}"
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = "aws/s3"
+      sse_algorithm     = "aws:kms"
+    }
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
