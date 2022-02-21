@@ -161,9 +161,9 @@ variable "rabbitmq" {
 variable "redis" {
   description      = "Map ElastiCache Redis configuration values"
   default  = {
-    number_cache_clusters      = "3"
-    node_type                  = "cache.m6g.large"
-    name                       = ["session", "cache"]
+    num_cache_clusters            = "3"
+    node_type                     = "cache.m6g.large"
+    name                          = ["session", "cache"]
     engine_version                = "6.x"
     port                          = "6379"
     at_rest_encryption_enabled    = true
