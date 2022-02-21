@@ -89,7 +89,7 @@ variable "elk" {
 variable "rds" {
   description      = "Map RDS configuration values"
   default  = {
-    name                   = "m2_magenx_live"
+    db_name                = "m2_magenx_live"
     allocated_storage      = "50"
     max_allocated_storage  = "100"
     storage_type           = "gp2"
