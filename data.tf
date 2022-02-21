@@ -38,8 +38,11 @@ data "aws_vpc" "default" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Get default subnets from AZ in this region/vpc
 # # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_subnet_ids" "default" {
-   vpc_id = data.aws_vpc.default.id
+data "aws_subnets" "default" {
+   filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+   }
 
   filter {
     name   = "default-for-az"
