@@ -168,13 +168,8 @@ resource "aws_autoscaling_group" "this" {
   lifecycle {
     create_before_destroy = true
   }
-  tag {
-      key                 = "Name"
-      value               = "${local.project}-${each.key}-asg"
-      propagate_at_launch = false
-  }
   dynamic "tag" {
-    for_each = var.default_tags
+    for_each = merge(var.default_tags,{Name="${local.project}-${each.key}-asg"})
     content {
       key                 = tag.key
       value               = tag.value
