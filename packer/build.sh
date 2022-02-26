@@ -41,8 +41,8 @@ sudo chmod 711 /home/${parameter["BRAND"]}
 sudo mkdir -p /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
 sudo chown -R ${parameter["BRAND"]}:${parameter["PHP_USER"]} ${parameter["WEB_ROOT_PATH"]}
 sudo chown -R ${parameter["BRAND"]}:${parameter["BRAND"]} /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
-sudo chmod 2770 ${parameter["WEB_ROOT_PATH"]} /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
-sudo setfacl -R -m u:${parameter["BRAND"]}:rwX,g:${parameter["PHP_USER"]}:r-X,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:${parameter["PHP_USER"]}:r-X,d:o::- ${parameter["WEB_ROOT_PATH"]}
+sudo chmod 2750 ${parameter["WEB_ROOT_PATH"]} /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
+sudo setfacl -R -m m:rx,u:${parameter["BRAND"]}:rwX,g:${parameter["PHP_USER"]}:r-X,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:${parameter["PHP_USER"]}:r-X,d:o::- ${parameter["WEB_ROOT_PATH"]}
 
 sudo sh -c "echo '${parameter["EFS_DNS_TARGET"]}:/data/var ${parameter["WEB_ROOT_PATH"]}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
 sudo sh -c "echo '${parameter["EFS_DNS_TARGET"]}:/data/pub/media ${parameter["WEB_ROOT_PATH"]}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
@@ -65,7 +65,7 @@ sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/php.list" -o Dir
 _PHP_PACKAGES+=(${parameter["PHP_PACKAGES"]})
 sudo apt-get -qqy install nginx php-pear php${parameter["PHP_VERSION"]} ${_PHP_PACKAGES[@]/#/php${parameter["PHP_VERSION"]}-}
 
-sudo setfacl -R -m u:nginx:r-X,g:nginx:r-X,d:u:nginx:r-X ${parameter["WEB_ROOT_PATH"]}
+sudo setfacl -R -m u:nginx:r-X,d:u:nginx:r-X ${parameter["WEB_ROOT_PATH"]}
 
 sudo sh -c "cat > /etc/sysctl.conf <<END
 fs.file-max = 1000000
