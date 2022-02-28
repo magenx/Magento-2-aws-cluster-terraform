@@ -10,7 +10,7 @@ INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.
 INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
 
 # remove old aws cli v1
-sudo apt-get remove awscli
+sudo apt-get -y remove awscli
 sudo apt-get update
 sudo apt-get -qqy install jq unzip
 
@@ -19,8 +19,7 @@ cd /tmp
 sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
 sudo unzip awscliv2.zip -d /root/
 sudo rm awscliv2.zip
-cd /root
-sudo ./aws/install --bin-dir /usr/bin --install-dir /root/aws --update
+sudo /root/aws/install --bin-dir /usr/bin --install-dir /root/aws --update
 
 PARAMETER=$(sudo aws ssm get-parameter --name "${PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
 declare -A parameter
