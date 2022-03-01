@@ -47,9 +47,10 @@ source "amazon-ebs" "latest-ami" {
     delete_on_termination = true
   }
   metadata_options {
-    http_endpoint = "enabled"
-    http_tokens   = "required"
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
     http_put_response_hop_limit = 1
+    instance_metadata_tags      = "enabled"
   }
   snapshot_tags = {
     Name = "${local.var["PROJECT"]}-${var.INSTANCE_NAME}-${local.timestamp}"
