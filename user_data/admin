@@ -10,11 +10,12 @@ _INSTANCE_LOCAL_IP=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://
 _INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
 _INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
 _INSTANCE_TAG=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Name)
+_PROJECT=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Project)
 
 _TIMER_USER_DATA_START="$(date +%T)"
 
 ## get all env vars from parameter store
-_PARAMETER=$(sudo aws ssm get-parameter --name "${_INSTANCE_TAG%-*-*}-env" --query 'Parameter.Value' --output text)
+_PARAMETER=$(sudo aws ssm get-parameter --name "${_PROJECT}-env" --query 'Parameter.Value' --output text)
 declare -A parameter
 while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${_PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
 
