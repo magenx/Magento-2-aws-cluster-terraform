@@ -125,7 +125,7 @@ resource "aws_launch_template" "this" {
     for_each = toset(["instance","volume"])
     content {
        resource_type = tag_specifications.key
-       tags = merge(var.default_tags,{ Name = "${local.project}-${each.key}-ec2" })
+       tags = merge(var.default_tags,{Name = "${local.project}-${each.key}-ec2", Project = "${local.project}"})
     }
   }
   user_data = filebase64("${abspath(path.root)}/user_data/${each.key}")
@@ -169,7 +169,7 @@ resource "aws_autoscaling_group" "this" {
     create_before_destroy = true
   }
   dynamic "tag" {
-    for_each = merge(var.default_tags,{Name="${local.project}-${each.key}-asg"})
+    for_each = merge(var.default_tags,{ Name = "${local.project}-${each.key}-asg" })
     content {
       key                 = tag.key
       value               = tag.value
