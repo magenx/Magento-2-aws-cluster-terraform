@@ -22,7 +22,8 @@ data "aws_inspector_rules_packages" "available" {}
 # Get the list of AWS Availability Zones available in this region
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_availability_zones" "available" {
-  state = "available"
+  state            = "available"
+  exclude_zone_ids = ["use1-az3"]
 }
 
 data "aws_availability_zone" "all" {
