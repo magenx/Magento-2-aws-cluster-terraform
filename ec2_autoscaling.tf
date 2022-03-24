@@ -128,6 +128,12 @@ resource "aws_launch_template" "this" {
        tags = merge(var.default_tags,{Name = "${local.project}-${each.key}-ec2", Project = "${local.project}"})
     }
   }
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+    instance_metadata_tags      = "enabled"
+  }
   user_data = filebase64("${abspath(path.root)}/user_data/${each.key}")
   update_default_version = true
   lifecycle {
