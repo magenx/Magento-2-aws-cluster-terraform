@@ -14,6 +14,10 @@ resource "aws_imagebuilder_image" "this" {
   depends_on = [
     data.aws_iam_policy_document.image_builder
   ]
+  
+  tags = {
+    Name = "${local.project}-image"
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create ImageBuilder image component
@@ -96,6 +100,10 @@ resource "aws_imagebuilder_infrastructure_configuration" "this" {
     }
   }
 
+  resource_tags = {
+    Name = "${local.project}-${each.key}-image"
+  }
+  
   tags = {
     Name = "${local.project}-${each.key}-imagebuilder-infrastructure"
   }
