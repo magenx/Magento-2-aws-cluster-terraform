@@ -100,7 +100,9 @@ resource "aws_imagebuilder_infrastructure_configuration" "this" {
     Name = "${local.project}-${each.key}-imagebuilder-infrastructure"
   }
 }
-
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create ImageBuilder image pipeline
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_imagebuilder_image_pipeline" "this" {
   name                             = "${local.project}-${each.key}-imagebuilder-pipeline"
   description                      = "ImageBuilder pipeline for ${each.key} in ${local.project}"
