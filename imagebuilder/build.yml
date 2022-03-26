@@ -1,5 +1,5 @@
-name: AMIBuildScript
-description: Build script for custom ImageBuilder AMI
+name: "AMIBuildScript"
+description: "Build script for custom ImageBuilder AMI"
 schemaVersion: 1.0
 
 phases:
