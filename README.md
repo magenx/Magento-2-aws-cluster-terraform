@@ -3,7 +3,7 @@
 > Enterprise-grade solution for companies of all sizes, B2B B2C, providing the best customer experience.  
 
 <img src="https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg" width="125" height="90"> <img src="https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg" width="125" height="125"> <img src="https://user-images.githubusercontent.com/1591200/135067367-c50e6cc3-2a07-4fcd-9a7e-016c1c3950f4.png" width="130" height="80"> <img src="https://user-images.githubusercontent.com/1591200/118028531-158ead80-b35b-11eb-8957-636de16ada34.png" width="185" height="125">
-<img src="https://user-images.githubusercontent.com/1591200/130320410-91749ce8-5af1-4802-af25-ffb36e7ded98.png" width="85" height="100"><img src="https://user-images.githubusercontent.com/1591200/143559434-7593c7bf-79b5-4a1f-b6cc-71060cf0bbec.png" width="135" height="145">
+<img src="https://user-images.githubusercontent.com/1591200/130320410-91749ce8-5af1-4802-af25-ffb36e7ded98.png" width="85" height="100">
 
 <br />
 
@@ -69,7 +69,6 @@ https://devdocs.magento.com/
 https://docs.aws.amazon.com/index.html
 https://aws.amazon.com/cloudshell/
 https://www.terraform.io/docs/
-https://www.packer.io/docs
 https://docs.fastly.com/
 ```
 <br />
@@ -89,7 +88,6 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 ```
    sudo yum install -y yum-utils
    sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
-   sudo yum -y install packer terraform
 ```
 - [x] Create deployment directory:  
 ```
@@ -98,7 +96,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Clone repo:  
 > 
 ```
-  git clone -b fastly https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
+  git clone -b fastly_v4_imagebuilder https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
 ```
 >  
 **[ ! ]** Right after `terraform apply` you will receive email from amazon to approve resources    
@@ -195,8 +193,8 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
    
 <br />
 
-## AMI configuration and build using Packer:
-- [x] Build custom AMI with Packer configuration
+## AMI configuration and build using ImageBuilder:
+- [x] Build custom AMI with ImageBuilder configuration
 - [x] Reuse AMI in Terraform to create launch_template 
    
 <br />
