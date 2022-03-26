@@ -88,6 +88,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 ```
    sudo yum install -y yum-utils
    sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+   sudo yum -y install terraform
 ```
 - [x] Create deployment directory:  
 ```
