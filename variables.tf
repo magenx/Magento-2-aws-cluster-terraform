@@ -216,6 +216,7 @@ variable "ec2_instance_profile_policy" {
   description = "Policy attach to EC2 Instance Profile"
   type        = set(string)
   default     = [
+  "arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilder",
   "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
   "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
   "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
