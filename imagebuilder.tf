@@ -123,3 +123,34 @@ resource "aws_imagebuilder_image_pipeline" "this" {
     Name = "${local.project}-${each.key}-imagebuilder-pipeline"
   }
 }
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create ImageBuilder image distribution configuration
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_imagebuilder_distribution_configuration" "this" {
+  for_each     = var.ec2
+  name         = "${local.project}-${each.key}-imagebuilder-distribution-configuration"
+  description  = "ImageBuilder distribution configuration for ${each.key} in ${local.project}"
+  distribution {
+    ami_distribution_configuration {
+      name         = "${local.project}-${each.key}-{{ imagebuilder:buildDate }}"
+      description  = "AMI for ${each.key} in ${local.project} - {{ imagebuilder:buildDate }}"
+      ami_tags = {
+        Name = "${local.project}-${each.key}-{{ imagebuilder:buildDate }}"
+      }
+      
+      launch_template_configuration {
+        launch_template_id = aws_launch_template.this[each.key].name
+      }
+
+      launch_permission {
+        user_ids = [data.aws_caller_identity.current.account_id]
+      }
+    }
+
+    region = data.aws_region.current.name
+  }
+  
+  tags = {
+    Name = "${local.project}-${each.key}-imagebuilder-distribution-configuration"
+  }
+}
