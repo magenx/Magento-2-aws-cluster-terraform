@@ -8,8 +8,8 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_imagebuilder_image" "this" {
   for_each                         = var.ec2
-  image_recipe_arn                 = aws_imagebuilder_image_recipe.this.arn
-  infrastructure_configuration_arn = aws_imagebuilder_infrastructure_configuration.this.arn
+  image_recipe_arn                 = aws_imagebuilder_image_recipe.this[each.key].arn
+  infrastructure_configuration_arn = aws_imagebuilder_infrastructure_configuration.this[each.key].arn
 
   depends_on = [
     data.aws_iam_policy_document.image_builder
@@ -112,10 +112,11 @@ resource "aws_imagebuilder_infrastructure_configuration" "this" {
 # Create ImageBuilder image pipeline
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_imagebuilder_image_pipeline" "this" {
+  for_each                         = var.ec2
   name                             = "${local.project}-${each.key}-imagebuilder-pipeline"
   description                      = "ImageBuilder pipeline for ${each.key} in ${local.project}"
-  image_recipe_arn                 = aws_imagebuilder_image_recipe.this.arn
-  infrastructure_configuration_arn = aws_imagebuilder_infrastructure_configuration.this.arn
+  image_recipe_arn                 = aws_imagebuilder_image_recipe.this[each.key].arn
+  infrastructure_configuration_arn = aws_imagebuilder_infrastructure_configuration.this[each.key].arn
 
   schedule []
   
@@ -137,14 +138,13 @@ resource "aws_imagebuilder_distribution_configuration" "this" {
       ami_tags = {
         Name = "${local.project}-${each.key}-{{ imagebuilder:buildDate }}"
       }
-      
-      launch_template_configuration {
-        launch_template_id = aws_launch_template.this[each.key].name
-      }
-
       launch_permission {
         user_ids = [data.aws_caller_identity.current.account_id]
       }
+    }
+    
+    launch_template_configuration {
+      launch_template_id = aws_launch_template.this[each.key].name
     }
 
     region = data.aws_region.current.name
