@@ -21,7 +21,7 @@ resource "aws_imagebuilder_image" "this" {
 resource "aws_imagebuilder_component" "build" {
   name         = "${local.project}-imagebuilder-component"
   description  = "ImageBuilder component for ${local.project}"
-  data = yamlencode(file("${abspath(path.root)}/imagebuilder/build.yml"))
+  data = file("${abspath(path.root)}/imagebuilder/build.yml")
   platform = "Linux"
   version  = "1.0.0"
   
