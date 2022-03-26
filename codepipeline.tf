@@ -219,7 +219,7 @@ resource "aws_iam_policy" "codepipeline" {
 			"Action": [
 				"codestar-connections:UseConnection"
 			],
-			"Resource": "${aws_codestarconnections_connection.github[enabled].arn}",
+			"Resource": "${aws_codestarconnections_connection.github["enabled"].arn}",
 			"Condition": {
 				"ForAllValues:StringEquals": {
 					"codestar-connections:FullRepositoryId": var.app["source_repo"]
