@@ -101,6 +101,15 @@ resource "aws_iam_policy" "codebuild" {
       "Resource": "${aws_codecommit_repository.app.arn}"
     },
     {
+      "Sid": "AllowCodeBuildDescribe",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeSecurityGroups",
+        "ec2:DescribeSubnets"
+      ],
+      "Resource": "*"
+    },
+    {
       "Sid": "AllowCodeBuildGitPushActions",
       "Effect": "Allow",
       "Action": [
