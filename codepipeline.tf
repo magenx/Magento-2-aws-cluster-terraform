@@ -222,7 +222,7 @@ resource "aws_iam_policy" "codepipeline" {
 			"Resource": "${aws_codestarconnections_connection.github.arn}",
 			"Condition": {
 				"ForAllValues:StringEquals": {
-					"codestar-connections:FullRepositoryId": ${var.app["source_repo"]}
+					"codestar-connections:FullRepositoryId": "${var.app["source_repo"]}"
 				}
 			}
 		},
