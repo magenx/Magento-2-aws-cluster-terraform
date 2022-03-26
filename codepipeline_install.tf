@@ -7,8 +7,7 @@
 # Create CodeStarSourceConnection
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codestarconnections_connection" "github" {
-  for_each      = var.app["install"] == "enabled" ? toset(["enabled"]) : []
-  name          = "${local.project}-codestar-connection"
+  name          = "${local.project}-codestar"
   provider_type = "GitHub"
   
   tags = {
@@ -19,7 +18,6 @@ resource "aws_codestarconnections_connection" "github" {
 # Create CodeBuild project
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codebuild_project" "install" {
-  for_each               = var.app["install"] == "enabled" ? toset(["enabled"]) : []
   badge_enabled          = false
   build_timeout          = 60
   description            = "${local.project}-codebuild-install-project"
@@ -97,7 +95,6 @@ resource "aws_codebuild_project" "install" {
 # Create CodePipeline configuration
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codepipeline" "install" {
-  for_each   = var.app["install"] == "enabled" ? toset(["enabled"]) : []
   name       = "${local.project}-codepipeline-install"
   depends_on = [aws_iam_role.codepipeline]
   role_arn   = aws_iam_role.codepipeline.arn
@@ -116,7 +113,7 @@ resource "aws_codepipeline" "install" {
     action {
       category = "Source"
       configuration = {
-        "ConnectionArn"         = aws_codestarconnections_connection.github[each.key].arn
+        "ConnectionArn"         = aws_codestarconnections_connection.github.arn
         "FullRepositoryId"      = var.app["source_repo"]
         "BranchName"            = "main"
         "OutputArtifactFormat"  = "CODEBUILD_CLONE_REF"
@@ -153,7 +150,7 @@ resource "aws_codepipeline" "install" {
     action {
       category = "Build"
       configuration = {
-        "ProjectName" = aws_codebuild_project.install[each.key].id
+        "ProjectName" = aws_codebuild_project.install.id
       }
       input_artifacts = [
         "SourceArtifact",
