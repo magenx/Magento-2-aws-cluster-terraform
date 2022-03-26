@@ -97,7 +97,7 @@ resource "aws_imagebuilder_infrastructure_configuration" "this" {
   }
 
   resource_tags = {
-    Name = "${local.project}-${each.key}-image"
+    ICFor = "${local.project}-${each.key}-image"
   }
   
   tags = {
