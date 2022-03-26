@@ -138,7 +138,7 @@ resource "aws_imagebuilder_distribution_configuration" "this" {
     }
     
     launch_template_configuration {
-      launch_template_id = aws_launch_template.this[each.key].name
+      launch_template_id = aws_launch_template.this[each.key].id
     }
 
     region = data.aws_region.current.name
