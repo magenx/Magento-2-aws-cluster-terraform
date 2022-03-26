@@ -34,8 +34,8 @@ resource "aws_imagebuilder_component" "build" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_imagebuilder_image_recipe" "this" {
   for_each     = var.ec2
-  name         = "${local.project}-imagebuilder-recipe"
-  description  = "ImageBuilder recipe for ${local.project} using debian-11-arm64"
+  name         = "${local.project}-${each.key}-imagebuilder-recipe"
+  description  = "ImageBuilder recipe for ${each.key} in ${local.project} using debian-11-arm64"
   parent_image = data.aws_ami.distro.id
   version      = "1.0.0"
   
@@ -71,7 +71,7 @@ resource "aws_imagebuilder_image_recipe" "this" {
   }
   
   tags = {
-    Name = "${local.project}-imagebuilder-recipe"
+    Name = "${local.project}-${each.key}-imagebuilder-recipe"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
