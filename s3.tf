@@ -76,7 +76,7 @@ resource "aws_s3_bucket_policy" "media" {
    Id = "PolicyForMediaStorageAccess"
    Statement = [
       {
-         Action = "s3:GetObject"
+         Action = ["s3:GetObject"],
          Effect = "Deny"
          Principal = {
             AWS = "*"
@@ -102,7 +102,10 @@ resource "aws_s3_bucket_policy" "media" {
          ]
       }, 
       {
-         Action = ["s3:GetObject", "s3:GetObjectAcl"],
+         Action = [
+		 "s3:GetObject",
+		 "s3:GetObjectAcl"
+	 ],
          Effect = "Allow"
          Principal = {
             AWS = [ aws_iam_user.s3.arn ]
@@ -113,7 +116,10 @@ resource "aws_s3_bucket_policy" "media" {
          ]
       }, 
       {
-         Action = ["s3:GetBucketLocation", "s3:ListBucket"],
+         Action = [
+		 "s3:GetBucketLocation", 
+		 "s3:ListBucket"
+	 ],
          Effect = "Allow"
          Principal = {
             AWS = [ aws_iam_user.s3.arn ]
@@ -160,8 +166,16 @@ resource "aws_s3_bucket_policy" "system" {
 	  aws_iam_role.config.arn
         ] 
      }
-  }
-]
+    },
+    {
+      Action = ["s3:PutObject"],
+      Effect = "Allow"
+      Resource = "${aws_s3_bucket.this["system"].arn}/imagebuilder/*"
+      Principal = {
+        AWS = "*"
+     }
+    }
+  ]
 })
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
