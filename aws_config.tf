@@ -17,7 +17,7 @@ resource "aws_config_config_rule" "this" {
     source_identifier = each.key
   }
   scope {
-    compliance_resource_types = [each.value]
+    compliance_resource_types = ["${each.value}"]
   }
   tags = {
     Name = "${local.project}-${each.key}"
