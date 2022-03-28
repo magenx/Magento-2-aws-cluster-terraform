@@ -20,7 +20,7 @@ resource "aws_elasticache_subnet_group" "this" {
 resource "aws_elasticache_parameter_group" "this" {
   for_each      = toset(var.redis["name"])
   name          = "${local.project}-${each.key}-parameter"
-  family        = "redis6.x"
+  family        = var.redis["family"]
   description   = "Parameter group for ${var.app["domain"]} ${each.key} backend"
   parameter {
     name  = "cluster-enabled"
