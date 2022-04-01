@@ -36,8 +36,6 @@ resource "aws_ssm_parameter" "env" {
 "REDIS_SESSION_BACKEND_RO" : "${aws_elasticache_replication_group.this["session"].reader_endpoint_address}",
 "S3_MEDIA_BUCKET" : "${aws_s3_bucket.this["media"].bucket}",
 "S3_MEDIA_BUCKET_URL" : "${aws_s3_bucket.this["media"].bucket_regional_domain_name}",
-"S3_MEDIA_BUCKET_KEY" : "${aws_iam_access_key.s3.id}",
-"S3_MEDIA_BUCKET_SECRET" : "${aws_iam_access_key.s3.secret}",
 "SES_KEY" : "${aws_iam_access_key.ses_smtp_user_access_key.id}",
 "SES_SECRET" : "${aws_iam_access_key.ses_smtp_user_access_key.secret}",
 "SES_PASSWORD" : "${aws_iam_access_key.ses_smtp_user_access_key.ses_smtp_password_v4}",
