@@ -15,7 +15,7 @@ _PROJECT=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.16
 _TIMER_USER_DATA_START="$(date +%T)"
 
 ## get all env vars from parameter store
-_PARAMETER=$(sudo aws ssm get-parameter --name "${_PROJECT}-env" --query 'Parameter.Value' --output text)
+_PARAMETER=$(aws ssm get-parameter --name "${_PROJECT}-env" --query 'Parameter.Value' --output text)
 declare -A parameter
 while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${_PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
 
