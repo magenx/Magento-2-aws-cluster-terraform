@@ -50,6 +50,5 @@ aws sns publish \
     --topic-arn ${SNS_TOPIC_ARN} \
     --subject "Timer for user_data: ${BRAND} at ${AWS_DEFAULT_REGION} ${INSTANCE_NAME} $${INSTANCE_ID}" \
     --message file:///tmp/timer_user_data_log
-    
-    
-iptables -A OUTPUT -m owner --uid-owner ${PHP_USER} -d 169.254.169.254 -j DROP
+
+
