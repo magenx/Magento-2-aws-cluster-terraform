@@ -5,40 +5,50 @@
 #        All rights reserved.                                                     #
 #=================================================================================#
 
-AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-INSTANCE_LOCAL_IP=$(curl -s -H "X-aws-ec2-metadata-token: $${AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
-INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
-INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: $${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
+_AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
+_INSTANCE_LOCAL_IP=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
+_INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
+_INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
+_INSTANCE_TAG=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Name)
+_PROJECT=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Project)
 
 _TIMER_USER_DATA_START="$(date +%T)"
 
-if [ $(stat -f -L -c %T ${WEB_ROOT_PATH}/pub/media) != "nfs" ]; then
+## get all env vars from parameter store
+_PARAMETER=$(aws ssm get-parameter --name "${_PROJECT}-env" --query 'Parameter.Value' --output text)
+declare -A parameter
+while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${_PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
+
+## extract instance name from tag
+_INSTANCE_NAME=$(echo ${_INSTANCE_TAG} | awk -v FS="(${parameter["PROJECT"]}-|-ec2)" '{print $2}')
+
+if [ $(stat -f -L -c %T ${parameter["WEB_ROOT_PATH"]}/pub/media) != "nfs" ]; then
 mkdir -p /mnt/efs
-mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${EFS_DNS_TARGET}:/ /mnt/efs
+mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${parameter["EFS_DNS_TARGET"]}:/ /mnt/efs
 mkdir -p /mnt/efs/data/{var,pub/media}
-chown -R ${BRAND}:${PHP_USER} /mnt/efs/
+chown -R ${parameter["BRAND"]}:${parameter["PHP_USER"]} /mnt/efs/
 find /mnt/efs -type d -exec chmod 2770 {} \;
 umount /mnt/efs
 mount -a
 fi
 
-cd ${WEB_ROOT_PATH}
+cd ${parameter["WEB_ROOT_PATH"]}
 su ${BRAND} -s /bin/bash -c "git init -b main"
-su ${BRAND} -s /bin/bash -c "git remote add origin ${CODECOMMIT_APP_REPO}"
+su ${BRAND} -s /bin/bash -c "git remote add origin ${parameter["CODECOMMIT_APP_REPO"]}"
 su ${BRAND} -s /bin/bash -c "git fetch origin main"
 su ${BRAND} -s /bin/bash -c "git reset origin/main --hard"
 
-sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/magento.conf
+sed -i "s/INSTANCE_LOCAL_IP/${_INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/magento.conf
 systemctl restart nginx
 
-/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${_INSTANCE_NAME}.json
 
-chmod 750 /usr/bin/aws
+_TIMER_USER_DATA_END="$(date +%T)"
 
 cat > /tmp/timer_user_data_log <<END
-Instance: ${INSTANCE_NAME} $${INSTANCE_ID} $${INSTANCE_TYPE}
-Region: ${AWS_DEFAULT_REGION}
-Brand: ${BRAND}
+Instance: ${_INSTANCE_NAME} ${_INSTANCE_ID} ${_INSTANCE_TYPE}
+Region: ${parameter["AWS_DEFAULT_REGION"]}
+Brand: ${parameter["BRAND"]}
 Uptime since:  $(uptime -s)
 END
 
@@ -46,9 +56,9 @@ END
 ss -tunlp >> /tmp/timer_user_data_log
 
 aws sns publish \
-    --region ${AWS_DEFAULT_REGION} \
-    --topic-arn ${SNS_TOPIC_ARN} \
-    --subject "Timer for user_data: ${BRAND} at ${AWS_DEFAULT_REGION} ${INSTANCE_NAME} $${INSTANCE_ID}" \
+    --region ${parameter["AWS_DEFAULT_REGION"]} \
+    --topic-arn ${parameter["SNS_TOPIC_ARN"]} \
+    --subject "Timer for user_data: ${parameter["BRAND"]} at ${parameter["AWS_DEFAULT_REGION"]} ${_INSTANCE_NAME} ${_INSTANCE_ID}" \
     --message file:///tmp/timer_user_data_log
 
-
+chmod 750 /usr/bin/aws /root/aws
