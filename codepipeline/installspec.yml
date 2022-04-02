@@ -101,8 +101,6 @@ phases:
       bin/magento setup:config:set --remote-storage-driver=aws-s3 \
       --remote-storage-bucket=${parameter["S3_MEDIA_BUCKET"]} \
       --remote-storage-region=${parameter["AWS_DEFAULT_REGION"]} \
-      --remote-storage-key=${parameter["S3_MEDIA_BUCKET_KEY"]} \
-      --remote-storage-secret="${parameter["S3_MEDIA_BUCKET_SECRET"]}" \
       -n
       ## sync to s3 remote storage
       bin/magento remote-storage:sync
