@@ -54,6 +54,8 @@ systemctl restart nginx
 
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${_INSTANCE_NAME}.json
 
+_TIMER_USER_DATA_END="$(date +%T)"
+
 cat > /tmp/timer_user_data_log <<END
 Instance: ${_INSTANCE_NAME} ${_INSTANCE_ID} ${_INSTANCE_TYPE}
 Region: ${parameter["AWS_DEFAULT_REGION"]}
