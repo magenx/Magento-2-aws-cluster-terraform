@@ -55,20 +55,7 @@ resource "aws_s3_bucket_public_access_block" "this" {
   restrict_public_buckets = true
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create IAM user for S3 bucket
-# # ---------------------------------------------------------------------------------------------------------------------#	  
-resource "aws_iam_user" "s3" {
-  name = "${local.project}-s3-media"
-  tags = {
-    Name = "${local.project}-s3-media"
-  }
-}
-	  
-resource "aws_iam_access_key" "s3" {
-  user = aws_iam_user.s3.name
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create policy for CloudFront and S3 user to limit S3 media bucket access
+# Create policy for CloudFront to limit S3 media bucket access
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_s3_bucket_policy" "media" {
    bucket = aws_s3_bucket.this["media"].id
@@ -93,7 +80,7 @@ resource "aws_s3_bucket_policy" "media" {
          Action = ["s3:PutObject"],
          Effect = "Allow"
          Principal = {
-            AWS = [ aws_iam_user.s3.arn ]
+            AWS = values(aws_iam_instance_profile.ec2)[*].arn
          }
          Resource = [
             "${aws_s3_bucket.this["media"].arn}",
@@ -109,7 +96,7 @@ resource "aws_s3_bucket_policy" "media" {
          Action = ["s3:GetObject", "s3:GetObjectAcl"],
          Effect = "Allow"
          Principal = {
-            AWS = [ aws_iam_user.s3.arn ]
+            AWS = values(aws_iam_instance_profile.ec2)[*].arn
          }
          Resource = [
             "${aws_s3_bucket.this["media"].arn}",
@@ -120,7 +107,7 @@ resource "aws_s3_bucket_policy" "media" {
          Action = ["s3:GetBucketLocation", "s3:ListBucket"],
          Effect = "Allow"
          Principal = {
-            AWS = [ aws_iam_user.s3.arn ]
+            AWS = values(aws_iam_instance_profile.ec2)[*].arn
          }
          Resource = "${aws_s3_bucket.this["media"].arn}"
       }, 
