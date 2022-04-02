@@ -32,6 +32,8 @@ resource "aws_ssm_parameter" "env" {
 "REDIS_SESSION_BACKEND" : "${aws_elasticache_replication_group.this["session"].primary_endpoint_address}",
 "REDIS_CACHE_BACKEND_RO" : "${aws_elasticache_replication_group.this["cache"].reader_endpoint_address}",
 "REDIS_SESSION_BACKEND_RO" : "${aws_elasticache_replication_group.this["session"].reader_endpoint_address}",
+"S3_MEDIA_BUCKET" : "${aws_s3_bucket.this["media"].bucket}",
+"S3_MEDIA_BUCKET_URL" : "${aws_s3_bucket.this["media"].bucket_regional_domain_name}",
 "OUTER_ALB_DNS_NAME" : "${aws_lb.this["outer"].dns_name}",
 "INNER_ALB_DNS_NAME" : "${aws_lb.this["inner"].dns_name}",
 "CLOUDFRONT_DOMAIN" : "${aws_cloudfront_distribution.this.domain_name}",
