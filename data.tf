@@ -122,22 +122,3 @@ data "http" "packer" {
     Accept = "application/json"
   }
 }
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Variables for user_data templates generation
-# # ---------------------------------------------------------------------------------------------------------------------#
-data "template_file" "user_data" {
-  for_each = var.ec2
-  template = file("./user_data/${each.key}")
-  vars = {
-  INSTANCE_NAME = "${each.key}"
-  AWS_DEFAULT_REGION = "${data.aws_region.current.name}"
-  SNS_TOPIC_ARN = "${aws_sns_topic.default.arn}"
-  CODECOMMIT_APP_REPO = "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
-  CODECOMMIT_SERVICES_REPO = "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name}"
-  DOMAIN = "${var.app["domain"]}"
-  BRAND = "${var.app["brand"]}"
-  PHP_USER = "php-${var.app["brand"]}"
-  WEB_ROOT_PATH = "/home/${var.app["brand"]}/public_html"
-  EFS_DNS_TARGET = "${values(aws_efs_mount_target.this).0.dns_name}"
- }
-}
