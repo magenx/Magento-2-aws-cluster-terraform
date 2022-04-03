@@ -11,6 +11,15 @@ phases:
   pre_build:
     commands:
     - |-
+      echo Pre-Build started at $(date)
+      cd /tmp
+      git clone --recursive --depth=1 https://github.com/kjdev/php-ext-lz4.git
+      cd php-ext-lz4
+      phpize
+      ./configure
+      make
+      make install
+      echo 'extension="/root/.phpenv/versions/${PHP_74_VERSION}/lib/php/extensions/no-debug-non-zts-20190902/lz4.so"' > /root/.phpenv/versions/${PHP_74_VERSION}/etc/conf.d/lz4.ini
       echo Installation started at $(date)
       cd ${CODEBUILD_SRC_DIR}
       declare -A parameter
