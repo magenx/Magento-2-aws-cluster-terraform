@@ -51,7 +51,7 @@ resource "aws_elasticache_replication_group" "this" {
   notification_topic_arn        = aws_sns_topic.default.arn
   
   log_delivery_configuration {
-    destination        = aws_cloudwatch_log_group.redis.name
+    destination        = aws_cloudwatch_log_group.redis[each.key].name
     destination_type   = "cloudwatch-logs"
     log_format         = "text"
     log_type           = "engine-log"
@@ -65,6 +65,7 @@ resource "aws_elasticache_replication_group" "this" {
 # Create CloudWatch log group for redis
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_log_group" "redis" {
+  for_each      = toset(var.redis["name"])
   name = "${local.project}-${each.key}-redis"
 
   tags = {
