@@ -20,24 +20,33 @@ phases:
         inputs:
           commands:
             - |
+              ## preset variables
               _PARAMETERSTORE_NAME={{ PARAMETERSTORE_NAME }}
               _INSTANCE_NAME={{ INSTANCE_NAME }}
               
-              # remove old aws cli v1
+              ## remove old aws cli v1
               apt-get -y remove awscli
               apt-get update
               apt-get -qqy install jq unzip
               
-              # get latest aws cli v2
+              ## get latest aws cli v2
               cd /tmp
               curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
               unzip awscliv2.zip -d /root/
               rm awscliv2.zip
               /root/aws/install --bin-dir /usr/bin --install-dir /root/aws --update
               
+              ## get environment variables from aws parameter store
               _PARAMETER=$(aws ssm get-parameter --name "${_PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
               declare -A parameter
               while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${_PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
+              
+              ## debug
+              echo ${_PARAMETERSTORE_NAME} ${_PARAMETER} ${parameter["LINUX_PACKAGES"]}
+              if [ -z "${_PARAMETERSTORE_NAME}" ]; then
+              echo "_PARAMETERSTORE_NAME is empty"
+              exit 1
+              fi
               
               ## installation
               apt-get -qqy install ${parameter["LINUX_PACKAGES"]}
