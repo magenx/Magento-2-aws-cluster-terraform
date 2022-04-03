@@ -114,7 +114,7 @@ resource "aws_launch_template" "this" {
   for_each = var.ec2
   name = "${local.project}-${each.key}-ltpl"
   iam_instance_profile { name = aws_iam_instance_profile.ec2[each.key].name }
-  image_id = aws_imagebuilder_image.this[each.key].output_resources.amis.image
+  image_id = element(aws_imagebuilder_image.this[each.key].output_resources[*].amis[*].image, 0)[0]
   instance_type = each.value
   monitoring { enabled = var.asg["monitoring"] }
   network_interfaces { 
