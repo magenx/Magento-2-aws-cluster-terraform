@@ -1,6 +1,7 @@
 name: "AMIBuildScript"
 description: "Build script for custom ImageBuilder AMI"
 schemaVersion: 1.0
+
 parameters:
   - PARAMETERSTORE_NAME:
       type: string
@@ -14,6 +15,8 @@ phases:
     steps:
       - name: AMIBuildScriptStart
         action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 1
         inputs:
           commands:
             - |
