@@ -81,7 +81,7 @@ resource "aws_s3_bucket_policy" "media" {
          Action = ["s3:PutObject"],
          Effect = "Allow"
          Principal = {
-            AWS = values(aws_iam_instance_profile.ec2)[*].arn
+            AWS = values(aws_iam_role.ec2)[*].arn
          }
          Resource = [
             "${aws_s3_bucket.this["media"].arn}",
@@ -95,7 +95,7 @@ resource "aws_s3_bucket_policy" "media" {
 	 ],
          Effect = "Allow"
          Principal = {
-            AWS = values(aws_iam_instance_profile.ec2)[*].arn
+            AWS = values(aws_iam_role.ec2)[*].arn
          }
          Resource = [
             "${aws_s3_bucket.this["media"].arn}",
@@ -109,7 +109,7 @@ resource "aws_s3_bucket_policy" "media" {
 	 ],
          Effect = "Allow"
          Principal = {
-            AWS = values(aws_iam_instance_profile.ec2)[*].arn
+            AWS = values(aws_iam_role.ec2)[*].arn
          }
          Resource = "${aws_s3_bucket.this["media"].arn}"
       }, 
@@ -159,7 +159,7 @@ resource "aws_s3_bucket_policy" "system" {
       Effect = "Allow"
       Resource = "${aws_s3_bucket.this["system"].arn}/imagebuilder/*"
       Principal = {
-        AWS = values(aws_iam_instance_profile.ec2)[*].arn
+        AWS = values(aws_iam_role.ec2)[*].arn
      }
     }
   ]
