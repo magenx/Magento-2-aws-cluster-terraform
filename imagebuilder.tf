@@ -54,13 +54,13 @@ resource "aws_imagebuilder_image_recipe" "this" {
   component {
     component_arn = aws_imagebuilder_component.build.arn
     parameter {
-      name        = "Parameter1"
-      value       = "Value1"
+      name        = "PARAMETERSTORE_NAME"
+      value       = "${local.project}-env"
     }
 
     parameter {
-      name        = "Parameter2"
-      value       = "Value2"
+      name        = "INSTANCE_NAME"
+      value       = "${each.key}"
     }
   }
   
