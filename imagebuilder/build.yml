@@ -1,7 +1,14 @@
 name: "AMIBuildScript"
 description: "Build script for custom ImageBuilder AMI"
 schemaVersion: 1.0
-
+parameters:
+  - PARAMETERSTORE_NAME:
+      type: string
+      description: Systems Manager Parameter Store name
+  - INSTANCE_NAME:
+      type: string
+      description: Instance name
+      
 phases:
   - name: build
     steps:
@@ -9,9 +16,9 @@ phases:
         action: ExecuteBash
         inputs:
           commands:
-            - |              
-              INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-              INSTANCE_TYPE=$(curl -s http://169.254.169.254/latest/meta-data/instance-type)
+            - |
+              _PARAMETERSTORE_NAME={{ PARAMETERSTORE_NAME }}
+              _INSTANCE_NAME={{ INSTANCE_NAME }}
               
               # remove old aws cli v1
               apt-get -y remove awscli
@@ -25,9 +32,9 @@ phases:
               rm awscliv2.zip
               /root/aws/install --bin-dir /usr/bin --install-dir /root/aws --update
               
-              PARAMETER=$(aws ssm get-parameter --name "${PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
+              _PARAMETER=$(aws ssm get-parameter --name "${_PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
               declare -A parameter
-              while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
+              while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${_PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
               
               ## installation
               apt-get -qqy install ${parameter["LINUX_PACKAGES"]}
@@ -178,7 +185,7 @@ phases:
               php_admin_value[date.timezone] = ${parameter["TIMEZONE"]}
               END
               
-              if [ "${parameter["FASTLY"]}" == "disabled" ] && [ "${INSTANCE_NAME}" != "admin" ]; then
+              if [ "${parameter["FASTLY"]}" == "disabled" ] && [ "${_INSTANCE_NAME}" != "admin" ]; then
               
               apt-get -qqy install varnish
               
@@ -198,10 +205,10 @@ phases:
               git init
               git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
               git fetch
-              git reset --hard origin/nginx_${INSTANCE_NAME}
-              git checkout -t origin/nginx_${INSTANCE_NAME}
+              git reset --hard origin/nginx_${_INSTANCE_NAME}
+              git checkout -t origin/nginx_${_INSTANCE_NAME}
               
-              if [ "${INSTANCE_NAME}" == "admin" ]; then
+              if [ "${_INSTANCE_NAME}" == "admin" ]; then
               debconf-set-selections <<< "phpmyadmin phpmyadmin/internal/skip-preseed boolean true"
               debconf-set-selections <<< "phpmyadmin phpmyadmin/reconfigure-webserver multiselect"
               debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false"
@@ -247,7 +254,7 @@ phases:
               
               wget https://s3.${parameter["AWS_DEFAULT_REGION"]}.amazonaws.com/amazoncloudwatch-agent-${parameter["AWS_DEFAULT_REGION"]}/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb
               dpkg -i amazon-cloudwatch-agent.deb
-              /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
+              /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${_INSTANCE_NAME}.json
               
               chmod 750 /usr/bin/aws /root/aws
               apt-get clean
