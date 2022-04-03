@@ -213,6 +213,14 @@ resource "aws_iam_policy" "codepipeline" {
 			],
 			"Resource": "${aws_codecommit_repository.app.arn}"
 		},
+                {
+                        "Action": [
+                                "sns:Publish"
+                        ],
+                        "Effect": "Allow",
+                        "Resource": "${aws_sns_topic.default.arn}",
+                        "Sid": "AllowSNSPublish"
+                },
 		{
 			"Sid": "AllowCodeStarConnectionActions",
 			"Effect": "Allow",
@@ -235,7 +243,10 @@ resource "aws_iam_policy" "codepipeline" {
 				"codebuild:BatchGetBuilds",
 				"codebuild:BatchGetBuildBatches"
 			],
-			"Resource": "${aws_codebuild_project.this.arn}"
+			"Resource": [
+				"${aws_codebuild_project.this.arn}",
+				"${aws_codebuild_project.install.arn}"
+			]
 		}
 	]
 }
