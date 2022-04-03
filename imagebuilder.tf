@@ -7,6 +7,7 @@
 # Create ImageBuilder image
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_imagebuilder_image" "this" {
+  depends_on                       = [aws_ssm_parameter.env]
   for_each                         = var.ec2
   image_recipe_arn                 = aws_imagebuilder_image_recipe.this[each.key].arn
   infrastructure_configuration_arn = aws_imagebuilder_infrastructure_configuration.this[each.key].arn
@@ -108,6 +109,7 @@ resource "aws_imagebuilder_infrastructure_configuration" "this" {
 # Create ImageBuilder image pipeline
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_imagebuilder_image_pipeline" "this" {
+  depends_on                       = [aws_ssm_parameter.env]
   for_each                         = var.ec2
   name                             = "${local.project}-${each.key}-imagebuilder-pipeline"
   description                      = "ImageBuilder pipeline for ${each.key} in ${local.project}"
