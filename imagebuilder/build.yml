@@ -42,7 +42,7 @@ phases:
               while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${_PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
               
               ## debug
-              echo ${_PARAMETERSTORE_NAME} ${_PARAMETER} ${parameter["LINUX_PACKAGES"]}
+              echo ${_PARAMETERSTORE_NAME}
               if [ -z "${_PARAMETERSTORE_NAME}" ]; then
               echo "_PARAMETERSTORE_NAME is empty"
               exit 1
