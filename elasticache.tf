@@ -65,8 +65,8 @@ resource "aws_elasticache_replication_group" "this" {
 # Create CloudWatch log group for redis
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_log_group" "redis" {
-  for_each      = toset(var.redis["name"])
-  name = "${local.project}-${each.key}-redis"
+  for_each  = toset(var.redis["name"])
+  name      = "${local.project}-${each.key}-redis"
 
   tags = {
     Name = "${local.project}-${each.key}-redis"
