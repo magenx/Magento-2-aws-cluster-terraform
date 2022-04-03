@@ -49,8 +49,26 @@ resource "aws_elasticache_replication_group" "this" {
   automatic_failover_enabled    = var.redis["num_cache_clusters"] > 1 ? true : false
   multi_az_enabled              = var.redis["num_cache_clusters"] > 1 ? true : false
   notification_topic_arn        = aws_sns_topic.default.arn
+  
+  log_delivery_configuration {
+    destination        = aws_cloudwatch_log_group.redis.name
+    destination_type   = "cloudwatch-logs"
+    log_format         = "text"
+    log_type           = "engine-log"
+  }
+  
   tags = {
     Name = "${local.project}-${each.key}-backend"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudWatch log group for redis
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_log_group" "redis" {
+  name = "${local.project}-${each.key}-redis"
+
+  tags = {
+    Name = "${local.project}-${each.key}-redis"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
