@@ -159,7 +159,7 @@ resource "aws_s3_bucket_policy" "system" {
       Effect = "Allow"
       Resource = "${aws_s3_bucket.this["system"].arn}/imagebuilder/*"
       Principal = {
-        AWS = "*"
+        AWS = values(aws_iam_instance_profile.ec2)[*].arn
      }
     }
   ]
