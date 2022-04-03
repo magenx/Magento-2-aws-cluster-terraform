@@ -101,11 +101,17 @@ resource "aws_iam_policy" "codebuild" {
       "Resource": "${aws_codecommit_repository.app.arn}"
     },
     {
-      "Sid": "AllowCodeBuildDescribe",
+      "Sid": "AllowCodeBuildEC2Actions",
       "Effect": "Allow",
       "Action": [
-        "ec2:DescribeSecurityGroups",
-        "ec2:DescribeSubnets"
+                "ec2:DescribeDhcpOptions",
+                "ec2:DescribeNetworkInterfaces",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeVpcs",
+                "ec2:DeleteNetworkInterface",
+                "ec2:CreateNetworkInterface",
+                "ec2:CreateNetworkInterfacePermission"
       ],
       "Resource": "*"
     },
