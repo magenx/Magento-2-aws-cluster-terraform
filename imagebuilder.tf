@@ -56,7 +56,7 @@ resource "aws_imagebuilder_image_recipe" "this" {
     component_arn = aws_imagebuilder_component.build.arn
     parameter {
       name        = "PARAMETERSTORE_NAME"
-      value       = "${local.project}-env"
+      value       = "${aws_ssm_parameter.env.name}"
     }
 
     parameter {
