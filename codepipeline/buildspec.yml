@@ -14,6 +14,15 @@ phases:
       - while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETERSTORE} | jq -r 'to_entries[] | .key + "=" + .value')
       - php -m
       - php -v
+      - cd /tmp
+      - git clone --recursive --depth=1 https://github.com/kjdev/php-ext-lz4.git
+      - cd php-ext-lz4
+      - phpize
+      - ./configure
+      - make
+      - make install
+      - echo 'extension="/root/.phpenv/versions/${PHP_74_VERSION}/lib/php/extensions/no-debug-non-zts-20190902/lz4.so"' > /root/.phpenv/versions/${PHP_74_VERSION}/etc/conf.d/lz4.ini
+      - php -m
   build:
     on-failure: ABORT
     commands:
