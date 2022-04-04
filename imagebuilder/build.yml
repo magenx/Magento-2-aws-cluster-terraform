@@ -160,7 +160,7 @@ phases:
               cp ${parameter["PHP_INI"]} ${parameter["PHP_INI"]}.BACK
               sed -i 's/^\(max_execution_time = \)[0-9]*/\17200/' ${parameter["PHP_INI"]}
               sed -i 's/^\(max_input_time = \)[0-9]*/\17200/' ${parameter["PHP_INI"]}
-              sed -i 's/^\(memory_limit = \)[0-9]*M/\12048M/' ${parameter["PHP_INI"]}
+              sed -i 's/^\(memory_limit = \)[0-9]*M/\11048M/' ${parameter["PHP_INI"]}
               sed -i 's/^\(post_max_size = \)[0-9]*M/\164M/' ${parameter["PHP_INI"]}
               sed -i 's/^\(upload_max_filesize = \)[0-9]*M/\132M/' ${parameter["PHP_INI"]}
               sed -i 's/expose_php = On/expose_php = Off/' ${parameter["PHP_INI"]}
@@ -193,7 +193,7 @@ phases:
               php_admin_flag[log_errors] = on
               php_admin_value[error_log] = "${parameter["WEB_ROOT_PATH"]}/var/log/php-fpm-error.log"
               php_admin_value[default_charset] = UTF-8
-              php_admin_value[memory_limit] = 2048M
+              php_admin_value[memory_limit] = 1048M
               php_admin_value[date.timezone] = ${parameter["TIMEZONE"]}
               END
               
@@ -270,3 +270,55 @@ phases:
               
               chmod 750 /usr/bin/aws /root/aws
               apt-get clean
+              
+              
+  - name: test
+    steps:
+      - name: AMIBuildScriptTest
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 1
+        inputs:
+          commands:
+            - |
+              ## preset variables
+              _INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+              _INSTANCE_TYPE=$(curl -s http://169.254.169.254/latest/meta-data/instance-type)
+              
+              _PARAMETERSTORE_NAME={{ PARAMETERSTORE_NAME }}
+              _INSTANCE_NAME={{ INSTANCE_NAME }}
+              
+              ## get environment variables from aws parameter store
+              _PARAMETER=$(aws ssm get-parameter --name "${_PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
+              declare -A parameter
+              while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${_PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
+              
+              ## debug
+              echo ${_PARAMETERSTORE_NAME}
+              if [ -z "${_PARAMETERSTORE_NAME}" ]; then
+              echo "_PARAMETERSTORE_NAME is empty"
+              exit 1
+              fi
+              
+              cat > /tmp/imagebuild_test <<END
+              Instance: ${_INSTANCE_NAME} ${_INSTANCE_ID} ${_INSTANCE_TYPE}
+              Region: ${parameter["AWS_DEFAULT_REGION"]}
+              Brand: ${parameter["BRAND"]}
+              Uptime since:  $(uptime -s)
+               
+              END
+              
+              curl ifconfig.io/all >> /tmp/imagebuild_test
+              echo "-------------------------------------------------------" >> /tmp/imagebuild_test
+              df -h >> /tmp/imagebuild_test
+              echo "-------------------------------------------------------" >> /tmp/imagebuild_test
+              dpkg-query -l nginx php${parameter["PHP_VERSION"]} ${parameter["LINUX_PACKAGES"]} >> /tmp/imagebuild_test
+              echo "-------------------------------------------------------" >> /tmp/imagebuild_test
+              ss -tunlp >> /tmp/imagebuild_test
+
+              aws sns publish \
+              --region ${parameter["AWS_DEFAULT_REGION"]} \
+              --topic-arn ${parameter["SNS_TOPIC_ARN"]} \
+              --subject "ImageBuilder test: ${parameter["BRAND"]} at ${parameter["AWS_DEFAULT_REGION"]} ${_INSTANCE_NAME} ${_INSTANCE_ID}" \
+              --message file:///tmp/imagebuild_test
+              
