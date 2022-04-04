@@ -61,6 +61,8 @@ Instance: ${_INSTANCE_NAME} ${_INSTANCE_ID} ${_INSTANCE_TYPE}
 Region: ${parameter["AWS_DEFAULT_REGION"]}
 Brand: ${parameter["BRAND"]}
 Uptime since:  $(uptime -s)
+User Data start: ${_TIMER_USER_DATA_START}
+User Data end: ${_TIMER_USER_DATA_END}
 END
 
 /bin/systemctl status nginx.service php*fpm.service varnish.service >> /tmp/timer_user_data_log
