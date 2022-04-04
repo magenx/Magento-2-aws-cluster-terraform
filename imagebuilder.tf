@@ -115,7 +115,6 @@ resource "aws_imagebuilder_image_pipeline" "this" {
   description                      = "ImageBuilder pipeline for ${each.key} in ${local.project}"
   image_recipe_arn                 = aws_imagebuilder_image_recipe.this[each.key].arn
   infrastructure_configuration_arn = aws_imagebuilder_infrastructure_configuration.this[each.key].arn
-  distribution_configuration_arn   = aws_imagebuilder_distribution_configuration.this[each.key].arn
   
   tags = {
     Name = "${local.project}-${each.key}-imagebuilder-pipeline"
