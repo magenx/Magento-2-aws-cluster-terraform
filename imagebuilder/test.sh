@@ -2,7 +2,7 @@
 
 ## debug
 if [ -z "${_PARAMETERSTORE_NAME}" ]; then
-echo "_PARAMETERSTORE_NAME is empty"
+echo "_PARAMETERSTORE_NAME is empty - build is broken"
 exit 1
 fi
 
@@ -26,7 +26,8 @@ done
 
 ## test for EFS mount
 if [ $(stat -f -L -c %T ${parameter["WEB_ROOT_PATH"]}/pub/media) != "nfs" ]; then
-echo "Error: EFS remote storage not mounted"
+echo "Error: EFS remote storage not mounted - build is broken"
+exit 1
 fi
 
 ## create report also send to sns channel
