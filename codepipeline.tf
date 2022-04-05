@@ -131,6 +131,14 @@ resource "aws_iam_policy" "codebuild" {
           }
     },
     {
+      "Sid": "AllowCodeStarConnectionActions",
+      "Effect": "Allow",
+      "Action": [
+        "codestar-connections:UseConnection"
+       ],
+      "Resource": "${aws_codestarconnections_connection.github.arn}"
+    },
+    {
       "Sid": "AllowCodeBuildGetParameters",
       "Effect": "Allow",
       "Action": [
@@ -233,12 +241,7 @@ resource "aws_iam_policy" "codepipeline" {
 			"Action": [
 				"codestar-connections:UseConnection"
 			],
-			"Resource": "${aws_codestarconnections_connection.github.arn}",
-			"Condition": {
-				"ForAllValues:StringEquals": {
-					"codestar-connections:FullRepositoryId": "${var.app["source_repo"]}"
-				}
-			}
+			"Resource": "${aws_codestarconnections_connection.github.arn}"
 		},
 		{
 			"Sid": "AllowCodeBuildActions",
