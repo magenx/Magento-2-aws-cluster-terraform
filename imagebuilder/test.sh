@@ -2,7 +2,7 @@
 
 ## debug
 if [ -z "${_PARAMETERSTORE_NAME}" ]; then
-echo "_PARAMETERSTORE_NAME is empty - build is broken"
+echo "Error: _PARAMETERSTORE_NAME is empty - build is broken"
 exit 1
 fi
 
