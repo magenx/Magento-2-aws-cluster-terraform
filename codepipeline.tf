@@ -393,7 +393,7 @@ resource "aws_codebuild_project" "this" {
 	
   vpc_config {
     vpc_id             = aws_vpc.this.id
-    subnets            = values(aws_subnet.this).*.id
+    subnets            = [aws_subnet.private.id]
     security_group_ids = [
       aws_security_group.ec2.id
     ]
