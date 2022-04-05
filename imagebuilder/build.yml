@@ -38,7 +38,7 @@ phases:
               
   - name: test
     steps:
-	  - name: AMITestScriptDownload
+     - name: AMITestScriptDownload
         action: S3Download
         onFailure: Abort
         maxAttempts: 1
