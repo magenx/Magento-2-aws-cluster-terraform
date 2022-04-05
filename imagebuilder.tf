@@ -13,7 +13,7 @@ resource "aws_imagebuilder_image" "this" {
   infrastructure_configuration_arn = aws_imagebuilder_infrastructure_configuration.this[each.key].arn
   
   tags = {
-    Name = "${local.project}-image"
+    Name = "${local.project}-${each.key}-image"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
