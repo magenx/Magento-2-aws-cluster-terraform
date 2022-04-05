@@ -70,3 +70,63 @@ resource "aws_vpc_dhcp_options_association" "this" {
   vpc_id          = aws_vpc.this.id
   dhcp_options_id = aws_vpc_dhcp_options.this.id
 }
+
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Private subnet with NAT Gateway
+# # ---------------------------------------------------------------------------------------------------------------------#
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create NAT Gateway for private subnet
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_nat_gateway" "private" {
+  allocation_id = aws_eip.private.id
+  subnet_id     = values(aws_subnet.this).0.id
+
+  tags = {
+    Name = "${local.project}-nat-gateway"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Assign IP for NAT Gateway
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_eip" "private" {
+  depends_on = [aws_internet_gateway.this]
+  vpc        = true
+
+  tags = {
+    Name = "${local.project}-eip-nat-gateway"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create private subnet
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_subnet" "private" {
+  vpc_id                  = aws_vpc.this.id
+  cidr_block              = cidrsubnet(aws_vpc.this.cidr_block, 4, 15)
+  availability_zone       = values(data.aws_availability_zone.all).0.id
+
+  tags = {
+    Name = "${local.project}-private-subnet"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create route table for NAT Gateway
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.this.id
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.private.id
+  }
+
+  tags = {
+    Name = "${local.project}-route-table"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Associate route table
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_route_table_association" "private" {
+  subnet_id      = aws_subnet.private.id
+  route_table_id = aws_route_table.private.id
+}
