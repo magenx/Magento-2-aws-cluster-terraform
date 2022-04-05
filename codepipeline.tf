@@ -462,7 +462,20 @@ resource "aws_codepipeline" "this" {
 	
   stage {
     name = "Build"
-
+  
+    action {
+      name     = "Approval"
+      category = "Approval"
+      owner    = "AWS"
+      provider = "Manual"
+      version  = "1"
+      run_order = 1
+      configuration = {
+        NotificationArn = aws_sns_topic.default.arn
+        CustomData      = "Approve CodePipeline to build app for ${local.project} at ${data.aws_region.current.name} ?"
+      }
+    }
+	  
     action {
       category = "Build"
       configuration = {
@@ -479,7 +492,7 @@ resource "aws_codepipeline" "this" {
       owner     = "AWS"
       provider  = "CodeBuild"
       region    = data.aws_region.current.name
-      run_order = 1
+      run_order = 2
       version   = "1"
     }
   }
