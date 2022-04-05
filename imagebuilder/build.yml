@@ -55,9 +55,9 @@ phases:
           commands:
             - 'export  _PARAMETERSTORE_NAME={{ PARAMETERSTORE_NAME }}'
             - 'export  _INSTANCE_NAME={{ INSTANCE_NAME }}'
-            - 'bash {{ build.AMITestScriptDownload.inputs[0].destination }}'
+            - 'bash {{ test.AMITestScriptDownload.inputs[0].destination }}'
       - name: AMITestScriptDelete
         action: DeleteFile
         inputs:
-          - path: '{{ build.AMITestScriptDownload.inputs[0].destination }}'
+          - path: '{{ test.AMITestScriptDownload.inputs[0].destination }}'
           
