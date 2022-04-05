@@ -63,6 +63,11 @@ resource "aws_imagebuilder_image_recipe" "this" {
       name        = "INSTANCE_NAME"
       value       = "${each.key}"
     }
+    
+    parameter {
+      name        = "S3_SYSTEM_BUCKET_NAME"
+      value       = "${aws_s3_bucket.this["system"].id}"
+    }
   }
   
   user_data_base64        = filebase64("${abspath(path.root)}/imagebuilder/ssm.sh")
@@ -150,3 +155,22 @@ resource "aws_imagebuilder_distribution_configuration" "this" {
     Name = "${local.project}-${each.key}-imagebuilder-distribution-configuration"
   }
 }
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Upload ImageBuilder build script to s3 bucket
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_s3_object" "imagebuilder_build" {
+  bucket = aws_s3_bucket.this["system"].id
+  key    = "imagebuilder/build.sh"
+  source = "${abspath(path.root)}/imagebuilder/build.sh"
+  etag = filemd5("${abspath(path.root)}/imagebuilder/build.sh")
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Upload ImageBuilder test script to s3 bucket
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_s3_object" "imagebuilder_test" {
+  bucket = aws_s3_bucket.this["system"].id
+  key    = "imagebuilder/test.sh"
+  source = "${abspath(path.root)}/imagebuilder/test.sh"
+  etag = filemd5("${abspath(path.root)}/imagebuilder/test.sh")
+}
+
