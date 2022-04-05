@@ -24,10 +24,12 @@ for _LINUX_PACKAGE in ${_LINUX_PACKAGES}; do
   fi
 done
 
+## test for EFS mount
 if [ $(stat -f -L -c %T ${parameter["WEB_ROOT_PATH"]}/pub/media) != "nfs" ]; then
 echo "Error: EFS remote storage not mounted"
 fi
 
+## create report also send to sns channel
 cat > /tmp/imagebuild_test <<END
 Instance: ${_INSTANCE_NAME} ${_INSTANCE_ID} ${_INSTANCE_TYPE}
 Region: ${parameter["AWS_DEFAULT_REGION"]}
