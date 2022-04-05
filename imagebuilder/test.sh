@@ -27,6 +27,10 @@ done
 ## test for EFS mount
 if [ $(stat -f -L -c %T ${parameter["WEB_ROOT_PATH"]}/pub/media) != "nfs" ]; then
 echo "Error: EFS remote storage not mounted - build is broken"
+mount -a
+grep nfs /var/log/syslog
+df -h
+cat /etc/fstab
 exit 1
 fi
 
