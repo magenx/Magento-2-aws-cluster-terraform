@@ -22,22 +22,14 @@ while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${_P
 ## extract instance name from tag
 _INSTANCE_NAME=$(echo ${_INSTANCE_TAG} | awk -v FS="(${parameter["PROJECT"]}-|-ec2)" '{print $2}')
 
-if [ $(stat -f -L -c %T ${parameter["WEB_ROOT_PATH"]}/pub/media) != "nfs" ]; then
-mkdir -p /mnt/efs
-mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${parameter["EFS_DNS_TARGET"]}:/ /mnt/efs
-mkdir -p /mnt/efs/data/{var,pub/media}
-chown -R ${parameter["BRAND"]}:${parameter["PHP_USER"]} /mnt/efs/
-find /mnt/efs -type d -exec chmod 2770 {} \;
-umount /mnt/efs
-mount -a
-fi
-
+## get app files from codecommit repository
 cd ${parameter["WEB_ROOT_PATH"]}
 su ${parameter["BRAND"]} -s /bin/bash -c "git init -b main"
 su ${parameter["BRAND"]} -s /bin/bash -c "git remote add origin ${parameter["CODECOMMIT_APP_REPO"]}"
 su ${parameter["BRAND"]} -s /bin/bash -c "git fetch origin main"
 su ${parameter["BRAND"]} -s /bin/bash -c "git reset origin/main --hard"
 
+## varnish vs fastly
 if [ "${parameter["FASTLY"]}" == "disabled" ] && [ "${_INSTANCE_NAME}" != "admin" ]; then
 
 sed -i "s/INSTANCE_LOCAL_IP:80/${_INSTANCE_LOCAL_IP}:8080/" /etc/nginx/sites-available/magento.conf
@@ -56,6 +48,7 @@ systemctl restart nginx
 
 _TIMER_USER_DATA_END="$(date +%T)"
 
+## send userdata log
 cat > /tmp/timer_user_data_log <<END
 Instance: ${_INSTANCE_NAME} ${_INSTANCE_ID} ${_INSTANCE_TYPE}
 Region: ${parameter["AWS_DEFAULT_REGION"]}
