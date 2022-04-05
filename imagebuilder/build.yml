@@ -19,7 +19,7 @@ phases:
       - name: AMIBuildScriptDownload
         action: S3Download
         inputs:
-          - source: 's3://{{ S3_SYSTEM_BUCKET_NAME }}/imagebuilder/build.sh
+          - source: 's3://{{ S3_SYSTEM_BUCKET_NAME }}/imagebuilder/build.sh'
             destination: '/tmp/build.sh'
       - name: AMIBuildScriptStart
         action: ExecuteBash
