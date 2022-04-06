@@ -17,6 +17,7 @@ curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zi
 unzip awscliv2.zip -d /root/
 rm awscliv2.zip
 /root/aws/install --bin-dir /usr/bin --install-dir /root/aws --update
+rm -rf /root/aws/{dist,install}
 
 ## get environment variables from aws parameter store
 _PARAMETER=$(aws ssm get-parameter --name "${_PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
