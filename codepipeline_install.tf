@@ -61,6 +61,12 @@ resource "aws_codebuild_project" "install" {
       value = "${var.app["php_version"]}"
       type  = "PLAINTEXT"
     }
+    
+    environment_variable {
+      name  = "S3_SYSTEM_BUCKET_NAME"
+      value = "${aws_s3_bucket.this["system"].id}"
+      type  = "PLAINTEXT"
+    }
   }
 
   vpc_config {
