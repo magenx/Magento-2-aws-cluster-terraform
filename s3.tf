@@ -63,25 +63,10 @@ resource "aws_s3_bucket_policy" "media" {
    Id = "PolicyForMediaStorageAccess"
    Statement = [
       {
-         Action = ["s3:GetObject"],
-         Effect = "Deny"
-         Principal = {
-            AWS = "*"
-         }
-         Resource = [
-            "${aws_s3_bucket.this["media"].arn}/*"
-         ]
-         Condition = {
-            StringNotLike = {
-		"aws:Referer" = [ var.app["domain"] ]
-         }
-       }
-      }, 
-      {
          Action = ["s3:PutObject"],
          Effect = "Allow"
          Principal = {
-            AWS = values(aws_iam_role.ec2)[*].arn
+            AWS = concat(values(aws_iam_role.ec2)[*].arn, [aws_iam_role.codebuild.arn,aws_iam_role.codepipeline.arn])
          }
          Resource = [
             "${aws_s3_bucket.this["media"].arn}",
@@ -95,7 +80,7 @@ resource "aws_s3_bucket_policy" "media" {
 	 ],
          Effect = "Allow"
          Principal = {
-            AWS = values(aws_iam_role.ec2)[*].arn
+            AWS = concat(values(aws_iam_role.ec2)[*].arn, [aws_iam_role.codebuild.arn,aws_iam_role.codepipeline.arn])
          }
          Resource = [
             "${aws_s3_bucket.this["media"].arn}",
@@ -109,7 +94,7 @@ resource "aws_s3_bucket_policy" "media" {
 	 ],
          Effect = "Allow"
          Principal = {
-            AWS = values(aws_iam_role.ec2)[*].arn
+            AWS = concat(values(aws_iam_role.ec2)[*].arn, [aws_iam_role.codebuild.arn,aws_iam_role.codepipeline.arn])
          }
          Resource = "${aws_s3_bucket.this["media"].arn}"
       }, 
