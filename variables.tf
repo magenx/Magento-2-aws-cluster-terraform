@@ -10,7 +10,7 @@ variable "default_tags" {
  default        = {
    Managed      = "terraform"
    Config       = "magenx"
-   Environment  = "production"
+   Environment  = "development"
  }
 }
 
@@ -79,7 +79,7 @@ variable "elk" {
   default  = {
     elasticsearch_version  = "7.9"
     instance_type          = "m6g.large.elasticsearch"
-    instance_count         = "3"
+    instance_count         = "1"
     ebs_enabled            = true
     volume_type            = "gp2"
     volume_size            = "20"
@@ -100,7 +100,7 @@ variable "rds" {
     family                 = "mariadb10.5"
     instance_class         = "db.m6g.large"
     skip_final_snapshot    = true
-    multi_az               = true
+    multi_az               = false
     enabled_cloudwatch_logs_exports = "error"
     performance_insights_enabled = true
     copy_tags_to_snapshot    = true
@@ -162,7 +162,7 @@ variable "rabbitmq" {
 variable "redis" {
   description      = "Map ElastiCache Redis configuration values"
   default  = {
-    num_cache_clusters         = "3"
+    num_cache_clusters         = "1"
     node_type                  = "cache.m6g.large"
     name                       = ["session", "cache"]
     engine_version                = "6.x"
