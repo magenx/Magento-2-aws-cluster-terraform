@@ -48,6 +48,7 @@ echo "Installation error - check command output log"
 exit 1
 fi
 if [ ! -f app/etc/env.php ]; then
+echo
 echo "Installation error - env.php not available"
 exit 1
 fi
