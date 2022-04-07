@@ -17,8 +17,10 @@ phases:
       - ./configure
       - make
       - make install
-      - echo 'extension="/root/.phpenv/versions/${PHP_74_VERSION}/lib/php/extensions/no-debug-non-zts-20190902/lz4.so"' > /root/.phpenv/versions/${PHP_74_VERSION}/etc/conf.d/lz4.ini      
+      - export PHP_API=$(php -i | awk '/PHP API/{print $NF}')
+      - echo 'extension="/root/.phpenv/versions/${PHP_74_VERSION}/lib/php/extensions/no-debug-non-zts-${PHP_API}/lz4.so"' > /root/.phpenv/versions/${PHP_74_VERSION}/etc/conf.d/lz4.ini      
   pre_build:
+    on-failure: ABORT
     commands:
       - echo Installation started at $(date)
       - cd ${CODEBUILD_SRC_DIR}
