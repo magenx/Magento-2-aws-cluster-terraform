@@ -34,6 +34,7 @@ phases:
     commands:
       - echo Configuration dump start at $(date)
       - cd ${CODEBUILD_SRC_DIR}
+      - rm installation.sh
       - for file in app/etc/{env.php,config.php} ; do cp ${file}{,.main} ; done
       - bin/magento app:config:dump scopes themes
       - for file in app/etc/{env.php,config.php} ; do cp ${file}{,.build} ; done
