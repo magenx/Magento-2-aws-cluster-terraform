@@ -4,6 +4,15 @@
 ////////////////////////////////////////////////////////[ CODEPIPELINE ]//////////////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Upload CodePipeline app installation script to s3 bucket
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_s3_object" "app_install" {
+  bucket = aws_s3_bucket.this["system"].id
+  key    = "installation/installation.sh"
+  source = "${abspath(path.root)}/codepipeline/installation.sh"
+  etag = filemd5("${abspath(path.root)}/codepipeline/installation.sh")
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create CodeStarSourceConnection
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codestarconnections_connection" "github" {
@@ -197,12 +206,4 @@ resource "aws_codepipeline" "install" {
     }
   }
 }
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Upload CodePipeline app installation script to s3 bucket
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_s3_object" "codebuild_install" {
-  bucket = aws_s3_bucket.this["system"].id
-  key    = "installation/installation.sh"
-  source = "${abspath(path.root)}/codepipeline/installation.sh"
-  etag = filemd5("${abspath(path.root)}/codepipeline/installation.sh")
-}
+
