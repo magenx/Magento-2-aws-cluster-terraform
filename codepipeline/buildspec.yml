@@ -2,18 +2,14 @@ version: 0.2
 
 env:
   shell: bash
-
+    
 phases:
   install:
+    on-failure: ABORT
     runtime-versions:
-        php: ${PHP_VERSION}
-  pre_build:
+      php: ${PHP_VERSION}
     commands:
-      - echo Running Pre-Build at $(date)
-      - declare -A parameter
-      - while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETERSTORE} | jq -r 'to_entries[] | .key + "=" + .value')
-      - php -m
-      - php -v
+      - echo Stack configuration start at $(date)
       - cd /tmp
       - git clone --recursive --depth=1 https://github.com/kjdev/php-ext-lz4.git
       - cd php-ext-lz4
@@ -21,29 +17,34 @@ phases:
       - ./configure
       - make
       - make install
-      - echo 'extension="/root/.phpenv/versions/${PHP_74_VERSION}/lib/php/extensions/no-debug-non-zts-20190902/lz4.so"' > /root/.phpenv/versions/${PHP_74_VERSION}/etc/conf.d/lz4.ini
-      - php -m
+      - export PHP_API=$(php -i | awk '/PHP API/{print $NF}')
+      - echo 'extension="/root/.phpenv/versions/${PHP_74_VERSION}/lib/php/extensions/no-debug-non-zts-${PHP_API}/lz4.so"' > /root/.phpenv/versions/${PHP_74_VERSION}/etc/conf.d/lz4.ini
+      - echo Stack configuration end at $(date)
   build:
     on-failure: ABORT
     commands:
-      - echo Build started at $(date)
+      - echo Build start at $(date)
       - cd ${CODEBUILD_SRC_DIR}
-      - ls
+      - declare -A parameter
+      - while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETERSTORE} | jq -r 'to_entries[] | .key + "=" + .value')
       - composer -n -q config -g http-basic.repo.magento.com ${parameter["COMPOSER_USER"]} ${parameter["COMPOSER_PASS"]}
       - chmod +x bin/magento
       - composer install --optimize-autoloader --prefer-dist --no-dev
       - bin/magento setup:di:compile
       - composer dump-autoload --no-dev --optimize --apcu
       - bin/magento setup:static-content:deploy -f
+      - echo Build end at $(date)
   post_build:
+    on-failure: ABORT
     commands:
+      - echo Post Build start at $(date)
       - git config --global user.email "${parameter["ADMIN_EMAIL"]}"
       - git config --global user.name "${parameter["BRAND"]}"
       - git add . -A
       - git commit -m "${CODEBUILD_BUILD_ID#*:} ${CODEBUILD_RESOLVED_SOURCE_VERSION}"
       - git branch -m main
       - git push origin main --force
-      - echo Build completed at $(date)
+      - echo Post Build end at $(date)
 artifacts:
     files:
       - '**/*'
