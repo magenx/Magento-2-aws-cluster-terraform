@@ -234,7 +234,7 @@ fi
 mkdir -p /etc/nginx/sites-enabled
 ln -s /etc/nginx/sites-available/magento.conf /etc/nginx/sites-enabled/magento.conf
  
-sed -i "s,CIDR,${parameter["CIDR"]}," /etc/nginx/nginx.conf
+sed -i "s,VPC_CIDR,${parameter["VPC_CIDR"]}," /etc/nginx/nginx.conf
 sed -i "s/HEALTH_CHECK_LOCATION/${parameter["HEALTH_CHECK_LOCATION"]}/" /etc/nginx/sites-available/magento.conf
 sed -i "s,/var/www/html,${parameter["WEB_ROOT_PATH"]},g" /etc/nginx/conf.d/maps.conf
 sed -i "s/PROFILER_PLACEHOLDER/${parameter["PROFILER"]}/" /etc/nginx/conf.d/maps.conf
