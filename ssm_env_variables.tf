@@ -13,10 +13,11 @@ resource "aws_ssm_parameter" "env" {
   value       = <<EOF
 {
 "PROJECT" : "${local.project}",
+"INSTANCE_NAMES" : keys(var.ec2),
 "FASTLY" : "${var.fastly}",
 "AWS_DEFAULT_REGION" : "${data.aws_region.current.name}",
 "VPC_ID" : "${aws_vpc.this.id}",
-"CIDR" : "${aws_vpc.this.cidr_block}",
+"VPC_CIDR" : "${aws_vpc.this.cidr_block}",
 "SUBNET_ID" : "${values(aws_subnet.this).0.id}",
 "SECURITY_GROUP" : "${aws_security_group.ec2.id}",
 "SOURCE_AMI" : "${data.aws_ami.distro.id}",
@@ -36,6 +37,8 @@ resource "aws_ssm_parameter" "env" {
 "REDIS_SESSION_BACKEND_RO" : "${aws_elasticache_replication_group.this["session"].reader_endpoint_address}",
 "S3_MEDIA_BUCKET" : "${aws_s3_bucket.this["media"].bucket}",
 "S3_MEDIA_BUCKET_URL" : "${aws_s3_bucket.this["media"].bucket_regional_domain_name}",
+"S3_SYSTEM_BUCKET" : "${aws_s3_bucket.this["system"].bucket}",
+"S3_BACKUP_BUCKET" : "${aws_s3_bucket.this["backup"].bucket}",
 "SES_KEY" : "${aws_iam_access_key.ses_smtp_user_access_key.id}",
 "SES_SECRET" : "${aws_iam_access_key.ses_smtp_user_access_key.secret}",
 "SES_PASSWORD" : "${aws_iam_access_key.ses_smtp_user_access_key.ses_smtp_password_v4}",
