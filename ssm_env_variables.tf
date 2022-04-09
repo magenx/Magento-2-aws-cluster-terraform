@@ -19,7 +19,7 @@ resource "aws_ssm_parameter" "env" {
 "VPC_ID" : "${aws_vpc.this.id}",
 "VPC_CIDR" : "${aws_vpc.this.cidr_block}",
 "SUBNET_ID" : "${values(aws_subnet.this).0.id}",
-"SECURITY_GROUP" : "${aws_security_group.ec2.id}",
+"EC2_SECURITY_GROUP" : "${aws_security_group.ec2.id}",
 "SOURCE_AMI" : "${data.aws_ami.distro.id}",
 "VOLUME_SIZE" : "${var.asg["volume_size"]}",
 "ALB_DNS_NAME" : "${aws_lb.this.dns_name}",
