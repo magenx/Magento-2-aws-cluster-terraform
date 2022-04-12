@@ -31,10 +31,14 @@ terraform {
 
 provider "aws" {
 default_tags {
-   tags = var.default_tags
+   tags = {
+   Managed      = "terraform"
+   Config       = "magenx"
+   Environment  = "development"
   }
+ }
 }
+
 provider "null" {}
 provider "random" {}
-provider "template" {}
-provider "external" {}
+
