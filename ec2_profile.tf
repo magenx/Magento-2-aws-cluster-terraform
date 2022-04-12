@@ -56,6 +56,34 @@ resource "aws_iam_role_policy" "sns_publish" {
 })
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create inline policy for EC2 service role to send ses emails
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_iam_role_policy" "ses_send" {
+  for_each = var.ec2
+  name = "EC2ProfileSESSendPolicy${title(each.key)}"
+  role = aws_iam_role.ec2[each.key].id
+
+  policy = jsonencode({
+{
+  Version = "2012-10-17",
+  Statement = [
+    {
+      Sid    = "EC2ProfileSNSPublishPolicy${each.key}",
+      Effect = "Allow",
+      Action = [
+        "ses:SendEmail",
+        "ses:SendRawEmail"
+      ],
+      Resource = "*",
+      Condition = {
+        StringEquals = {
+          "ses:FromAddress" = var.app["admin_email"]
+        }
+      }
+ }]
+})
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create inline policy for EC2 service role to limit CodeCommit access
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role_policy" "codecommit_access" {
