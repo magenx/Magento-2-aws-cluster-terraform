@@ -123,13 +123,13 @@ resource "aws_security_group_rule" "ec2_ses_out" {
     security_group_id = aws_security_group.ec2.id
     }
 
-resource "aws_security_group_rule" "ec2_elk_out" {
+resource "aws_security_group_rule" "ec2_opensearch_out" {
     type        = "egress"
-    description = "Allow outbound traffic on the instance ELK port"
-    from_port   = 9200
-    to_port     = 9200
+    description = "Allow outbound traffic on the instance OpenSearch port"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.elk.id
+    source_security_group_id = aws_security_group.opensearch.id
     security_group_id = aws_security_group.ec2.id
     }
 
@@ -246,30 +246,30 @@ resource "aws_security_group" "efs" {
 }
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create security group and rules for ELK
+# Create security group and rules for OpenSearch
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group" "elk" {
-  name        = "${local.project}-elk-sg"
-  description = "Security group rules for ${local.project} ELK"
+resource "aws_security_group" "opensearch" {
+  name        = "${local.project}-opensearch-sg"
+  description = "Security group rules for ${local.project} OpenSearch"
   vpc_id      = aws_vpc.this.id
 
   ingress {
-      description      = "Allow all inbound traffic to ELK port from EC2"
-      from_port        = 0
-      to_port          = 0
+      description      = "Allow all inbound traffic to OpenSearch port from EC2"
+      from_port        = 443
+      to_port          = 443
       protocol         = "-1"
       security_groups  = [aws_security_group.ec2.id]
     }
   
   egress {
-      description      = "Allow all outbound traffic to EC2 port from ELK"
-      from_port        = 0
-      to_port          = 0
+      description      = "Allow all outbound traffic to EC2 port from OpenSearch"
+      from_port        = 443
+      to_port          = 443
       protocol         = "-1"
       security_groups  = [aws_security_group.ec2.id]
     }
 
   tags = {
-    Name = "${local.project}-elk-sg"
+    Name = "${local.project}-opensearch-sg"
   }
 }
