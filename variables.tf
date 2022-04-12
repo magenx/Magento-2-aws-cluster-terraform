@@ -5,15 +5,6 @@ locals {
    project = lower("${var.app["brand"]}-${random_string.this["project"].result}")
 }
 
-variable "default_tags" {
- description    = "Default tags to simplify global tag management"
- default        = {
-   Managed      = "terraform"
-   Config       = "magenx"
-   Environment  = "development"
- }
-}
-
 variable "password" {
    description = "Generate password"
    default     = [
@@ -65,8 +56,8 @@ variable "app" {
     language         = "en_US"
     currency         = "EUR"
     timezone         = "UTC"
-    php_version      = "7.4"
-    php_packages     = "cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4 apcu"
+    php_version      = "8.1"
+    php_packages     = "cli fpm common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4 apcu"
     linux_packages   = "nfs-common git patch python3-pip acl attr imagemagick snmp rsync"
     exclude_linux_packages = "apache2* *apcu-bc"
     composer_user    = "8c681734f22763b50ea0c29dff9e7af2"
@@ -153,7 +144,7 @@ variable "rds_memory" {
 variable "rabbitmq" {
   description      = "Map RabbitMQ configuration values"
   default  = {
-    engine_version         = "3.8.11"
+    engine_version         = "3.9.13"
     deployment_mode        = "CLUSTER_MULTI_AZ"
     host_instance_type     = "mq.m5.large"
   }
