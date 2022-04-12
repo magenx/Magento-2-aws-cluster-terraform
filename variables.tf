@@ -65,15 +65,15 @@ variable "app" {
   }
 }
 
-variable "elk" {
-  description      = "Map ElasticSearch configuration values"
+variable "opensearch" {
+  description      = "Map OpenSearch configuration values"
   default  = {
-    elasticsearch_version  = "7.9"
-    instance_type          = "m6g.large.elasticsearch"
+    engine_version         = "OpenSearch_1.0"
+    instance_type          = "m6g.large.search"
     instance_count         = "1"
     ebs_enabled            = true
     volume_type            = "gp2"
-    volume_size            = "20"
+    volume_size            = "50"
     log_type               = "ES_APPLICATION_LOGS"
   }
 }
