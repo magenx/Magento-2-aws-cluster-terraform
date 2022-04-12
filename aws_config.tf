@@ -15,11 +15,8 @@ resource "aws_config_config_rule" "this" {
     owner             = "AWS"
     source_identifier = each.key
   }
-  dynamic "scope" {
-    for_each = { for source_identifier, compliance_resource_types in var.aws_config_rule : 
-      source_identifier => compliance_resource_types if compliance_resource_types != ""
-    }
-    compliance_resource_types = ["${scope.value}"]
+  scope {
+    compliance_resource_types = ["${each.value}"]
   }
   tags = {
     Name = "${local.project}-${each.key}"
