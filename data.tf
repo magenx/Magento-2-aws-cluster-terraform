@@ -19,6 +19,11 @@ data "aws_elb_service_account" "current" {}
 data "aws_inspector_rules_packages" "available" {}
 
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Get default tags aws provider
+# # ---------------------------------------------------------------------------------------------------------------------#
+data "aws_default_tags" "this" {}
+
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Get the list of AWS Availability Zones available in this region
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_availability_zones" "available" {
@@ -93,12 +98,10 @@ data "aws_cloudfront_cache_policy" "custom" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_ami" "distro" {
   most_recent = true
-  #owners      = ["099720109477"] # ubuntu
   owners      = ["136693071363"] # debian
 
   filter {
     name   = "name"
-    #values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*"] # ubuntu
     values = ["debian-11-arm64*"] # debian
   }
 }
