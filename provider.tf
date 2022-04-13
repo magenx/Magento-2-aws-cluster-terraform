@@ -32,9 +32,12 @@ provider "aws" {
   alias  = "useast1"
   region = "us-east-1"
   default_tags {
-   tags = var.default_tags
+   tags = {
+   Managed      = "terraform"
+   Config       = "magenx"
+   Environment  = "development"
   }
-}
+ }
 provider "null" {}
 provider "random" {}
 provider "template" {}
