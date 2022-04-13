@@ -5,15 +5,6 @@ locals {
    project = lower("${var.app["brand"]}-${random_string.this["project"].result}")
 }
 
-variable "default_tags" {
- description    = "Default tags to simplify global tag management"
- default        = {
-   managed      = "terraform"
-   config       = "magenx"
-   environment  = "production"
- }
-}
-
 variable "password" {
    description = "Generate password"
    default     = [
