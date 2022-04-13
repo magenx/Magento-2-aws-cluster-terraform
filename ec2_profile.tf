@@ -68,7 +68,7 @@ resource "aws_iam_role_policy" "ses_send" {
   Version = "2012-10-17",
   Statement = [
     {
-      Sid    = "EC2ProfileSNSPublishPolicy${each.key}",
+      Sid    = "EC2ProfileSESSendPolicy${each.key}",
       Effect = "Allow",
       Action = [
         "ses:SendEmail",
