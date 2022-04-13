@@ -50,7 +50,6 @@ variable "app" {
   description      = "Map application params | Magento 2"
   default          = {
     source_repo      = "magenx/Magento-2"
-    install          = "disabled"
     app_version      = "2"
     cidr_block       = "172.30.0.0/16"
     brand            = "magenx"
@@ -63,8 +62,8 @@ variable "app" {
     language         = "en_US"
     currency         = "EUR"
     timezone         = "UTC"
-    php_version      = "7.4"
-    php_packages     = "cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4 apcu"
+    php_version      = "8.1"
+    php_packages     = "cli fpm common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4 apcu"
     linux_packages   = "nfs-common unzip git patch python3-pip acl attr imagemagick snmp"
     exclude_linux_packages = "apache2* *apcu-bc"
     volume_size      = "50"
@@ -78,7 +77,7 @@ variable "elk" {
   default  = {
     elasticsearch_version  = "7.9"
     instance_type          = "m6g.large.elasticsearch"
-    instance_count         = "3"
+    instance_count         = "1"
     ebs_enabled            = true
     volume_type            = "gp2"
     volume_size            = "20"
@@ -99,7 +98,7 @@ variable "rds" {
     family                 = "mariadb10.5"
     instance_class         = "db.m6g.large"
     skip_final_snapshot    = true
-    multi_az               = true
+    multi_az               = false
     enabled_cloudwatch_logs_exports = "error"
     performance_insights_enabled = true
     copy_tags_to_snapshot    = true
@@ -161,7 +160,7 @@ variable "rabbitmq" {
 variable "redis" {
   description      = "Map ElastiCache Redis configuration values"
   default  = {
-    num_cache_clusters            = "3"
+    num_cache_clusters            = "1"
     node_type                     = "cache.m6g.large"
     name                          = ["session", "cache"]
     engine_version                = "6.x"
@@ -235,13 +234,13 @@ variable "aws_config_rule" {
   default     = {
   ROOT_ACCOUNT_MFA_ENABLED                  = ""
   MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS        = ""
+  EC2_STOPPED_INSTANCE                      = ""
   INCOMING_SSH_DISABLED                     = "AWS::EC2::SecurityGroup"
   DB_INSTANCE_BACKUP_ENABLED                = "AWS::RDS::DBInstance"
   RDS_SNAPSHOTS_PUBLIC_PROHIBITED           = "AWS::RDS::DBSnapshot"
   RDS_INSTANCE_DELETION_PROTECTION_ENABLED  = "AWS::RDS::DBInstance"
   EC2_IMDSV2_CHECK                          = "AWS::EC2::Instance"
   EC2_VOLUME_INUSE_CHECK                    = "AWS::EC2::Volume"
-  EC2_STOPPED_INSTANCE                      = ""
   ELB_DELETION_PROTECTION_ENABLED           = "AWS::ElasticLoadBalancingV2::LoadBalancer"
   }
 }
