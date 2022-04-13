@@ -16,8 +16,11 @@ resource "aws_config_config_rule" "this" {
     owner             = "AWS"
     source_identifier = each.key
   }
-  scope {
-    compliance_resource_types = ["${each.value}"]
+  dynamic "scope" {
+    for_each = each.value == "" ? [] : [each.value]
+      content {
+      compliance_resource_types = ["${scope.value}"]
+    }
   }
   tags = {
     Name = "${local.project}-${each.key}"
