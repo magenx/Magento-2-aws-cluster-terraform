@@ -68,7 +68,7 @@ variable "app" {
 variable "opensearch" {
   description      = "Map OpenSearch configuration values"
   default  = {
-    engine_version         = "OpenSearch_1.0"
+    engine_version         = "OpenSearch_1.2"
     instance_type          = "m6g.large.search"
     instance_count         = "1"
     ebs_enabled            = true
