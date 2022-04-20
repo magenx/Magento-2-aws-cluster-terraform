@@ -9,7 +9,7 @@ parameters:
   - INSTANCE_NAME:
       type: string
       description: Instance name
-  - S3_SYSTEM_BUCKET_NAME:
+  - S3_SYSTEM_BUCKET:
       type: string
       description: S3 System Bucket name
       
@@ -21,7 +21,7 @@ phases:
         onFailure: Abort
         maxAttempts: 1
         inputs:
-          - source: 's3://{{ S3_SYSTEM_BUCKET_NAME }}/imagebuilder/build.sh'
+          - source: 's3://{{ S3_SYSTEM_BUCKET }}/imagebuilder/build.sh'
             destination: '/tmp/build.sh'
       - name: AMIBuildScriptStart
         action: ExecuteBash
@@ -45,7 +45,7 @@ phases:
         onFailure: Abort
         maxAttempts: 1
         inputs:
-          - source: 's3://{{ S3_SYSTEM_BUCKET_NAME }}/imagebuilder/test.sh'
+          - source: 's3://{{ S3_SYSTEM_BUCKET }}/imagebuilder/test.sh'
             destination: '/tmp/test.sh'
       - name: AMITestScriptStart
         action: ExecuteBash
