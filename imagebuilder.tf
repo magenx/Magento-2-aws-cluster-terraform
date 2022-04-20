@@ -83,7 +83,7 @@ resource "aws_imagebuilder_image_recipe" "this" {
     }
     
     parameter {
-      name        = "S3_SYSTEM_BUCKET_NAME"
+      name        = "S3_SYSTEM_BUCKET"
       value       = "${aws_s3_bucket.this["system"].id}"
     }
   }
