@@ -26,6 +26,10 @@ resource "aws_elasticache_parameter_group" "this" {
     name  = "cluster-enabled"
     value = "no"
   }
+  parameter {
+    name  = "maxmemory-policy"
+    value = "allkeys-lfu"
+  }
   tags = {
     Name = "${local.project}-${each.key}-parameter"
   }
