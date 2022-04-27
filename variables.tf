@@ -101,7 +101,7 @@ variable "rds" {
   }
 }
 
-variable "max_connection_count" {
+variable "rds_max_connection_count" {
   description = "Map 6g. class RDS max connection count"
   default = {
      "db.m6g.large"    = "683"
@@ -139,6 +139,36 @@ variable "rds_memory" {
      "db.r6g.12xlarge" = "384"
      "db.r6g.16xlarge" = "512"
   }
+}
+
+variable "rds_parameters" {
+  description = "Map RDS MariaDB Parameters"
+  default = [
+    {
+      name    = "max_allowed_packet"
+      value   = "268435456"
+    },
+    {
+      name    = "max_connect_errors"
+      value   = "500"
+    },
+    {
+      name    = "interactive_timeout"
+      value   = "7200"
+    },
+    {
+      name    = "wait_timeout"
+      value   = "7200"
+    },
+    {
+      name    = "innodb_lock_wait_timeout"
+      value   = "60"
+    },
+    {
+      name    = "innodb_flush_log_at_trx_commit"
+      value   = "2"
+    }
+  ]
 }
       
 variable "rabbitmq" {
