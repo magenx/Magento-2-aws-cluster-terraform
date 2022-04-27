@@ -21,6 +21,13 @@ resource "aws_db_parameter_group" "this" {
   name              = "${local.project}-parameters"
   family            = var.rds["family"]
   description       = "Parameter group for ${local.project} database"
+  dynamic "parameter" {
+    for_each = var.rds_parameters
+    content {
+      name         = parameter.value.name
+      value        = parameter.value.value
+    }
+  }
   tags = {
     Name = "${local.project}-parameters"
   }
@@ -166,7 +173,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_max_connections" {
   namespace           = "AWS/RDS"
   period              = "600"
   statistic           = "Average"
-  threshold           = ceil((80 / 100) * var.max_connection_count[var.rds["instance_class"]])
+  threshold           = ceil((80 / 100) * var.rds_max_connection_count[var.rds["instance_class"]])
   alarm_description   = "Average connections over last 10 minutes is too high"
   alarm_actions       = ["${aws_sns_topic.default.arn}"]
   ok_actions          = ["${aws_sns_topic.default.arn}"]
