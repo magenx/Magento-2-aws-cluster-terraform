@@ -37,7 +37,7 @@ bin/magento setup:install \
 --amqp-virtualhost='/' \
 --amqp-ssl=true \
 --search-engine=elasticsearch7 \
---elasticsearch-host=${parameter["ELASTICSEARCH_ENDPOINT"]} \
+--elasticsearch-host=${parameter["OPENSEARCH_ENDPOINT"]} \
 --elasticsearch-port=443 \
 --elasticsearch-index-prefix=${parameter["BRAND"]} \
 --elasticsearch-enable-auth=0
