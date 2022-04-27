@@ -29,7 +29,7 @@ resource "aws_ssm_parameter" "env" {
 "RABBITMQ_ENDPOINT" : "${regex("amqps://(.*):5671",aws_mq_broker.this.instances.0.endpoints.0)[0]}",
 "RABBITMQ_USER" : "${var.app["brand"]}",
 "RABBITMQ_PASSWORD" : "${random_password.this["rabbitmq"].result}",
-"ELASTICSEARCH_ENDPOINT" : "https://${aws_elasticsearch_domain.this.endpoint}:443",
+"OPENSEARCH_ENDPOINT" : "https://${aws_opensearch_domain.this.endpoint}:443",
 "REDIS_CACHE_BACKEND" : "${aws_elasticache_replication_group.this["cache"].primary_endpoint_address}",
 "REDIS_SESSION_BACKEND" : "${aws_elasticache_replication_group.this["session"].primary_endpoint_address}",
 "REDIS_CACHE_BACKEND_RO" : "${aws_elasticache_replication_group.this["cache"].reader_endpoint_address}",
