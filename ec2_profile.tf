@@ -13,16 +13,14 @@ resource "aws_iam_role" "ec2" {
   assume_role_policy = <<EOF
 {
     "Version": "2012-10-17",
-    "Statement": [
-        {
+    "Statement": [{
             "Action": "sts:AssumeRole",
             "Principal": {
                "Service": "ec2.amazonaws.com"
             },
             "Effect": "Allow",
             "Sid": ""
-        }
-    ]
+        }]
 }
 EOF
 }
@@ -44,8 +42,7 @@ resource "aws_iam_role_policy" "sns_publish" {
 
   policy = jsonencode({
   Version = "2012-10-17",
-  Statement = [
-    {
+  Statement = [{
       Sid    = "EC2ProfileSNSPublishPolicy${each.key}",
       Effect = "Allow",
       Action = [
@@ -64,10 +61,8 @@ resource "aws_iam_role_policy" "ses_send" {
   role = aws_iam_role.ec2[each.key].id
 
   policy = jsonencode({
-{
   Version = "2012-10-17",
-  Statement = [
-    {
+  Statement = [{
       Sid    = "EC2ProfileSESSendPolicy${each.key}",
       Effect = "Allow",
       Action = [
@@ -93,8 +88,7 @@ resource "aws_iam_role_policy" "codecommit_access" {
 
   policy = jsonencode({
   Version = "2012-10-17",
-  Statement = [
-    {
+  Statement = [{
       Sid    = "codecommitaccessapp${each.key}",
       Effect = "Allow",
       Action = [
