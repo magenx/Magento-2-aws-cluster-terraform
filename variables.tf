@@ -170,11 +170,11 @@ variable "rds_parameters" {
     },
     {
       name    = "tmp_table_size"
-      value   = "67108864"
+      value   = "{DBInstanceClassMemory/512}"
     },
     {
       name    = "max_heap_table_size"
-      value   = "67108864"
+      value   = "{DBInstanceClassMemory/512}"
     }
   ]
 }
