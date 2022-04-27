@@ -51,6 +51,7 @@ resource "aws_db_instance" "this" {
   backup_retention_period         = var.rds["backup_retention_period"]
   delete_automated_backups        = var.rds["delete_automated_backups"]
   deletion_protection             = var.rds["deletion_protection"]
+  allow_major_version_upgrade     = false
   tags = {
     Name = "${local.project}-rds"
   }
