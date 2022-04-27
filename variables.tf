@@ -167,6 +167,14 @@ variable "rds_parameters" {
     {
       name    = "innodb_flush_log_at_trx_commit"
       value   = "2"
+    },
+    {
+      name    = "tmp_table_size"
+      value   = "67108864"
+    },
+    {
+      name    = "max_heap_table_size"
+      value   = "67108864"
     }
   ]
 }
