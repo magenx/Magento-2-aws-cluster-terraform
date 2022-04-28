@@ -22,13 +22,12 @@ resource "aws_elasticache_parameter_group" "this" {
   name          = "${local.project}-${each.key}-parameter"
   family        = var.redis["family"]
   description   = "Parameter group for ${var.app["domain"]} ${each.key} backend"
-  parameter {
-    name  = "cluster-enabled"
-    value = "no"
-  }
-  parameter {
-    name  = "maxmemory-policy"
-    value = "allkeys-lfu"
+  dynamic "parameter" {
+    for_each = var.redis_parameters
+    content {
+      name         = parameter.value.name
+      value        = parameter.value.value
+    }
   }
   tags = {
     Name = "${local.project}-${each.key}-parameter"
