@@ -200,6 +200,19 @@ variable "redis" {
     at_rest_encryption_enabled    = true
   }
 }
+
+variable "redis_parameters" {
+  description = "Map ElastiCache Redis Parameters"
+  default = [
+  {
+    name  = "cluster-enabled"
+    value = "no"
+  },
+    name  = "maxmemory-policy"
+    value = "allkeys-lfu"
+  }
+ ]
+}
           
 variable "asg" {
   description      = "Map Autoscaling Group configuration values"
