@@ -36,9 +36,7 @@ usermod -g ${parameter["PHP_USER"]} ${parameter["BRAND"]}
  
 mkdir -p ${parameter["WEB_ROOT_PATH"]}
 chmod 711 /home/${parameter["BRAND"]}
-mkdir -p /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
 chown -R ${parameter["BRAND"]}:${parameter["PHP_USER"]} ${parameter["WEB_ROOT_PATH"]}
-chown -R ${parameter["BRAND"]}:${parameter["BRAND"]} /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
 chmod 2750 ${parameter["WEB_ROOT_PATH"]} /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
 setfacl -R -m m:rx,u:${parameter["BRAND"]}:rwX,g:${parameter["PHP_USER"]}:r-X,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:${parameter["PHP_USER"]}:r-X,d:o::- ${parameter["WEB_ROOT_PATH"]}
 
@@ -110,9 +108,9 @@ net.core.netdev_max_backlog = 262144
 net.core.somaxconn = 65535
 END
 
-cat > ${parameter["PHP_OPCACHE_INI"]} <<END
-zend_extension=opcache.so
-opcache.enable = 1
+for dir in cli fpm
+do
+cat > /etc/php/${parameter["PHP_VERSION"]}/$dir/conf.d/zz-magenx-overrides.ini <<END
 opcache.enable_cli = 1
 opcache.memory_consumption = 512
 opcache.interned_strings_buffer = 4
@@ -121,8 +119,8 @@ opcache.max_wasted_percentage = 5
 opcache.use_cwd = 1
 opcache.validate_timestamps = 0
 ;opcache.revalidate_freq = 2
-;opcache.validate_permission = 1
-opcache.validate_root = 1
+;opcache.validate_permission= 1
+opcache.validate_root= 1
 opcache.file_update_protection = 2
 opcache.revalidate_path = 0
 opcache.save_comments = 1
@@ -131,6 +129,7 @@ opcache.fast_shutdown = 1
 opcache.enable_file_override = 0
 opcache.optimization_level = 0xffffffff
 opcache.inherited_hack = 1
+opcache.blacklist_filename=/etc/opcache-default.blacklist
 opcache.max_file_size = 0
 opcache.consistency_checks = 0
 opcache.force_restart_timeout = 60
@@ -139,46 +138,99 @@ opcache.log_verbosity_level = 1
 opcache.preferred_memory_model = ""
 opcache.protect_memory = 0
 ;opcache.mmap_base = ""
+
+max_execution_time = 7200
+max_input_time = 7200
+memory_limit = 2048M
+post_max_size = 64M
+upload_max_filesize = 64M
+expose_php = Off
+realpath_cache_size = 4096k
+realpath_cache_ttl = 86400
+short_open_tag = On
+max_input_vars = 50000
+session.gc_maxlifetime = 28800
+mysql.allow_persistent = On
+mysqli.allow_persistent = On
+date.timezone = "${parameter["TIMEZONE"]}"
 END
-
-cp ${parameter["PHP_INI"]} ${parameter["PHP_INI"]}.BACK
-sed -i 's/^\(max_execution_time = \)[0-9]*/\17200/' ${parameter["PHP_INI"]}
-sed -i 's/^\(max_input_time = \)[0-9]*/\17200/' ${parameter["PHP_INI"]}
-sed -i 's/^\(memory_limit = \)[0-9]*M/\11048M/' ${parameter["PHP_INI"]}
-sed -i 's/^\(post_max_size = \)[0-9]*M/\164M/' ${parameter["PHP_INI"]}
-sed -i 's/^\(upload_max_filesize = \)[0-9]*M/\132M/' ${parameter["PHP_INI"]}
-sed -i 's/expose_php = On/expose_php = Off/' ${parameter["PHP_INI"]}
-sed -i 's/;realpath_cache_size =.*/realpath_cache_size = 5M/' ${parameter["PHP_INI"]}
-sed -i 's/;realpath_cache_ttl =.*/realpath_cache_ttl = 86400/' ${parameter["PHP_INI"]}
-sed -i 's/short_open_tag = Off/short_open_tag = On/' ${parameter["PHP_INI"]}
-sed -i 's/;max_input_vars =.*/max_input_vars = 50000/' ${parameter["PHP_INI"]}
-sed -i 's/session.gc_maxlifetime = 1440/session.gc_maxlifetime = 28800/' ${parameter["PHP_INI"]}
-sed -i 's/mysql.allow_persistent = On/mysql.allow_persistent = Off/' ${parameter["PHP_INI"]}
-sed -i 's/mysqli.allow_persistent = On/mysqli.allow_persistent = Off/' ${parameter["PHP_INI"]}
-sed -i 's/pm = dynamic/pm = ondemand/' ${parameter["PHP_FPM_POOL"]}
-sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' ${parameter["PHP_FPM_POOL"]}
-sed -i 's/^\(pm.max_children = \)[0-9]*/\1100/' ${parameter["PHP_FPM_POOL"]}
-
-sed -i "s/\[www\]/\[${parameter["BRAND"]}\]/" ${parameter["PHP_FPM_POOL"]}
-sed -i "s/^user =.*/user = ${parameter["PHP_USER"]}/" ${parameter["PHP_FPM_POOL"]}
-sed -i "s/^group =.*/group = ${parameter["PHP_USER"]}/" ${parameter["PHP_FPM_POOL"]}
-sed -ri "s/;?listen.owner =.*/listen.owner = ${parameter["PHP_USER"]}/" ${parameter["PHP_FPM_POOL"]}
-sed -ri "s/;?listen.group =.*/listen.group = nginx/" ${parameter["PHP_FPM_POOL"]}
-sed -ri "s/;?listen.mode = 0660/listen.mode = 0660/" ${parameter["PHP_FPM_POOL"]}
-sed -ri "s/;?listen.allowed_clients =.*/listen.allowed_clients = 127.0.0.1/" ${parameter["PHP_FPM_POOL"]}
-sed -i '/sendmail_path/,$d' ${parameter["PHP_FPM_POOL"]}
-sed -i '/PHPSESSID/d' ${parameter["PHP_INI"]}
-sed -i "s,.*date.timezone.*,date.timezone = ${parameter["TIMEZONE"]}," ${parameter["PHP_INI"]}
+done
 
 cat >> ${parameter["PHP_FPM_POOL"]} <<END
 ;;
 ;; Custom pool settings
-php_flag[display_errors] = off
-php_admin_flag[log_errors] = on
-php_admin_value[error_log] = "${parameter["WEB_ROOT_PATH"]}/var/log/php-fpm-error.log"
-php_admin_value[default_charset] = UTF-8
-php_admin_value[memory_limit] = 1048M
-php_admin_value[date.timezone] = ${parameter["TIMEZONE"]}
+[${parameter["BRAND"]}]
+
+;;
+;; Pool user
+user = php-\$pool
+group = php-\$pool
+
+listen = /var/run/\$pool.sock
+listen.owner = nginx
+listen.group = php-\$pool
+listen.mode = 0660
+
+;;
+;; Pool size and settings
+pm = ondemand
+pm.max_children = 100
+pm.start_servers = 2
+pm.min_spare_servers = 1
+pm.max_spare_servers = 3
+pm.max_requests = 10000
+
+;;
+;; [php ini] settings
+php_admin_flag[expose_php] = Off
+php_admin_flag[short_open_tag] = On
+php_admin_flag[display_errors] = Off
+php_admin_flag[log_errors] = On
+php_admin_flag[mysql.allow_persistent] = On
+php_admin_flag[mysqli.allow_persistent] = On
+php_admin_value[default_charset] = "UTF-8"
+php_admin_value[memory_limit] = 1024M
+php_admin_value[max_execution_time] = 7200
+php_admin_value[max_input_time] = 7200
+php_admin_value[max_input_vars] = 50000
+php_admin_value[post_max_size] = 64M
+php_admin_value[upload_max_filesize] = 64M
+php_admin_value[realpath_cache_size] = 4096k
+php_admin_value[realpath_cache_ttl] = 86400
+php_admin_value[session.gc_maxlifetime] = 28800
+php_admin_value[error_log] = "/home/\$pool/public_html/var/log/php-fpm-error.log"
+php_admin_value[date.timezone] = "${TIMEZONE}"
+php_admin_value[upload_tmp_dir] = "/home/\$pool/public_html/var/tmp"
+php_admin_value[sys_temp_dir] = "/home/\$pool/public_html/var/tmp"
+
+;;
+;; [opcache] settings
+php_admin_flag[opcache.enable] = On
+php_admin_flag[opcache.use_cwd] = On
+php_admin_flag[opcache.validate_root] = On
+php_admin_flag[opcache.revalidate_path] = Off
+php_admin_flag[opcache.validate_timestamps] = Off
+php_admin_flag[opcache.save_comments] = On
+php_admin_flag[opcache.load_comments] = On
+php_admin_flag[opcache.fast_shutdown] = On
+php_admin_flag[opcache.enable_file_override] = Off
+php_admin_flag[opcache.inherited_hack] = On
+php_admin_flag[opcache.consistency_checks] = Off
+php_admin_flag[opcache.protect_memory] = Off
+php_admin_value[opcache.memory_consumption] = 512
+php_admin_value[opcache.interned_strings_buffer] = 4
+php_admin_value[opcache.max_accelerated_files] = 60000
+php_admin_value[opcache.max_wasted_percentage] = 5
+php_admin_value[opcache.file_update_protection] = 2
+php_admin_value[opcache.optimization_level] = 0xffffffff
+php_admin_value[opcache.blacklist_filename] = "/home/\$pool/opcache.blacklist"
+php_admin_value[opcache.max_file_size] = 0
+php_admin_value[opcache.force_restart_timeout] = 60
+php_admin_value[opcache.error_log] = "/home/\$pool/public_html/var/log/opcache.log"
+php_admin_value[opcache.log_verbosity_level] = 1
+php_admin_value[opcache.preferred_memory_model] = ""
+php_admin_value[opcache.jit_buffer_size] = 536870912
+php_admin_value[opcache.jit] = 1235
 END
 
 if [ "${parameter["FASTLY"]}" == "disabled" ] && [ "${_INSTANCE_NAME}" != "admin" ]; then
@@ -188,7 +240,7 @@ apt-get -qqy install varnish
 cd /etc/varnish
 
 git init
-git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
+git remote add origin ${parameter["GITHUB_SERVICES_REPO"]}
 git fetch
 git reset --hard origin/varnish
 git checkout -t origin/varnish
@@ -199,7 +251,7 @@ fi
 
 cd /etc/nginx
 git init
-git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
+git remote add origin ${parameter["GITHUB_SERVICES_REPO"]}
 git fetch
 git reset --hard origin/nginx_${_INSTANCE_NAME}
 git checkout -t origin/nginx_${_INSTANCE_NAME}
