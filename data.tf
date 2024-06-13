@@ -103,8 +103,7 @@ data "aws_ami" "distro" {
 
   filter {
     name   = "name"
-    #values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*"] # ubuntu
-    values = ["debian-11-arm64*"] # debian
+    values = ["debian-12-arm64*"] # debian
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
