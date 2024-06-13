@@ -102,6 +102,6 @@ data "aws_ami" "distro" {
 
   filter {
     name   = "name"
-    values = ["debian-11-arm64*"] # debian
+    values = ["debian-12-arm64*"] # debian
   }
 }
