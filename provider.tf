@@ -34,7 +34,7 @@ provider "aws" {
   default_tags {
    tags = {
    Managed      = "terraform"
-   Config       = var.brand
+   Config       = var.app["brand"]
    Environment  = local.environment
   }
  }
