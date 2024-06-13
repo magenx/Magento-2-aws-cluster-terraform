@@ -34,8 +34,8 @@ provider "aws" {
   default_tags {
    tags = {
    Managed      = "terraform"
-   Config       = "magenx"
-   Environment  = "development"
+   Config       = var.brand
+   Environment  = local.environment
   }
  }
 }
