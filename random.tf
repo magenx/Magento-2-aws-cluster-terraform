@@ -16,7 +16,7 @@ resource "random_password" "this" {
   length           = (each.key == "blowfish" ? 32 : 16)
   lower            = true
   upper            = true
-  number           = true
+  numeric          = true
   special          = true
   override_special = "%*?"
 }
@@ -27,7 +27,7 @@ resource "random_string" "this" {
   for_each       = toset(var.string)
   length         = (each.key == "id_prefix" ? 3 : 7)
   lower          = true
-  number         = true
+  numeric        = true
   special        = false
   upper          = false
 }
@@ -38,7 +38,7 @@ resource "random_string" "s3" {
   for_each       = var.s3
   length         = 7
   lower          = true
-  number         = true
+  numeric        = true
   special        = false
   upper          = false
 }
