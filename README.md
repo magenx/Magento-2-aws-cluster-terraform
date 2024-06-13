@@ -81,9 +81,9 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 
 # :rocket: Deployment into isolated VPC:
 - [x] Login to AWS Console
-- [x] [Subscribe to Debian 11 ARM](https://aws.amazon.com/marketplace/pp/prodview-jwzxq55gno4p4)
+- [x] [Subscribe to Debian 12 ARM](https://aws.amazon.com/marketplace/pp/prodview-63gms6fbfaota)
 - [x] Choose an AWS Region
-- [x] Start AWS CloudShell
+- [x] Start AWS CloudShell [fastest way to deploy and debug]
 - [x] Install Terraform:
 ```
    sudo yum install -y yum-utils
@@ -109,8 +109,10 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
    
 - [x] Run:
 ```
+   terraform fmt
    terraform init
-   terraform plan
+   terraform workspace new developer
+   terraform plan -out developer.plan.out -no-color 2>&1 > developer.plan.out.txt
    terraform apply
 ```
 > to destroy infrastructure: ```terraform destroy```  
