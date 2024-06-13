@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.0"
+      version = "~> 5.0"
     }
     null = {
       source  = "hashicorp/null"
@@ -18,7 +18,7 @@ terraform {
     }
     http = {
       source  = "hashicorp/http"
-      version = "~> 2.0"
+      version = "~> 3.0"
     }
     external = {
       source  = "hashicorp/external"
@@ -38,6 +38,7 @@ provider "aws" {
    Environment  = "development"
   }
  }
+}
 provider "null" {}
 provider "random" {}
 provider "template" {}
