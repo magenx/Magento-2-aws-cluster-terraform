@@ -192,15 +192,15 @@ resource "aws_security_group_rule" "ec2_http_inner" {
     security_group_id = aws_security_group.ec2.id
     }
 
-resource "aws_security_group_rule" "packer_ssh" {
-    type        = "ingress"
-    description = "Allow all inbound traffic from Packer Builder on ssh port"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["${jsondecode(data.http.packer.body)["ip"]}/32"]
-    security_group_id = aws_security_group.ec2.id
-}
+#resource "aws_security_group_rule" "packer_ssh" {
+#    type        = "ingress"
+#    description = "Allow all inbound traffic from Packer Builder on ssh port"
+#    from_port   = 22
+#    to_port     = 22
+#    protocol    = "tcp"
+#    cidr_blocks = ["${jsondecode(data.http.packer.response_body)["ip"]}/32"]
+#    security_group_id = aws_security_group.ec2.id
+#}
 
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create security group and rules for RDS
