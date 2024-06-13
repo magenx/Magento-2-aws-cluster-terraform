@@ -43,7 +43,7 @@ resource "aws_ssm_parameter" "env" {
 "SES_PASSWORD" : "${aws_iam_access_key.ses_smtp_user_access_key.ses_smtp_password_v4}",
 "SES_ENDPOINT" : "email-smtp.${data.aws_region.current.name}.amazonaws.com",
 "DATABASE_ENDPOINT" : "${aws_db_instance.this.endpoint}",
-"DATABASE_NAME" : "${aws_db_instance.this.name}",
+"DATABASE_NAME" : "${aws_db_instance.this.identifier}",
 "DATABASE_USER_NAME" : "${aws_db_instance.this.username}",
 "DATABASE_PASSWORD" : "${random_password.this["rds"].result}",
 "ADMIN_PATH" : "admin_${random_string.this["admin_path"].result}",
