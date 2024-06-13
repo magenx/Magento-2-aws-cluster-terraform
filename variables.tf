@@ -31,9 +31,9 @@ variable "string" {
 variable "ec2" {
   description  = "EC2 instances names and types included in AutoScaling groups"
   default      = {
-    varnish    = "m6g.large"
-    frontend   = "c6g.xlarge"
-    admin      = "c6g.xlarge"
+    varnish    = "m7g.large"
+    frontend   = "c7g.xlarge"
+    admin      = "c7g.xlarge"
    }
 }
 
@@ -53,7 +53,7 @@ variable "app" {
     language         = "en_US"
     currency         = "EUR"
     timezone         = "UTC"
-    php_version      = "8.1"
+    php_version      = "8.3"
     php_packages     = "cli fpm common mysql zip gd mbstring curl xml bcmath intl soap oauth lz4 apcu"
     linux_packages   = "nfs-common unzip git patch python3-pip acl attr imagemagick snmp"
     exclude_linux_packages = "apache2* *apcu-bc"
@@ -63,15 +63,15 @@ variable "app" {
   }
 }
 
-variable "elk" {
-  description      = "Map ElasticSearch configuration values"
+variable "opensearch" {
+  description      = "Map OpenSearch configuration values"
   default  = {
-    elasticsearch_version  = "7.9"
-    instance_type          = "m6g.large.elasticsearch"
+    engine_version         = "OpenSearch_2.13"
+    instance_type          = "m7g.large.search"
     instance_count         = "1"
     ebs_enabled            = true
-    volume_type            = "gp2"
-    volume_size            = "20"
+    volume_type            = "gp3"
+    volume_size            = "50"
     log_type               = "ES_APPLICATION_LOGS"
   }
 }
@@ -82,12 +82,12 @@ variable "rds" {
     db_name                = "m2_magenx_live"
     allocated_storage      = "50"
     max_allocated_storage  = "100"
-    storage_type           = "gp2"
+    storage_type           = "gp3"
     storage_encrypted      = true
     engine                 = "mariadb"
-    engine_version         = "10.5.12"
-    family                 = "mariadb10.5"
-    instance_class         = "db.m6g.large"
+    engine_version         = "10.11.6"
+    family                 = "mariadb10.11"
+    instance_class         = "db.m7g.large"
     skip_final_snapshot    = true
     multi_az               = false
     enabled_cloudwatch_logs_exports = "error"
@@ -100,51 +100,89 @@ variable "rds" {
 }
 
 variable "max_connection_count" {
-  description = "Map 6g. class RDS max connection count"
+  description = "Map 7g. class RDS max connection count"
   default = {
-     "db.m6g.large"    = "683"
-     "db.m6g.xlarge"   = "1365"
-     "db.r6g.large"    = "1365"
-     "db.m6g.2xlarge"  = "2731"
-     "db.r6g.xlarge"   = "2731"
-     "db.m6g.4xlarge"  = "5461"
-     "db.r6g.2xlarge"  = "5461"
-     "db.m6g.8xlarge"  = "10923"
-     "db.r6g.4xlarge"  = "10923"
-     "db.m6g.12xlarge" = "16384"
-     "db.m6g.16xlarge" = "21845"
-     "db.r6g.8xlarge"  = "21845"
-     "db.r6g.12xlarge" = "32768"
-     "db.r6g.16xlarge" = "43691"
+     "db.m7g.large"    = "683"
+     "db.m7g.xlarge"   = "1365"
+     "db.r7g.large"    = "1365"
+     "db.m7g.2xlarge"  = "2731"
+     "db.r7g.xlarge"   = "2731"
+     "db.m7g.4xlarge"  = "5461"
+     "db.r7g.2xlarge"  = "5461"
+     "db.m7g.8xlarge"  = "10923"
+     "db.r7g.4xlarge"  = "10923"
+     "db.m7g.12xlarge" = "16384"
+     "db.m7g.16xlarge" = "21845"
+     "db.r7g.8xlarge"  = "21845"
+     "db.r7g.12xlarge" = "32768"
+     "db.r7g.16xlarge" = "43691"
   }
 }
 
 variable "rds_memory" {
-  description = "Map 6g. class RDS memory gb"
+  description = "Map 7g. class RDS memory gb"
   default = {
-     "db.m6g.large"    = "8"
-     "db.r6g.large"    = "16"
-     "db.m6g.xlarge"   = "16"
-     "db.r6g.xlarge"   = "32"
-     "db.m6g.2xlarge"  = "32"
-     "db.r6g.2xlarge"  = "64"
-     "db.m6g.4xlarge"  = "64"
-     "db.m6g.8xlarge"  = "128"
-     "db.r6g.4xlarge"  = "128"
-     "db.m6g.12xlarge" = "192"
-     "db.m6g.16xlarge" = "256"
-     "db.r6g.8xlarge"  = "256"
-     "db.r6g.12xlarge" = "384"
-     "db.r6g.16xlarge" = "512"
+     "db.m7g.large"    = "8"
+     "db.r7g.large"    = "16"
+     "db.m7g.xlarge"   = "16"
+     "db.r7g.xlarge"   = "32"
+     "db.m7g.2xlarge"  = "32"
+     "db.r7g.2xlarge"  = "64"
+     "db.m7g.4xlarge"  = "64"
+     "db.m7g.8xlarge"  = "128"
+     "db.r7g.4xlarge"  = "128"
+     "db.m7g.12xlarge" = "192"
+     "db.m7g.16xlarge" = "256"
+     "db.r7g.8xlarge"  = "256"
+     "db.r7g.12xlarge" = "384"
+     "db.r7g.16xlarge" = "512"
   }
 }
-      
+
+variable "rds_parameters" {
+  description = "Map RDS MariaDB Parameters"
+  default = [
+    {
+      name    = "max_allowed_packet"
+      value   = "268435456"
+    },
+    {
+      name    = "max_connect_errors"
+      value   = "500"
+    },
+    {
+      name    = "interactive_timeout"
+      value   = "7200"
+    },
+    {
+      name    = "wait_timeout"
+      value   = "7200"
+    },
+    {
+      name    = "innodb_lock_wait_timeout"
+      value   = "60"
+    },
+    {
+      name    = "innodb_flush_log_at_trx_commit"
+      value   = "2"
+    },
+    {
+      name    = "tmp_table_size"
+      value   = "{DBInstanceClassMemory/512}"
+    },
+    {
+      name    = "max_heap_table_size"
+      value   = "{DBInstanceClassMemory/512}"
+    }
+  ]
+}
+
 variable "rabbitmq" {
   description      = "Map RabbitMQ configuration values"
   default  = {
-    engine_version         = "3.8.11"
+    engine_version         = "3.12.13"
     deployment_mode        = "CLUSTER_MULTI_AZ"
-    host_instance_type     = "mq.t3.micro"
+    host_instance_type     = "mq.m5.large"
   }
 }
 
@@ -152,9 +190,9 @@ variable "redis" {
   description      = "Map ElastiCache Redis configuration values"
   default  = {
     num_cache_clusters            = "1"
-    node_type                     = "cache.m6g.large"
+    node_type                     = "cache.m7g.large"
     name                          = ["session", "cache"]
-    engine_version                = "6.x"
+    engine_version                = "7.1"
     port                          = "6379"
     at_rest_encryption_enabled    = true
   }
