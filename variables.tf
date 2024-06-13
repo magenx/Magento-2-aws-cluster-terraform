@@ -3,6 +3,7 @@
 locals {
    # Create global project name to be assigned to all resources
    project = lower("${var.app["brand"]}-${random_string.this["project"].result}")
+   environment = lower(terraform.workspace)
 }
 
 variable "password" {
