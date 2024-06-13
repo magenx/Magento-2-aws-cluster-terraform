@@ -111,8 +111,8 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 ```
    terraform fmt
    terraform init
-   terraform workspace new developer
-   terraform plan -out developer.plan.out -no-color 2>&1 > developer.plan.out.txt
+   terraform workspace new development
+   terraform plan -out development.plan.out -no-color 2>&1 > development.plan.out.txt
    terraform apply
 ```
 > to destroy infrastructure: ```terraform destroy```  
