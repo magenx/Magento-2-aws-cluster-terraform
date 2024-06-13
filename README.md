@@ -8,8 +8,8 @@
 
 <br />
 
-## AWS Graviton2 Processor - Enabling the best performance in EC2:
-![aws-graviton2](https://user-images.githubusercontent.com/1591200/117844857-f0753e80-b277-11eb-9d27-fe8eacdf6c19.png)  
+## AWS Graviton3 Processor - Enabling the best performance in EC2:
+![aws-graviton3](https://user-images.githubusercontent.com/1591200/117844857-f0753e80-b277-11eb-9d27-fe8eacdf6c19.png)  
   
 > [Amazon EC2 C7g instances upgrade](https://aws.amazon.com/ec2/instance-types/c7g/)  
 > Best price performance for compute-intensive workloads in Amazon EC2  
