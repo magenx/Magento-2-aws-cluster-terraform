@@ -97,7 +97,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Clone repo:  
 > 
 ```
-  git clone -b fastly_v4_imagebuilder https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
+  git clone -b fastly_v5_imagebuilder https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
 ```
 >  
 **[ ! ]** Right after `terraform apply` you will receive email from amazon to approve resources    
