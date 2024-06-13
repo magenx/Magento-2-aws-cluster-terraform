@@ -65,14 +65,14 @@ resource "aws_codecommit_repository" "services" {
           git add .
           git commit -m "systemd_varnish_ec2_config"
           git branch -m systemd_varnish
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} systemd_varnish
+          git push codecommit::${data.aws_region.current.name}://${local.project}-services-config systemd_varnish
           rm -rf .git
           cd ${abspath(path.root)}/services/nginx_varnish
           git init
           git add .
           git commit -m "nginx_varnish_ec2_config"
           git branch -m nginx_varnish
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_varnish
+          git push codecommit::${data.aws_region.current.name}://${local.project}-services-config nginx_varnish
           rm -rf .git
 EOF
   }
