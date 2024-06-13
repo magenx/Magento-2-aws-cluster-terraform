@@ -45,20 +45,20 @@ resource "aws_codecommit_repository" "services" {
           git init
           git commit --allow-empty -m "main branch"
           git branch -m main
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} main
+          git push codecommit::${data.aws_region.current.name}://${local.project}-services-config main
           git branch -m nginx_admin
           git add .
           git commit -m "nginx_ec2_config"
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_admin
+          git push codecommit::${data.aws_region.current.name}://${local.project}-services-config nginx_admin
           git branch -m nginx_frontend
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} nginx_frontend
+          git push codecommit::${data.aws_region.current.name}://${local.project}-services-config nginx_frontend
           rm -rf .git
           cd ${abspath(path.root)}/services/varnish
           git init
           git add .
           git commit -m "varnish_ec2_config"
           git branch -m varnish
-          git push codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name} varnish
+          git push codecommit::${data.aws_region.current.name}://${local.project}-services-config varnish
           rm -rf .git
           cd ${abspath(path.root)}/services/systemd_varnish
           git init
