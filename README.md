@@ -112,6 +112,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Run:
 ```
    terraform init
+   terraform plan
    terraform apply
 ```
 > to destroy infrastructure: ```terraform destroy```  
