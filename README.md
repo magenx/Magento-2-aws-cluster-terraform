@@ -16,7 +16,7 @@
   
 <br />
 
-## [?] Why we need Adobe Commerce Cloud alternative:
+## ❓ Why we need Adobe Commerce Cloud alternative:
 The biggest issue is that ACC pricing based on GMV % and AOV %, you overpay up to 80%, while the bill between Adobe and AWS remains at a minimum. With this approach, you invest money in the development of a third-party business, but not your own.
 Why spend so much money without having control over your business in the cloud?
 Configuring your own infrastructure these days is the most profitable way. You manage the resources, you have a complete overview how it works and you have full control over the money invested in your own infrastructure. At any time you can make changes to both infrastructure and application design without thinking about restrictions, 3rd party platform limitations and unforeseen costs. There are no hidden bills and payments for excess resources, which, as a result, you will not need.  
@@ -50,14 +50,14 @@ Reserved Instances provide you with significant savings on your Amazon EC2 costs
 
 <br />
 
-## [+] EC2 webstack custom configuration and Auto Scaling management
+## 📖 EC2 webstack custom configuration and Auto Scaling management
 [User data](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) templates with shell scripts. If you are familiar with shell scripting, this is the easiest and most complete way to send instructions to an instance to perform common automated configuration tasks and even run scripts after the instance starts. From default stack optimization to changing any application and service settings.
 
 [**Warm pools** for Amazon EC2 Auto Scaling](https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-warm-pools.html) - A warm pool gives you the ability to decrease latency for your applications. With warm pools, you no longer have to over-provision your Auto Scaling groups to manage latency in order to improve application performance. You have the option of keeping instances in the warm pool in one of two states: `Stopped` or `Running`. Keeping instances in a `Stopped` state is an effective way to minimize costs.
 
 NGINX is optimized and fully supported on the latest generation of 64-bit ARM Servers utilizing the architecture. PHP using socket connection.
 
-[**Debian 11** ARM 'bullseye'](https://aws.amazon.com/marketplace/pp/prodview-jwzxq55gno4p4), which will be supported for the next 5 years. Includes support for the very latest ARM-based server systems powered by certified 64-bit processors.
+[**Debian 12** ARM 'bookworm'](https://aws.amazon.com/marketplace/pp/prodview-63gms6fbfaota), which will be supported for the next 5 years. Includes support for the very latest ARM-based server systems powered by certified 64-bit processors.
 Develop and deploy at scale. Webstack delivers top performance on ARM.
 
 [**AWS Systems Manager**](https://aws.amazon.com/systems-manager/) is an AWS service that you can use to view and control your infrastructure on AWS. Using the Systems Manager console, you can view operational data from multiple AWS EC2 instances and automate operational tasks across your AWS resources. Systems Manager helps you maintain security and compliance. No SSH connections from outside, no need to track passwords and private keys.
@@ -100,16 +100,17 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
   git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
 ```
 >  
-**[ ! ]** Right after `terraform apply` you will receive email from amazon to approve resources    
+❗ Right after `terraform apply` you will receive email from amazon to approve resources    
 - [x] Adjust your settings, edit your [cidr], [brand], [domain], [email] and other vars in `variables.tf`
 - [x] Define your source repository or use default and enable minimal Magento 2 package to install.
 - [x] Define either [production] or [development] environment variable in `variables.tf`
   
- **[ ! ]** ```For production deployment make sure to enable deletion protection and backup retention```  
+❗ ```For production deployment make sure to enable deletion protection and backup retention```  
    
 - [x] Run:
 ```
    terraform init
+   terraform plan
    terraform apply
 ```
 > to destroy infrastructure: ```terraform destroy```  
@@ -167,14 +168,13 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 > modules configuration here: https://github.com/magenx/Magento-2/blob/main/composer.json  
    
    
-|**Performance and security enhancements**||**Enabled modules for test requirements**|
-|:-----|---|:-----|
-|Faster backend and frontend from 14% upto 50%||[Mageplaza SMTP](https://github.com/mageplaza/magento-2-smtp)|
-|Better memory management upto 15%|| |
-|Easy deployments|| |
-|Less dependencies|| |
-|Zero maintenance|| |
-|Low security risks|| |
+**Performance and security enhancements**
+- Faster backend and frontend from 14% upto 50%
+- Better memory management upto 15%
+- Easy deployments
+- Less dependencies
+- Zero maintenance
+- Low security risks
 
 <br />
 
@@ -193,7 +193,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
    
 <br />
    
-## [:e-mail:] Contact us for installation and support:
+## :e-mail: Contact us for installation and support:
 We can launch this project for your store in a short time. Many big retailers have already migrated to this architecture.
 - [x] Write us an [email](mailto:info@magenx.com?subject=Magento%202%20auto%20scaling%20cluster%20on%20AWS) to discuss the project.
 - [x] Send a private message on [Linkedin](https://www.linkedin.com/in/magenx/)  
