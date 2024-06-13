@@ -40,6 +40,7 @@ variable "ec2" {
 variable "app" {
   description      = "Map application params | Magento 2"
   default          = {
+    install          = "enabled"
     source_repo      = "magenx/Magento-2"
     app_version      = "2"
     cidr_block       = "172.30.0.0/16"
