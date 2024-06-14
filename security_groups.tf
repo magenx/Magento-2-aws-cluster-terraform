@@ -161,6 +161,8 @@ resource "aws_security_group_rule" "packer_ssh" {
     protocol    = "tcp"
     cidr_blocks = ["${jsondecode(data.http.packer.response_body)["ip"]}/32"]
     security_group_id = aws_security_group.ec2.id
+
+   depends_on = [null_resource.packer]
 }
 
 # # ---------------------------------------------------------------------------------------------------------------------#
