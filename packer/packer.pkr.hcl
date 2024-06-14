@@ -36,10 +36,10 @@ source "amazon-ebs" "latest-ami" {
   region          = "${local.var["AWS_DEFAULT_REGION"]}"
   source_ami      = "${local.var["SOURCE_AMI"]}"
   iam_instance_profile = "${var.IAM_INSTANCE_PROFILE}"
-  security_group_id = "${local.var["SECURITY_GROUP"]}"
   subnet_id       = "${local.var["SUBNET_ID"]}"
   ssh_username    = "admin"
   temporary_key_pair_type = "ed25519"
+  temporary_security_group_source_public_ip = true
   instance_type   = "c7g.large"
   launch_block_device_mappings {
     device_name = "/dev/xvda"
