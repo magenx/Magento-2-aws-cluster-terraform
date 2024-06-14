@@ -7,8 +7,8 @@
 
 <br />
 
-## AWS Graviton2 Processor - Enabling the best performance in EC2:
-![aws-graviton2](https://user-images.githubusercontent.com/1591200/117844857-f0753e80-b277-11eb-9d27-fe8eacdf6c19.png)  
+## AWS Graviton3 Processor - Enabling the best performance in EC2:
+![aws-graviton3](https://user-images.githubusercontent.com/1591200/117844857-f0753e80-b277-11eb-9d27-fe8eacdf6c19.png)  
   
 > [Amazon EC2 C7g instances upgrade](https://aws.amazon.com/ec2/instance-types/c7g/)  
 > Best price performance for compute-intensive workloads in Amazon EC2  
@@ -56,7 +56,7 @@ Reserved Instances provide you with significant savings on your Amazon EC2 costs
 
 NGINX is optimized and fully supported on the latest generation of 64-bit ARM Servers utilizing the architecture. PHP using socket connection.
 
-[**Debian 11** ARM 'bullseye'](https://aws.amazon.com/marketplace/pp/prodview-jwzxq55gno4p4), which will be supported for the next 5 years. Includes support for the very latest ARM-based server systems powered by certified 64-bit processors.
+[**Debian 12** ARM 'bullseye'](https://aws.amazon.com/marketplace/pp/prodview-63gms6fbfaota), which will be supported for the next 5 years. Includes support for the very latest ARM-based server systems powered by certified 64-bit processors.
 Develop and deploy at scale. Webstack delivers top performance on ARM.
 
 [**AWS Systems Manager**](https://aws.amazon.com/systems-manager/) is an AWS service that you can use to view and control your infrastructure on AWS. Using the Systems Manager console, you can view operational data from multiple AWS EC2 instances and automate operational tasks across your AWS resources. Systems Manager helps you maintain security and compliance. No SSH connections from outside, no need to track passwords and private keys.
@@ -82,9 +82,9 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 
 # :rocket: Deployment into isolated VPC:
 - [x] Login to AWS Console
-- [x] [Subscribe to Debian 11 ARM](https://aws.amazon.com/marketplace/pp/prodview-jwzxq55gno4p4)
+- [x] [Subscribe to Debian 12 ARM](https://aws.amazon.com/marketplace/pp/prodview-63gms6fbfaota)
 - [x] Choose an AWS Region
-- [x] Start AWS CloudShell
+- [x] Start AWS CloudShell [fastest way to deploy and debug]
 - [x] Install Terraform:
 ```
    sudo yum install -y yum-utils
@@ -98,7 +98,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Clone repo:  
 > 
 ```
-  git clone -b fastly https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
+  git clone -b fastly_v5 https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
 ```
 >  
 **[ ! ]** Right after `terraform apply` you will receive email from amazon to approve resources    
@@ -112,7 +112,10 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
    
 - [x] Run:
 ```
+   terraform fmt
    terraform init
+   terraform workspace new development
+   terraform plan -out development.plan.out -no-color 2>&1 > development.plan.out.txt
    terraform apply
 ```
 > to destroy infrastructure: ```terraform destroy```  
