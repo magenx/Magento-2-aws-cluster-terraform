@@ -123,13 +123,13 @@ resource "aws_security_group_rule" "ec2_ses_out" {
     security_group_id = aws_security_group.ec2.id
     }
 
-resource "aws_security_group_rule" "ec2_elk_out" {
+resource "aws_security_group_rule" "ec2_opensearch_out" {
     type        = "egress"
-    description = "Allow outbound traffic on the instance ELK port"
+    description = "Allow outbound traffic on the instance opensearch port"
     from_port   = 9200
     to_port     = 9200
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.elk.id
+    source_security_group_id = aws_security_group.opensearch.id
     security_group_id = aws_security_group.ec2.id
     }
 
@@ -256,15 +256,15 @@ resource "aws_security_group" "efs" {
 }
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create security group and rules for ELK
+# Create security group and rules for opensearch
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group" "elk" {
-  name        = "${local.project}-elk-sg"
-  description = "Security group rules for ${local.project} ELK"
+resource "aws_security_group" "opensearch" {
+  name        = "${local.project}-opensearch-sg"
+  description = "Security group rules for ${local.project} opensearch"
   vpc_id      = aws_vpc.this.id
 
   ingress {
-      description      = "Allow all inbound traffic to ELK port from EC2"
+      description      = "Allow all inbound traffic to opensearch port from EC2"
       from_port        = 0
       to_port          = 0
       protocol         = "-1"
@@ -272,7 +272,7 @@ resource "aws_security_group" "elk" {
     }
   
   egress {
-      description      = "Allow all outbound traffic to EC2 port from ELK"
+      description      = "Allow all outbound traffic to EC2 port from opensearch"
       from_port        = 0
       to_port          = 0
       protocol         = "-1"
@@ -280,6 +280,6 @@ resource "aws_security_group" "elk" {
     }
 
   tags = {
-    Name = "${local.project}-elk-sg"
+    Name = "${local.project}-opensearch-sg"
   }
 }
