@@ -6,7 +6,7 @@
 packer {
   required_plugins {
     amazon = {
-      version = ">= 1.3.2"
+      version = "~> 1"
       source  = "github.com/hashicorp/amazon"
     }
   }
@@ -39,7 +39,7 @@ source "amazon-ebs" "latest-ami" {
   security_group_id = "${local.var["SECURITY_GROUP"]}"
   subnet_id       = "${local.var["SUBNET_ID"]}"
   ssh_username    = "admin"
-  instance_type   = "c6g.large"
+  instance_type   = "c7g.large"
   launch_block_device_mappings {
     device_name = "/dev/xvda"
     volume_size = "${local.var["VOLUME_SIZE"]}"
