@@ -21,6 +21,13 @@ resource "aws_db_parameter_group" "this" {
   name              = "${local.project}-parameters"
   family            = var.rds["family"]
   description       = "Parameter group for ${local.project} database"
+   dynamic "parameter" {
+    for_each = var.rds_parameters
+    content {
+      name  = parameter.value["name"]
+      value = parameter.value["value"]
+    }
+  }
   tags = {
     Name = "${local.project}-parameters"
   }
