@@ -194,6 +194,7 @@ variable "redis" {
     num_cache_clusters            = "1"
     node_type                     = "cache.m7g.large"
     name                          = ["session", "cache"]
+    family                        = "redis7"
     engine_version                = "7.1"
     port                          = "6379"
     at_rest_encryption_enabled    = true
