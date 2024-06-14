@@ -159,7 +159,7 @@ resource "aws_security_group_rule" "packer_ssh" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["${jsondecode(data.http.packer.body)["ip"]}/32"]
+    cidr_blocks = ["${jsondecode(data.http.packer.response_body)["ip"]}/32"]
     security_group_id = aws_security_group.ec2.id
 }
 
