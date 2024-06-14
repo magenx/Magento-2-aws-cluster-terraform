@@ -39,6 +39,7 @@ source "amazon-ebs" "latest-ami" {
   security_group_id = "${local.var["SECURITY_GROUP"]}"
   subnet_id       = "${local.var["SUBNET_ID"]}"
   ssh_username    = "admin"
+  temporary_key_pair_type = "ed25519"
   instance_type   = "c7g.large"
   launch_block_device_mappings {
     device_name = "/dev/xvda"
