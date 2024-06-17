@@ -96,7 +96,7 @@ data "aws_cloudfront_cache_policy" "custom" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Get get the latest ID of a registered AMI linux distro by owner and version
 # # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_ami" "distro" {
+data "aws_ami" "this" {
   most_recent = true
   owners      = ["136693071363"] # debian
 
