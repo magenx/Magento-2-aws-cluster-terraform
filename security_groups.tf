@@ -257,7 +257,7 @@ resource "aws_security_group" "opensearch" {
       description      = "Allow all inbound traffic to OpenSearch port from EC2"
       from_port        = 443
       to_port          = 443
-      protocol         = "-1"
+      protocol         = "tcp"
       security_groups  = [aws_security_group.ec2.id]
     }
   
@@ -265,7 +265,7 @@ resource "aws_security_group" "opensearch" {
       description      = "Allow all outbound traffic to EC2 port from OpenSearch"
       from_port        = 443
       to_port          = 443
-      protocol         = "-1"
+      protocol         = "tcp"
       security_groups  = [aws_security_group.ec2.id]
     }
 
