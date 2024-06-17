@@ -106,7 +106,7 @@ resource "aws_imagebuilder_infrastructure_configuration" "this" {
   name                  = "${local.project}-${each.key}-imagebuilder-infrastructure"
   description           = "ImageBuilder infrastructure for ${each.key} in ${local.project}"
   instance_profile_name = aws_iam_instance_profile.ec2[each.key].name
-  instance_types        = each.value
+  instance_types        = [each.value]
   security_group_ids    = [aws_security_group.ec2.id]
   sns_topic_arn         = aws_sns_topic.default.arn
   subnet_id             = values(aws_subnet.this).0.id
