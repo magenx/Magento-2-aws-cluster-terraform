@@ -80,7 +80,8 @@ variable "opensearch" {
 }
 
 locals {
- db_name = "${local.project}_${local.environment}"
+  db_name_prefix = replace(local.project, "-", "_")
+  db_name        = "${local.db_name_prefix}_${local.environment}"
 }
 
 variable "rds" {
