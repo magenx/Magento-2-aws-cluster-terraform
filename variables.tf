@@ -306,6 +306,21 @@ variable "aws_config_rule" {
   }
 }
 
+# Define the variable for resource types
+variable "resource_types" {
+  type = list(string)
+  default = [
+    "AWS::EC2::Instance",
+    "AWS::S3::Bucket",
+    "AWS::IAM::Role",
+    "AWS::IAM::User",
+    "AWS::RDS::DBInstance",
+    "AWS::EC2::VPC",
+    "AWS::EC2::Subnet",
+    "AWS::EC2::SecurityGroup"
+  ]
+}
+
 variable "az_number" {
   description = "Assign a number to each AZ letter used in secondary cidr/subnets configuration"
   default = {
