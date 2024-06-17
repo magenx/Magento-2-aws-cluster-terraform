@@ -199,7 +199,7 @@ variable "redis" {
     node_type                  = "cache.m6g.large"
     name                       = ["session", "cache"]
     engine_version                = "7.1"
-    family                        = "redis7.1"
+    family                        = "redis7"
     port                          = "6379"
     at_rest_encryption_enabled    = true
   }
