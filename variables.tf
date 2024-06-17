@@ -70,7 +70,7 @@ variable "opensearch" {
   description      = "Map OpenSearch configuration values"
   default  = {
     engine_version         = "OpenSearch_2.13"
-    instance_type          = "m7g.large.search"
+    instance_type          = "m6g.large.search"
     instance_count         = "1"
     ebs_enabled            = true
     volume_type            = "gp3"
