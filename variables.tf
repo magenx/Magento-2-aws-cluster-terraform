@@ -89,10 +89,14 @@ variable "opensearch" {
   }
 }
 
+locals {
+  db_name_prefix = replace(local.project, "-", "_")
+  db_name        = "${local.db_name_prefix}_${local.environment}"
+}
+
 variable "rds" {
   description      = "Map RDS configuration values"
   default  = {
-    db_name                = "m2_magenx_live"
     allocated_storage      = "50"
     max_allocated_storage  = "100"
     storage_type           = "gp3"
