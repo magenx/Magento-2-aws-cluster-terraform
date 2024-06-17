@@ -46,7 +46,7 @@ resource "aws_db_instance" "this" {
   engine_version         = var.rds["engine_version"]
   instance_class         = var.rds["instance_class"]
   multi_az               = var.rds["multi_az"]
-  db_name                = var.rds["db_name"]
+  db_name                = local.db_name
   username               = var.app["brand"]
   password               = random_password.this["rds"].result
   parameter_group_name   = aws_db_parameter_group.this.id
