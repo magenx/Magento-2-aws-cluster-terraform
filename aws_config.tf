@@ -29,6 +29,11 @@ resource "aws_config_config_rule" "this" {
 resource "aws_config_configuration_recorder" "this" {
   name     = "${local.project}-recorder"
   role_arn = aws_iam_role.config.arn
+  recording_group {
+    all_supported                 = false
+    include_global_resource_types = false
+    resource_types                = var.resource_types
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create AWS Config recorder status
