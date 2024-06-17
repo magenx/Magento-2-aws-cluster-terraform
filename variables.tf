@@ -80,7 +80,7 @@ variable "opensearch" {
 }
 
 locals {
- db_name = "${local.project}-${local.environment}"
+ db_name = "${local.project}_${local.environment}"
 }
 
 variable "rds" {
