@@ -177,14 +177,13 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 > modules configuration here: https://github.com/magenx/Magento-2/blob/main/composer.json  
    
    
-|**Performance and security enhancements**||**Enabled modules for test requirements**|
-|:-----|---|:-----|
-|Faster backend and frontend from 14% upto 50%||[Fastly CDN](https://github.com/fastly/fastly-magento2)|
-|Better memory management upto 15%||[Mageplaza SMTP](https://github.com/mageplaza/magento-2-smtp)|
-|Easy deployments|| |
-|Less dependencies|| |
-|Zero maintenance|| |
-|Low security risks|| |
+**Performance and security enhancements**
+- Faster backend and frontend from 14% upto 50%
+- Better memory management upto 15%
+- Easy deployments
+- Less dependencies
+- Zero maintenance
+- Low security risks
 
 <br />
 
