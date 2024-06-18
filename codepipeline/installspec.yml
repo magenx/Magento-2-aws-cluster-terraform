@@ -49,11 +49,11 @@ phases:
       --amqp-password=${parameter["RABBITMQ_PASSWORD"]} \
       --amqp-virtualhost='/' \
       --amqp-ssl=true \
-      --search-engine=elasticsearch7 \
-      --elasticsearch-host=${parameter["ELASTICSEARCH_ENDPOINT"]} \
-      --elasticsearch-port=443 \
-      --elasticsearch-index-prefix=${parameter["BRAND"]} \
-      --elasticsearch-enable-auth=0
+      --search-engine=opensearch \
+      --opensearch-host=${parameter["OPENSEARCH_ENDPOINT"]} \
+      --opensearch-port=443 \
+      --opensearch-index-prefix=${parameter["BRAND"]} \
+      --opensearch-enable-auth=0
       ## installation check
       if [[ $? -ne 0 ]]; then
       echo
@@ -104,8 +104,6 @@ phases:
       -n
       ## sync to s3 remote storage
       bin/magento remote-storage:sync
-      ## install modules to properly test magento 2 production-ready functionality
-      composer -n require mageplaza/module-smtp
       if [ "${parameter["FASTLY"]}" == "enabled" ]; then
       composer -n require fastly/magento2
       fi
@@ -120,17 +118,12 @@ phases:
       bin/magento config:set trans_email/ident_general/name ${parameter["BRAND"]}
       bin/magento config:set trans_email/ident_general/email ${parameter["ADMIN_EMAIL"]}
       ## configure smtp ses 
-      bin/magento config:set smtp/general/enabled 1
-      bin/magento config:set smtp/general/log_email 0
-      bin/magento config:set smtp/configuration_option/host ${parameter["SES_ENDPOINT"]}
-      bin/magento config:set smtp/configuration_option/port 587
-      bin/magento config:set smtp/configuration_option/protocol tls
-      bin/magento config:set smtp/configuration_option/authentication login
-      bin/magento config:set smtp/configuration_option/username ${parameter["SES_KEY"]}
-      bin/magento config:set smtp/configuration_option/password ${parameter["SES_PASSWORD"]}
-      bin/magento config:set smtp/configuration_option/test_email/from general
-      bin/magento config:set smtp/configuration_option/test_email/to ${parameter["ADMIN_EMAIL"]}
-      bin/magento config:set smtp/developer/developer_mode 0
+      bin/magento config:set system/smtp/host ${parameter["SES_ENDPOINT"]}
+      bin/magento config:set system/smtp/port 587
+      bin/magento config:set system/smtp/ssl tls
+      bin/magento config:set system/smtp/auth login
+      bin/magento config:set system/smtp/username ${parameter["SES_KEY"]}
+      bin/magento config:set system/smtp/password ${parameter["SES_PASSWORD"]}
       ## explicitly set the new catalog media url format
       bin/magento config:set web/url/catalog_media_url_format image_optimization_parameters
       ## configure cloudfront media / static base url
