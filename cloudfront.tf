@@ -73,9 +73,10 @@ resource "aws_cloudfront_distribution" "this" {
     prefix          = "${local.project}-cloudfront-logs"
   }
   
-  restrictions {
+ restrictions {
     geo_restriction {
-      restriction_type = "none"
+      restriction_type = "blacklist"
+      locations        = var.restricted_countries
     }
   }
 
