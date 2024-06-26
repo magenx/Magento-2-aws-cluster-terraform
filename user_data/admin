@@ -11,11 +11,12 @@ _INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.25
 _INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
 _INSTANCE_TAG=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Name)
 _PROJECT=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Project)
+_ENVIRONMENT=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Environment)
 
 _TIMER_USER_DATA_START="$(date +%T)"
 
 ## get all env vars from parameter store
-_PARAMETER=$(aws ssm get-parameter --name "${_PROJECT}-env" --query 'Parameter.Value' --output text)
+_PARAMETER=$(aws ssm get-parameter --name "${_PROJECT}-${_ENVIRONMENT}-env" --query 'Parameter.Value' --output text)
 declare -A parameter
 while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${_PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
 
@@ -33,10 +34,10 @@ mount -a
 fi
 
 cd ${parameter["WEB_ROOT_PATH"]}
-su ${BRAND} -s /bin/bash -c "git init -b main"
+su ${BRAND} -s /bin/bash -c "git init -b ${_ENVIRONMENT}"
 su ${BRAND} -s /bin/bash -c "git remote add origin ${parameter["CODECOMMIT_APP_REPO"]}"
-su ${BRAND} -s /bin/bash -c "git fetch origin main"
-su ${BRAND} -s /bin/bash -c "git reset origin/main --hard"
+su ${BRAND} -s /bin/bash -c "git fetch origin ${_ENVIRONMENT}"
+su ${BRAND} -s /bin/bash -c "git reset origin/${_ENVIRONMENT} --hard"
 
 sed -i "s/INSTANCE_LOCAL_IP/${_INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/magento.conf
 systemctl restart nginx
