@@ -7,7 +7,7 @@
 # Create SSM Parameter store for aws params
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_parameter" "env" {
-  name        = "${local.project}-env"
+  name        = "${local.project}-${local.environment}-env"
   description = "Environment variables for ${local.project} in ${data.aws_region.current.name}"
   type        = "String"
   value       = <<EOF
