@@ -322,3 +322,9 @@ variable "az_number" {
     g = 6
   }
 }
+
+variable "restricted_countries" {
+  description = "List of country codes to restrict access to"
+  type        = list(string)
+  default     = ["CN", "RU", "IR", "KP", "SD", "SY", "CU"]
+}
