@@ -14,7 +14,16 @@ resource "aws_s3_bucket" "this" {
     Name        = "${local.project}-${random_string.s3[each.key].id}-${each.key}"
   }
 }
-
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create S3 bucket ownership configuration
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_s3_bucket_ownership_controls" "this" {
+  for_each = aws_s3_bucket.this
+  bucket   = each.value.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create S3 bucket versioning
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -142,9 +151,27 @@ resource "aws_s3_bucket_policy" "system" {
           aws_iam_role.codebuild.arn,
           aws_iam_role.codepipeline.arn,
           aws_iam_role.config.arn
-        ] 
+        ]
      }
-  }
+  },
+ {
+          Action = [
+            "s3:PutObject"
+          ],
+          Effect   = "Allow"
+          Resource = "${aws_s3_bucket.this["system"].arn}/CloudFront/*"
+          Principal = {
+            Service = "cloudfront.amazonaws.com"
+          },
+          Condition = {
+            StringEquals = {
+              "AWS:SourceAccount" = "${data.aws_caller_identity.current.account_id}"
+            },
+            ArnLike = {
+              "AWS:SourceArn" = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/*"
+            }
+          }
+}
 ]
 })
 }
