@@ -295,4 +295,23 @@ sudo dpkg -i amazon-cloudwatch-agent.deb
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
 
 sudo chmod 750 /usr/bin/aws /root/aws
+sudo apt-get remove --purge -y \
+    apache2* \
+    bind9* \
+    samba* \
+    avahi-daemon \
+    cups* \
+    exim4* \
+    postfix* \
+    telnet \
+    xserver-xorg* \
+    x11-common \
+    gnome* \
+    kde* \
+    xfce* \
+    lxqt*
+
 sudo apt-get clean
+sudo apt-get autoclean
+sudo apt-get autoremove --purge -y
+
