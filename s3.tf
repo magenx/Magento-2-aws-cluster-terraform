@@ -155,7 +155,7 @@ resource "aws_s3_bucket_policy" "system" {
      }
   },
  {
-          Action = [
+  Action = [
             "s3:PutObject"
           ],
           Effect   = "Allow"
