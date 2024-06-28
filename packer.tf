@@ -12,6 +12,7 @@ resource "null_resource" "packer" {
   provisioner "local-exec" {
     working_dir = "${abspath(path.root)}/packer"
     command = <<EOF
+/usr/bin/packer init -force
 PACKER_LOG=1 PACKER_LOG_PATH="packerlog" /usr/bin/packer build \
 -var INSTANCE_NAME=${each.key} \
 -var IAM_INSTANCE_PROFILE=${aws_iam_instance_profile.ec2[each.key].name} \
