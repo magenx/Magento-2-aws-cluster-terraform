@@ -253,7 +253,7 @@ variable "s3" {
 variable "alb" {
   description = "Application Load Balancer configuration values"
   default     = {
-    type               = ["inner","outer"]
+    type               = ["internal","external"]
     rps_threshold      = "5000"
     error_threshold    = "25"
     }
