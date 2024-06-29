@@ -9,7 +9,7 @@ resource "null_resource" "es" {
   provisioner "local-exec" {
   interpreter = ["/bin/bash", "-c"]
   command = <<EOF
-          exit_code=$(aws iam get-role --role-name AWSServiceRoleForAmazonElasticsearchService > /dev/null 2>&1 ; echo $?)
+          exit_code=$(aws iam get-role --role-name AWSServiceRoleForAmazonOpenSearchService > /dev/null 2>&1 ; echo $?)
           if [[ $exit_code -ne 0 ]]; then
           aws iam create-service-linked-role --aws-service-name es.amazonaws.com
           fi
