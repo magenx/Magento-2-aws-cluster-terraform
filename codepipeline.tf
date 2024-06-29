@@ -93,7 +93,7 @@ resource "aws_iam_policy" "codebuild" {
     "Version": "2012-10-17",
     "Statement": [
     {
-      "Sid": "AllowCodeBuildGitActions",
+      "Sid": "AllowCodeBuildGitActionsPull",
       "Effect": "Allow",
       "Action": [
         "codecommit:GitPull"
@@ -101,7 +101,7 @@ resource "aws_iam_policy" "codebuild" {
       "Resource": "${aws_codecommit_repository.app.arn}"
     },
     {
-      "Sid": "AllowCodeBuildGitActions",
+      "Sid": "AllowCodeBuildGitActionsPush",
       "Effect": "Allow",
       "Action": [
         "codecommit:GitPush"
