@@ -91,7 +91,7 @@ data "aws_cloudfront_cache_policy" "media" {
   name = "Managed-CachingOptimized"
 }
 data "aws_cloudfront_cache_policy" "static" {
-  name = "Managed-UseOriginCacheControlHeaders-QueryStrings"
+  name = "UseOriginCacheControlHeaders"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Get get the latest ID of a registered AMI linux distro by owner and version
