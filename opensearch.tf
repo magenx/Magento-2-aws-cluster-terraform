@@ -11,7 +11,7 @@ resource "null_resource" "es" {
   command = <<EOF
           exit_code=$(aws iam get-role --role-name AWSServiceRoleForAmazonOpenSearchService > /dev/null 2>&1 ; echo $?)
           if [[ $exit_code -ne 0 ]]; then
-          aws iam create-service-linked-role --aws-service-name es.amazonaws.com
+          aws iam create-service-linked-role --aws-service-name opensearchservice.amazonaws.com
           fi
 EOF
  }
