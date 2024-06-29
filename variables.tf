@@ -188,7 +188,7 @@ variable "rabbitmq" {
   description      = "Map RabbitMQ configuration values"
   default  = {
     engine_version         = "3.12.13"
-    deployment_mode        = "CLUSTER_MULTI_AZ"
+    deployment_mode        = "SINGLE_INSTANCE" ## "CLUSTER_MULTI_AZ"
     host_instance_type     = "mq.m5.large"
   }
 }
