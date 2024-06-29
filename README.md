@@ -50,6 +50,25 @@ Reserved Instances provide you with significant savings on your Amazon EC2 costs
 
 <br />
 
+## 💰 Infracost - shows cloud cost estimates, lets engineers see a cost breakdown:
+```
+infracost breakdown --path .
+INFO Autodetected 1 Terraform project across 1 root module
+INFO Found Terraform project main at directory .
+
+Project: main
+
+OVERALL TOTAL       **$981.87 
+
+──────────────────────────────────
+294 cloud resources were detected:
+∙ 50 were estimated
+∙ 238 were free
+∙ 6 are not supported
+```
+> ** conditionally approximate price per month of this infrastructure.
+  
+  
 ## 📖 EC2 webstack custom configuration and Auto Scaling management
 [User data](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) templates with shell scripts. If you are familiar with shell scripting, this is the easiest and most complete way to send instructions to an instance to perform common automated configuration tasks and even run scripts after the instance starts. From default stack optimization to changing any application and service settings.
 
