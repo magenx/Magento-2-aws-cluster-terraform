@@ -21,7 +21,7 @@ resource "aws_s3_bucket_ownership_controls" "this" {
   for_each = aws_s3_bucket.this
   bucket   = each.value.id
   rule {
-    object_ownership = "BucketOwnerEnforced"
+    object_ownership = "BucketOwnerPreferred"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
