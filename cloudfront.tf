@@ -14,7 +14,7 @@ resource "aws_cloudfront_distribution" "this" {
   enabled             = true
   retain_on_delete    = false
   is_ipv6_enabled     = true
-  http_version        = http2and3
+  http_version        = "http2and3"
   web_acl_id          = aws_wafv2_web_acl.this.arn
   price_class         = "PriceClass_100"
   comment             = "${var.app["domain"]} assets"
@@ -45,7 +45,7 @@ resource "aws_cloudfront_distribution" "this" {
   }
   
   origin {
-    domain_name = aws_elb.this["external"].dns_name
+    domain_name = aws_lb.this["external"].dns_name
     origin_id   = "${var.app["domain"]}-static-assets"
 
     custom_origin_config {
