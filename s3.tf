@@ -89,7 +89,7 @@ data "aws_iam_policy_document" "media" {
       type        = "AWS"
       identifiers = values(aws_iam_instance_profile.ec2)[*].arn
     }
-    conditions {
+    condition {
       test     = "StringEquals"
       variable = "aws:SourceVpc"
       values   = [aws_vpc.this.id]
@@ -172,12 +172,12 @@ data "aws_iam_policy_document" "system" {
       type        = "Service"
       identifiers = ["cloudfront.amazonaws.com"]
     }
-    conditions {
+    condition {
       test     = "StringEquals"
       variable = "AWS:SourceAccount"
       values   = [data.aws_caller_identity.current.account_id]
     }
-    conditions {
+    condition {
       test     = "ArnLike"
       variable = "AWS:SourceArn"
       values   = ["arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/*"]
