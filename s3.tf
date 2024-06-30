@@ -197,7 +197,7 @@ data "aws_iam_policy_document" "backup" {
   statement {
     actions   = ["s3:PutObject"]
     effect    = "Allow"
-    resources = [aws_s3_bucket.this["backup"].arn]
+    resources = ["${aws_s3_bucket.this["backup"].arn}/*"]
     principals {
       type        = "AWS"
       identifiers = [
