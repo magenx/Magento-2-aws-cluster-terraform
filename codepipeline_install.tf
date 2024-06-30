@@ -120,7 +120,7 @@ resource "aws_codepipeline" "install" {
         "FullRepositoryId"      = var.app["source_repo"]
         "BranchName"            = "main"
         "OutputArtifactFormat"  = "CODEBUILD_CLONE_REF"
-        "PollForSourceChanges"  = "false"
+        "DetectChanges"         = "false"
       }
       input_artifacts = []
       name            = "Source"
