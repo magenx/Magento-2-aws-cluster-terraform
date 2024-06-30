@@ -207,8 +207,8 @@ data "aws_iam_policy_document" "codepipeline" {
 # Attach policy for CodePipeline role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role_policy" "codepipeline" {
-  role       = aws_iam_role.codepipeline.id
-  policy_arn = aws_iam_policy_document.codepipeline.arn
+  role   = aws_iam_role.codepipeline.id
+  policy = aws_iam_policy_document.codepipeline.json
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create EventBridge rule to monitor CodeCommit repository state
