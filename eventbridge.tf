@@ -42,9 +42,12 @@ resource "aws_iam_policy" "eventbridge_start_pipeline" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Attach policies to EventBridge role
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_iam_role_policy_attachment" "eventbridge_service_role" {
-  for_each   = join(aws_iam_policy.eventbridge_start_pipeline.arn, var.eventbridge_policy)
+resource "aws_iam_role_policy_attachment" "eventbridge_policy" {
+  for_each   = var.eventbridge_policy
   role       = aws_iam_role.eventbridge_service_role.name
   policy_arn = each.value
 }
-
+resource "aws_iam_role_policy_attachment" "eventbridge_start_pipeline" {
+  role       = aws_iam_role.eventbridge_service_role.name
+  policy_arn = aws_iam_policy.eventbridge_start_pipeline.arn
+}
