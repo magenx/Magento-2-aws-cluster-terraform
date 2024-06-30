@@ -74,6 +74,12 @@ data "aws_iam_policy_document" "codebuild" {
     actions   = ["codecommit:GitPull"]
     resources = [aws_codecommit_repository.app.arn]
   }
+  
+ statement {
+    effect  = "Allow"
+    actions = ["s3:*"]
+    resources = ["*"]
+  }
 
   statement {
     sid       = "AllowCodeBuildGitActionsPush"
@@ -113,7 +119,7 @@ data "aws_iam_policy_document" "codebuild" {
       "ec2:DescribeSecurityGroups",
       "ec2:DescribeVpcs"
     ]
-    resources = ["arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"]
+    resources = ["*"]
   }
 
   statement {
