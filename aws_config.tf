@@ -58,24 +58,18 @@ resource "aws_config_delivery_channel" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create AWS Config role
 # # ---------------------------------------------------------------------------------------------------------------------#
+data "aws_iam_policy_document" "config_assume_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["config.amazonaws.com"]
+    }
+  }
+}
 resource "aws_iam_role" "config" {
   name = "${local.project}-aws-config"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "config.amazonaws.com"
-      },
-      "Effect": "Allow",
-      "Sid": ""
-    }
-  ]
-}
-EOF
+  assume_role_policy = data.aws_iam_policy_document.config_assume_role.json
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create AWS Config role policy
