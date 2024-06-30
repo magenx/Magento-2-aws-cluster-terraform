@@ -14,7 +14,7 @@ data "aws_iam_policy_document" "ec2_assume_role" {
       identifiers = ["ec2.amazonaws.com"]
     }
     effect = "Allow"
-    sid    = "ec2_assume_role"
+    sid    = "EC2AssumeRole"
   }
 }
 
