@@ -59,7 +59,7 @@ resource "aws_s3_bucket_public_access_block" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create policy for CloudFront to limit S3 media bucket access
 # # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_s3_bucket_policy_document" "media" {
+data "aws_iam_policy_document" "media" {
   statement {
     sid       = "AllowCloudFrontAccess"
     effect    = "Allow"
@@ -129,7 +129,7 @@ resource "aws_s3_bucket_policy" "media" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create S3 bucket policy for ALB to write access logs
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_iam_policy_document" "system" {
+data "aws_iam_policy_document" "system" {
   statement {
     sid    = "ALBWriteLogs"
     effect = "Allow"
