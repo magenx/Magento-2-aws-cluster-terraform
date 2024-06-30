@@ -19,7 +19,7 @@ EOF
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create OpenSearch domain access policy
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_iam_policy_document" "opensearch_access" {
+data "aws_iam_policy_document" "opensearch_access" {
   version = "2012-10-17"
   statement {
     effect = "Allow"
