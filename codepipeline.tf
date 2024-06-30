@@ -182,7 +182,7 @@ data "aws_iam_policy_document" "codepipeline" {
     sid       = "AllowCodeStarConnectionActions"
     effect    = "Allow"
     actions   = ["codestar-connections:UseConnection"]
-    resources = [aws_codestarconnections_connection.github.arn]
+    resources = [aws_codestarconnections_connection.github["enabled"].arn]
     condition {
       test     = "ForAllValues:StringEquals"
       variable = "codestar-connections:FullRepositoryId"
