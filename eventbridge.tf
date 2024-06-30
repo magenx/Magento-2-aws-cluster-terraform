@@ -25,8 +25,7 @@ resource "aws_iam_role" "eventbridge_service_role" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create policy for EventBridge role to start CodePipeline
 # # ---------------------------------------------------------------------------------------------------------------------#
-
-data "aws_iam_policy_document" "eventbridge_service_role" {
+data "aws_iam_policy_document" "eventbridge_start_pipeline" {
   statement {
     sid     = "eventspolicy"
     actions = ["codepipeline:StartPipelineExecution"]
@@ -34,11 +33,17 @@ data "aws_iam_policy_document" "eventbridge_service_role" {
   }
 }
 
+resource "aws_iam_policy" "eventbridge_start_pipeline" {
+  name        = "${local.project}-eventbridge-start-pipeline"
+  description = "EventBridge can start pipeline"
+  policy      = data.aws_iam_policy_document.eventbridge_start_pipeline.json
+}
+
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Attach policies to EventBridge role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role_policy_attachment" "eventbridge_service_role" {
-  for_each   = var.eventbridge_policy
+  for_each   = concat([aws_iam_policy.eventbridge_start_pipeline.arn], var.eventbridge_policy)
   role       = aws_iam_role.eventbridge_service_role.name
   policy_arn = each.value
 }
