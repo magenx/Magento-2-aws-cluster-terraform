@@ -25,5 +25,3 @@ EOF
     build_script      = filesha256("${abspath(path.root)}/packer/build.sh")
   }
 }
-
-
