@@ -56,6 +56,14 @@ data "aws_iam_policy_document" "codebuild_assume_role" {
     }
   }
 }
+resource "aws_iam_role" "codebuild" {
+  name        = "${local.project}-codebuild-role"
+  description = "Allows CodeBuild to call AWS services on your behalf."
+  assume_role_policy = data.aws_iam_policy_document.codebuild_assume_role.json
+  tags = {
+    Name = "${local.project}-codebuild-role"
+  }
+}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create policy for CodeBuild role
 # # ---------------------------------------------------------------------------------------------------------------------#
