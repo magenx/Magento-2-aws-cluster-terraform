@@ -17,6 +17,21 @@ EOF
  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create OpenSearch domain access policy
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_iam_policy_document" "opensearch_access" {
+  version = "2012-10-17"
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+    actions = ["es:*"]
+    resources = ["arn:aws:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/${local.project}-opensearch/*"]
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create OpenSearch domain
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_opensearch_domain" "this" {
@@ -53,25 +68,7 @@ resource "aws_opensearch_domain" "this" {
     cloudwatch_log_group_arn = aws_cloudwatch_log_group.opensearch.arn
     log_type                 = var.opensearch["log_type"]
   }
-  access_policies = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": [
-          "*"
-        ]
-      },
-      "Action": [
-        "es:*"
-      ],
-      "Resource": "arn:aws:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/${local.project}-opensearch/*"
-    }
-  ]
-}
-EOF
+  access_policies = data.aws_iam_policy_document.opensearch_access.json
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch log group for OpenSearch log stream
@@ -80,26 +77,22 @@ resource "aws_cloudwatch_log_group" "opensearch" {
   name = "${local.project}-opensearch"
 }
 
+data "aws_iam_policy_document" "opensearch-log-publishing-policy" {
+  statement {
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:PutLogEventsBatch",
+    ]
+    resources = ["arn:aws:logs:*"]
+    principals {
+      identifiers = ["es.amazonaws.com"]
+      type        = "Service"
+    }
+  }
+}
+
 resource "aws_cloudwatch_log_resource_policy" "opensearch" {
   policy_name = "${local.project}-opensearch"
-
-  policy_document = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "es.amazonaws.com"
-      },
-      "Action": [
-        "logs:PutLogEvents",
-        "logs:PutLogEventsBatch",
-        "logs:CreateLogStream"
-      ],
-      "Resource": "arn:aws:logs:*"
-    }
-  ]
-}
-EOF
+  policy_document = data.aws_iam_policy_document.opensearch-log-publishing-policy.json
 }
