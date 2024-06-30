@@ -87,7 +87,7 @@ data "aws_iam_policy_document" "media" {
     ]
     principals {
       type        = "AWS"
-      identifiers = values(aws_iam_instance_profile.ec2)[*].arn
+      identifiers = values(aws_iam_role.ec2)[*].arn
     }
     condition {
       test     = "StringEquals"
@@ -106,7 +106,7 @@ data "aws_iam_policy_document" "media" {
     ]
     principals {
       type        = "AWS"
-      identifiers = values(aws_iam_instance_profile.ec2)[*].arn
+      identifiers = values(aws_iam_role.ec2)[*].arn
     }
   }
 
@@ -117,7 +117,7 @@ data "aws_iam_policy_document" "media" {
     resources = [aws_s3_bucket.this["media"].arn]
     principals {
       type        = "AWS"
-      identifiers = values(aws_iam_instance_profile.ec2)[*].arn
+      identifiers = values(aws_iam_role.ec2)[*].arn
     }
   }
 }
