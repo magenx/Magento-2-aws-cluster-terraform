@@ -21,8 +21,8 @@ resource "aws_codecommit_repository" "app" {
           git config --global user.email "${var.app["admin_email"]}"
           git remote set-url origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}
           git commit --allow-empty -m "init"
-          git branch -m main
-          git push origin main
+          git branch -m ${local.environment}
+          git push origin ${local.environment}
           git checkout -b build
           git push origin build
           rm -rf /tmp/magento
