@@ -9,19 +9,15 @@ _AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-
 _INSTANCE_LOCAL_IP=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
 _INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
 _INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
-_INSTANCE_TAG=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Name)
 _PROJECT=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Project)
 _ENVIRONMENT=$(curl -s -H "X-aws-ec2-metadata-token: ${_AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Environment)
 
 _TIMER_USER_DATA_START="$(date +%T)"
 
 ## get all env vars from parameter store
-_PARAMETER=$(aws ssm get-parameter --name "${_PROJECT}-${_ENVIRONMENT}-env" --query 'Parameter.Value' --output text)
+PARAMETER=$(sudo aws ssm get-parameter --name "${PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
 declare -A parameter
-while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${_PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
-
-## extract instance name from tag
-_INSTANCE_NAME=$(echo ${_INSTANCE_TAG} | awk -v FS="(${parameter["PROJECT"]}-|-ec2)" '{print $2}')
+while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
 
 if [ $(stat -f -L -c %T ${parameter["WEB_ROOT_PATH"]}/pub/media) != "nfs" ]; then
 mkdir -p /mnt/efs
@@ -62,4 +58,4 @@ aws sns publish \
     --subject "Timer for user_data: ${parameter["BRAND"]} at ${parameter["AWS_DEFAULT_REGION"]} ${_INSTANCE_NAME} ${_INSTANCE_ID}" \
     --message file:///tmp/timer_user_data_log
 
-chmod 750 /usr/bin/aws /root/aws
+sudo apt-get remove --purge -y awscli*
