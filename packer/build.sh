@@ -13,7 +13,7 @@ INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.25
 sudo apt-get update
 sudo apt-get -qqy install jq
 
-sudo sh -c "echo PARAMETERSTORE_NAME=${PARAMETERSTORE_NAME} >> /etc/environment"
+sudo sh -c "echo 'export PARAMETERSTORE_NAME=${PARAMETERSTORE_NAME}' >> /root/.bashrc"
 PARAMETER=$(sudo aws ssm get-parameter --name "${PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
 declare -A parameter
 while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
