@@ -65,7 +65,13 @@ resource "aws_autoscaling_group" "this" {
     version = "$Latest"
   }
   instance_refresh {
-     strategy = "Rolling"
+    strategy = "Rolling"
+    preferences {
+      min_healthy_percentage = 50
+      skip_matching = false
+      scale_in_protected_instances = "Refresh"
+    }
+    triggers = ["launch_template"]
   }
   lifecycle {
     create_before_destroy = true
