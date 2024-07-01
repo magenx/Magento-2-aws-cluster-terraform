@@ -68,7 +68,7 @@ build {
     timeout      = "60s"
     environment_vars = [
 "INSTANCE_NAME=${var.INSTANCE_NAME}",
-"PARAMETERSTORE=${local.var}"
+"PARAMETERSTORE=${var.PARAMETERSTORE_NAME}"
 ]
  }
   
