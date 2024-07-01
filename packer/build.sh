@@ -13,8 +13,10 @@ INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.25
 sudo apt-get update
 sudo apt-get -qqy install jq
 
+echo PARAMETERSTORE_NAME=${PARAMETERSTORE_NAME} >> /etc/environment
+PARAMETER=$(sudo aws ssm get-parameter --name "${PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
 declare -A parameter
-while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETERSTORE} | jq -r 'to_entries[] | .key + "=" + .value')
+while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
 
 ## installation
 sudo apt-get -qqy install ${parameter["LINUX_PACKAGES"]}
@@ -336,10 +338,9 @@ sudo dpkg -i amazon-cloudwatch-agent.deb
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
 
 sudo chmod 750 /usr/bin/aws /root/aws
-apt-get install -y aptitude
-apt-get purge $(aptitude search '~i!~M!~prequired!~pimportant!~R~prequired!~R~R~prequired!~R~pimportant!~R~R~pimportant!busybox!grub!initramfs-tools' | awk '{print $2}')
+sudo apt-get install -y aptitude
+sudo apt-get purge $(aptitude search '~i!~M!~prequired!~pimportant!~R~prequired!~R~R~prequired!~R~pimportant!~R~R~pimportant!busybox!grub!initramfs-tools' | awk '{print $2}')
 sudo apt-get remove --purge -y \
-    awscli \
     apache2* \
     bind9* \
     samba* \
@@ -360,4 +361,3 @@ sudo apt-get remove --purge -y \
 sudo apt-get clean
 sudo apt-get autoclean
 sudo apt-get autoremove --purge -y
-
