@@ -9,21 +9,12 @@ AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-m
 INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
 INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
 
-# remove old aws cli v1
-sudo apt-get -y remove awscli
+# get parameters
 sudo apt-get update
-sudo apt-get -qqy install jq unzip
+sudo apt-get -qqy install jq
 
-# get latest aws cli v2
-cd /tmp
-sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
-sudo unzip awscliv2.zip -d /root/
-sudo rm awscliv2.zip
-sudo /root/aws/install --bin-dir /usr/bin --install-dir /root/aws --update
-
-PARAMETER=$(sudo aws ssm get-parameter --name "${PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
 declare -A parameter
-while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
+while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETERSTORE} | jq -r 'to_entries[] | .key + "=" + .value')
 
 ## installation
 sudo apt-get -qqy install ${parameter["LINUX_PACKAGES"]}
@@ -109,10 +100,85 @@ net.core.somaxconn = 65535
 END
 "
 
+sudo sh -c "cat > ${parameter["PHP_FPM_POOL"]} <<END
+[${parameter["BRAND"]}]
 
-sudo sh -c "cat > ${parameter["PHP_OPCACHE_INI"]} <<END
-zend_extension=opcache.so
-opcache.enable = 1
+;;
+;; Pool user
+user = php-\$pool
+group = php-\$pool
+
+listen = /var/run/\$pool.sock
+listen.owner = nginx
+listen.group = php-\$pool
+listen.mode = 0660
+
+;;
+;; Pool size and settings
+pm = ondemand
+pm.max_children = 100
+pm.start_servers = 2
+pm.min_spare_servers = 1
+pm.max_spare_servers = 3
+pm.max_requests = 10000
+
+;;
+;; [php ini] settings
+php_admin_flag[expose_php] = Off
+php_admin_flag[short_open_tag] = On
+php_admin_flag[display_errors] = Off
+php_admin_flag[log_errors] = On
+php_admin_flag[mysql.allow_persistent] = On
+php_admin_flag[mysqli.allow_persistent] = On
+php_admin_value[default_charset] = "UTF-8"
+php_admin_value[memory_limit] = 1024M
+php_admin_value[max_execution_time] = 7200
+php_admin_value[max_input_time] = 7200
+php_admin_value[max_input_vars] = 50000
+php_admin_value[post_max_size] = 64M
+php_admin_value[upload_max_filesize] = 64M
+php_admin_value[realpath_cache_size] = 4096k
+php_admin_value[realpath_cache_ttl] = 86400
+php_admin_value[session.gc_maxlifetime] = 28800
+php_admin_value[error_log] = "/home/\$pool/public_html/var/log/php-fpm-error.log"
+php_admin_value[date.timezone] = "${parameter["TIMEZONE"]}"
+php_admin_value[upload_tmp_dir] = "/home/\$pool/public_html/var/tmp"
+php_admin_value[sys_temp_dir] = "/home/\$pool/public_html/var/tmp"
+
+;;
+;; [opcache] settings
+php_admin_flag[opcache.enable] = On
+php_admin_flag[opcache.use_cwd] = On
+php_admin_flag[opcache.validate_root] = On
+php_admin_flag[opcache.revalidate_path] = Off
+php_admin_flag[opcache.validate_timestamps] = Off
+php_admin_flag[opcache.save_comments] = On
+php_admin_flag[opcache.load_comments] = On
+php_admin_flag[opcache.fast_shutdown] = On
+php_admin_flag[opcache.enable_file_override] = Off
+php_admin_flag[opcache.inherited_hack] = On
+php_admin_flag[opcache.consistency_checks] = Off
+php_admin_flag[opcache.protect_memory] = Off
+php_admin_value[opcache.memory_consumption] = 512
+php_admin_value[opcache.interned_strings_buffer] = 4
+php_admin_value[opcache.max_accelerated_files] = 60000
+php_admin_value[opcache.max_wasted_percentage] = 5
+php_admin_value[opcache.file_update_protection] = 2
+php_admin_value[opcache.optimization_level] = 0xffffffff
+php_admin_value[opcache.blacklist_filename] = "/home/\$pool/opcache.blacklist"
+php_admin_value[opcache.max_file_size] = 0
+php_admin_value[opcache.force_restart_timeout] = 60
+php_admin_value[opcache.error_log] = "/home/\$pool/public_html/var/log/opcache.log"
+php_admin_value[opcache.log_verbosity_level] = 1
+php_admin_value[opcache.preferred_memory_model] = ""
+php_admin_value[opcache.jit_buffer_size] = 536870912
+php_admin_value[opcache.jit] = 1235
+END
+"
+
+for dir in cli fpm
+do
+tee /etc/php/${parameter["PHP_VERSION"]}/$dir/conf.d/zz-${parameter["BRAND"]}-overrides.ini <<END
 opcache.enable_cli = 1
 opcache.memory_consumption = 512
 opcache.interned_strings_buffer = 4
@@ -131,6 +197,7 @@ opcache.fast_shutdown = 1
 opcache.enable_file_override = 0
 opcache.optimization_level = 0xffffffff
 opcache.inherited_hack = 1
+opcache.blacklist_filename=/etc/opcache-default.blacklist
 opcache.max_file_size = 0
 opcache.consistency_checks = 0
 opcache.force_restart_timeout = 60
@@ -139,49 +206,23 @@ opcache.log_verbosity_level = 1
 opcache.preferred_memory_model = ""
 opcache.protect_memory = 0
 ;opcache.mmap_base = ""
+
+max_execution_time = 7200
+max_input_time = 7200
+memory_limit = 2048M
+post_max_size = 64M
+upload_max_filesize = 64M
+expose_php = Off
+realpath_cache_size = 4096k
+realpath_cache_ttl = 86400
+short_open_tag = On
+max_input_vars = 50000
+session.gc_maxlifetime = 28800
+mysql.allow_persistent = On
+mysqli.allow_persistent = On
+date.timezone = "${parameter["TIMEZONE"]}"
 END
-"
-
-sudo sh -c "cp ${parameter["PHP_INI"]} ${parameter["PHP_INI"]}.BACK"
-sudo sed -i 's/^\(max_execution_time = \)[0-9]*/\17200/' ${parameter["PHP_INI"]}
-sudo sed -i 's/^\(max_input_time = \)[0-9]*/\17200/' ${parameter["PHP_INI"]}
-sudo sed -i 's/^\(memory_limit = \)[0-9]*M/\12048M/' ${parameter["PHP_INI"]}
-sudo sed -i 's/^\(post_max_size = \)[0-9]*M/\164M/' ${parameter["PHP_INI"]}
-sudo sed -i 's/^\(upload_max_filesize = \)[0-9]*M/\132M/' ${parameter["PHP_INI"]}
-sudo sed -i 's/expose_php = On/expose_php = Off/' ${parameter["PHP_INI"]}
-sudo sed -i 's/;realpath_cache_size =.*/realpath_cache_size = 5M/' ${parameter["PHP_INI"]}
-sudo sed -i 's/;realpath_cache_ttl =.*/realpath_cache_ttl = 86400/' ${parameter["PHP_INI"]}
-sudo sed -i 's/short_open_tag = Off/short_open_tag = On/' ${parameter["PHP_INI"]}
-sudo sed -i 's/;max_input_vars =.*/max_input_vars = 50000/' ${parameter["PHP_INI"]}
-sudo sed -i 's/session.gc_maxlifetime = 1440/session.gc_maxlifetime = 28800/' ${parameter["PHP_INI"]}
-sudo sed -i 's/mysql.allow_persistent = On/mysql.allow_persistent = Off/' ${parameter["PHP_INI"]}
-sudo sed -i 's/mysqli.allow_persistent = On/mysqli.allow_persistent = Off/' ${parameter["PHP_INI"]}
-sudo sed -i 's/pm = dynamic/pm = ondemand/' ${parameter["PHP_FPM_POOL"]}
-sudo sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' ${parameter["PHP_FPM_POOL"]}
-sudo sed -i 's/^\(pm.max_children = \)[0-9]*/\1100/' ${parameter["PHP_FPM_POOL"]}
-
-sudo sed -i "s/\[www\]/\[${parameter["BRAND"]}\]/" ${parameter["PHP_FPM_POOL"]}
-sudo sed -i "s/^user =.*/user = ${parameter["PHP_USER"]}/" ${parameter["PHP_FPM_POOL"]}
-sudo sed -i "s/^group =.*/group = ${parameter["PHP_USER"]}/" ${parameter["PHP_FPM_POOL"]}
-sudo sed -ri "s/;?listen.owner =.*/listen.owner = ${parameter["BRAND"]}/" ${parameter["PHP_FPM_POOL"]}
-sudo sed -ri "s/;?listen.group =.*/listen.group = ${parameter["PHP_USER"]}/" ${parameter["PHP_FPM_POOL"]}
-sudo sed -ri "s/;?listen.mode = 0660/listen.mode = 0660/" ${parameter["PHP_FPM_POOL"]}
-sudo sed -ri "s/;?listen.allowed_clients =.*/listen.allowed_clients = 127.0.0.1/" ${parameter["PHP_FPM_POOL"]}
-sudo sed -i '/sendmail_path/,$d' ${parameter["PHP_FPM_POOL"]}
-sudo sed -i '/PHPSESSID/d' ${parameter["PHP_INI"]}
-sudo sed -i "s,.*date.timezone.*,date.timezone = ${parameter["TIMEZONE"]}," ${parameter["PHP_INI"]}
-
-sudo sh -c 'cat >> ${parameter["PHP_FPM_POOL"]} <<END
-;;
-;; Custom pool settings
-php_flag[display_errors] = off
-php_admin_flag[log_errors] = on
-php_admin_value[error_log] = "${parameter["WEB_ROOT_PATH"]}/var/log/php-fpm-error.log"
-php_admin_value[default_charset] = UTF-8
-php_admin_value[memory_limit] = 2048M
-php_admin_value[date.timezone] = ${parameter["TIMEZONE"]}
-END
-'
+done
 
 cd /etc/nginx
 sudo git init
@@ -298,6 +339,7 @@ sudo chmod 750 /usr/bin/aws /root/aws
 apt-get install -y aptitude
 apt-get purge $(aptitude search '~i!~M!~prequired!~pimportant!~R~prequired!~R~R~prequired!~R~pimportant!~R~R~pimportant!busybox!grub!initramfs-tools' | awk '{print $2}')
 sudo apt-get remove --purge -y \
+    awscli \
     apache2* \
     bind9* \
     samba* \
