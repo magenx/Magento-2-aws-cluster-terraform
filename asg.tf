@@ -4,7 +4,7 @@
 /////////////////////////////////////////////////////[ AUTOSCALING CONFIGURATION ]////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create Launch Template for Autoscaling Groups - user_data converted
+# Create Launch Template for Autoscaling Groups
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_launch_template" "this" {
   for_each = var.ec2
@@ -30,7 +30,6 @@ resource "aws_launch_template" "this" {
     http_put_response_hop_limit = 1
     instance_metadata_tags      = "enabled"
   }
-  user_data = filebase64("${abspath(path.root)}/user_data/${each.key}")
   update_default_version = true
   lifecycle {
     create_before_destroy = true
