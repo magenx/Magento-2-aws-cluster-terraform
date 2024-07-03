@@ -51,8 +51,6 @@ Reserved Instances provide you with significant savings on your Amazon EC2 costs
 <br />
 
 ## 📖 EC2 webstack custom configuration and Auto Scaling management
-[User data](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) templates with shell scripts. If you are familiar with shell scripting, this is the easiest and most complete way to send instructions to an instance to perform common automated configuration tasks and even run scripts after the instance starts. From default stack optimization to changing any application and service settings.
-
 [**Warm pools** for Amazon EC2 Auto Scaling](https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-warm-pools.html) - A warm pool gives you the ability to decrease latency for your applications. With warm pools, you no longer have to over-provision your Auto Scaling groups to manage latency in order to improve application performance. You have the option of keeping instances in the warm pool in one of two states: `Stopped` or `Running`. Keeping instances in a `Stopped` state is an effective way to minimize costs.
 
 NGINX is optimized and fully supported on the latest generation of 64-bit ARM Servers utilizing the architecture. PHP using socket connection.
@@ -60,7 +58,7 @@ NGINX is optimized and fully supported on the latest generation of 64-bit ARM Se
 [**Debian 12** ARM 'bookworm'](https://aws.amazon.com/marketplace/pp/prodview-63gms6fbfaota), which will be supported for the next 5 years. Includes support for the very latest ARM-based server systems powered by certified 64-bit processors.
 Develop and deploy at scale. Webstack delivers top performance on ARM.
 
-[**AWS Systems Manager**](https://aws.amazon.com/systems-manager/) is an AWS service that you can use to view and control your infrastructure on AWS. Using the Systems Manager console, you can view operational data from multiple AWS EC2 instances and automate operational tasks across your AWS resources. Systems Manager helps you maintain security and compliance. No SSH connections from outside, no need to track passwords and private keys.
+[**AWS Systems Manager**](https://aws.amazon.com/systems-manager/) is an AWS service that you can use to view and control your infrastructure on AWS. Using the Systems Manager console, you can view operational data from multiple AWS EC2 instances and automate operational tasks across your AWS resources. Systems Manager helps you maintain security and compliance. No SSH connections from outside, no need to track passwords and private keys. If you are familiar with shell scripting, yaml and json syntax, create SSM Documents, this is the easiest and most complete way to send instructions to an instance to perform common automated configuration tasks and even run scripts after the instance starts. From default stack optimization to changing any application and service settings.
 
 <br />
 
@@ -128,7 +126,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
  `1` elasticsearch domain for Magento catalog search  
  `2` redis elasticache cluster for sessions and cache  
  `1` rabbitmq broker to manage queue messages  
- `2` s3 buckets for [media] images and [system] files and logs (with access policy)  
+ `4` s3 buckets for [media] images and [system] files and logs (with access policy)  
  `2` codecommit app files repository and services config files repository  
  `1` cloudfront s3 origin distribution  
  `1` efs file system for shared folders, with mount target per AZ  
