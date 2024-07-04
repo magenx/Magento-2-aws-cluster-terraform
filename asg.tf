@@ -70,7 +70,6 @@ resource "aws_autoscaling_group" "this" {
       skip_matching = false
       scale_in_protected_instances = "Refresh"
     }
-    triggers = ["launch_template"]
   }
   lifecycle {
     create_before_destroy = true
