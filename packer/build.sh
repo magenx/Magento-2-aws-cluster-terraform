@@ -339,7 +339,8 @@ sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-c
 
 sudo chmod 750 /usr/bin/aws /root/aws
 sudo apt-get install -y aptitude
-sudo apt-get purge $(aptitude search '~i!~M!~prequired!~pimportant!~R~prequired!~R~R~prequired!~R~pimportant!~R~R~pimportant!busybox!grub!initramfs-tools' | awk '{print $2}')
+aptitude search '~i!~M!~prequired!~pimportant!~R~prequired!~R~R~prequired!~R~pimportant!~R~R~pimportant!busybox!grub!initramfs-tools' | \
+awk '{print $2}' | grep -Ev '^(nginx|php|varnish|patch|composer|mariadb-client|phpmyadmin|pip3|nfs|python3-pip|acl|attr|imagemagick|snmp)$'
 sudo apt-get remove --purge -y \
     awscli* \
     apache2* \
