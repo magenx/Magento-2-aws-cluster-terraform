@@ -344,10 +344,6 @@ sudo wget https://s3.${parameter["AWS_DEFAULT_REGION"]}.amazonaws.com/amazonclou
 sudo dpkg -i amazon-cloudwatch-agent.deb
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
 
-sudo chmod 750 /usr/bin/aws /root/aws
-sudo apt-get install -y aptitude
-aptitude search '~i!~M!~prequired!~pimportant!~R~prequired!~R~R~prequired!~R~pimportant!~R~R~pimportant!busybox!grub!initramfs-tools' | \
-awk '{print $2}' | grep -Ev '^(nginx|php|varnish|patch|composer|mariadb-client|phpmyadmin|pip3|nfs|python3-pip|acl|attr|imagemagick|snmp)$'
 sudo apt-get remove --purge -y \
     awscli* \
     apache2* \
