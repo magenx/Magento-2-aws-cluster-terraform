@@ -130,6 +130,22 @@ resource "aws_s3_bucket_policy" "media" {
 # Create S3 bucket policy for ALB to write access logs
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_iam_policy_document" "system" {
+ statement {
+    sid    = "AllowSSMAgentS3Access"
+    effect = "Allow"
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject"
+    ]
+    resources = [
+      "${aws_s3_bucket.this["system"].arn}/*"
+    ]
+    principals {
+      type        = "Service"
+      identifiers = ["ssm.amazonaws.com"]
+    }
+  }
+
   statement {
     sid    = "ALBWriteLogs"
     effect = "Allow"
@@ -144,7 +160,7 @@ data "aws_iam_policy_document" "system" {
   }
 
   statement {
-    sid    = "AllowS3Access"
+    sid    = "AllowCodebuildS3Access"
     effect = "Allow"
     actions = [
       "s3:PutObject",
