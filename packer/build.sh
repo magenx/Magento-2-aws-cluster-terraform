@@ -41,6 +41,13 @@ sudo chown -R ${parameter["BRAND"]}:${parameter["BRAND"]} /home/${parameter["BRA
 sudo chmod 2750 ${parameter["WEB_ROOT_PATH"]} /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
 sudo setfacl -R -m m:rx,u:${parameter["BRAND"]}:rwX,g:${parameter["PHP_USER"]}:r-X,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:${parameter["PHP_USER"]}:r-X,d:o::- ${parameter["WEB_ROOT_PATH"]}
 
+mkdir -p /mnt/efs
+mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${parameter["EFS_DNS_TARGET"]}:/ /mnt/efs
+mkdir -p /mnt/efs/data/{var,pub/media}
+chown -R ${parameter["BRAND"]}:php-${parameter["BRAND"]} /mnt/efs/
+find /mnt/efs -type d -exec chmod 2770 {} \;
+umount /mnt/efs
+
 sudo sh -c "echo '${parameter["EFS_DNS_TARGET"]}:/data/var ${parameter["WEB_ROOT_PATH"]}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
 sudo sh -c "echo '${parameter["EFS_DNS_TARGET"]}:/data/pub/media ${parameter["WEB_ROOT_PATH"]}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
 
