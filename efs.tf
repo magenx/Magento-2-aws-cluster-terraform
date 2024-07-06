@@ -25,7 +25,7 @@ resource "aws_efs_mount_target" "this" {
 # Create EFS access point for each path
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_efs_access_point" "this" {
-  for_each = var.efs["path"]
+  for_each = toset(var.efs["path"])
   file_system_id = aws_efs_file_system.this.id
   posix_user {
     uid = 1001
