@@ -259,6 +259,13 @@ variable "alb" {
     }
 }
 
+variable "efs" {
+  description = "Create shared folders in EFS"
+  default     = {
+    path      = ["var","media"]
+    }
+}
+
 variable "ec2_instance_profile_policy" {
   description = "Policy attach to EC2 Instance Profile"
   type        = set(string)
