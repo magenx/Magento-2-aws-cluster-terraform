@@ -41,22 +41,22 @@ sudo chown -R ${parameter["BRAND"]}:${parameter["BRAND"]} /home/${parameter["BRA
 sudo chmod 2750 ${parameter["WEB_ROOT_PATH"]} /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
 sudo setfacl -R -m m:rx,u:${parameter["BRAND"]}:rwX,g:${parameter["PHP_USER"]}:r-X,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:${parameter["PHP_USER"]}:r-X,d:o::- ${parameter["WEB_ROOT_PATH"]}
 
-sudo mkdir -p /mnt/efs
-sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${parameter["EFS_DNS_TARGET"]}:/ /mnt/efs
-sudo mkdir -p /mnt/efs/data/{var,pub/media}
-sudo chown -R ${parameter["BRAND"]}:php-${parameter["BRAND"]} /mnt/efs/
-sudo find /mnt/efs -type d -exec chmod 2770 {} \;
-sudo umount /mnt/efs
+sudo apt-get -y install binutils rustc cargo pkg-config libssl-dev
+cd /tmp
+sudo git clone https://github.com/aws/efs-utils
+cd efs-utils
+sudo ./build-deb.sh
+sudo apt-get -y install ./build/amazon-efs-utils*deb
 
-sudo sh -c "echo '${parameter["EFS_DNS_TARGET"]}:/data/var ${parameter["WEB_ROOT_PATH"]}/var nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
-sudo sh -c "echo '${parameter["EFS_DNS_TARGET"]}:/data/pub/media ${parameter["WEB_ROOT_PATH"]}/pub/media nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0' >> /etc/fstab"
+sudo sh -c "echo '${parameter["EFS_SYSTEM_ID"]}:/ ${parameter["WEB_ROOT_PATH"]}/var efs _netdev,noresvport,awsprofile=${parameter["EC2_INSTANCE_PROFILE"]},accesspoint=${parameter["EFS_ACCESS_POINT_VAR"]} 0 0' >> /etc/fstab"
+sudo sh -c "echo '${parameter["EFS_SYSTEM_ID"]}:/ ${parameter["WEB_ROOT_PATH"]}/pub/media efs _netdev,noresvport,awsprofile=${parameter["EC2_INSTANCE_PROFILE"]},accesspoint=${parameter["EFS_ACCESS_POINT_MEDIA"]} 0 0' >> /etc/fstab"
 
 sudo mkdir -p ${parameter["WEB_ROOT_PATH"]}/{pub/media,var}
 sudo chown -R ${parameter["BRAND"]}:${parameter["PHP_USER"]} ${parameter["WEB_ROOT_PATH"]}/
 sudo chmod 2770 ${parameter["WEB_ROOT_PATH"]}/{pub/media,var}
 
 ## install nginx
-curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+curl https://nginx.org/keys/nginx_signing.key | sudo gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
 sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list'
 
 ## install php + phpmyadmin
@@ -185,9 +185,7 @@ php_admin_value[opcache.jit] = 1235
 END
 "
 
-for dir in cli fpm
-do
-tee /etc/php/${parameter["PHP_VERSION"]}/$dir/conf.d/zz-${parameter["BRAND"]}-overrides.ini <<END
+sudo sh -c "cat > /etc/php/${parameter["PHP_VERSION"]}/cli/conf.d/zz-${parameter["BRAND"]}-overrides.ini <<END
 opcache.enable_cli = 1
 opcache.memory_consumption = 512
 opcache.interned_strings_buffer = 4
@@ -231,8 +229,7 @@ mysql.allow_persistent = On
 mysqli.allow_persistent = On
 date.timezone = "${parameter["TIMEZONE"]}"
 END
-done
-
+"
 cd /etc/nginx
 sudo git init
 sudo git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
@@ -253,7 +250,7 @@ sudo sed -i "s/localhost/${parameter["DATABASE_ENDPOINT"]}/" /etc/phpmyadmin/con
 sudo sed -i "s/PHPMYADMIN_PLACEHOLDER/${parameter["MYSQL_PATH"]}/g" /etc/nginx/conf.d/phpmyadmin.conf
 sudo sed -i "s,#include conf.d/phpmyadmin.conf;,include conf.d/phpmyadmin.conf;," /etc/nginx/sites-available/magento.conf
  
-sudo sh -c 'cat > /etc/logrotate.d/magento <<END
+sudo sh -c "cat > /etc/logrotate.d/magento <<END
 ${parameter["WEB_ROOT_PATH"]}/var/log/*.log
 {
 su ${parameter["BRAND"]} ${parameter["PHP_USER"]}
@@ -265,7 +262,7 @@ missingok
 compress
 }
 END
-'
+"
 fi
 
 sudo mkdir -p /etc/nginx/sites-enabled
@@ -292,40 +289,40 @@ curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor | sudo tee /usr/sh
 sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list'
 sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/nginx.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 
-apt-get -qqy install varnish nginx nginx-module-geoip
+sudo apt-get -qqy install varnish nginx nginx-module-geoip
 
-systemctl stop nginx varnish
+sudo systemctl stop nginx varnish
 
 cd /etc/varnish
-git init
-git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
-git fetch
-git reset --hard origin/varnish
-git checkout -t origin/varnish
+sudo git init
+sudo git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
+sudo git fetch
+sudo git reset --hard origin/varnish
+sudo git checkout -t origin/varnish
 
-uuidgen > /etc/varnish/secret
+sudo uuidgen > /etc/varnish/secret
 
 cd /etc/systemd/system/
-git init
-git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
-git fetch
-git reset --hard origin/systemd_varnish
-git checkout -t origin/systemd_varnish
+sudo git init
+sudo git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
+sudo git fetch
+sudo git reset --hard origin/systemd_varnish
+sudo git checkout -t origin/systemd_varnish
 
 cd /etc/nginx
-git init
-git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
-git fetch
-git reset --hard origin/nginx_varnish
-git checkout -t origin/nginx_varnish
+sudo git init
+sudo git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
+sudo git fetch
+sudo git reset --hard origin/nginx_varnish
+sudo git checkout -t origin/nginx_varnish
 
-sed -i "s,CIDR,${parameter["CIDR"]}," /etc/nginx/nginx.conf
-sed -i "s/RESOLVER/${parameter["RESOLVER"]}/" /etc/nginx/nginx.conf
-sed -i "s/DOMAIN/${parameter["DOMAIN"]} ${parameter["STAGING_DOMAIN"]}/" /etc/nginx/nginx.conf
-sed -i "s/MAGENX_HEADER/${parameter["MAGENX_HEADER"]}/" /etc/nginx/nginx.conf
-sed -i "s/HEALTH_CHECK_LOCATION/${parameter["HEALTH_CHECK_LOCATION"]}/" /etc/nginx/nginx.conf
-sed -i "s/ALB_DNS_NAME/${parameter["ALB_DNS_NAME"]}/" /etc/nginx/conf.d/alb.conf
-sed -i "s/example.com/${parameter["DOMAIN"]}/" /etc/nginx/conf.d/maps.conf
+sudo sed -i "s,CIDR,${parameter["CIDR"]}," /etc/nginx/nginx.conf
+sudo sed -i "s/RESOLVER/${parameter["RESOLVER"]}/" /etc/nginx/nginx.conf
+sudo sed -i "s/DOMAIN/${parameter["DOMAIN"]} ${parameter["STAGING_DOMAIN"]}/" /etc/nginx/nginx.conf
+sudo sed -i "s/MAGENX_HEADER/${parameter["MAGENX_HEADER"]}/" /etc/nginx/nginx.conf
+sudo sed -i "s/HEALTH_CHECK_LOCATION/${parameter["HEALTH_CHECK_LOCATION"]}/" /etc/nginx/nginx.conf
+sudo sed -i "s/ALB_DNS_NAME/${parameter["ALB_DNS_NAME"]}/" /etc/nginx/conf.d/alb.conf
+sudo sed -i "s/example.com/${parameter["DOMAIN"]}/" /etc/nginx/conf.d/maps.conf
 
 fi
 
