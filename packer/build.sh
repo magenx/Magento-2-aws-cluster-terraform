@@ -21,6 +21,8 @@ while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PA
 ## installation
 sudo apt-get -qqy install ${parameter["LINUX_PACKAGES"]}
 sudo pip3 install git-remote-codecommit
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+. "$HOME/.cargo/env"
 
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Frontend and admin instance configuration
@@ -41,15 +43,15 @@ sudo chown -R ${parameter["BRAND"]}:${parameter["BRAND"]} /home/${parameter["BRA
 sudo chmod 2750 ${parameter["WEB_ROOT_PATH"]} /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
 sudo setfacl -R -m m:rx,u:${parameter["BRAND"]}:rwX,g:${parameter["PHP_USER"]}:r-X,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:${parameter["PHP_USER"]}:r-X,d:o::- ${parameter["WEB_ROOT_PATH"]}
 
-sudo apt-get -y install binutils rustc cargo pkg-config libssl-dev
 cd /tmp
 sudo git clone https://github.com/aws/efs-utils
 cd efs-utils
 sudo ./build-deb.sh
 sudo apt-get -y install ./build/amazon-efs-utils*deb
+sudo rm -rf ~/.cargo ~/.rustup
 
-sudo sh -c "echo '${parameter["EFS_SYSTEM_ID"]}:/ ${parameter["WEB_ROOT_PATH"]}/var efs _netdev,noresvport,awsprofile=${parameter["EC2_INSTANCE_PROFILE"]},accesspoint=${parameter["EFS_ACCESS_POINT_VAR"]} 0 0' >> /etc/fstab"
-sudo sh -c "echo '${parameter["EFS_SYSTEM_ID"]}:/ ${parameter["WEB_ROOT_PATH"]}/pub/media efs _netdev,noresvport,awsprofile=${parameter["EC2_INSTANCE_PROFILE"]},accesspoint=${parameter["EFS_ACCESS_POINT_MEDIA"]} 0 0' >> /etc/fstab"
+sudo sh -c "echo '${parameter["EFS_SYSTEM_ID"]}:/ ${parameter["WEB_ROOT_PATH"]}/var efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_VAR"]} 0 0' >> /etc/fstab"
+sudo sh -c "echo '${parameter["EFS_SYSTEM_ID"]}:/ ${parameter["WEB_ROOT_PATH"]}/pub/media efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_MEDIA"]} 0 0' >> /etc/fstab"
 
 sudo mkdir -p ${parameter["WEB_ROOT_PATH"]}/{pub/media,var}
 sudo chown -R ${parameter["BRAND"]}:${parameter["PHP_USER"]} ${parameter["WEB_ROOT_PATH"]}/
