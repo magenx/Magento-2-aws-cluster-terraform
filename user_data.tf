@@ -48,16 +48,6 @@ frontend_user_data = <<EOF
           AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
           INSTANCE_LOCAL_IP=$(curl -s -H "X-aws-ec2-metadata-token: $${AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
         - |-
-          if [ $(stat -f -L -c %T /home/${var.app["brand"]}/public_html/pub/media) != "nfs" ]; then
-            mkdir -p /mnt/efs
-            mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${values(aws_efs_mount_target.this).0.dns_name}:/ /mnt/efs
-            mkdir -p /mnt/efs/data/{var,pub/media}
-            chown -R ${var.app["brand"]}:php-${var.app["brand"]} /mnt/efs/
-            find /mnt/efs -type d -exec chmod 2770 {} \;
-            umount /mnt/efs
-            mount -a
-          fi
-        - |-
           cd /home/${var.app["brand"]}/public_html/
           su ${var.app["brand"]} -s /bin/bash -c "git init -b ${local.environment}"
           su ${var.app["brand"]} -s /bin/bash -c "git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
