@@ -20,7 +20,7 @@ resource "aws_ssm_parameter" "env" {
 "SECURITY_GROUP" : "${aws_security_group.ec2.id}",
 "SOURCE_AMI" : "${data.aws_ami.distro.id}",
 "VOLUME_SIZE" : "${var.app["volume_size"]}",
-"EFS_SYSTEM_ID" : "${values(aws_efs_file_system.this).0.id}",
+"EFS_SYSTEM_ID" : "${aws_efs_file_system.this.id}",
 "EFS_ACCESS_POINT_VAR" : "${aws_efs_access_point.this["var"].id}",
 "EFS_ACCESS_POINT_MEDIA" : "${aws_efs_access_point.this["media"].id}",
 "SNS_TOPIC_ARN" : "${aws_sns_topic.default.arn}",
