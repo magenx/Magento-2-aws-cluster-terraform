@@ -114,12 +114,12 @@ sudo sh -c "cat > ${parameter["PHP_FPM_POOL"]} <<END
 
 ;;
 ;; Pool user
-user = php-$pool
-group = php-$pool
+user = php-${parameter["BRAND"]}
+group = php-${parameter["BRAND"]}
 
-listen = /var/run/$pool.sock
+listen = /var/run/${parameter["BRAND"]}.sock
 listen.owner = nginx
-listen.group = php-$pool
+listen.group = php-${parameter["BRAND"]}
 listen.mode = 0660
 
 ;;
@@ -149,10 +149,10 @@ php_admin_value[upload_max_filesize] = 64M
 php_admin_value[realpath_cache_size] = 4096k
 php_admin_value[realpath_cache_ttl] = 86400
 php_admin_value[session.gc_maxlifetime] = 28800
-php_admin_value[error_log] = "/home/$pool/public_html/var/log/php-fpm-error.log"
+php_admin_value[error_log] = "${parameter["WEB_ROOT_PATH"]}/var/log/php-fpm-error.log"
 php_admin_value[date.timezone] = "${parameter["TIMEZONE"]}"
-php_admin_value[upload_tmp_dir] = "/home/$pool/public_html/var/tmp"
-php_admin_value[sys_temp_dir] = "/home/$pool/public_html/var/tmp"
+php_admin_value[upload_tmp_dir] = "${parameter["WEB_ROOT_PATH"]}/var/tmp"
+php_admin_value[sys_temp_dir] = "${parameter["WEB_ROOT_PATH"]}/var/tmp"
 
 ;;
 ;; [opcache] settings
@@ -174,10 +174,10 @@ php_admin_value[opcache.max_accelerated_files] = 60000
 php_admin_value[opcache.max_wasted_percentage] = 5
 php_admin_value[opcache.file_update_protection] = 2
 php_admin_value[opcache.optimization_level] = 0xffffffff
-php_admin_value[opcache.blacklist_filename] = "/home/$pool/opcache.blacklist"
+php_admin_value[opcache.blacklist_filename] = "/etc/php/${parameter["PHP_VERSION"]}/fpm/conf.d/opcache.blacklist"
 php_admin_value[opcache.max_file_size] = 0
 php_admin_value[opcache.force_restart_timeout] = 60
-php_admin_value[opcache.error_log] = "/home/$pool/public_html/var/log/opcache.log"
+php_admin_value[opcache.error_log] = "${parameter["WEB_ROOT_PATH"]}/var/log/opcache.log"
 php_admin_value[opcache.log_verbosity_level] = 1
 php_admin_value[opcache.preferred_memory_model] = ""
 php_admin_value[opcache.jit_buffer_size] = 536870912
@@ -204,7 +204,7 @@ opcache.fast_shutdown = 1
 opcache.enable_file_override = 0
 opcache.optimization_level = 0xffffffff
 opcache.inherited_hack = 1
-opcache.blacklist_filename=/etc/opcache-default.blacklist
+opcache.blacklist_filename=/etc/php/${parameter["PHP_VERSION"]}/cli/conf.d/opcache.blacklist
 opcache.max_file_size = 0
 opcache.consistency_checks = 0
 opcache.force_restart_timeout = 60
