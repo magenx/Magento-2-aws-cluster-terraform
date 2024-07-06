@@ -26,7 +26,7 @@ resource "aws_efs_mount_target" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_efs_access_point" "this" {
   for_each = var.efs["path"]
-  file_system_id = aws_efs_file_system.efs.id
+  file_system_id = aws_efs_file_system.this.id
   posix_user {
     uid = 1001
     gid = 1002
