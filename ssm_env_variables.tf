@@ -22,7 +22,7 @@ resource "aws_ssm_parameter" "env" {
 "VOLUME_SIZE" : "${var.app["volume_size"]}",
 "EFS_SYSTEM_ID" : "${values(aws_efs_file_system.this).0.id}",
 "EFS_ACCESS_POINT_VAR" : "${aws_efs_access_point.this["var"].id}",
-"EFS_ACCESS_POINT_MEDIA" : "${aws_efs_file_system.this["media"].id}",
+"EFS_ACCESS_POINT_MEDIA" : "${aws_efs_access_point.this["media"].id}",
 "SNS_TOPIC_ARN" : "${aws_sns_topic.default.arn}",
 "CODECOMMIT_APP_REPO" : "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}",
 "CODECOMMIT_SERVICES_REPO" : "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name}",
