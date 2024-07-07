@@ -119,7 +119,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 <br />
 
 ## Complete setup:
- `3` autoscaling groups with launch templates converted from `user_data`  
+ `3` autoscaling groups with launch templates configuration from `user_data`  
  `3` target groups for load balancer (varnish frontend admin)   
  `2` load balancers (external/internal) with listeners / rules  
  `1` rds mariadb databases multi AZ  
