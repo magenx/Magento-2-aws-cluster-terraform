@@ -109,8 +109,8 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 ```
    terraform fmt
    terraform init
-   terraform workspace new development
-   terraform plan -out development.plan.out -no-color 2>&1 > development.plan.out.txt
+   terraform workspace new production
+   terraform plan -out production.plan.out -no-color 2>&1 > production.plan.out.txt
    terraform apply
 ```
 > to destroy infrastructure: ```terraform destroy```  
@@ -150,7 +150,8 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Live shop in production mode / read-only 
 - [x] Security groups configured for every service and instances
 - [x] phpMyAdmin for easy database editing
-- [x] MariaDB database dump for data analysis
+- [x] Lambda database dump for data analysis
+- [x] [Lambda@Edge](https://aws.amazon.com/lambda/edge/#Real-time_Image_Transformation) images optimization
 - [x] Enhanced security in AWS and LEMP 
 - [x] AWS Inspector Assessment templates
 - [x] AWS Config resource configuraton rules
@@ -203,6 +204,8 @@ OVERALL TOTAL       **$981.87
 - [x] Services configuration files tracked in CodeCommit repository
 - [x] Changes in CodeCommit repository triggers EventBridge rule.
 - [x] SSM Document pull from CodeCommit repository and cleanup.
+- [X] DevOps with local docker environment - developer and staging.
+- [x] GitHub Actions to build,release and sync with CodeCommit.
 - [x] Change deployment logic to your needs.  
    
 <br />
