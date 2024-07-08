@@ -140,6 +140,8 @@ phases:
       bin/magento config:set web/secure/enable_upgrade_insecure 1
       ## enable eav cache
       bin/magento config:set dev/caching/cache_user_defined_attributes 1
+      ## enable syslog
+      bin/magento config:set dev/syslog/syslog_logging 1
       ## enable local varnish cache yay!
       if [ "${parameter["FASTLY"]}" == "disabled" ]; then
       bin/magento config:set --scope=default --scope-code=0 system/full_page_cache/caching_application 2
