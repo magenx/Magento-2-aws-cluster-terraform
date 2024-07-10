@@ -52,6 +52,12 @@ resource "aws_elasticache_replication_group" "this" {
   automatic_failover_enabled    = var.redis["num_cache_clusters"] > 1 ? true : false
   multi_az_enabled              = var.redis["num_cache_clusters"] > 1 ? true : false
   notification_topic_arn        = aws_sns_topic.default.arn
+  transit_encryption_enabled    = true
+  auth_token                    = random_password.this["redis"].result
+  auth_token_update_strategy    = "ROTATE"
+  lifecycle {
+    ignore_changes = [num_cache_clusters]
+  }
   tags = {
     Name = "${local.project}-${each.key}-backend"
   }
