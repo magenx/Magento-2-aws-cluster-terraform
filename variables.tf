@@ -9,10 +9,12 @@ locals {
 variable "password" {
    description = "Generate password"
    default     = [
-      "rds", 
-      "rabbitmq", 
-      "app", 
-      "blowfish"
+      "rds",
+      "rabbitmq",
+      "app",
+      "blowfish",
+      "redis",
+      "opensearch"
    ]
 }
 
@@ -25,7 +27,8 @@ variable "string" {
       "session_persistent", 
       "cache_prefix", 
       "health_check", 
-      "project"
+      "project",
+      "opensearch"
    ]
 }
 
