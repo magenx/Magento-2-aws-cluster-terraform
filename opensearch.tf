@@ -49,8 +49,21 @@ resource "aws_opensearch_domain" "this" {
       }
     }
   }
+  advanced_security_options {
+    enabled                        = true
+    anonymous_auth_enabled         = false
+    internal_user_database_enabled = true
+    master_user_options {
+      master_user_name     = random_string.this["opensearch"].result
+      master_user_password = random_password.this["opensearch"].result
+    }
+  }
   encrypt_at_rest {
     enabled = true
+  }
+  domain_endpoint_options {
+    enforce_https       = true
+    tls_security_policy = "Policy-Min-TLS-1-2-2019-07"
   }
   ebs_options {
     ebs_enabled = var.opensearch["ebs_enabled"]
