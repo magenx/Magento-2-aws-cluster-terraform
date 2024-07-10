@@ -43,6 +43,34 @@ sudo chown -R ${parameter["BRAND"]}:${parameter["BRAND"]} /home/${parameter["BRA
 sudo chmod 2750 ${parameter["WEB_ROOT_PATH"]} /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
 sudo setfacl -R -m m:rx,u:${parameter["BRAND"]}:rwX,g:${parameter["PHP_USER"]}:r-X,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:${parameter["PHP_USER"]}:r-X,d:o::- ${parameter["WEB_ROOT_PATH"]}
 
+
+sudo sh -c "cat > /home/${parameter["BRAND"]}/.env <<END
+MODE="production"
+DOMAIN="${parameter["BRAND"]}"
+ADMIN_PATH="${parameter["BRAND"]}"
+EXTERNAL_ALB_DNS_NAME="${parameter["EXTERNAL_ALB_DNS_NAME"]}"
+INTERNAL_ALB_DNS_NAME="${parameter["INTERNAL_ALB_DNS_NAME"]}"
+SES_ENDPOINT="${parameter["SES_ENDPOINT"]}"
+REDIS_CACHE_BACKEND="${parameter["REDIS_CACHE_BACKEND"]}"
+REDIS_SESSION_BACKEND="${parameter["REDIS_SESSION_BACKEND"]}"
+REDIS_CACHE_BACKEND_RO="${parameter["REDIS_CACHE_BACKEND_RO"]}"
+REDIS_SESSION_BACKEND_RO="${parameter["REDIS_SESSION_BACKEND_RO"]}"
+REDIS_PASSWORD="${parameter["REDIS_PASSWORD"]}"
+RABBITMQ_ENDPOINT="${parameter["RABBITMQ_ENDPOINT"]}"
+RABBITMQ_PASSWORD="${parameter["RABBITMQ_PASSWORD"]}"
+CRYPT_KEY="${parameter["CRYPT_KEY"]}"
+GRAPHQL_ID_SALT="${parameter["GRAPHQL_ID_SALT"]}"
+DATABASE_ENDPOINT="${parameter["DATABASE_ENDPOINT"]}"
+DATABASE_NAME="${parameter["DATABASE_NAME"]}"
+DATABASE_USER="${parameter["DATABASE_USER"]}"
+DATABASE_PASSWORD="${parameter["DATABASE_PASSWORD"]}"
+OPENSEARCH_ENDPOINT="${parameter["OPENSEARCH_ENDPOINT"]}"
+OPENSEARCH_ADMIN="${parameter["OPENSEARCH_ADMIN"]}"
+INDEXER_PASSWORD="${parameter["INDEXER_PASSWORD"]}"
+ENV_DATE="$(date -u "+%a, %d %b %Y %H:%M:%S %z")"
+END
+"
+
 cd /tmp
 sudo git clone https://github.com/aws/efs-utils
 cd efs-utils
