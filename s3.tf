@@ -78,6 +78,20 @@ data "aws_iam_policy_document" "media" {
   }
 
   statement {
+    sid       = "AllowLambdaAccess"
+    effect    = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject"
+    ]
+    resources = [${aws_s3_bucket.this["media"].arn}/*]
+    principals {
+      type        = "AWS"
+      identifiers = [aws_iam_role.lambda.arn]
+    }
+  }
+
+  statement {
     sid       = "AllowEC2PutObject"
     effect    = "Allow"
     actions   = ["s3:PutObject"]
