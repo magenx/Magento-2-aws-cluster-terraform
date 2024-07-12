@@ -49,7 +49,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
 # Block public access acl for internal S3 buckets
 # # ---------------------------------------------------------------------------------------------------------------------#	  
 resource "aws_s3_bucket_public_access_block" "this" {
-  for_each = {for name in var.s3: name => name if name != "media"}
+  for_each = aws_s3_bucket.this
   bucket = aws_s3_bucket.this[each.key].id  
   block_public_acls       = true
   block_public_policy     = true
@@ -57,7 +57,20 @@ resource "aws_s3_bucket_public_access_block" "this" {
   restrict_public_buckets = true
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create policy for CloudFront to limit S3 media bucket access
+# Cleanup maedia optimized bucket filter
+# # ---------------------------------------------------------------------------------------------------------------------#	  
+resource "aws_s3_bucket_lifecycle_configuration" "this" {
+  bucket = aws_s3_bucket.this["media_optimized"].id
+  rule {
+    id     = "${local.project}-cleanup-images"
+    status = "Enabled"
+    expiration {
+      days = 365
+    }
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create policy to limit S3 media bucket access
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_iam_policy_document" "media" {
   statement {
