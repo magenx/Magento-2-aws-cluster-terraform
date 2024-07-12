@@ -339,3 +339,64 @@ variable "restricted_countries" {
   type        = list(string)
   default     = ["CN", "RU", "IR", "KP", "SD", "SY", "CU"]
 }
+
+
+
+## Regions with Regional Edge Caches
+locals {
+  rec_regions = {
+    US_EAST_2       = "us-east-2"
+    US_EAST_1       = "us-east-1"
+    US_WEST_2       = "us-west-2"
+    AP_SOUTH_1      = "ap-south-1"
+    AP_NORTHEAST_2  = "ap-northeast-2"
+    AP_SOUTHEAST_1  = "ap-southeast-1"
+    AP_SOUTHEAST_2  = "ap-southeast-2"
+    AP_NORTHEAST_1  = "ap-northeast-1"
+    EU_CENTRAL_1    = "eu-central-1"
+    EU_WEST_1       = "eu-west-1"
+    EU_WEST_2       = "eu-west-2"
+    SA_EAST_1       = "sa-east-1"
+  }
+## Other supported regions
+  other_regions = {
+    US_WEST_1       = "us-west-1"
+    AF_SOUTH_1      = "af-south-1"
+    AP_EAST_1       = "ap-east-1"
+    CA_CENTRAL_1    = "ca-central-1"
+    EU_SOUTH_1      = "eu-south-1"
+    EU_WEST_3       = "eu-west-3"
+    EU_NORTH_1      = "eu-north-1"
+    ME_SOUTH_1      = "me-south-1"
+  }
+## Region to Origin Shield mappings based on latency.
+## To be updated when new Regions are available or new RECs are added to CloudFront.
+  region_to_origin_shield_mappings = merge(
+    {
+      local.rec_regions.US_EAST_2       = local.rec_regions.US_EAST_2
+      local.rec_regions.US_EAST_1       = local.rec_regions.US_EAST_1
+      local.rec_regions.US_WEST_2       = local.rec_regions.US_WEST_2
+      local.rec_regions.AP_SOUTH_1      = local.rec_regions.AP_SOUTH_1
+      local.rec_regions.AP_NORTHEAST_2  = local.rec_regions.AP_NORTHEAST_2
+      local.rec_regions.AP_SOUTHEAST_1  = local.rec_regions.AP_SOUTHEAST_1
+      local.rec_regions.AP_SOUTHEAST_2  = local.rec_regions.AP_SOUTHEAST_2
+      local.rec_regions.AP_NORTHEAST_1  = local.rec_regions.AP_NORTHEAST_1
+      local.rec_regions.EU_CENTRAL_1    = local.rec_regions.EU_CENTRAL_1
+      local.rec_regions.EU_WEST_1       = local.rec_regions.EU_WEST_1
+      local.rec_regions.EU_WEST_2       = local.rec_regions.EU_WEST_2
+      local.rec_regions.SA_EAST_1       = local.rec_regions.SA_EAST_1
+    },
+    {
+      local.other_regions.US_WEST_1     = local.rec_regions.US_WEST_2
+      local.other_regions.AF_SOUTH_1    = local.rec_regions.EU_WEST_1
+      local.other_regions.AP_EAST_1     = local.rec_regions.AP_SOUTHEAST_1
+      local.other_regions.CA_CENTRAL_1  = local.rec_regions.US_EAST_1
+      local.other_regions.EU_SOUTH_1    = local.rec_regions.EU_CENTRAL_1
+      local.other_regions.EU_WEST_3     = local.rec_regions.EU_WEST_2
+      local.other_regions.EU_NORTH_1    = local.rec_regions.EU_WEST_2
+      local.other_regions.ME_SOUTH_1    = local.rec_regions.AP_SOUTH_1
+    }
+  )
+
+  origin_shield_region = lookup(local.region_to_origin_shield_mappings, data.aws_region.current, null)
+}
