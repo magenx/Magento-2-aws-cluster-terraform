@@ -38,6 +38,7 @@ source "amazon-ebs" "latest-ami" {
   iam_instance_profile = "${var.IAM_INSTANCE_PROFILE}"
   subnet_id       = "${local.var["SUBNET_ID"]}"
   ssh_username    = "admin"
+  temporary_key_pair_type = "ed25519"
   temporary_security_group_source_public_ip = true
   instance_type   = "c7g.large"
   launch_block_device_mappings {
