@@ -23,8 +23,6 @@ resource "aws_codecommit_repository" "app" {
           git commit --allow-empty -m "init"
           git branch -m main
           git push origin main
-          git checkout -b build
-          git push origin build
           rm -rf /tmp/magento
 EOF
   }
