@@ -31,8 +31,12 @@ terraform {
 
 provider "aws" {
 default_tags {
-   tags = var.default_tags
+   tags = {
+   Managed      = "Terraform"
+   Config       = var.app["brand"]
+   Environment  = local.environment
   }
+}
 }
 provider "null" {}
 provider "random" {}
