@@ -97,7 +97,7 @@ data "aws_iam_policy_document" "media" {
       "s3:GetObject",
       "s3:ListObject"
     ]
-    resources = [${aws_s3_bucket.this["media"].arn}/*]
+    resources = ["${aws_s3_bucket.this["media"].arn}/*"]
     principals {
       type        = "AWS"
       identifiers = [aws_iam_role.lambda.arn]
@@ -110,7 +110,7 @@ data "aws_iam_policy_document" "media" {
     actions = [
       "s3:PutObject"
     ]
-    resources = [${aws_s3_bucket.this["media_optimized"].arn}/*]
+    resources = ["${aws_s3_bucket.this["media_optimized"].arn}/*"]
     principals {
       type        = "AWS"
       identifiers = [aws_iam_role.lambda.arn]
