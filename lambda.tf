@@ -55,9 +55,9 @@ resource "aws_iam_role" "lambda" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "archive_file" "lambda_image_optimization" {
   type             = "zip"
-  source_file      = "${abspath(path.root)}/lambda/image_optimization/index.js"
+  source_file      = "${abspath(path.root)}/lambda/image_optimization/index.mjs"
   output_file_mode = "0666"
-  output_path      = "${abspath(path.root)}/lambda/image_optimization/index.js.zip"
+  output_path      = "${abspath(path.root)}/lambda/image_optimization/index.mjs.zip"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Upload Lambda function zip archive to s3 bucket
@@ -66,8 +66,8 @@ resource "aws_s3_object" "lambda_image_optimization" {
   depends_on = [data.archive_file.lambda_image_optimization]
   bucket     = aws_s3_bucket.this["system"].id
   key        = "lambda/image_optimization/index.js.zip"
-  source     = "${abspath(path.root)}/lambda/image_optimization/index.js.zip"
-  etag       = filemd5("${abspath(path.root)}/lambda/image_optimization/index.js.zip")
+  source     = data.archive_file.lambda_image_optimization.output_path
+  etag       = filemd5(data.archive_file.lambda_image_optimization.output_path)
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Lambda function with variables
