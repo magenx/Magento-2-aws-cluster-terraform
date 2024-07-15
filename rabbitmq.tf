@@ -15,7 +15,7 @@ resource "aws_mq_broker" "this" {
   deployment_mode    = var.rabbitmq["deployment_mode"]
   subnet_ids         = values(aws_subnet.this).*.id
   user {
-    username         = var.app["brand"]
+    username         = var.magento["brand"]
     password         = random_password.this["rabbitmq"].result
   }
   tags = {
