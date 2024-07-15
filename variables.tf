@@ -252,6 +252,13 @@ variable "alb" {
   }
 }
 
+variable "efs" {
+  description = "Create shared folders in EFS"
+  default     = {
+    path      = ["var","media"]
+    }
+}
+
 variable "s3" {
   description = "S3 bucket names"
   type        = set(string)
