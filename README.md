@@ -161,7 +161,6 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Default encryption enabled for EBS, S3, RDS, ELK, ElastiCache
 - [x] AWS Inspector Assessment templates
 - [x] AWS Config resource configuraton rules 
-- [x] AWS WAF Protection rules  
 
 ##
 ![Magento_2_Fastly_AWS_cloud_auto_scaling_terraform](https://user-images.githubusercontent.com/1591200/149624739-711fb6ba-7c00-48e3-bb80-7b7dc6cd4edc.png)
