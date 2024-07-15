@@ -21,7 +21,7 @@ resource "aws_launch_template" "this" {
     for_each = toset(["instance","volume"])
     content {
        resource_type = tag_specifications.key
-       tags = merge(var.default_tags,{Name = "${local.project}-${each.key}-ec2", Project = "${local.project}"})
+       tags = merge(data.aws_default_tags.this.tags,{Name = "${local.project}-${each.key}-ec2", Project = "${local.project}"})
     }
   }
   metadata_options {
