@@ -103,9 +103,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 >  
 **[ ! ]** Right after `terraform apply` you will receive email from amazon to approve resources    
 - [x] Adjust your settings, edit your [cidr], [brand], [domain], [email] and other vars in `variables.tf`
-- [x] Define your source repository or use default and enable minimal Magento 2 package to install.
-- [x] Configure **Fastly** service for CDN and cache.
-- [x] if Fastly disabled in variables, then Varnish cache will be installed locally on EC2 frontend instance.
+- [x] Configure **Fastly** service for CDN and cache - https://github.com/fastly/fastly-magento2
 - [x] Define either [production] or [development] environment variable in `variables.tf`
   
  **[ ! ]** ```For production deployment make sure to enable deletion protection and backup retention```  
@@ -114,8 +112,8 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 ```
    terraform fmt
    terraform init
-   terraform workspace new development
-   terraform plan -out development.plan.out -no-color 2>&1 > development.plan.out.txt
+   terraform workspace new production
+   terraform plan -out production.plan.out -no-color 2>&1 > production.plan.out.txt
    terraform apply
 ```
 > to destroy infrastructure: ```terraform destroy```  
@@ -124,11 +122,11 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 <br />
 
 ## Complete setup:
- `2` autoscaling groups with launch templates converted from `user_data`  
+ `2` autoscaling groups with launch templates configured from `user_data`  
  `2` target groups for load balancer (frontend admin)  
  `1` load balancer external with listeners / rules  
  `1` rds mariadb databases multi AZ  
- `1` elasticsearch domain for Magento catalog search  
+ `1` elasticsearch domain for catalog search  
  `2` redis elasticache cluster for sessions and cache  
  `1` rabbitmq broker to manage queue messages  
  `3` s3 buckets for [media] [system] and [backup] with access policy  
@@ -169,8 +167,9 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 ![Magento_2_Fastly_AWS_cloud_auto_scaling_terraform](https://user-images.githubusercontent.com/1591200/149624739-711fb6ba-7c00-48e3-bb80-7b7dc6cd4edc.png)
 
 ## :hammer_and_wrench: Magento 2 development | source code:
-- [x] Define your source repository or use default and enable minimal Magento 2 package to install.
-- [x] Check CodePipeline to install Magento 2 and pre-configure modules.
+- [x] Docker for local development - https://github.com/magenx/Magento-2-docker-configuration
+- [x] Github developer, staging, production + release repository workflow.
+- [x] Github Actions build code.
 - [x] EC2 instance user_data configured on boot to clone files from CodeCommit branch.
 > Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime.
 > Remove replaced components from `composer.json` in `"replace": {}` and run `composer update`  
@@ -187,12 +186,11 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 
 <br />
 
-## CI/CD scenario:
-- [x] Event driven.
+## CI/CD scenario - event driven:  
 - [x] Services configuration files tracked in CodeCommit repository.
+- [x] Github Actions build code and deploy release to AWS CodeCommit production branch.
 - [x] Changes in CodeCommit repository triggers EventBridge rule.
-- [x] CodePipeline build code in CodeBuild project and deploy to main branch.
-- [x] SSM Document pull from CodeCommit repository and cleanup.
+- [x] SSM Document pull from CodeCommit repository to ec2 instances, update and cleanup.
 - [x] Change deployment logic to your needs.  
    
 <br />
@@ -216,7 +214,7 @@ We can launch this project for your store in a short time. Many big retailers ha
     
 <br />
     
-## :heart_eyes_cat: Support the project  
+## 😻 Support the project  
 This takes time and research. You can use this for free. But its not free to create it.
 If you are using this project, there are few ways you can support it:
 - [x] Star and sharing the project
