@@ -19,7 +19,7 @@ description: "Pull nginx ${each.key} configuration changes from CodeCommit"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
-  name: "${var.app["brand"]}CodeCommitPullNginx${title(each.key)}ConfigChanges"
+  name: "${var.magento["brand"]}CodeCommitPullNginx${title(each.key)}ConfigChanges"
   inputs:
     runCommand:
     - |-
@@ -82,7 +82,7 @@ description: "Pull varnish configuration changes from CodeCommit"
 parameters:
 mainSteps:
 - action: "aws:runShellScript"
-  name: "${var.app["brand"]}CodeCommitPullVarnishConfigChanges"
+  name: "${var.magento["brand"]}CodeCommitPullVarnishConfigChanges"
   inputs:
     runCommand:
     - |-
