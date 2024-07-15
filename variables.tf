@@ -250,7 +250,7 @@ variable "asp" {
 variable "s3" {
   description = "S3 bucket names"
   type        = set(string)
-  default     = ["media", "media_optimized" "system", "backup", "state"]
+  default     = ["media", "media_optimized", "system", "backup", "state"]
 }
 
 variable "alb" {
