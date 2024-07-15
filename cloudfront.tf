@@ -60,11 +60,11 @@ resource "aws_cloudfront_distribution" "this" {
       https_port             = 443
       origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
-      origin_shield {
+   }
+   origin_shield {
         enabled = true  # <- needs variable
         region  = local.origin_shield_region
-      }
-    }
+   }
   }
   
   default_cache_behavior {
@@ -89,7 +89,6 @@ resource "aws_cloudfront_distribution" "this" {
 
   origin_group {
     origin_id         = "${var.app["domain"]}-S3-lambda-image-optimization"
-    primary_origin_id = "${var.app["domain"]}-media-optimized-assets"
     failover_criteria {
       status_codes = [403, 500, 503, 504]
     }
