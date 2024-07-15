@@ -68,7 +68,7 @@ data "aws_iam_policy_document" "codecommit_access" {
       "codecommit:List*",
       "codecommit:GitPull"
     ]
-    resources = [aws_codecommit_repository.app.arn]
+    resources = [aws_codecommit_repository.magento.arn]
     condition {
       test     = "StringEqualsIfExists"
       variable = "codecommit:References"
