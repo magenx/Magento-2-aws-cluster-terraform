@@ -88,7 +88,7 @@ resource "aws_s3_bucket_policy" "media" {
          ]
          Condition = {
             StringNotLike = {
-		"aws:Referer" = [ var.app["domain"] ]
+		"aws:Referer" = [ var.magento["domain"] ]
          }
        }
       }, 
