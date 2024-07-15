@@ -107,16 +107,16 @@ mainSteps:
     runCommand:
     - |-
       #!/bin/bash
-      cd /home/${var.app["brand"]}/public_html
-      su ${var.app["brand"]} -s /bin/bash -c "git fetch origin"
-      su ${var.app["brand"]} -s /bin/bash -c "git reset --hard origin/main"
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:db:status --no-ansi -n"
+      cd /home/${var.magento["brand"]}/public_html
+      su ${var.magento["brand"]} -s /bin/bash -c "git fetch origin"
+      su ${var.magento["brand"]} -s /bin/bash -c "git reset --hard origin/main"
+      su ${var.magento["brand"]} -s /bin/bash -c "bin/magento setup:db:status --no-ansi -n"
       if [[ $? -ne 0 ]]; then
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade --keep-generated --no-ansi -n"
+      su ${var.magento["brand"]} -s /bin/bash -c "bin/magento setup:upgrade --keep-generated --no-ansi -n"
       fi
       systemctl restart php*fpm.service
       systemctl restart nginx.service
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento cache:flush"
+      su ${var.magento["brand"]} -s /bin/bash -c "bin/magento cache:flush"
 EOT
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -128,7 +128,7 @@ resource "aws_cloudwatch_event_rule" "codecommit_pull_main" {
   event_pattern = jsonencode({
     source       = ["aws.codecommit"]
     detail-type  = ["CodeCommit Repository State Change"]
-    resources    = [aws_codecommit_repository.app.arn]
+    resources    = [aws_codecommit_repository.magento.arn]
     detail = {
       referenceType = ["branch"]
       referenceName = ["main"]
@@ -140,7 +140,7 @@ resource "aws_cloudwatch_event_rule" "codecommit_pull_main" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "codecommit_pull_main" {
   rule      = aws_cloudwatch_event_rule.codecommit_pull_main.name
-  target_id = "${local.project}-App-Deployment-Script"
+  target_id = "${local.project}-Magento-Deployment-Script"
   arn       = aws_ssm_document.codecommit_pull_main.arn
   role_arn  = aws_iam_role.eventbridge_service_role.arn
  
