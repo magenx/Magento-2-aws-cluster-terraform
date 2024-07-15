@@ -18,7 +18,7 @@ resource "aws_budgets_budget" "all" {
     threshold                  = 100
     threshold_type             = "PERCENTAGE"
     notification_type          = "FORECASTED"
-    subscriber_email_addresses = [var.app["admin_email"]]
+    subscriber_email_addresses = [var.magento["admin_email"]]
   }
 }
 
