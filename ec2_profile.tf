@@ -102,9 +102,3 @@ resource "aws_iam_instance_profile" "ec2" {
   name     = "${local.project}-EC2InstanceProfile-${each.key}"
   role     = aws_iam_role.ec2[each.key].name
 }
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create EC2 ebs default encryption
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ebs_encryption_by_default" "this" {
-  enabled = true
-}
