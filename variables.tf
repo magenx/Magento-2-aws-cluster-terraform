@@ -2,7 +2,7 @@
 
 locals {
    # Create global project name to be assigned to all resources
-   project = lower("${var.app["brand"]}-${random_string.this["project"].result}")
+   project = lower("${var.magento["brand"]}-${random_string.this["project"].result}")
    environment = lower(terraform.workspace)
 }
 
@@ -11,7 +11,7 @@ variable "password" {
    default     = [
       "rds", 
       "rabbitmq", 
-      "app", 
+      "magento", 
       "blowfish",
       "redis",
       "opensearch"
@@ -40,11 +40,10 @@ variable "ec2" {
    }
 }
 
-variable "app" {
-  description      = "Map application params | Magento 2"
+variable "magento" {
+  description      = "Map Magento 2 parameters"
   default          = {
-    source_repo      = "magenx/Magento-2"
-    app_version      = "2"
+    version          = "2"
     cidr_block       = "172.30.0.0/16"
     brand            = "magenx"
     domain           = "magenx.org"
