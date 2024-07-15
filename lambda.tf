@@ -94,3 +94,4 @@ resource "aws_lambda_function" "image_optimization" {
     security_group_ids = aws_security_group.lambda.id
   }
 }
+}
