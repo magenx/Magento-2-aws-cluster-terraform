@@ -23,7 +23,7 @@ resource "aws_cloudfront_function" "this" {
   name    = "${local.project}-urlrewrite"  
   comment = "UrlRewrite function for ${local.project} image optimization"
   runtime = "cloudfront-js-2.0"
-  code    = file("${abspath(path.root)}/cloudfront/function.js")
+  code    = file("${abspath(path.root)}/cloudfront/index.js")
 }
 
 resource "aws_cloudfront_distribution" "this" {
