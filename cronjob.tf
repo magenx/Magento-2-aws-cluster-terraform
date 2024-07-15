@@ -19,7 +19,7 @@ resource "aws_cloudwatch_event_target" "cronjob" {
   target_id = "${local.project}-EventBridge-Target-Admin-Instance-Cron"
   arn       = "arn:aws:ssm:${data.aws_region.current.name}::document/AWS-RunShellScript"
   role_arn  = aws_iam_role.eventbridge_service_role.arn
-  input     = "{\"commands\":[\"su ${var.app["brand"]} -s /bin/bash -c '/home/${var.app["brand"]}/public_html/bin/magento cron:run 2>&1'\"],\"executionTimeout\":[\"180\"]}"
+  input     = "{\"commands\":[\"su ${var.magento["brand"]} -s /bin/bash -c '/home/${var.magento["brand"]}/public_html/bin/magento cron:run 2>&1'\"],\"executionTimeout\":[\"180\"]}"
  
 run_command_targets {
     key    = "tag:Name"
