@@ -64,7 +64,7 @@ data "archive_file" "lambda_image_optimization" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_s3_object" "lambda_image_optimization" {
   depends_on = [data.archive_file.lambda_image_optimization]
-  bucket     = aws_s3_bucket.this["system"].name
+  bucket     = aws_s3_bucket.this["system"].id
   key        = "lambda/image_optimization/index.js.zip"
   source     = "${abspath(path.root)}/lambda/image_optimization/index.js.zip"
   etag       = filemd5("${abspath(path.root)}/lambda/image_optimization/index.js.zip")
@@ -73,7 +73,7 @@ resource "aws_s3_object" "lambda_image_optimization" {
 # Lambda function with variables
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lambda_function" "image_optimization" {
-  depends_on    = [aws_s3_object.lambda]
+  depends_on    = [aws_s3_object.lambda_image_optimization]
   function_name = "${local.project}-image-optimization"
   role          = aws_iam_role.lambda.arn
   s3_bucket     = aws_s3_bucket.this["system"].id
@@ -88,10 +88,10 @@ resource "aws_lambda_function" "image_optimization" {
       transformedImageBucketName = aws_s3_bucket.this["media_optimization"].id
       transformedImageCacheTTL   = "max-age=31622400"
       maxImageSize               = "4700000"
-  } 
+   }
+  }
   vpc_config {
     subnet_ids = values(aws_subnet.this).*.id 
     security_group_ids = aws_security_group.lambda.id
   }
-}
 }
