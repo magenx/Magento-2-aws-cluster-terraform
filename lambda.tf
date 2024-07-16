@@ -100,7 +100,7 @@ resource "aws_lambda_function" "image_optimization" {
   environment {
     variables = {
       originalImageBucketName    = aws_s3_bucket.this["media"].id
-      transformedImageBucketName = aws_s3_bucket.this["media_optimized"].id
+      transformedImageBucketName = aws_s3_bucket.this["media-optimized"].id
       transformedImageCacheTTL   = "max-age=31622400"
       maxImageSize               = "4700000"
    }
