@@ -62,8 +62,8 @@ resource "aws_cloudfront_distribution" "this" {
       origin_ssl_protocols   = ["TLSv1.2"]
    }
    origin_shield {
-        enabled = true  # <- needs variable
-        region  = local.origin_shield_region
+        enabled               = true  # <- needs variable
+        origin_shield_region  = local.origin_shield_region
    }
   }
   
