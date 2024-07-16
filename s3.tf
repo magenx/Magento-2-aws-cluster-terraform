@@ -94,8 +94,7 @@ data "aws_iam_policy_document" "media" {
     sid       = "AllowLambdaGet"
     effect    = "Allow"
     actions = [
-      "s3:GetObject",
-      "s3:ListObject"
+      "s3:GetObject"
     ]
     resources = ["${aws_s3_bucket.this["media"].arn}/*"]
     principals {
