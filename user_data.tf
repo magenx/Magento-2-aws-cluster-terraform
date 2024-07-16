@@ -49,13 +49,13 @@ frontend_user_data = <<EOF
           INSTANCE_LOCAL_IP=$(curl -s -H "X-aws-ec2-metadata-token: $${AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
         - |-
           cd /home/${var.app["brand"]}/public_html/
-          su ${var.app["brand"]} -s /bin/bash -c "git init -b ${local.environment}"
+          su ${var.app["brand"]} -s /bin/bash -c "git init -b main"
           su ${var.app["brand"]} -s /bin/bash -c "git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
-          su ${var.app["brand"]} -s /bin/bash -c "git fetch origin ${local.environment}"
-          su ${var.app["brand"]} -s /bin/bash -c "git reset origin/${local.environment} --hard"
+          su ${var.app["brand"]} -s /bin/bash -c "git fetch origin main"
+          su ${var.app["brand"]} -s /bin/bash -c "git reset origin/main --hard"
         - |-
           sed -i "s/INSTANCE_LOCAL_IP/$${INSTANCE_LOCAL_IP}/" /etc/nginx/sites-available/magento.conf
-          systemctl restart nginx php-fpm${var.app["php_version"]}
+          systemctl restart nginx php${var.app["php_version"]}-fpm
 EOF
 
 
