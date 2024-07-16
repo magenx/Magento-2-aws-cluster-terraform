@@ -65,6 +65,11 @@ resource "aws_opensearch_domain" "this" {
     enforce_https       = true
     tls_security_policy = "Policy-Min-TLS-1-2-2019-07"
   }
+
+  node_to_node_encryption {
+    enabled = true
+  }
+
   ebs_options {
     ebs_enabled = var.opensearch["ebs_enabled"]
     volume_type = var.opensearch["volume_type"]
