@@ -18,7 +18,7 @@ resource "random_password" "this" {
   upper            = true
   numeric          = true
   special          = true
-  override_special = "%*?"
+  override_special = "!&#$"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Generate random string
