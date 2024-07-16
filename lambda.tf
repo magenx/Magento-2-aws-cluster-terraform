@@ -13,6 +13,7 @@ resource "aws_cloudwatch_log_group" "lambda" {
 
 data "aws_iam_policy_document" "lambda" {
   statement {
+    sid    = "LambdaLog"
     effect = "Allow"
     actions = [
       "logs:CreateLogGroup",
@@ -20,6 +21,20 @@ data "aws_iam_policy_document" "lambda" {
       "logs:PutLogEvents",
     ]
     resources = [aws_cloudwatch_log_group.lambda.arn]
+  }
+
+  statement {
+    sid    = "LambdaAccess"
+    effect = "Allow"
+    actions = [
+      "ec2:CreateNetworkInterface",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DescribeSubnets",
+      "ec2:DeleteNetworkInterface",
+      "ec2:AssignPrivateIpAddresses",
+      "ec2:UnassignPrivateIpAddresses"
+    ]
+    resources = [*]
   }
 }
 
