@@ -373,28 +373,28 @@ locals {
 ## To be updated when new Regions are available or new RECs are added to CloudFront.
   region_to_origin_shield_mappings = merge(
     {
-      local.rec_regions.US_EAST_2       = local.rec_regions.US_EAST_2
-      local.rec_regions.US_EAST_1       = local.rec_regions.US_EAST_1
-      local.rec_regions.US_WEST_2       = local.rec_regions.US_WEST_2
-      local.rec_regions.AP_SOUTH_1      = local.rec_regions.AP_SOUTH_1
-      local.rec_regions.AP_NORTHEAST_2  = local.rec_regions.AP_NORTHEAST_2
-      local.rec_regions.AP_SOUTHEAST_1  = local.rec_regions.AP_SOUTHEAST_1
-      local.rec_regions.AP_SOUTHEAST_2  = local.rec_regions.AP_SOUTHEAST_2
-      local.rec_regions.AP_NORTHEAST_1  = local.rec_regions.AP_NORTHEAST_1
-      local.rec_regions.EU_CENTRAL_1    = local.rec_regions.EU_CENTRAL_1
-      local.rec_regions.EU_WEST_1       = local.rec_regions.EU_WEST_1
-      local.rec_regions.EU_WEST_2       = local.rec_regions.EU_WEST_2
-      local.rec_regions.SA_EAST_1       = local.rec_regions.SA_EAST_1
+      (local.rec_regions.US_EAST_2)       = local.rec_regions.US_EAST_2
+      (local.rec_regions.US_EAST_1)       = local.rec_regions.US_EAST_1
+      (local.rec_regions.US_WEST_2)       = local.rec_regions.US_WEST_2
+      (local.rec_regions.AP_SOUTH_1)      = local.rec_regions.AP_SOUTH_1
+      (local.rec_regions.AP_NORTHEAST_2)  = local.rec_regions.AP_NORTHEAST_2
+      (local.rec_regions.AP_SOUTHEAST_1)  = local.rec_regions.AP_SOUTHEAST_1
+      (local.rec_regions.AP_SOUTHEAST_2)  = local.rec_regions.AP_SOUTHEAST_2
+      (local.rec_regions.AP_NORTHEAST_1)  = local.rec_regions.AP_NORTHEAST_1
+      (local.rec_regions.EU_CENTRAL_1)    = local.rec_regions.EU_CENTRAL_1
+      (local.rec_regions.EU_WEST_1)       = local.rec_regions.EU_WEST_1
+      (local.rec_regions.EU_WEST_2)       = local.rec_regions.EU_WEST_2
+      (local.rec_regions.SA_EAST_1)       = local.rec_regions.SA_EAST_1
     },
     {
-      local.other_regions.US_WEST_1     = local.rec_regions.US_WEST_2
-      local.other_regions.AF_SOUTH_1    = local.rec_regions.EU_WEST_1
-      local.other_regions.AP_EAST_1     = local.rec_regions.AP_SOUTHEAST_1
-      local.other_regions.CA_CENTRAL_1  = local.rec_regions.US_EAST_1
-      local.other_regions.EU_SOUTH_1    = local.rec_regions.EU_CENTRAL_1
-      local.other_regions.EU_WEST_3     = local.rec_regions.EU_WEST_2
-      local.other_regions.EU_NORTH_1    = local.rec_regions.EU_WEST_2
-      local.other_regions.ME_SOUTH_1    = local.rec_regions.AP_SOUTH_1
+      (local.other_regions.US_WEST_1)     = local.rec_regions.US_WEST_2
+      (local.other_regions.AF_SOUTH_1)    = local.rec_regions.EU_WEST_1
+      (local.other_regions.AP_EAST_1)     = local.rec_regions.AP_SOUTHEAST_1
+      (local.other_regions.CA_CENTRAL_1)  = local.rec_regions.US_EAST_1
+      (local.other_regions.EU_SOUTH_1)    = local.rec_regions.EU_CENTRAL_1
+      (local.other_regions.EU_WEST_3)     = local.rec_regions.EU_WEST_2
+      (local.other_regions.EU_NORTH_1)    = local.rec_regions.EU_WEST_2
+      (local.other_regions.ME_SOUTH_1)    = local.rec_regions.AP_SOUTH_1
     }
   )
 
