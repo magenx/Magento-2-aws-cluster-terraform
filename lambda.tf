@@ -92,7 +92,7 @@ resource "aws_lambda_function" "image_optimization" {
   function_name = "${local.project}-image-optimization"
   role          = aws_iam_role.lambda.arn
   s3_bucket     = aws_s3_bucket.this["system"].id
-  s3_key        = "lambda/image-optimization.zip"
+  s3_key        = "lambda/image_optimization/index.js.zip"
   runtime       = "nodejs18.x"
   handler       = "index.handler"
   memory_size   = 1500
