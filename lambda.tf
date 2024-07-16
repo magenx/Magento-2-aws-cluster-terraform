@@ -34,7 +34,7 @@ data "aws_iam_policy_document" "lambda" {
       "ec2:AssignPrivateIpAddresses",
       "ec2:UnassignPrivateIpAddresses"
     ]
-    resources = [*]
+    resources = ["*"]
   }
 }
 
