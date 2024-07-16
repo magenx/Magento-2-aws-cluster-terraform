@@ -398,5 +398,5 @@ locals {
     }
   )
 
-  origin_shield_region = lookup(local.region_to_origin_shield_mappings, data.aws_region.current, null)
+  origin_shield_region = lookup(local.region_to_origin_shield_mappings, data.aws_region.current.name, null)
 }
