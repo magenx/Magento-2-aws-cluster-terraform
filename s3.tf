@@ -238,7 +238,19 @@ data "aws_iam_policy_document" "system" {
       values   = ["arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/*"]
     }
   }
-  version = "2012-10-17"
+
+  statement {
+    sid       = "AllowLambdaGet"
+    effect    = "Allow"
+    actions = [
+      "s3:GetObject"
+    ]
+    resources = ["${aws_s3_bucket.this["system"].arn}/lambda/*"]
+    principals {
+      type        = "AWS"
+      identifiers = [aws_iam_role.lambda.arn]
+    }
+  }
 }
 
 resource "aws_s3_bucket_policy" "system" {
