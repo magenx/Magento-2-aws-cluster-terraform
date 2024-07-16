@@ -44,7 +44,7 @@ resource "aws_cloudfront_distribution" "this" {
   }
 
   origin {
-    domain_name = aws_s3_bucket.this["media_optimized"].bucket_regional_domain_name
+    domain_name = aws_s3_bucket.this["media-optimized"].bucket_regional_domain_name
     origin_id   = "${var.app["domain"]}-media-optimized-assets"
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.this.cloudfront_access_identity_path

@@ -60,7 +60,7 @@ resource "aws_s3_bucket_public_access_block" "this" {
 # Cleanup maedia optimized bucket filter
 # # ---------------------------------------------------------------------------------------------------------------------#	  
 resource "aws_s3_bucket_lifecycle_configuration" "this" {
-  bucket = aws_s3_bucket.this["media_optimized"].id
+  bucket = aws_s3_bucket.this["media-optimized"].id
   rule {
     id     = "${local.project}-cleanup-images"
     status = "Enabled"
@@ -109,7 +109,7 @@ data "aws_iam_policy_document" "media" {
     actions = [
       "s3:PutObject"
     ]
-    resources = ["${aws_s3_bucket.this["media_optimized"].arn}/*"]
+    resources = ["${aws_s3_bucket.this["media-optimized"].arn}/*"]
     principals {
       type        = "AWS"
       identifiers = [aws_iam_role.lambda.arn]
