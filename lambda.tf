@@ -85,13 +85,13 @@ resource "aws_lambda_function" "image_optimization" {
   environment {
     variables = {
       originalImageBucketName    = aws_s3_bucket.this["media"].id
-      transformedImageBucketName = aws_s3_bucket.this["media_optimization"].id
+      transformedImageBucketName = aws_s3_bucket.this["media_optimized"].id
       transformedImageCacheTTL   = "max-age=31622400"
       maxImageSize               = "4700000"
    }
   }
   vpc_config {
     subnet_ids = values(aws_subnet.this).*.id 
-    security_group_ids = aws_security_group.lambda.id
+    security_group_ids = [aws_security_group.lambda.id]
   }
 }
