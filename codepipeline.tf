@@ -69,31 +69,6 @@ resource "aws_iam_role" "codebuild" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_iam_policy_document" "codebuild" {
   statement {
-    sid       = "AllowCodeBuildGitActionsPull"
-    effect    = "Allow"
-    actions   = ["codecommit:GitPull"]
-    resources = [aws_codecommit_repository.app.arn]
-  }
-  
- statement {
-    effect  = "Allow"
-    actions = ["s3:*"]
-    resources = ["*"]
-  }
-
-  statement {
-    sid       = "AllowCodeBuildGitActionsPush"
-    effect    = "Allow"
-    actions   = ["codecommit:GitPush"]
-    resources = [aws_codecommit_repository.app.arn]
-    condition {
-      test     = "StringEqualsIfExists"
-      variable = "codecommit:References"
-      values   = ["refs/heads/build"]
-    }
-  }
-
-  statement {
     sid       = "AllowCodeBuildGetParameters"
     effect    = "Allow"
     actions   = ["ssm:GetParameter", "ssm:GetParameters"]
@@ -169,45 +144,6 @@ resource "aws_iam_role" "codepipeline" {
     Name = "${local.project}-codepipeline-role"
   }
 }
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create policy for CodePipeline role
-# # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_iam_policy_document" "codepipeline" {
-  statement {
-    sid       = "AllowCodeCommitActions"
-    effect    = "Allow"
-    actions   = [
-      "codecommit:GetCommit",
-      "codecommit:GetRepository",
-      "codecommit:GetBranch"
-    ]
-    resources = [aws_codecommit_repository.app.arn]
-  }
-
-  statement {
-    sid       = "AllowCodeStarConnectionActions"
-    effect    = "Allow"
-    actions   = ["codestar-connections:UseConnection"]
-    resources = [aws_codestarconnections_connection.github["enabled"].arn]
-    condition {
-      test     = "ForAllValues:StringEquals"
-      variable = "codestar-connections:FullRepositoryId"
-      values   = [var.app["source_repo"]]
-    }
-  }
-
-  statement {
-    sid       = "AllowCodeBuildActions"
-    effect    = "Allow"
-    actions   = [
-      "codebuild:StartBuild",
-      "codebuild:StartBuildBatch",
-      "codebuild:BatchGetBuilds",
-      "codebuild:BatchGetBuildBatches"
-    ]
-    resources = [aws_codebuild_project.this.arn]
-  }
-}
 
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Attach policy for CodePipeline role
@@ -250,41 +186,6 @@ resource "aws_codedeploy_app" "this" {
   name = "${local.project}-deployment-app"
   tags = {
     Name = "${local.project}-deployment-app"
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create CodeDeploy group
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_codedeploy_deployment_group" "this" {
-  app_name              = aws_codedeploy_app.this.name
-  deployment_group_name = "${local.project}-deployment-group"
-  service_role_arn      = aws_iam_role.codedeploy.arn
-  
-  deployment_config_name = "CodeDeployDefault.AllAtOnce"
-
-  ec2_tag_set {
-    dynamic "ec2_tag_filter" {
-      for_each = {for name,type in var.ec2: name => type if name != "varnish"}
-      content {
-        key   = "Name"
-        type  = "KEY_AND_VALUE"
-        value = aws_launch_template.this[ec2_tag_filter.key].tag_specifications[0].tags.Name
-      }
-    }
-  }
-	
-  trigger_configuration {
-    trigger_events     = ["DeploymentFailure","DeploymentSuccess"]
-    trigger_name       = "${local.project}-deployment-alert"
-    trigger_target_arn = aws_sns_topic.default.arn
-  }
-
-  auto_rollback_configuration {
-    enabled = false
-  }
-  
-  tags = {
-    Name = "${local.project}-deployment-group"
   }
 }
 
