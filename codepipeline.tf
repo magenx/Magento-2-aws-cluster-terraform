@@ -145,7 +145,7 @@ resource "aws_cloudwatch_event_target" "codecommit_pull_main" {
   role_arn  = aws_iam_role.eventbridge_service_role.arn
  
 dynamic "run_command_targets" {
-    for_each = {for name,type in var.ec2: name => type if name != "varnish"}
+    for_each = var.ec2
     content {
       key      = "tag:Name"
       values   = [aws_launch_template.this[run_command_targets.key].tag_specifications[0].tags.Name]
