@@ -2,7 +2,6 @@
 
 
 ////////////////////////////////////////////////////////[ CODEPIPELINE ]//////////////////////////////////////////////////
-
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CodeDeploy role
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -64,63 +63,6 @@ resource "aws_iam_role" "codebuild" {
     Name = "${local.project}-codebuild-role"
   }
 }
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create policy for CodeBuild role
-# # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_iam_policy_document" "codebuild" {
-  statement {
-    sid       = "AllowCodeBuildGetParameters"
-    effect    = "Allow"
-    actions   = ["ssm:GetParameter", "ssm:GetParameters"]
-    resources = ["arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/*"]
-  }
-
-  statement {
-    sid       = "AllowCodebuildCreateLogs"
-    effect    = "Allow"
-    actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
-    resources = ["${aws_cloudwatch_log_group.codebuild.arn}:*"]
-  }
-
-  statement {
-    sid       = "AllowCodebuildDescribe"
-    effect    = "Allow"
-    actions   = [
-      "ec2:CreateNetworkInterface",
-      "ec2:DescribeDhcpOptions",
-      "ec2:DescribeNetworkInterfaces",
-      "ec2:DeleteNetworkInterface",
-      "ec2:DescribeSubnets",
-      "ec2:DescribeSecurityGroups",
-      "ec2:DescribeVpcs"
-    ]
-    resources = ["*"]
-  }
-
-  statement {
-    sid       = "AllowCodebuildCreateNetworkInterface"
-    effect    = "Allow"
-    actions   = ["ec2:CreateNetworkInterfacePermission"]
-    resources = ["arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:network-interface/*"]
-    condition {
-      test     = "StringEquals"
-      variable = "ec2:Subnet"
-      values   = values(aws_subnet.this)[*].arn
-    }
-    condition {
-      test     = "StringEquals"
-      variable = "ec2:AuthorizedService"
-      values   = ["codebuild.amazonaws.com"]
-    }
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Attach policy for CodeBuild role
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_iam_role_policy" "codebuild" {
-  role   = aws_iam_role.codebuild.name
-  policy = data.aws_iam_policy_document.codebuild.json
-}
 
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CodePipeline role
@@ -146,53 +88,9 @@ resource "aws_iam_role" "codepipeline" {
 }
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Attach policy for CodePipeline role
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_iam_role_policy" "codepipeline" {
-  role   = aws_iam_role.codepipeline.id
-  policy = data.aws_iam_policy_document.codepipeline.json
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create EventBridge rule to monitor CodeCommit repository state
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_rule" "codecommit_build" {
-  name        = "${local.project}-CodeCommit-Repository-State-Change-Build"
-  description = "CloudWatch monitor magento repository state change build branch"
-  
-  event_pattern = jsonencode({
-    source       = ["aws.codecommit"],
-    detail-type  = ["CodeCommit Repository State Change"],
-    resources    = [aws_codecommit_repository.app.arn],
-    detail = {
-      event         = ["referenceUpdated"],
-      referenceType = ["branch"],
-      referenceName = ["build"]
-    }
-  })
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create EventBridge target to execute SSM Document
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_target" "codepipeline_build" {
-  rule      = aws_cloudwatch_event_rule.codecommit_build.name
-  target_id = "${local.project}-Start-CodePipeline"
-  arn       = aws_codepipeline.this.arn
-  role_arn  = aws_iam_role.eventbridge_service_role.arn
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create CodeDeploy app
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_codedeploy_app" "this" {
-  name = "${local.project}-deployment-app"
-  tags = {
-    Name = "${local.project}-deployment-app"
-  }
-}
-
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document runShellScript to pull main branch from CodeCommit
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_document" "git_pull_main" {
+resource "aws_ssm_document" "codecommit_pull_main" {
   name          = "${local.project}-codecommit-pull-main-changes"
   document_type = "Command"
   document_format = "YAML"
@@ -212,21 +110,21 @@ mainSteps:
       cd /home/${var.app["brand"]}/public_html
       su ${var.app["brand"]} -s /bin/bash -c "git fetch origin"
       su ${var.app["brand"]} -s /bin/bash -c "git reset --hard origin/main"
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:db:status --no-ansi -n"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/app setup:db:status --no-ansi -n"
       if [[ $? -ne 0 ]]; then
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento setup:upgrade --keep-generated --no-ansi -n"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/app setup:upgrade --keep-generated --no-ansi -n"
       fi
       systemctl restart php*fpm.service
       systemctl restart nginx.service
-      su ${var.app["brand"]} -s /bin/bash -c "bin/magento cache:flush"
+      su ${var.app["brand"]} -s /bin/bash -c "bin/app cache:flush"
 EOT
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create EventBridge rule to monitor CodeCommit repository state
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_rule" "codecommit_main" {
+resource "aws_cloudwatch_event_rule" "codecommit_pull_main" {
   name        = "${local.project}-CodeCommit-Repository-State-Change-Main"
-  description = "CloudWatch monitor magento repository state change main branch"
+  description = "CloudWatch monitor Codecommit repository state change main branch"
   event_pattern = jsonencode({
     source       = ["aws.codecommit"]
     detail-type  = ["CodeCommit Repository State Change"]
@@ -240,10 +138,10 @@ resource "aws_cloudwatch_event_rule" "codecommit_main" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create EventBridge target to execute SSM Document
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_target" "codecommit_main" {
-  rule      = aws_cloudwatch_event_rule.codecommit_main.name
-  target_id = "${local.project}-App-Deployment-Script"
-  arn       = aws_ssm_document.git_pull_main.arn
+resource "aws_cloudwatch_event_target" "codecommit_pull_main" {
+  rule      = aws_cloudwatch_event_rule.codecommit_pull_main.name
+  target_id = "${local.project}-Magento-Deployment-Script"
+  arn       = aws_ssm_document.codecommit_pull_main.arn
   role_arn  = aws_iam_role.eventbridge_service_role.arn
  
 dynamic "run_command_targets" {
@@ -258,14 +156,14 @@ dynamic "run_command_targets" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch log group and log stream for CodeBuild logs
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_log_group" "codebuild" {
-  name = "${local.project}-codebuild-project"
+resource "aws_cloudwatch_log_group" "codecommit_pull_main" {
+  name = "${local.project}-codecommit-pull-main"
   tags = {
-    Name = "${local.project}-codebuild-project"
+    Name = "${local.project}-codecommit-pull-main"
   }
 }
 
-resource "aws_cloudwatch_log_stream" "codebuild" {
-  name = "${local.project}-codebuild-project"
-  log_group_name = aws_cloudwatch_log_group.codebuild.name
+resource "aws_cloudwatch_log_stream" "codecommit_pull_main" {
+  name = "${local.project}-codecommit-pull-main"
+  log_group_name = aws_cloudwatch_log_group.codecommit_pull_main.name
 }
