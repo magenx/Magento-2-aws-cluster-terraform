@@ -23,28 +23,6 @@ read -e -p "[?] Enter the DynamoDB table name: " -i "magenx-terraform-state-lock
 read -e -p "[?] Enter the workspace: " -i "production" WORKSPACE
 
 echo "---"
-echo "[!][INFO] Create the backend.tf file with the provided input"
-echo "---"
-
-cat <<EOF > backend.tf
-terraform {
-  backend "s3" {
-    bucket          = "${STATE_BUCKET}"
-    key             = "${OBJECT_KEY}"
-    region          = "${AWS_REGION}"
-    dynamodb_table  = "${DYNAMODB_TABLE}"
-    workspace_key_prefix = "${AWS_REGION}/magenx"
-  }
-}
-EOF
-
-echo "---"
-echo "[!][INFO] workspace set to ${WORKSPACE}"
-echo "---"
-
-sleep 2
-
-echo "---"
 echo "[!][INFO] Creating S3 bucket and dynamodb table"
 echo "---"
 
@@ -117,8 +95,25 @@ echo "---"
 echo "[!][INFO] Waiting for DynamoDB tabe to become active ..."
 echo "---"
 aws dynamodb wait table-exists --table-name ${DYNAMODB_TABLE}
+if  [ $? -ne 0 ]; then
+exit 1
+fi
 
-echo ""
+echo "---"
+echo "[!][INFO] Create the backend.tf file with the provided input"
+echo "---"
+
+cat <<EOF > backend.tf
+terraform {
+  backend "s3" {
+    bucket          = "${STATE_BUCKET}"
+    key             = "${OBJECT_KEY}"
+    region          = "${AWS_REGION}"
+    dynamodb_table  = "${DYNAMODB_TABLE}"
+    workspace_key_prefix = "${AWS_REGION}/magenx"
+  }
+}
+EOF
 
 terraform validate
 if  [ $? -ne 0 ]; then
@@ -130,6 +125,9 @@ if  [ $? -ne 0 ]; then
 exit 1
 fi
 
+echo "---"
+echo "[!][INFO] workspace set to ${WORKSPACE}"
+echo "---"
 terraform workspace new ${WORKSPACE}
 
 echo
