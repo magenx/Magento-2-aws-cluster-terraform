@@ -91,7 +91,7 @@ data "aws_iam_policy_document" "media" {
 
   statement {
     sid       = "AllowLambdaGet"
-    effect    = "Allow"
+    effect    = "Deny"
     actions = ["s3:GetObject"]
     resources = ["${aws_s3_bucket.this["media"].arn}/*"]
     condition {
@@ -107,7 +107,7 @@ data "aws_iam_policy_document" "media" {
 
   statement {
     sid       = "AllowLambdaPut"
-    effect    = "Allow"
+    effect    = "Deny"
     actions = ["s3:PutObject"]
     resources = ["${aws_s3_bucket.this["media-optimized"].arn}/*"]
     condition {
@@ -123,7 +123,7 @@ data "aws_iam_policy_document" "media" {
 
   statement {
     sid       = "AllowEC2PutObject"
-    effect    = "Allow"
+    effect    = "Deny"
     actions   = ["s3:PutObject"]
     resources = [
       "${aws_s3_bucket.this["media"].arn}",
@@ -134,7 +134,7 @@ data "aws_iam_policy_document" "media" {
       identifiers = values(aws_iam_role.ec2)[*].arn
     }
     condition {
-      test     = "StringEquals"
+      test     = "StringNotEquals"
       variable = "aws:SourceVpc"
       values   = [aws_vpc.this.id]
     }
