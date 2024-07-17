@@ -75,28 +75,30 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
 data "aws_iam_policy_document" "media" {
   statement {
     sid       = "AllowCloudFrontAccess"
-    effect    = "Allow"
+    effect    = "Deny"
     actions   = ["s3:GetObject"]
-    resources = [
-      "${aws_s3_bucket.this["media"].arn}/*.jpg",
-      "${aws_s3_bucket.this["media"].arn}/*.jpeg",
-      "${aws_s3_bucket.this["media"].arn}/*.png",
-      "${aws_s3_bucket.this["media"].arn}/*.gif",
-      "${aws_s3_bucket.this["media"].arn}/*.webp"
-    ]
+    resources = ["${aws_s3_bucket.this["media"].arn}/*"]
+    condition {
+      test     = "StringNotEquals"
+      variable = "s3:x-amz-meta-file-type"
+      values   = ["image/jpeg", "image/png", "image/gif", "image/webp", "text/css", "application/javascript"]
+    }
     principals {
       type        = "AWS"
       identifiers = [aws_cloudfront_origin_access_identity.this.iam_arn]
-    }
+   }
   }
 
   statement {
     sid       = "AllowLambdaGet"
     effect    = "Allow"
-    actions = [
-      "s3:GetObject"
-    ]
+    actions = ["s3:GetObject"]
     resources = ["${aws_s3_bucket.this["media"].arn}/*"]
+    condition {
+      test     = "StringNotEquals"
+      variable = "s3:x-amz-meta-file-type"
+      values   = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+    }
     principals {
       type        = "AWS"
       identifiers = [aws_iam_role.lambda.arn]
@@ -106,10 +108,13 @@ data "aws_iam_policy_document" "media" {
   statement {
     sid       = "AllowLambdaPut"
     effect    = "Allow"
-    actions = [
-      "s3:PutObject"
-    ]
+    actions = ["s3:PutObject"]
     resources = ["${aws_s3_bucket.this["media-optimized"].arn}/*"]
+    condition {
+      test     = "StringNotEquals"
+      variable = "s3:x-amz-meta-file-type"
+      values   = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+    }
     principals {
       type        = "AWS"
       identifiers = [aws_iam_role.lambda.arn]
@@ -132,6 +137,11 @@ data "aws_iam_policy_document" "media" {
       test     = "StringEquals"
       variable = "aws:SourceVpc"
       values   = [aws_vpc.this.id]
+    }
+    condition {
+      test     = "StringNotEquals"
+      variable = "s3:x-amz-meta-file-type"
+      values   = ["image/jpeg", "image/png", "image/gif", "image/webp", "text/css", "application/javascript"]
     }
   }
 
