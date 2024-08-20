@@ -68,9 +68,10 @@ build {
     pause_before = "10s"
     timeout      = "60s"
     environment_vars = [
-"INSTANCE_NAME=${var.INSTANCE_NAME}",
-"PARAMETERSTORE_NAME=${var.PARAMETERSTORE_NAME}"
-]
+      "INSTANCE_NAME=${var.INSTANCE_NAME}",
+      "PARAMETERSTORE_NAME=${var.PARAMETERSTORE_NAME}"
+    ]
+    execute_command  = "sudo -E sh '{{ .Path }}'"
  }
   
   post-processor "manifest" {
