@@ -11,7 +11,7 @@ resource "aws_iam_user" "ses_smtp_user" {
 }
 	
 resource "aws_ses_email_identity" "ses_email_identity" {
-  email = "${var.admin["admin_email"]}"
+  email = "${var.magento["admin_email"]}"
 }
 
 resource "aws_iam_user_policy" "ses_smtp_user_policy" {
