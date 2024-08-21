@@ -7,7 +7,7 @@
 # Create SSM Document runShellScript to pull nginx configuration from CodeCommit
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "codecommit_nginx" {
-  for_each        = var.ec2
+  for_each        = toset(["frontend", "admin"])
   name            = "${local.project}-codecommit-pull-nginx-${each.key}-config-changes"
   document_type   = "Command"
   document_format = "YAML"
@@ -35,7 +35,7 @@ EOT
 # Create EventBridge rule to monitor CodeCommit nginx branch state
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "codecommit_nginx" {
-  for_each      = var.ec2
+  for_each      = toset(["frontend", "admin"])
   name          = "${local.project}-Nginx-${title(each.key)}-Repo-State-Change"
   description   = "CloudWatch monitor nginx ${each.key} repository state change"
   event_pattern = <<EOF
@@ -54,7 +54,7 @@ EOF
 # Create EventBridge target to execute SSM Document
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "codecommit_nginx" {
-  for_each  = var.ec2
+  for_each  = toset(["frontend", "admin"])
   rule      = aws_cloudwatch_event_rule.codecommit_nginx[each.key].name
   target_id = "${local.project}-Nginx-${title(each.key)}-Config-Deployment-Script"
   arn       = aws_ssm_document.codecommit_nginx[each.key].arn
