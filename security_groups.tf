@@ -6,8 +6,8 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create security group and rules for External ALB
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group" "external_alb" {
-  name        = "${local.project}-external-alb-sg"
+resource "aws_security_group" "alb" {
+  name        = "${local.project}-alb-sg"
   description = "Security group rules for ${local.project} ALB"
   vpc_id      = aws_vpc.this.id
 
@@ -36,36 +36,7 @@ resource "aws_security_group" "external_alb" {
     }
 
   tags = {
-    Name = "${local.project}-external-alb-sg"
-  }
-}
-
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create security group and rules for Internal ALB
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group" "internal_alb" {
-  name        = "${local.project}-internal-alb-sg"
-  description = "Security group rules for ${local.project} ALB"
-  vpc_id      = aws_vpc.this.id
-  
-  ingress {
-      description      = "Allow all inbound traffic on the load balancer http listener port"
-      from_port        = 80
-      to_port          = 80
-      protocol         = "tcp"
-      cidr_blocks      = ["0.0.0.0/0"] 
-    }
-
-  egress {
-      description      = "Allow outbound traffic to instances on the load balancer listener port"
-      from_port        = 80
-      to_port          = 80
-      protocol         = "tcp"
-      security_groups  = [aws_security_group.ec2.id]
-    }
-
-  tags = {
-    Name = "${local.project}-internal-alb-sg"
+    Name = "${local.project}-alb-sg"
   }
 }
 
@@ -178,26 +149,16 @@ resource "aws_security_group_rule" "ec2_http_external" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.external_alb.id
-    security_group_id = aws_security_group.ec2.id
-    }
-
-resource "aws_security_group_rule" "ec2_http_internal" {
-    type        = "ingress"
-    description = "Allow all inbound traffic from the load balancer on http port"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    source_security_group_id = aws_security_group.internal_alb.id
+    source_security_group_id = aws_security_group.alb.id
     security_group_id = aws_security_group.ec2.id
     }
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create security group and rules for RDS
+# Create security group and rules for MariaDB
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group" "rds" {
+resource "aws_security_group" "mariadb" {
   name        = "${local.project}-rds-sg"
-  description = "Security group rules for ${local.project} RDS"
+  description = "Security group rules for ${local.project} MariaDB"
   vpc_id      = aws_vpc.this.id
 
   ingress {
@@ -218,7 +179,7 @@ resource "aws_security_group" "rds" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "redis" {
   name        = "${local.project}-redis-sg"
-  description = "Security group rules for ${local.project} ElastiCache"
+  description = "Security group rules for ${local.project} Redis"
   vpc_id      = aws_vpc.this.id
 
   ingress {
