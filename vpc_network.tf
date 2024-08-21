@@ -7,12 +7,12 @@
 # Create our dedicated VPC
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_vpc" "this" {
-  cidr_block           = var.app["cidr_block"]
+  cidr_block           = var.magento["cidr_block"]
   instance_tenancy     = "default"
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
-    Name = "${var.app["brand"]}-vpc"
+    Name = "${local.project}-vpc"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
