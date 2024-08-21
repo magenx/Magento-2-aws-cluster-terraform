@@ -33,25 +33,25 @@ variable "ec2" {
     frontend = {
       instance_type    = "c7g.xlarge"
       private_ip       = null
-      volume_size      = null
+      volume_size      = "25"
       warm_pool        = "enabled"
       desired_capacity = "1"
       min_size         = "1"
       max_size         = "5"
     }
-	admin = {
+    admin = {
       instance_type    = "c7g.xlarge"
       private_ip       = null
-      volume_size      = null
+      volume_size      = "25"
       warm_pool        = "enabled"
       desired_capacity = "1"
       min_size         = "1"
       max_size         = "5"
     }
-	opensearch = {
+    opensearch = {
       instance_type    = "c7g.large"
       private_ip       = "172.35.35.25"
-      volume_size      = null
+      volume_size      = "100"
       warm_pool        = "disabled"
       desired_capacity = "1"
       min_size         = "1"
@@ -60,7 +60,7 @@ variable "ec2" {
     redis = {
       instance_type    = "c7g.large"
       private_ip       = "172.35.35.20"
-      volume_size      = null
+      volume_size      = "25"
       warm_pool        = "disabled"
       desired_capacity = "1"
       min_size         = "1"
@@ -69,7 +69,7 @@ variable "ec2" {
     rabbitmq = {
       instance_type    = "c7g.medium"
       private_ip       = "172.35.35.15"
-      volume_size      = null
+      volume_size      = "25"
       warm_pool        = "disabled"
       desired_capacity = "1"
       min_size         = "1"
@@ -78,7 +78,7 @@ variable "ec2" {
     mariadb = {
       instance_type    = "m7g.2xlarge"
       private_ip       = "172.35.35.10"
-      volume_size      = "500"
+      volume_size      = "25"
       warm_pool        = "disabled"
       desired_capacity = "1"
       min_size         = "1"
@@ -87,7 +87,7 @@ variable "ec2" {
   }
 }
 
-variable "app" {
+variable "magento" {
   description      = "Map application params | Magento 2"
   default          = {
     app_version      = "2"
