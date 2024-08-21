@@ -33,11 +33,11 @@ resource "aws_cloudfront_distribution" "this" {
   http_version        = "http2and3"
   web_acl_id          = aws_wafv2_web_acl.this.arn
   price_class         = "PriceClass_100"
-  comment             = "${var.app["domain"]} pub/media pub/static assets"
+  comment             = "${var.magento["domain"]} pub/media pub/static assets"
   
   origin {
     domain_name = aws_s3_bucket.this["media"].bucket_regional_domain_name
-    origin_id   = "${var.app["domain"]}-media-assets"
+    origin_id   = "${var.magento["domain"]}-media-assets"
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.this.cloudfront_access_identity_path
     }
@@ -45,7 +45,7 @@ resource "aws_cloudfront_distribution" "this" {
 
   origin {
     domain_name = aws_s3_bucket.this["media-optimized"].bucket_regional_domain_name
-    origin_id   = "${var.app["domain"]}-media-optimized-assets"
+    origin_id   = "${var.magento["domain"]}-media-optimized-assets"
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.this.cloudfront_access_identity_path
     }
@@ -53,7 +53,7 @@ resource "aws_cloudfront_distribution" "this" {
 
   origin {
     domain_name = aws_lambda_function.image_optimization.invoke_arn
-    origin_id   = "${var.app["domain"]}-lambda-image-optimization"
+    origin_id   = "${var.magento["domain"]}-lambda-image-optimization"
     origin_access_control_id = aws_cloudfront_origin_access_control.this.id
     custom_origin_config {
       http_port              = 80
@@ -70,7 +70,7 @@ resource "aws_cloudfront_distribution" "this" {
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${var.app["domain"]}-media-assets"
+    target_origin_id = "${var.magento["domain"]}-media-assets"
     viewer_protocol_policy   = "https-only"
     origin_request_policy_id = data.aws_cloudfront_origin_request_policy.media.id
     cache_policy_id          = data.aws_cloudfront_cache_policy.media.id
@@ -88,21 +88,21 @@ resource "aws_cloudfront_distribution" "this" {
   }
 
   origin_group {
-    origin_id         = "${var.app["domain"]}-S3-lambda-image-optimization"
+    origin_id         = "${var.magento["domain"]}-S3-lambda-image-optimization"
     failover_criteria {
       status_codes = [403, 500, 503, 504]
     }
     member {
-      origin_id = "${var.app["domain"]}-media-optimized-assets"
+      origin_id = "${var.magento["domain"]}-media-optimized-assets"
     }
     member {
-      origin_id = "${var.app["domain"]}-lambda-image-optimization"
+      origin_id = "${var.magento["domain"]}-lambda-image-optimization"
     }
   }
   
   origin {
     domain_name = aws_lb.this["external"].dns_name
-    origin_id   = "${var.app["domain"]}-static-assets"
+    origin_id   = "${var.magento["domain"]}-static-assets"
     custom_origin_config {
        http_port              = 80
        https_port             = 443
@@ -119,7 +119,7 @@ resource "aws_cloudfront_distribution" "this" {
     path_pattern     = "/static/*"
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${var.app["domain"]}-static-assets"
+    target_origin_id = "${var.magento["domain"]}-static-assets"
 	
     origin_request_policy_id = data.aws_cloudfront_origin_request_policy.static.id
     cache_policy_id          = data.aws_cloudfront_cache_policy.static.id
