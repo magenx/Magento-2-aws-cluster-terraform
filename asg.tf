@@ -11,8 +11,8 @@ resource "aws_launch_template" "this" {
   name = "${local.project}-${each.key}-ltpl"
   iam_instance_profile { name = aws_iam_instance_profile.ec2[each.key].name }
   image_id = element(values(data.external.packer[each.key].result), 0)
-  instance_type = each.value
-  monitoring { enabled = var.asg["monitoring"] }
+  instance_type = each.value.instance_type
+  monitoring { enabled = true }
   network_interfaces { 
     associate_public_ip_address = true
     security_groups = [aws_security_group.ec2.id]
@@ -45,18 +45,18 @@ resource "aws_autoscaling_group" "this" {
   for_each = var.ec2
   name = "${local.project}-${each.key}-asg"
   vpc_zone_identifier = values(aws_subnet.this).*.id
-  desired_capacity    = var.asg["desired_capacity"]
-  min_size            = var.asg["min_size"]
-  max_size            = var.asg["max_size"]
+  desired_capacity    = each.value.desired_capacity
+  min_size            = each.value.min_size
+  max_size            = each.value.max_size
   health_check_grace_period = var.asg["health_check_grace_period"]
   health_check_type         = var.asg["health_check_type"]
   target_group_arns  = [aws_lb_target_group.this[each.key].arn]
   dynamic "warm_pool" {
-    for_each = var.asg["warm_pool"] == "enabled" ? [var.ec2] : []
+    for_each = var.ec2["warm_pool"] == "enabled" ? [var.ec2] : []
     content {
-      pool_state                  = "Stopped"
-      min_size                    = var.asg["min_size"]
-      max_group_prepared_capacity = var.asg["max_size"]
+      pool_state                  = "Hibernated"
+      min_size                    = each.value.min_size
+      max_group_prepared_capacity = each.value.min_size
     }
   }
   launch_template {
@@ -105,7 +105,7 @@ group_names = [
 # Create Autoscaling policy for scale-out
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "scaleout" {
-  for_each               = var.ec2
+  for_each               = { for instance, value in var.ec2 : instance => value if value.max_size > 1 }
   name                   = "${local.project}-${each.key}-asp-out"
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
@@ -116,7 +116,7 @@ resource "aws_autoscaling_policy" "scaleout" {
 # Create CloudWatch alarm metric to execute Autoscaling policy for scale-out
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "scaleout" {
-  for_each            = var.ec2
+  for_each            = { for instance, value in var.ec2 : instance => value if value.max_size > 1 }
   alarm_name          = "${local.project}-${each.key} scale-out alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.asp["evaluation_periods_out"]
@@ -135,7 +135,7 @@ resource "aws_cloudwatch_metric_alarm" "scaleout" {
 # Create Autoscaling policy for scale-in
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_policy" "scalein" {
-  for_each               = var.ec2
+  for_each               = { for instance, value in var.ec2 : instance => value if value.max_size > 1 }
   name                   = "${local.project}-${each.key}-asp-in"
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
@@ -146,7 +146,7 @@ resource "aws_autoscaling_policy" "scalein" {
 # Create CloudWatch alarm metric to execute Autoscaling policy for scale-in
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_metric_alarm" "scalein" {
-  for_each            = var.ec2
+  for_each            = { for instance, value in var.ec2 : instance => value if value.max_size > 1 }
   alarm_name          = "${local.project}-${each.key} scale-in alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = var.asp["evaluation_periods_in"]
@@ -161,5 +161,14 @@ resource "aws_cloudwatch_metric_alarm" "scalein" {
   alarm_description = "${each.key} scale-in alarm - CPU less than ${var.asp["in_threshold"]} percent"
   alarm_actions     = [aws_autoscaling_policy.scalein[each.key].arn]
 }
-
-
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create lifecycle transition notification for MariaDB instance termination
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_autoscaling_lifecycle_hook" "this" {
+  name                    = "${local.project} mariadb"
+  autoscaling_group_name  = aws_autoscaling_group.mariadb.name
+  lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
+  role_arn                = aws_iam_role.ec2["mariadb"].arn
+  notification_target_arn = aws_sns_topic.default.arn
+  heartbeat_timeout       = 300
+}
