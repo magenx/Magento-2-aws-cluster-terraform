@@ -41,9 +41,15 @@ resource "aws_internet_gateway" "this" {
 # Create route table in our dedicated VPC
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_route" "this" {
-  route_table_id         = aws_vpc.this.main_route_table_id
+  route_table_id         = aws_route_table.this.id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.this.id
+}
+resource "aws_route_table" "this" {
+  vpc_id = aws_vpc.this.id
+  tags = {
+    Name = "${local.project}-route-table"
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Assign AZ subnets to route table in our dedicated VPC
@@ -51,7 +57,7 @@ resource "aws_route" "this" {
 resource "aws_route_table_association" "this" {
   for_each       = aws_subnet.this
   subnet_id      = aws_subnet.this[each.key].id
-  route_table_id = aws_vpc.this.main_route_table_id
+  route_table_id = aws_route_table.this.id
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create DHCP options in our dedicated VPC
