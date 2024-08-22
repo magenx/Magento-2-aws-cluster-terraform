@@ -12,7 +12,7 @@ resource "aws_ssm_document" "user_data" {
   document_type = "Command"
   content = <<EOF
 schemaVersion: "2.2"
-description: "Bootstrapping EC2 instance With UserData"
+description: "Bootstrapping EC2 instance with UserData"
 mainSteps:
   - name: "BootstrappingEC2"
     action: "aws:runShellScript"
@@ -21,8 +21,10 @@ mainSteps:
         - |-
           AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
           INSTANCE_IP=$(curl -s -H "X-aws-ec2-metadata-token: $${AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
+          INSTANCE_HOSTNAME=$(curl -s -H "X-aws-ec2-metadata-token: $${AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Hostname)
         - |-
-          echo "$${INSTANCE_IP}  ${each.key}.${var.magento["brand"]}.internal ${each.key}" >> /etc/hosts
+          echo "$${INSTANCE_IP}  $${INSTANCE_HOSTNAME}" >> /etc/hosts
+          hostnamectl set-hostname $${INSTANCE_HOSTNAME}
         - |-
           if [ -d "/home/${var.magento["brand"]}/public_html/" ]; then
             cd /home/${var.magento["brand"]}/public_html/
