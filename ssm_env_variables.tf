@@ -31,6 +31,7 @@ resource "aws_ssm_parameter" "env" {
 "OPENSEARCH_ENDPOINT" : "opensearch.${aws_route53_zone.this.name}",
 "OPENSEARCH_ADMIN" : "${random_string.this["opensearch"].result}",
 "OPENSEARCH_PASSWORD" : "${random_password.this["opensearch"].result}",
+"INDEXER_PASSWORD" : "${random_password.this["indexer"].result}",
 "REDIS_CACHE_ENDPOINT" : "redis.${aws_route53_zone.this.name}",
 "REDIS_SESSION_ENDPOINT" : "redis.${aws_route53_zone.this.name}",
 "REDIS_PASSWORD" : "${random_password.this["redis"].result}",
