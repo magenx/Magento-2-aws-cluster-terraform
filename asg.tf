@@ -58,7 +58,7 @@ resource "aws_autoscaling_group" "this" {
   health_check_type         = var.asg["health_check_type"]
   target_group_arns  = [aws_lb_target_group.this[each.key].arn]
   dynamic "warm_pool" {
-    for_each = var.ec2["warm_pool"] == "enabled" ? [var.ec2] : []
+    for_each = each.value.warm_pool == "enabled" ? [var.ec2] : []
     content {
       pool_state                  = "Hibernated"
       min_size                    = each.value.min_size
