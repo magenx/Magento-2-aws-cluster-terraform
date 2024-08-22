@@ -79,7 +79,7 @@ resource "aws_security_group_rule" "ec2_mysql_out" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    source_security_group_id = aws_security_group.rds.id
+    source_security_group_id = aws_security_group.mariadb.id
     security_group_id = aws_security_group.ec2.id
     }
 
@@ -157,7 +157,7 @@ resource "aws_security_group_rule" "ec2_http_external" {
 # Create security group and rules for MariaDB
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "mariadb" {
-  name        = "${local.project}-rds-sg"
+  name        = "${local.project}-mariadb-sg"
   description = "Security group rules for ${local.project} MariaDB"
   vpc_id      = aws_vpc.this.id
 
@@ -170,7 +170,7 @@ resource "aws_security_group" "mariadb" {
     }
 
   tags = {
-    Name = "${local.project}-rds-sg"
+    Name = "${local.project}-mariadb-sg"
   }
 }
 
