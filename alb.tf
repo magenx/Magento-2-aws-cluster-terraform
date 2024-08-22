@@ -7,7 +7,7 @@
 # Create Application Load Balancers
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb" "this" {
-  name               = "${local.project}-${each.key}-alb"
+  name               = "${local.project}-alb"
   internal           = false
   load_balancer_type = "application"
   drop_invalid_header_fields = true
@@ -27,7 +27,7 @@ resource "aws_lb" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_target_group" "this" {
   for_each    = var.ec2
-  name        = "${local.project}-${each.key}-albtarget"
+  name        = "${local.project}-${each.key}-alb-target"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.this.id
