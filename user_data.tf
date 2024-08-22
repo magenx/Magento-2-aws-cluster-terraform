@@ -7,15 +7,14 @@
 # Create SSM Document to configure EC2 instances in Auto Scaling Group
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "user_data" {
-  for_each      = var.ec2
-  name          = "BootstrappingEC2WithUserData${each.key}"
+  name          = "BootstrappingEC2WithUserData"
   document_format = "YAML"
   document_type = "Command"
   content = <<EOF
 schemaVersion: "2.2"
-description: "Bootstrapping EC2 ${each.key} instance With UserData"
+description: "Bootstrapping EC2 instance With UserData"
 mainSteps:
-  - name: "BootstrappingEC2${each.key}"
+  - name: "BootstrappingEC2"
     action: "aws:runShellScript"
     inputs:
       runCommand: <<EOF
@@ -42,7 +41,7 @@ EOF
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_association" "user_data" {
   for_each = var.ec2
-  name     = aws_ssm_document.user_data[each.key].name
+  name     = aws_ssm_document.user_data.name
   targets {
     key    = "tag:aws:autoscaling:groupName"
     values = [aws_autoscaling_group.this[each.key].name]
@@ -72,7 +71,7 @@ resource "aws_cloudwatch_event_rule" "instance_launch" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "instance_launch" {
   for_each  = var.ec2
-  rule      = aws_cloudwatch_event_rule.instance_launch.name
+  rule      = aws_cloudwatch_event_rule.instance_launch[each.key].name
   target_id = "${local.project}-${each.key}-instance-launch"
   arn       =  aws_ssm_document.user_data.arn
   
