@@ -25,15 +25,15 @@ mainSteps:
         - |-
           echo "$${INSTANCE_IP}  ${each.key}.${var.magento["brand"]}.internal ${each.key}" >> /etc/hosts
         - |-
-          if [ -d /home/${var.magento["brand"]}/public_html/ ]; then
-          cd /home/${var.magento["brand"]}/public_html/
-          su ${var.magento["brand"]} -s /bin/bash -c "git init -b main"
-          su ${var.magento["brand"]} -s /bin/bash -c "git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
-          su ${var.magento["brand"]} -s /bin/bash -c "git fetch origin main"
-          su ${var.magento["brand"]} -s /bin/bash -c "git reset origin/main --hard"
-          sed -i "s/listen 80;/listen $${INSTANCE_IP} 80;/" /etc/nginx/sites-available/${var.magento["domain"]}.conf
-          sed -i "s/localhost/$${INSTANCE_IP}/g" /etc/varnish/default.vcl
-          systemctl restart varnish nginx php${var.magento["php_version"]}-fpm
+          if [ -d "/home/${var.magento["brand"]}/public_html/" ]; then
+            cd /home/${var.magento["brand"]}/public_html/
+            su ${var.magento["brand"]} -s /bin/bash -c "git init -b main"
+            su ${var.magento["brand"]} -s /bin/bash -c "git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
+            su ${var.magento["brand"]} -s /bin/bash -c "git fetch origin main"
+            su ${var.magento["brand"]} -s /bin/bash -c "git reset origin/main --hard"
+            sed -i "s/listen 80;/listen $${INSTANCE_IP}:80;/" /etc/nginx/sites-available/${var.magento["domain"]}.conf
+            sed -i "s/localhost/$${INSTANCE_IP}/g" /etc/varnish/default.vcl
+            systemctl restart varnish nginx php${var.magento["php_version"]}-fpm
           fi
 EOF
 }
