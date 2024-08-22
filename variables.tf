@@ -12,7 +12,8 @@ variable "password" {
       "mariadb",
       "rabbitmq",
       "redis",
-      "opensearch"
+      "opensearch",
+      "indexer"
    ]
 }
 
