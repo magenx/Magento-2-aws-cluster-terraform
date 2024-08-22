@@ -7,6 +7,6 @@
 # Create Route53 private zone configuration
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_route53_zone" "this" {
-  name = "var.magento["brand"].internal"
+  name = "${var.magento["brand"]}.internal"
   vpc_id = aws_vpc.this.id
 }
