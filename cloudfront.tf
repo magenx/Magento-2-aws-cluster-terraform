@@ -101,7 +101,7 @@ resource "aws_cloudfront_distribution" "this" {
   }
   
   origin {
-    domain_name = aws_lb.this["external"].dns_name
+    domain_name = aws_lb.this.dns_name
     origin_id   = "${var.magento["domain"]}-static-assets"
     custom_origin_config {
        http_port              = 80
