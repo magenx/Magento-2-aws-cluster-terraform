@@ -9,7 +9,7 @@ locals {
 variable "password" {
    description = "Generate password"
    default     = [
-      "database",
+      "mariadb",
       "rabbitmq",
       "redis",
       "opensearch"
