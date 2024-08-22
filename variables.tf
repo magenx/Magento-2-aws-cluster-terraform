@@ -10,6 +10,7 @@ variable "password" {
    description = "Generate password"
    default     = [
       "mariadb",
+      "mariadb_root",
       "rabbitmq",
       "redis",
       "opensearch",
