@@ -8,5 +8,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_route53_zone" "this" {
   name = "${var.magento["brand"]}.internal"
-  vpc_id = aws_vpc.this.id
+  vpc {
+    vpc_id = aws_vpc.this.id
+ }
 }
