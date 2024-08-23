@@ -4,7 +4,8 @@
 function handler(event) {
     var request = event.request;
     var originalImagePath = request.uri;
-    //  validate, process and normalize the requested operations in query parameters
+    
+    // Validate, process, and normalize the requested operations in query parameters
     var normalizedOperations = {};
     if (request.querystring) {
         Object.keys(request.querystring).forEach(operation => {
@@ -30,7 +31,6 @@ function handler(event) {
                     if (request.querystring[operation]['value']) {
                         var width = parseInt(request.querystring[operation]['value']);
                         if (!isNaN(width) && (width > 0)) {
-                            // you can protect the Lambda function by setting a max value, e.g. if (width > 4000) width = 4000;
                             normalizedOperations['width'] = width.toString();
                         }
                     }
@@ -39,7 +39,6 @@ function handler(event) {
                     if (request.querystring[operation]['value']) {
                         var height = parseInt(request.querystring[operation]['value']);
                         if (!isNaN(height) && (height > 0)) {
-                            // you can protect the Lambda function by setting a max value, e.g. if (height > 4000) height = 4000;
                             normalizedOperations['height'] = height.toString();
                         }
                     }
@@ -56,9 +55,9 @@ function handler(event) {
                 default: break;
             }
         });
-        //rewrite the path to normalized version if valid operations are found
+
+        // Rewrite the path to the normalized version if valid operations are found
         if (Object.keys(normalizedOperations).length > 0) {
-            // put them in order
             var normalizedOperationsArray = [];
             if (normalizedOperations.format) normalizedOperationsArray.push('format='+normalizedOperations.format);
             if (normalizedOperations.quality) normalizedOperationsArray.push('quality='+normalizedOperations.quality);
@@ -74,7 +73,8 @@ function handler(event) {
         // If no query strings are found, flag the request with /original path suffix
         request.uri = originalImagePath + '/original'; 
     }
-    // remove query strings
-    request['querystring'] = {};
+    
+    // Remove query strings
+    request.querystring = {};
+    
     return request;
-}
