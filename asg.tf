@@ -13,13 +13,15 @@ resource "aws_launch_template" "this" {
   image_id = element(values(data.external.packer[each.key].result), 0)
   instance_type = each.value.instance_type
   monitoring { enabled = true }
-  dynamic "network_interfaces" {
-    for_each = var.ec2
-    content {
-      associate_public_ip_address = true
-      security_groups             = [aws_security_group.ec2.id]
-      device_index                = 0
-      private_ip_address          = network_interfaces.value.private_ip
+  network_interface {
+    associate_public_ip_address = true
+    security_groups             = [aws_security_group.ec2.id]
+    dynamic "network_interface" {
+      for_each = each.value.private_ip != null ? [1] : []
+      content {
+        device_index       = 0
+        private_ip_address = cidrhost(values(aws_subnet.this).0.cidr_block, each.value.private_ip)
+      }
     }
   }
   dynamic "tag_specifications" {
