@@ -89,14 +89,14 @@ data "aws_iam_policy_document" "codecommit_access" {
   for_each = var.ec2
 
   statement {
-    sid     = "codecommitaccessapp${each.key}"
+    sid     = "codecommitaccessmagento${each.key}"
     effect  = "Allow"
     actions = [
       "codecommit:Get*",
       "codecommit:List*",
       "codecommit:GitPull"
     ]
-    resources = [aws_codecommit_repository.app.arn]
+    resources = [aws_codecommit_repository.magento.arn]
     condition {
       test     = "StringEqualsIfExists"
       variable = "codecommit:References"
