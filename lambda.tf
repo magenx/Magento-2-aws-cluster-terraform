@@ -93,7 +93,7 @@ resource "aws_lambda_function" "image_optimization" {
   role          = aws_iam_role.lambda.arn
   s3_bucket     = aws_s3_bucket.this["system"].id
   s3_key        = aws_s3_object.lambda_image_optimization.key
-  runtime       = "nodejs18.x"
+  runtime       = "nodejs20.x"
   handler       = "index.handler"
   memory_size   = 1500
   timeout       = 60
