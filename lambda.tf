@@ -20,7 +20,7 @@ data "aws_iam_policy_document" "lambda" {
       "logs:CreateLogStream",
       "logs:PutLogEvents",
     ]
-    resources = [aws_cloudwatch_log_group.lambda.arn]
+    resources = ["*"]
   }
 
   statement {
