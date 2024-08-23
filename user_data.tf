@@ -29,7 +29,7 @@ mainSteps:
           if [ -d "/home/${var.magento["brand"]}/public_html/" ]; then
             cd /home/${var.magento["brand"]}/public_html/
             su ${var.magento["brand"]} -s /bin/bash -c "git init -b main"
-            su ${var.magento["brand"]} -s /bin/bash -c "git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}"
+            su ${var.magento["brand"]} -s /bin/bash -c "git remote add origin codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.magento.repository_name}"
             su ${var.magento["brand"]} -s /bin/bash -c "git fetch origin main"
             su ${var.magento["brand"]} -s /bin/bash -c "git reset origin/main --hard"
             sed -i "s/listen 80;/listen $${INSTANCE_IP}:80;/" /etc/nginx/sites-available/${var.magento["domain"]}.conf
