@@ -13,9 +13,14 @@ resource "aws_launch_template" "this" {
   image_id = element(values(data.external.packer[each.key].result), 0)
   instance_type = each.value.instance_type
   monitoring { enabled = true }
-  network_interfaces { 
-    associate_public_ip_address = true
-    security_groups = [aws_security_group.ec2.id]
+  dynamic "network_interfaces" {
+    for_each = var.ec2
+    content {
+      associate_public_ip_address = true
+      security_groups             = [aws_security_group.ec2.id]
+      device_index                = 0
+      private_ip_address          = network_interfaces.value.private_ip
+    }
   }
   dynamic "tag_specifications" {
     for_each = toset(["instance","volume"])
