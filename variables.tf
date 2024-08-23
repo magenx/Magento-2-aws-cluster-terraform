@@ -52,7 +52,7 @@ variable "ec2" {
     }
     opensearch = {
       instance_type    = "c7g.large"
-      private_ip       = "172.35.35.25"
+      private_ip       = "25"
       volume_size      = "100"
       warm_pool        = "disabled"
       desired_capacity = "1"
@@ -61,7 +61,7 @@ variable "ec2" {
     }
     redis = {
       instance_type    = "c7g.large"
-      private_ip       = "172.35.35.20"
+      private_ip       = "20"
       volume_size      = "25"
       warm_pool        = "disabled"
       desired_capacity = "1"
@@ -70,7 +70,7 @@ variable "ec2" {
     }
     rabbitmq = {
       instance_type    = "c7g.medium"
-      private_ip       = "172.35.35.15"
+      private_ip       = "15"
       volume_size      = "25"
       warm_pool        = "disabled"
       desired_capacity = "1"
@@ -79,7 +79,7 @@ variable "ec2" {
     }
     mariadb = {
       instance_type    = "m7g.2xlarge"
-      private_ip       = "172.35.35.10"
+      private_ip       = "10"
       volume_size      = "25"
       warm_pool        = "disabled"
       desired_capacity = "1"
