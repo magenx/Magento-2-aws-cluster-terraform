@@ -24,7 +24,7 @@ resource "aws_ssm_parameter" "env" {
 "EFS_ACCESS_POINT_VAR" : "${aws_efs_access_point.this["var"].id}",
 "EFS_ACCESS_POINT_MEDIA" : "${aws_efs_access_point.this["media"].id}",
 "SNS_TOPIC_ARN" : "${aws_sns_topic.default.arn}",
-"CODECOMMIT_APP_REPO" : "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.app.repository_name}",
+"CODECOMMIT_MAGENTO_REPO" : "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.magento.repository_name}",
 "CODECOMMIT_SERVICES_REPO" : "codecommit::${data.aws_region.current.name}://${aws_codecommit_repository.services.repository_name}",
 "RABBITMQ_ENDPOINT" : "rabbitmq.${aws_route53_zone.this.name}",
 "RABBITMQ_USER" : "${var.magento["brand"]}",
