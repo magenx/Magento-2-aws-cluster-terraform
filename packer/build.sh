@@ -4,107 +4,514 @@
 #        Copyright (C) 2013-present admin@magenx.com                              #
 #        All rights reserved.                                                     #
 #=================================================================================#
+SELF=$(basename $0)
+MAGENX_VERSION=$(curl -s https://api.github.com/repos/magenx/Magento-2-server-installation/tags 2>&1 | head -3 | grep -oP '(?<=")\d.*(?=")')
+MAGENX_BASE="https://magenx.sh"
 
-AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
-INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
+###################################################################################
+###                              REPOSITORY AND PACKAGES                        ###
+###################################################################################
+
+# Github installation repository raw url
+MAGENX_INSTALL_GITHUB_REPO="https://raw.githubusercontent.com/magenx/Magento-2-server-installation/master"
+
+## Version lock
+COMPOSER_VERSION="2.4"
+RABBITMQ_VERSION="3.12*"
+MARIADB_VERSION="10.11"
+OPENSEARCH_VERSION="2.x"
+VARNISH_VERSION="73"
+REDIS_VERSION="7"
+
+# Repositories
+MARIADB_REPO_CONFIG="https://downloads.mariadb.com/MariaDB/mariadb_repo_setup"
+
+# Nginx configuration
+NGINX_VERSION=$(curl -s http://nginx.org/en/download.html | grep -oP '(?<=gz">nginx-).*?(?=</a>)' | head -1)
+MAGENX_NGINX_GITHUB_REPO="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/"
+MAGENX_NGINX_GITHUB_REPO_API="https://api.github.com/repos/magenx/Magento-nginx-config/contents/magento2"
+
+# WebStack Packages .deb
+WEB_STACK_CHECK="mysql* rabbitmq* elasticsearch opensearch percona-server* maria* php* nginx* ufw varnish* certbot* redis* webmin"
+
+EXTRA_PACKAGES="curl jq gnupg2 auditd apt-transport-https apt-show-versions ca-certificates lsb-release make autoconf snapd automake libtool uuid-runtime \
+perl openssl unzip screen nfs-common inotify-tools iptables smartmontools mlocate vim wget sudo apache2-utils \
+logrotate git netcat-openbsd patch ipset postfix strace rsyslog geoipupdate moreutils lsof sysstat acl attr iotop expect imagemagick snmp"
+
+PERL_MODULES="liblwp-protocol-https-perl libdbi-perl libconfig-inifiles-perl libdbd-mysql-perl libterm-readkey-perl"
+
+PHP_PACKAGES=(cli fpm common mysql zip gd mbstring curl xml bcmath intl ldap soap oauth apcu)
+
+###################################################################################
+###                              CLEANUP AND SET TIMEZONE                       ###
+###################################################################################
+## Debian
+
+# check if web stack is clean and clean it
+installed_packages="$(apt -qq list --installed ${WEB_STACK_CHECK} 2> /dev/null | cut -d'/' -f1 | tr '\n' ' ')"
+if [ ! -z "$installed_packages" ]; then
+apt -qq -y remove --purge "${installed_packages}"
+fi
+
+# configure system/magento timezone
+ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
+dpkg-reconfigure --frontend noninteractive tzdata
+
+###################################################################################
+###                               GET PARAMETERSTORE                            ###
+###################################################################################
 
 # get parameters
-sudo apt-get update
-sudo apt-get -qqy install jq
+apt-get -qqy update
+apt-get -qqy install jq
 
-sudo sh -c "echo 'export PARAMETERSTORE_NAME=${PARAMETERSTORE_NAME}' >> /root/.bashrc"
-PARAMETER=$(sudo aws ssm get-parameter --name "${PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
+PARAMETER=$(aws ssm get-parameter --name "${PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
 declare -A parameter
 while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
 
-## installation
-sudo apt-get -qqy install ${parameter["LINUX_PACKAGES"]}
-sudo pip3 install git-remote-codecommit
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-. "$HOME/.cargo/env"
+###################################################################################
+###                              VARIABLES CONSTRUCTOR                          ###
+###################################################################################
 
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Frontend and admin instance configuration
-# # ---------------------------------------------------------------------------------------------------------------------#
+OPENSEARCH_ENDPOINT="opensearch.${parameter["DNS"]}"
+REDIS_ENDPOINT="redis.${parameter["DNS"]}"
+RABBITMQ_ENDPOINT="rabbitmq.${parameter["DNS"]}"
+DATABASE_ENDPONIT="mariadb.${parameter["DNS"]}"
 
-if [ "${parameter["INSTANCE_NAME"]}" != "varnish" ]; then
-## create user
-sudo useradd -d /home/${parameter["BRAND"]} -s /sbin/nologin ${parameter["BRAND"]}
-## create root php user
-sudo useradd -M -s /sbin/nologin -d /home/${parameter["BRAND"]} ${parameter["PHP_USER"]}
-sudo usermod -g ${parameter["PHP_USER"]} ${parameter["BRAND"]}
- 
-sudo mkdir -p ${parameter["WEB_ROOT_PATH"]}
-sudo chmod 711 /home/${parameter["BRAND"]}
-sudo mkdir -p /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
-sudo chown -R ${parameter["BRAND"]}:${parameter["PHP_USER"]} ${parameter["WEB_ROOT_PATH"]}
-sudo chown -R ${parameter["BRAND"]}:${parameter["BRAND"]} /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
-sudo chmod 2750 ${parameter["WEB_ROOT_PATH"]} /home/${parameter["BRAND"]}/{.config,.cache,.local,.composer}
-sudo setfacl -R -m m:rx,u:${parameter["BRAND"]}:rwX,g:${parameter["PHP_USER"]}:r-X,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:${parameter["PHP_USER"]}:r-X,d:o::- ${parameter["WEB_ROOT_PATH"]}
+AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 600")
+INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
+INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
+INSTANCE_IP=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
+
+###################################################################################
+###                          LEMP WEB STACK INSTALLATION                        ###
+###################################################################################
 
 
-sudo sh -c "cat > /home/${parameter["BRAND"]}/.env <<END
-MODE="production"
-DOMAIN="${parameter["BRAND"]}"
-ADMIN_PATH="${parameter["BRAND"]}"
-EXTERNAL_ALB_DNS_NAME="${parameter["EXTERNAL_ALB_DNS_NAME"]}"
-INTERNAL_ALB_DNS_NAME="${parameter["INTERNAL_ALB_DNS_NAME"]}"
-SES_ENDPOINT="${parameter["SES_ENDPOINT"]}"
-REDIS_CACHE_BACKEND="${parameter["REDIS_CACHE_BACKEND"]}"
-REDIS_SESSION_BACKEND="${parameter["REDIS_SESSION_BACKEND"]}"
-REDIS_CACHE_BACKEND_RO="${parameter["REDIS_CACHE_BACKEND_RO"]}"
-REDIS_SESSION_BACKEND_RO="${parameter["REDIS_SESSION_BACKEND_RO"]}"
-REDIS_PASSWORD="${parameter["REDIS_PASSWORD"]}"
-RABBITMQ_ENDPOINT="${parameter["RABBITMQ_ENDPOINT"]}"
-RABBITMQ_PASSWORD="${parameter["RABBITMQ_PASSWORD"]}"
-CRYPT_KEY="${parameter["CRYPT_KEY"]}"
-GRAPHQL_ID_SALT="${parameter["GRAPHQL_ID_SALT"]}"
-DATABASE_ENDPOINT="${parameter["DATABASE_ENDPOINT"]}"
-DATABASE_NAME="${parameter["DATABASE_NAME"]}"
-DATABASE_USER="${parameter["DATABASE_USER"]}"
-DATABASE_PASSWORD="${parameter["DATABASE_PASSWORD"]}"
-OPENSEARCH_ENDPOINT="${parameter["OPENSEARCH_ENDPOINT"]}"
-OPENSEARCH_ADMIN="${parameter["OPENSEARCH_ADMIN"]}"
-INDEXER_PASSWORD="${parameter["INDEXER_PASSWORD"]}"
-ENV_DATE="$(date -u "+%a, %d %b %Y %H:%M:%S %z")"
+if [ "${INSTANCE_NAME}" == "mariadb" ]; then
+# MARIADB INSTALLATION
+curl -sS ${MARIADB_REPO_CONFIG} | bash -s -- --mariadb-server-version="mariadb-${MARIADB_VERSION}" --skip-maxscale --skip-verify --skip-eol-check
+apt -qq update
+apt -qq -y install mariadb-server
+systemctl enable mariadb
+curl -sSo /etc/my.cnf https://raw.githubusercontent.com/magenx/magento-mysql/master/my.cnf/my.cnf
+INNODB_BUFFER_POOL_SIZE=$(echo "0.90*$(awk '/MemTotal/ { print $2 / (1024*1024)}' /proc/meminfo | cut -d'.' -f1)" | bc | xargs printf "%1.0f")
+sed -i "s/innodb_buffer_pool_size = 4G/innodb_buffer_pool_size = ${INNODB_BUFFER_POOL_SIZE}G/" /etc/my.cnf
+systemctl restart mariadb
+sleep 5
+mariadb --connect-expired-password  <<EOMYSQL
+ALTER USER 'root'@'localhost' IDENTIFIED BY "${parameter["DATABASE_ROOT_PASSWORD"]}";
+DELETE FROM mysql.user WHERE User='';
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+DROP DATABASE IF EXISTS test;
+DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+FLUSH PRIVILEGES;
+exit
+EOMYSQL
+
+cat > /root/.my.cnf <<END
+[client]
+user=root
+password="${parameter["DATABASE_ROOT_PASSWORD"]}"
 END
-"
 
+cat > /root/.mytop <<END
+user=root
+pass=${parameter["DATABASE_ROOT_PASSWORD"]}
+db=mysql
+END
+
+chmod 600 /root/.my.cnf /root/.mytop
+
+mariadb <<EOMYSQL
+CREATE USER '${parameter["DATABASE_USER"]}'@'${parameter["CIDR_BLOCK"]/0.0\/16/%}' IDENTIFIED BY '${parameter["DATABASE_PASSWORD"]}';
+CREATE DATABASE IF NOT EXISTS ${parameter["DATABASE_NAME"]};
+GRANT ALL PRIVILEGES ON ${parameter["DATABASE_NAME"]}.* TO '${parameter["DATABASE_USER"]}'@'${parameter["CIDR_BLOCK"]/0.0\/16/%}' WITH GRANT OPTION;
+exit
+EOMYSQL
+
+sed -i "s/bind-address = 127.0.0.1/bind-address = ${DATABASE_ENDPOINT}/" /etc/my.cnf
+
+fi
+
+
+if [ "${INSTANCE_NAME}" == "redis" ]; then
+# REDIS INSTALLATION
+curl -fL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" > /etc/apt/sources.list.d/redis.list
+
+apt -qq update
+apt -qq -y install redis   
+
+systemctl stop redis-server
+systemctl disable redis-server
+
+# Create Redis config
+cat > /etc/systemd/system/redis@.service <<END
+[Unit]
+Description=Advanced key-value store for %i
+After=network.target
+
+[Service]
+Type=notify
+User=redis
+Group=redis
+
+# Security options
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadOnlyPaths=/
+
+# Resource limits
+LimitNOFILE=65535
+
+# Directories to create and permissions
+RuntimeDirectory=redis
+RuntimeDirectoryMode=2755
+UMask=007
+
+# Directories and files that Redis can read and write
+ReadWritePaths=-/var/lib/redis
+ReadWritePaths=-/var/log/redis
+ReadWritePaths=-/run/redis
+
+# Command-line options
+PIDFile=/run/redis/%i.pid
+ExecStartPre=/usr/bin/test -f /etc/redis/%i.conf
+ExecStart=/usr/bin/redis-server /etc/redis/%i.conf --daemonize yes --supervised systemd
+
+# Timeouts
+Restart=on-failure
+TimeoutStartSec=5s
+TimeoutStopSec=5s
+
+[Install]
+WantedBy=multi-user.target
+
+END
+
+mkdir -p /var/lib/redis
+chmod 750 /var/lib/redis
+chown redis /var/lib/redis
+mkdir -p /etc/redis/
+rm /etc/redis/redis.conf
+
+PORT=6379
+
+for SERVICE in session cache
+do
+if [ "${SERVICE}" = "session" ]; then
+# Perfect options for sessions
+CONFIG_OPTIONS="
+save 900 1
+save 300 10
+save 60 10000
+
+appendonly yes
+appendfsync everysec"
+else
+# Default options for cache
+CONFIG_OPTIONS="save \"\""
+fi
+
+cat > /etc/redis/${SERVICE}.conf<<END
+
+bind ${REDIS_ENDPOINT}
+port ${PORT}
+
+daemonize yes
+supervised auto
+protected-mode yes
+timeout 0
+
+requirepass ${parameter["REDIS_PASSWORD"]}
+
+dir /var/lib/redis
+logfile /var/log/redis/${SERVICE}.log
+pidfile /run/redis/${SERVICE}.pid
+
+${CONFIG_OPTIONS}
+
+maxmemory 1024mb
+maxmemory-policy allkeys-lru
+
+lazyfree-lazy-eviction yes
+lazyfree-lazy-expire yes
+lazyfree-lazy-server-del yes
+lazyfree-lazy-user-del yes
+
+rename-command SLAVEOF ""
+rename-command CONFIG ""
+rename-command PUBLISH ""
+rename-command SAVE ""
+rename-command SHUTDOWN ""
+rename-command DEBUG ""
+rename-command BGSAVE ""
+rename-command BGREWRITEAOF ""
+END
+
+((PORT++))
+
+chown redis /etc/redis/${SERVICE}.conf
+chmod 640 /etc/redis/${SERVICE}.conf
+
+systemctl daemon-reload
+systemctl enable redis@${SERVICE}
+systemctl restart redis@${SERVICE}
+done
+
+fi
+
+
+if [ "${INSTANCE_NAME}" == "rabbitmq" ]; then
+# RABBITMQ INSTALLATION
+curl -1sLf 'https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/setup.deb.sh' | bash
+curl -1sLf 'https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/setup.deb.sh' | bash
+apt -qq -y install rabbitmq-server=${RABBITMQ_VERSION}
+
+echo "${INSTANCE_IP} ${RABBITMQ_ENDPOINT} rabbitmq" >> /etc/hosts
+
+systemctl stop rabbitmq-server
+systemctl stop epmd*
+epmd -kill
+
+cat > /etc/rabbitmq/rabbitmq-env.conf <<END
+NODENAME=rabbit@${RABBITMQ_ENDPOINT}
+NODE_IP_ADDRESS=${RABBITMQ_ENDPOINT}
+ERL_EPMD_ADDRESS=${RABBITMQ_ENDPOINT}
+PID_FILE=/var/lib/rabbitmq/mnesia/rabbitmq_pid
+END
+
+echo '[{kernel, [{inet_dist_use_interface, {${RABBITMQ_ENDPOINT//./,}}}]},{rabbit, [{tcp_listeners, [{"${RABBITMQ_ENDPOINT}", 5672}]}]}].' > /etc/rabbitmq/rabbitmq.config
+
+cat >> /etc/sysctl.conf <<END
+net.ipv6.conf.lo.disable_ipv6 = 0
+END
+
+sysctl -q -p
+
+cat > /etc/systemd/system/epmd.service <<END
+[Unit]
+Description=Erlang Port Mapper Daemon
+After=network.target
+Requires=epmd.socket
+
+[Service]
+ExecStart=/usr/bin/epmd -address ${RABBITMQ_ENDPOINT} -daemon
+Type=simple
+StandardOutput=journal
+StandardError=journal
+User=epmd
+Group=epmd
+
+[Install]
+Also=epmd.socket
+WantedBy=multi-user.target
+END
+
+cat > /etc/systemd/system/epmd.socket <<END
+[Unit]
+Description=Erlang Port Mapper Daemon Activation Socket
+
+[Socket]
+ListenStream=4369
+BindIPv6Only=both
+Accept=no
+
+[Install]
+WantedBy=sockets.target
+END
+
+systemctl daemon-reload
+systemctl start rabbitmq-server
+rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbitmq_pid
+sleep 5
+
+# delete guest user
+rabbitmqctl delete_user guest
+
+# generate rabbitmq user permissions
+rabbitmqctl add_user ${parameter["BRAND"]} ${parameter["RABBITMQ_PASSWORD"]}
+rabbitmqctl set_permissions -p / ${parameter["BRAND"]} ".*" ".*" ".*"
+
+apt-mark hold erlang rabbitmq-server
+
+fi
+
+
+if [ "${INSTANCE_NAME}" == "opensearch" ]; then
+# OPENSEARCH INSTALLATION
+curl -o- https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --dearmor --batch --yes -o /usr/share/keyrings/opensearch-keyring
+echo "deb [signed-by=/usr/share/keyrings/opensearch-keyring] https://artifacts.opensearch.org/releases/bundle/opensearch/${OPENSEARCH_VERSION}/apt stable main" > /etc/apt/sources.list.d/opensearch-${OPENSEARCH_VERSION}.list
+apt -qq -y update
+env OPENSEARCH_INITIAL_ADMIN_PASSWORD=${parameter["OPENSEARCH_PASSWORD"]} apt -qq -y install opensearch
+
+echo "${INSTANCE_IP} ${OPENSEARCH_ENDPOINT} opensearch" >> /etc/hosts
+
+## opensearch settings
+cp /etc/opensearch/opensearch.yml /etc/opensearch/opensearch.yml_default
+cat > /etc/opensearch/opensearch.yml <<END
+#--------------------------------------------------------------------#
+#----------------------- MAGENX CONFIGURATION -----------------------#
+# -------------------------------------------------------------------#
+# original config saved: /etc/opensearch/opensearch.yml_default
+
+cluster.name: ${parameter["BRAND"]}
+node.name: ${parameter["BRAND"]}-node1
+node.attr.rack: r1
+node.max_local_storage_nodes: 1
+
+discovery.type: single-node
+
+path.data: /var/lib/opensearch
+path.logs: /var/log/opensearch
+
+network.host: ${OPENSEARCH_ENDPOINT}
+http.port: 9200
+
+# WARNING: revise all the lines below before you go into production
+plugins.security.ssl.transport.pemcert_filepath: esnode.pem
+plugins.security.ssl.transport.pemkey_filepath: esnode-key.pem
+plugins.security.ssl.transport.pemtrustedcas_filepath: root-ca.pem
+
+plugins.security.ssl.transport.enforce_hostname_verification: false
+plugins.security.ssl.http.enabled: false
+plugins.security.allow_unsafe_democertificates: true
+plugins.security.allow_default_init_securityindex: true
+
+plugins.security.audit.type: internal_opensearch
+plugins.security.enable_snapshot_restore_privilege: true
+plugins.security.check_snapshot_restore_write_privileges: true
+plugins.security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]
+plugins.security.system_indices.enabled: true
+plugins.security.system_indices.indices: [".plugins-ml-config", ".plugins-ml-connector", ".plugins-ml-model-group", ".plugins-ml-model", ".plugins-ml-task", ".plugins-ml-conversation-meta", ".plugins-ml-conversation-interactions", ".opendistro-alerting-config", ".opendistro-alerting-alert*", ".opendistro-anomaly-results*", ".opendistro-anomaly-detector*", ".opendistro-anomaly-checkpoints", ".opendistro-anomaly-detection-state", ".opendistro-reports-*", ".opensearch-notifications-*", ".opensearch-notebooks", ".opensearch-observability", ".ql-datasources", ".opendistro-asynchronous-search-response*", ".replication-metadata-store", ".opensearch-knn-models", ".geospatial-ip2geo-data*"]
+
+END
+
+## OpenSearch settings
+sed -i "s/.*-Xms.*/-Xms512m/" /etc/opensearch/jvm.options
+sed -i "s/.*-Xmx.*/-Xmx1024m/" /etc/opensearch/jvm.options
+
+chown -R :opensearch /etc/opensearch/*
+systemctl daemon-reload
+systemctl enable opensearch.service
+systemctl restart opensearch.service
+
+# create opensearch indexer role/user
+timeout 10 sh -c 'until nc -z $0 $1; do sleep 1; done' ${OPENSEARCH_ENDPOINT} 9200
+grep -m 1 '\[GREEN\].*security' <(tail -f /var/log/opensearch/${parameter["BRAND"]}.log)
+sleep 5
+
+# Create role
+curl -u ${parameter["OPENSEARCH_ADMIN"]}:${parameter["OPENSEARCH_PASSWORD"]} -XPUT "http://${OPENSEARCH_ENDPOINT}:9200/_plugins/_security/api/roles/indexer_${parameter["BRAND"]}" \
+-H "Content-Type: application/json" \
+-d "$(cat <<EOF
+{
+"cluster_permissions": [
+"cluster_composite_ops_monitor",
+"cluster:monitor/main",
+"cluster:monitor/state",
+"cluster:monitor/health"
+],
+"index_permissions": [
+{
+"index_patterns": ["indexer_${parameter["BRAND"]}*"],
+"fls": [],
+"masked_fields": [],
+"allowed_actions": ["*"]
+},
+{
+"index_patterns": ["*"],
+"fls": [],
+"masked_fields": [],
+"allowed_actions": [
+"indices:admin/aliases/get",
+"indices:data/read/search",
+"indices:admin/get"]
+}
+],
+"tenant_permissions": []
+}
+EOF
+)"
+
+# Create user
+curl -u  ${parameter["OPENSEARCH_ADMIN"]}:${parameter["OPENSEARCH_PASSWORD"]} -XPUT "http://${OPENSEARCH_ENDPOINT}:9200/_plugins/_security/api/internalusers/indexer_${parameter["BRAND"]}" \
+-H "Content-Type: application/json" \
+-d "$(cat <<EOF
+{
+"password": "${parameter["INDEXER_PASSWORD"]}",
+"opendistro_security_roles": ["indexer_${parameter["BRAND"]}", "own_index"]
+}
+EOF
+)"
+
+/usr/share/opensearch/bin/opensearch-plugin install --batch \
+analysis-icu \
+analysis-phonetic
+
+apt-mark hold opensearch
+
+fi
+
+
+###################################################################################
+###                           FRONTEND ADMIN  CONFIGURATION                     ###
+###################################################################################
+
+if [[ "${INSTANCE_NAME}" ~= "(frontend|admin)" ]]; then
+apt -qqy update
+apt -qq -y install ${parameter["LINUX_PACKAGES"]} ${parameter["PERL_MODULES"]}
+
+# BUILD EFS UTILS
 cd /tmp
-sudo git clone https://github.com/aws/efs-utils
+git clone https://github.com/aws/efs-utils
 cd efs-utils
-sudo ./build-deb.sh
-sudo apt-get -y install ./build/amazon-efs-utils*deb
-sudo rm -rf ~/.cargo ~/.rustup
+./build-deb.sh
+apt-get -y install ./build/amazon-efs-utils*deb
+rm -rf ~/.cargo ~/.rustup
 
-sudo sh -c "echo '${parameter["EFS_SYSTEM_ID"]}:/ ${parameter["WEB_ROOT_PATH"]}/var efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_VAR"]} 0 0' >> /etc/fstab"
-sudo sh -c "echo '${parameter["EFS_SYSTEM_ID"]}:/ ${parameter["WEB_ROOT_PATH"]}/pub/media efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_MEDIA"]} 0 0' >> /etc/fstab"
+# NGINX INSTALLATION
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
+curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" > /etc/apt/preferences.d/99nginx
+apt -qq update
+apt -qq -y install nginx nginx-module-perl nginx-module-image-filter nginx-module-geoip
+systemctl enable nginx
 
-sudo mkdir -p ${parameter["WEB_ROOT_PATH"]}/{pub/media,var}
-sudo chown -R ${parameter["BRAND"]}:${parameter["PHP_USER"]} ${parameter["WEB_ROOT_PATH"]}/
-sudo chmod 2770 ${parameter["WEB_ROOT_PATH"]}/{pub/media,var}
+# VARNISH INSTALLATION
+curl -s https://packagecloud.io/install/repositories/varnishcache/varnish${VARNISH_VERSION}/script.deb.sh | bash
+apt -qq update
+apt -qq -y install varnish
+curl -sSo /etc/systemd/system/varnish.service ${MAGENX_INSTALL_GITHUB_REPO}/varnish.service
+curl -sSo /etc/varnish/varnish.params ${MAGENX_INSTALL_GITHUB_REPO}/varnish.params
+uuidgen > /etc/varnish/secret
+systemctl daemon-reload
+# Varnish Cache configuration file
+systemctl enable varnish.service
+curl -o /etc/varnish/devicedetect.vcl https://raw.githubusercontent.com/varnishcache/varnish-devicedetect/master/devicedetect.vcl
+curl -o /etc/varnish/devicedetect-include.vcl ${MAGENX_INSTALL_GITHUB_REPO}/devicedetect-include.vcl
+curl -o /etc/varnish/default.vcl ${MAGENX_INSTALL_GITHUB_REPO}/default.vcl
+sed -i "s/PROFILER_PLACEHOLDER/${parameter["PROFILER_PLACEHOLDER"]}/" /etc/varnish/default.vcl
+sed -i "s/example.com/${DOMAIN}/" /etc/varnish/default.vcl
 
-## install nginx
-curl https://nginx.org/keys/nginx_signing.key | sudo gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
-sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list'
+# PHP INSTALLATION
+curl -o /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
+echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
+apt -qq update
+apt -qq -y install php${parameter["PHP_VERSION"]} ${parameter["PHP_PACKAGES"][@]/#/php${parameter["PHP_VERSION"]}-} php-pear
 
-## install php + phpmyadmin
-sudo wget -qO /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
-sudo sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
+# COMPOSER INSTALLATION
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php --${COMPOSER_VERSION} --install-dir=/usr/bin --filename=composer
+php -r "unlink('composer-setup.php');"
 
-sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/nginx.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
-sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/php.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
-
-_PHP_PACKAGES+=(${parameter["PHP_PACKAGES"]})
-sudo apt-get -qqy install nginx php-pear php${parameter["PHP_VERSION"]} ${_PHP_PACKAGES[@]/#/php${parameter["PHP_VERSION"]}-}
-
-sudo setfacl -R -m u:nginx:r-X,d:u:nginx:r-X ${parameter["WEB_ROOT_PATH"]}
-
-sudo sh -c "cat > /etc/sysctl.conf <<END
+# SYSCTL PARAMETERS
+cat <<END > /etc/sysctl.conf
 fs.file-max = 1000000
 fs.inotify.max_user_watches = 1000000
-vm.swappiness = 5
+vm.swappiness = 10
 net.ipv4.ip_forward = 0
 net.ipv4.conf.default.rp_filter = 1
 net.ipv4.conf.default.accept_source_route = 0
@@ -137,19 +544,113 @@ net.core.wmem_default = 8388608
 net.core.netdev_max_backlog = 262144
 net.core.somaxconn = 65535
 END
-"
 
-sudo sh -c "cat > ${parameter["PHP_FPM_POOL"]} <<END
+sysctl -q -p
+
+for dir in cli fpm
+do
+cat <<END > /etc/php/${PHP_VERSION}/$dir/conf.d/zz-magenx-overrides.ini
+opcache.enable_cli = 1
+opcache.memory_consumption = 512
+opcache.interned_strings_buffer = 4
+opcache.max_accelerated_files = 60000
+opcache.max_wasted_percentage = 5
+opcache.use_cwd = 1
+opcache.validate_timestamps = 0
+;opcache.revalidate_freq = 2
+;opcache.validate_permission= 1
+opcache.validate_root= 1
+opcache.file_update_protection = 2
+opcache.revalidate_path = 0
+opcache.save_comments = 1
+opcache.load_comments = 1
+opcache.fast_shutdown = 1
+opcache.enable_file_override = 0
+opcache.optimization_level = 0xffffffff
+opcache.inherited_hack = 1
+opcache.blacklist_filename=/etc/opcache-default.blacklist
+opcache.max_file_size = 0
+opcache.consistency_checks = 0
+opcache.force_restart_timeout = 60
+opcache.error_log = "/var/log/php-fpm/opcache.log"
+opcache.log_verbosity_level = 1
+opcache.preferred_memory_model = ""
+opcache.protect_memory = 0
+;opcache.mmap_base = ""
+
+max_execution_time = 7200
+max_input_time = 7200
+memory_limit = 2048M
+post_max_size = 64M
+upload_max_filesize = 64M
+expose_php = Off
+realpath_cache_size = 4096k
+realpath_cache_ttl = 86400
+short_open_tag = On
+max_input_vars = 50000
+session.gc_maxlifetime = 28800
+mysql.allow_persistent = On
+mysqli.allow_persistent = On
+date.timezone = "${TIMEZONE}"
+END
+done
+
+## CRAETE MAGENTO USER
+useradd -d /home/${parameter["BRAND"]} -s /bin/bash ${parameter["BRAND"]}
+
+## CREATE MAGENTO PHP USER
+useradd -M -s /sbin/nologin -d /home/${parameter["BRAND"]} php-${parameter["BRAND"]}
+usermod -g php-${parameter["BRAND"]} ${parameter["BRAND"]}
+
+# MAGENTO FOLDERS PERMISSIONS
+mkdir -p ${parameter["WEB_ROOT_PATH"]}
+chmod 711 /home/${parameter["BRAND"]}
+chown -R ${parameter["BRAND"]}:php-${parameter["BRAND"]} ${parameter["WEB_ROOT_PATH"]}
+chmod 2750 ${parameter["WEB_ROOT_PATH"]}
+setfacl -R -m m:r-X,u:${parameter["BRAND"]}:rwX,g:php-${parameter["BRAND"]}:r-X,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:php-${parameter["BRAND"]}:r-X,d:o::- ${parameter["WEB_ROOT_PATH"]}
+setfacl -R -m u:nginx:r-X,d:u:nginx:r-X ${parameter["WEB_ROOT_PATH"]}
+
+echo '${parameter["EFS_SYSTEM_ID"]}:/ ${parameter["WEB_ROOT_PATH"]}/var efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_VAR"]} 0 0' >> /etc/fstab
+echo '${parameter["EFS_SYSTEM_ID"]}:/ ${parameter["WEB_ROOT_PATH"]}/pub/media efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_MEDIA"]} 0 0' >> /etc/fstab
+
+mkdir -p ${parameter["WEB_ROOT_PATH"]}/{pub/media,var}
+chown -R ${parameter["BRAND"]}:${parameter["PHP_USER"]} ${parameter["WEB_ROOT_PATH"]}/
+chmod 2770 ${parameter["WEB_ROOT_PATH"]}/{pub/media,var}
+
+# DOWNLOADING NGINX CONFIG FILES
+curl -o /etc/nginx/fastcgi_params  ${MAGENX_NGINX_GITHUB_REPO}magento2/fastcgi_params
+curl -o /etc/nginx/nginx.conf  ${MAGENX_NGINX_GITHUB_REPO}magento2/nginx.conf
+mkdir -p /etc/nginx/sites-enabled
+mkdir -p /etc/nginx/sites-available && cd $_
+curl ${MAGENX_NGINX_GITHUB_REPO_API}/sites-available 2>&1 | awk -F'"' '/download_url/ {print $4 ; system("curl -O "$4)}' >/dev/null
+ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
+mkdir -p /etc/nginx/conf_m2 && cd /etc/nginx/conf_m2/
+curl ${MAGENX_NGINX_GITHUB_REPO_API}/conf_m2 2>&1 | awk -F'"' '/download_url/ {print $4 ; system("curl -O "$4)}' >/dev/null
+
+# NGINX CONFIGURATION FOR DOMAIN
+cp /etc/nginx/sites-available/magento2.conf  /etc/nginx/sites-available/${parameter["DOMAIN"]}.conf
+ln -s /etc/nginx/sites-available/${parameter["DOMAIN"]}.conf /etc/nginx/sites-enabled/${parameter["DOMAIN"]}.conf
+sed -i "s/example.com/${parameter["DOMAIN"]}/g" /etc/nginx/sites-available/${parameter["DOMAIN"]}.conf
+
+sed -i "s/example.com/${parameter["DOMAIN"]}/g" /etc/nginx/nginx.conf
+sed -i "s,default.*production php-fpm,default unix:/var/run/${parameter["BRAND"]}.sock; # php-fpm,"  /etc/nginx/conf_m2/maps.conf
+sed -i "s,default.*production app folder,default ${parameter["WEB_ROOT_PATH"]}; magento folder," /etc/nginx/conf_m2/maps.conf
+
+# MAGENTO PROFILER
+sed -i "s/PROFILER_PLACEHOLDER/${parameter["PROFILER"]}/" /etc/nginx/conf_m2/maps.conf
+
+# PHP_FPM POOL CONFIGURATION
+cat <<END > /etc/php/${parameter["PHP_VERSION"]}/fpm/pool.d/${parameter["BRAND"]}.conf
 [${parameter["BRAND"]}]
 
 ;;
 ;; Pool user
-user = php-${parameter["BRAND"]}
-group = php-${parameter["BRAND"]}
+user = php-\$pool
+group = php-\$pool
 
-listen = /var/run/${parameter["BRAND"]}.sock
+listen = /var/run/\$pool.sock
 listen.owner = nginx
-listen.group = php-${parameter["BRAND"]}
+listen.group = php-\$pool
 listen.mode = 0660
 
 ;;
@@ -179,10 +680,10 @@ php_admin_value[upload_max_filesize] = 64M
 php_admin_value[realpath_cache_size] = 4096k
 php_admin_value[realpath_cache_ttl] = 86400
 php_admin_value[session.gc_maxlifetime] = 28800
-php_admin_value[error_log] = "${parameter["WEB_ROOT_PATH"]}/var/log/php-fpm-error.log"
+php_admin_value[error_log] = "/home/\$pool/public_html/var/log/php-fpm-error.log"
 php_admin_value[date.timezone] = "${parameter["TIMEZONE"]}"
-php_admin_value[upload_tmp_dir] = "${parameter["WEB_ROOT_PATH"]}/var/tmp"
-php_admin_value[sys_temp_dir] = "${parameter["WEB_ROOT_PATH"]}/var/tmp"
+php_admin_value[upload_tmp_dir] = "/home/\$pool/public_html/var/tmp"
+php_admin_value[sys_temp_dir] = "/home/\$pool/public_html/var/tmp"
 
 ;;
 ;; [opcache] settings
@@ -204,192 +705,100 @@ php_admin_value[opcache.max_accelerated_files] = 60000
 php_admin_value[opcache.max_wasted_percentage] = 5
 php_admin_value[opcache.file_update_protection] = 2
 php_admin_value[opcache.optimization_level] = 0xffffffff
-php_admin_value[opcache.blacklist_filename] = "/etc/php/${parameter["PHP_VERSION"]}/fpm/conf.d/opcache.blacklist"
+php_admin_value[opcache.blacklist_filename] = "/home/\$pool/opcache.blacklist"
 php_admin_value[opcache.max_file_size] = 0
 php_admin_value[opcache.force_restart_timeout] = 60
-php_admin_value[opcache.error_log] = "${parameter["WEB_ROOT_PATH"]}/var/log/opcache.log"
+php_admin_value[opcache.error_log] = "/home/\$pool/public_html/var/log/opcache.log"
 php_admin_value[opcache.log_verbosity_level] = 1
 php_admin_value[opcache.preferred_memory_model] = ""
 php_admin_value[opcache.jit_buffer_size] = 536870912
 php_admin_value[opcache.jit] = 1235
 END
-"
 
-sudo sh -c "cat > /etc/php/${parameter["PHP_VERSION"]}/cli/conf.d/zz-${parameter["BRAND"]}-overrides.ini <<END
-opcache.enable_cli = 1
-opcache.memory_consumption = 512
-opcache.interned_strings_buffer = 4
-opcache.max_accelerated_files = 60000
-opcache.max_wasted_percentage = 5
-opcache.use_cwd = 1
-opcache.validate_timestamps = 0
-;opcache.revalidate_freq = 2
-;opcache.validate_permission = 1
-opcache.validate_root = 1
-opcache.file_update_protection = 2
-opcache.revalidate_path = 0
-opcache.save_comments = 1
-opcache.load_comments = 1
-opcache.fast_shutdown = 1
-opcache.enable_file_override = 0
-opcache.optimization_level = 0xffffffff
-opcache.inherited_hack = 1
-opcache.blacklist_filename=/etc/php/${parameter["PHP_VERSION"]}/cli/conf.d/opcache.blacklist
-opcache.max_file_size = 0
-opcache.consistency_checks = 0
-opcache.force_restart_timeout = 60
-opcache.error_log = "/var/log/php-fpm/opcache.log"
-opcache.log_verbosity_level = 1
-opcache.preferred_memory_model = ""
-opcache.protect_memory = 0
-;opcache.mmap_base = ""
 
-max_execution_time = 7200
-max_input_time = 7200
-memory_limit = 2048M
-post_max_size = 64M
-upload_max_filesize = 64M
-expose_php = Off
-realpath_cache_size = 4096k
-realpath_cache_ttl = 86400
-short_open_tag = On
-max_input_vars = 50000
-session.gc_maxlifetime = 28800
-mysql.allow_persistent = On
-mysqli.allow_persistent = On
-date.timezone = "${parameter["TIMEZONE"]}"
+# TIMESTAMP TO BASH HISTORY
+cat <<END >> ~/.bashrc
+export HISTTIMEFORMAT="%d/%m/%y %T "
 END
-"
-cd /etc/nginx
-sudo git init
-sudo git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
-sudo git fetch
-sudo git reset --hard origin/nginx_${INSTANCE_NAME}
-sudo git checkout -t origin/nginx_${INSTANCE_NAME}
 
 if [ "${INSTANCE_NAME}" == "admin" ]; then
-sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/internal/skip-preseed boolean true"
-sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/reconfigure-webserver multiselect"
-sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean false"
+# SUDO CONFIGURATION
+tee -a /etc/sudoers <<END
+${parameter["BRAND"]} ALL=(ALL) NOPASSWD: /usr/local/bin/cacheflush
+END
 
-sudo apt-get -qqy install composer mariadb-client phpmyadmin
- 
-sudo sh -c "cp /usr/share/phpmyadmin/config.sample.inc.php /etc/phpmyadmin/config.inc.php"
-sudo sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${parameter["BLOWFISH"]}';/" /etc/phpmyadmin/config.inc.php
-sudo sed -i "s/localhost/${parameter["DATABASE_ENDPOINT"]}/" /etc/phpmyadmin/config.inc.php
-sudo sed -i "s/PHPMYADMIN_PLACEHOLDER/${parameter["MYSQL_PATH"]}/g" /etc/nginx/conf.d/phpmyadmin.conf
-sudo sed -i "s,#include conf.d/phpmyadmin.conf;,include conf.d/phpmyadmin.conf;," /etc/nginx/sites-available/magento.conf
- 
-sudo sh -c "cat > /etc/logrotate.d/magento <<END
+# CREATE LOGROTATE
+tee /etc/logrotate.d/${parameter["BRAND"]} <<END
 ${parameter["WEB_ROOT_PATH"]}/var/log/*.log
 {
-su ${parameter["BRAND"]} ${parameter["PHP_USER"]}
-create 660 ${parameter["BRAND"]} ${parameter["PHP_USER"]}
-daily
-rotate 7
+su ${parameter["BRAND]} ${parameter["PHP_USER"]}
+create 660 ${parameter["BRAND]} ${parameter["PHP_USER"]}
+weekly
+rotate 2
 notifempty
 missingok
 compress
 }
 END
-"
+
+curl -o /usr/local/bin/n98-magerun2 https://files.magerun.net/n98-magerun2.phar
+
+tee /usr/local/bin/cacheflush <<END
+#!/bin/bash
+sudo -u \${SUDO_USER} n98-magerun2 --root-dir=/home/\${SUDO_USER}/public_html cache:flush
+/usr/bin/systemctl restart php${parameter["PHP_VERSION"]}-fpm.service
+nginx -t && /usr/bin/systemctl restart nginx.service || echo "[!] Error: check nginx config"
+END
+
+chmod +x /usr/local/bin/*
 fi
 
-sudo mkdir -p /etc/nginx/sites-enabled
-sudo ln -s /etc/nginx/sites-available/magento.conf /etc/nginx/sites-enabled/magento.conf
- 
-sudo sed -i "s,CIDR,${parameter["CIDR"]}," /etc/nginx/nginx.conf
-sudo sed -i "s/HEALTH_CHECK_LOCATION/${parameter["HEALTH_CHECK_LOCATION"]}/" /etc/nginx/sites-available/magento.conf
-sudo sed -i "s,/var/www/html,${parameter["WEB_ROOT_PATH"]},g" /etc/nginx/conf.d/maps.conf
-sudo sed -i "s/PROFILER_PLACEHOLDER/${parameter["PROFILER"]}/" /etc/nginx/conf.d/maps.conf
-sudo sh -c "echo '' > /etc/nginx/conf.d/default.conf"
- 
-sudo sed -i "s/example.com/${parameter["DOMAIN"]}/g" /etc/nginx/sites-available/magento.conf
-sudo sed -i "s/example.com/${parameter["DOMAIN"]}/g" /etc/nginx/nginx.conf
-
-fi
-
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Varnish instance configuration
-# # ---------------------------------------------------------------------------------------------------------------------#
-
-if [ "${INSTANCE_NAME}" == "varnish" ]; then
-## install nginx
-curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
-sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list'
-sudo apt-get -qq update -o Dir::Etc::sourcelist="sources.list.d/nginx.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
-
-sudo apt-get -qqy install varnish nginx nginx-module-geoip
-
-sudo systemctl stop nginx varnish
-
-cd /etc/varnish
-sudo git init
-sudo git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
-sudo git fetch
-sudo git reset --hard origin/varnish
-sudo git checkout -t origin/varnish
-
-sudo uuidgen > /etc/varnish/secret
-
-cd /etc/systemd/system/
-sudo git init
-sudo git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
-sudo git fetch
-sudo git reset --hard origin/systemd_varnish
-sudo git checkout -t origin/systemd_varnish
-
-cd /etc/nginx
-sudo git init
-sudo git remote add origin ${parameter["CODECOMMIT_SERVICES_REPO"]}
-sudo git fetch
-sudo git reset --hard origin/nginx_varnish
-sudo git checkout -t origin/nginx_varnish
-
-sudo sed -i "s,CIDR,${parameter["CIDR"]}," /etc/nginx/nginx.conf
-sudo sed -i "s/RESOLVER/${parameter["RESOLVER"]}/" /etc/nginx/nginx.conf
-sudo sed -i "s/DOMAIN/${parameter["DOMAIN"]} ${parameter["STAGING_DOMAIN"]}/" /etc/nginx/nginx.conf
-sudo sed -i "s/MAGENX_HEADER/${parameter["MAGENX_HEADER"]}/" /etc/nginx/nginx.conf
-sudo sed -i "s/HEALTH_CHECK_LOCATION/${parameter["HEALTH_CHECK_LOCATION"]}/" /etc/nginx/nginx.conf
-sudo sed -i "s/ALB_DNS_NAME/${parameter["ALB_DNS_NAME"]}/" /etc/nginx/conf.d/alb.conf
-sudo sed -i "s/example.com/${parameter["DOMAIN"]}/" /etc/nginx/conf.d/maps.conf
+systemctl daemon-reload
+systemctl restart nginx.service
+systemctl restart php*fpm.service
+systemctl restart varnish.service
 
 fi
 
-sudo timedatectl set-timezone ${parameter["TIMEZONE"]}
- 
+###############################################
+
 cd /tmp
-sudo wget https://aws-codedeploy-${parameter["AWS_DEFAULT_REGION"]}.s3.amazonaws.com/latest/install
-sudo chmod +x ./install
-sudo ./install auto
- 
-sudo wget https://s3.${parameter["AWS_DEFAULT_REGION"]}.amazonaws.com/amazon-ssm-${parameter["AWS_DEFAULT_REGION"]}/latest/debian_arm64/amazon-ssm-agent.deb
-sudo dpkg -i amazon-ssm-agent.deb
-sudo systemctl enable amazon-ssm-agent
+wget https://aws-codedeploy-${parameter["AWS_DEFAULT_REGION"]}.s3.amazonaws.com/latest/install
+chmod +x ./install
+./install auto
 
-sudo wget https://s3.${parameter["AWS_DEFAULT_REGION"]}.amazonaws.com/amazoncloudwatch-agent-${parameter["AWS_DEFAULT_REGION"]}/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb
-sudo dpkg -i amazon-cloudwatch-agent.deb
-sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
+wget https://s3.${parameter["AWS_DEFAULT_REGION"]}.amazonaws.com/amazon-ssm-${parameter["AWS_DEFAULT_REGION"]}/latest/debian_arm64/amazon-ssm-agent.deb
+dpkg -i amazon-ssm-agent.deb
+systemctl enable amazon-ssm-agent
 
-sudo apt-get remove --purge -y \
-    awscli* \
-    apache2* \
-    bind9* \
-    samba* \
-    avahi-daemon \
-    cups* \
-    exim4* \
-    postfix* \
-    telnet \
-    aptitude \
-    unzip \
-    xserver-xorg* \
-    x11-common \
-    gnome* \
-    kde* \
-    xfce* \
-    lxqt*
+wget https://s3.${parameter["AWS_DEFAULT_REGION"]}.amazonaws.com/amazoncloudwatch-agent-${parameter["AWS_DEFAULT_REGION"]}/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb
+dpkg -i amazon-cloudwatch-agent.deb
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
 
-sudo apt-get clean
-sudo apt-get autoclean
-sudo apt-get autoremove --purge -y
+apt-get remove --purge -y \
+awscli* \
+apache2* \
+bind9* \
+samba* \
+avahi-daemon \
+cups* \
+exim4* \
+postfix* \
+telnet \
+aptitude \
+unzip \
+xserver-xorg* \
+x11-common \
+gnome* \
+kde* \
+xfce* \
+lxqt*
+
+apt-get clean
+apt-get autoclean
+apt-get autoremove --purge -y
+
+echo "PS1='\[\e[37m\][\[\e[m\]\[\e[32m\]\u\[\e[m\]\[\e[37m\]@\[\e[m\]\[\e[35m\]\h\[\e[m\]\[\e[37m\]:\[\e[m\]\[\e[36m\]\W\[\e[m\]\[\e[37m\]]\[\e[m\]$ '" >> /etc/bashrc
+
+## simple installation stats
+curl --silent -X POST https://www.magenx.com/ping_back_id_${INSTANCE_NAME}_domain_${DOMAIN}_geo_${TIMEZONE}_keep_30d >/dev/null 2>&1
