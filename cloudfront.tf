@@ -49,19 +49,8 @@ resource "aws_cloudfront_distribution" "this" {
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.this.cloudfront_access_identity_path
     }
-  }
-
-  origin {
-    domain_name = aws_lambda_function.image_optimization.invoke_arn
-    origin_id   = "${var.magento["domain"]}-lambda-image-optimization"
     origin_access_control_id = aws_cloudfront_origin_access_control.this.id
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "https-only"
-      origin_ssl_protocols   = ["TLSv1.2"]
-   }
-   origin_shield {
+    origin_shield {
         enabled               = true  # <- needs variable
         origin_shield_region  = local.origin_shield_region
    }
@@ -70,7 +59,7 @@ resource "aws_cloudfront_distribution" "this" {
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${var.magento["domain"]}-media-assets"
+    target_origin_id = "${var.magento["domain"]}-media-optimized-assets"
     viewer_protocol_policy   = "https-only"
     origin_request_policy_id = data.aws_cloudfront_origin_request_policy.media.id
     cache_policy_id          = data.aws_cloudfront_cache_policy.media.id
@@ -84,19 +73,6 @@ resource "aws_cloudfront_distribution" "this" {
     function_association {
       event_type = "viewer-request"
       function_arn = aws_cloudfront_function.this.arn
-    }
-  }
-
-  origin_group {
-    origin_id         = "${var.magento["domain"]}-S3-lambda-image-optimization"
-    failover_criteria {
-      status_codes = [403, 500, 503, 504]
-    }
-    member {
-      origin_id = "${var.magento["domain"]}-media-optimized-assets"
-    }
-    member {
-      origin_id = "${var.magento["domain"]}-lambda-image-optimization"
     }
   }
   
