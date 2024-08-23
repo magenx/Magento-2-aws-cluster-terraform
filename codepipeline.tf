@@ -110,13 +110,13 @@ mainSteps:
       cd /home/${var.magento["brand"]}/public_html
       su ${var.magento["brand"]} -s /bin/bash -c "git fetch origin"
       su ${var.magento["brand"]} -s /bin/bash -c "git reset --hard origin/main"
-      su ${var.magento["brand"]} -s /bin/bash -c "bin/app setup:db:status --no-ansi -n"
+      su ${var.magento["brand"]} -s /bin/bash -c "bin/ setup:db:status --no-ansi -n"
       if [[ $? -ne 0 ]]; then
-      su ${var.magento["brand"]} -s /bin/bash -c "bin/app setup:upgrade --keep-generated --no-ansi -n"
+      su ${var.magento["brand"]} -s /bin/bash -c "bin/ setup:upgrade --keep-generated --no-ansi -n"
       fi
       systemctl restart php*fpm.service
       systemctl restart nginx.service
-      su ${var.magento["brand"]} -s /bin/bash -c "bin/app cache:flush"
+      su ${var.magento["brand"]} -s /bin/bash -c "bin/ cache:flush"
 EOT
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -128,7 +128,7 @@ resource "aws_cloudwatch_event_rule" "codecommit_pull_main" {
   event_pattern = jsonencode({
     source       = ["aws.codecommit"]
     detail-type  = ["CodeCommit Repository State Change"]
-    resources    = [aws_codecommit_repository.app.arn]
+    resources    = [aws_codecommit_repository.magento.arn]
     detail = {
       referenceType = ["branch"]
       referenceName = ["main"]
