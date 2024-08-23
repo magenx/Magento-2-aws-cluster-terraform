@@ -96,6 +96,16 @@ resource "aws_security_group_rule" "ec2_rabbitmq_out" {
 resource "aws_security_group_rule" "ec2_redis_cache_out" {
     type        = "egress"
     description = "Allow outbound traffic on the instance Redis port"
+    from_port   = 6380
+    to_port     = 6380
+    protocol    = "tcp"
+    source_security_group_id = aws_security_group.redis.id
+    security_group_id = aws_security_group.ec2.id
+    }
+
+resource "aws_security_group_rule" "ec2_redis_session_out" {
+    type        = "egress"
+    description = "Allow outbound traffic on the instance Redis port"
     from_port   = 6379
     to_port     = 6379
     protocol    = "tcp"
@@ -186,6 +196,13 @@ resource "aws_security_group" "redis" {
       description      = "Allow all inbound traffic to Redis port from EC2"
       from_port        = 6379
       to_port          = 6379
+      protocol         = "tcp"
+      security_groups  = [aws_security_group.ec2.id]
+    }
+  ingress {
+      description      = "Allow all inbound traffic to Redis port from EC2"
+      from_port        = 6380
+      to_port          = 6380
       protocol         = "tcp"
       security_groups  = [aws_security_group.ec2.id]
     }
