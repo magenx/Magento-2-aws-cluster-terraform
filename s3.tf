@@ -106,9 +106,9 @@ data "aws_iam_policy_document" "media" {
   }
 
   statement {
-    sid       = "AllowLambdaPut"
+    sid       = "AllowLambdaGetPut"
     effect    = "Deny"
-    actions = ["s3:PutObject"]
+    actions = ["s3:PutObject","s3:GetObject"]
     resources = ["${aws_s3_bucket.this["media-optimized"].arn}/*"]
     condition {
       test     = "StringNotEquals"
