@@ -66,6 +66,17 @@ resource "aws_iam_role" "lambda" {
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create Lambda permissions for CloudFront
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_lambda_permission" "this" {
+  statement_id  = "AllowCloudFrontServicePrincipal"
+  action        = "lambda:InvokeFunctionUrl"
+  function_name = aws_lambda_function.image_optimization.function_name
+  principal     = "cloudfront.amazonaws.com"
+  source_arn    = aws_cloudfront_distribution.this.arn
+  qualifier     = aws_lambda_alias.image_optimization.name
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create Lambda function zip archive 
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "archive_file" "lambda_image_optimization" {
