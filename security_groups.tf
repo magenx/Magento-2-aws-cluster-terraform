@@ -290,26 +290,3 @@ resource "aws_security_group" "opensearch" {
     Name = "${local.project}-opensearch-sg"
   }
 }
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create security group and rules for lambda
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group" "lambda" {
-  vpc_id = aws_vpc.this.id
-  name   = "${local.project}-lambda-sg"
-  description = "Security group rules for ${local.project} Lambda function access"
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  tags = {
-    Name = "${local.project}-lambda-sg"
-  }
-}
