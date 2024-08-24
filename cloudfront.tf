@@ -10,14 +10,6 @@ resource "aws_cloudfront_origin_access_identity" "this" {
   comment = "CloudFront origin access identity"
 }
 
-resource "aws_cloudfront_origin_access_control" "this" {
-    name             = "${local.project}-coac-lambda"
-    description      = "Cloudfront origin access control for ${local.project} lambda function"
-    signing_behavior = "always"
-    signing_protocol = "sigv4"
-    origin_access_control_origin_type = "lambda"
-}
-
 resource "aws_cloudfront_function" "this" {
   publish = true
   name    = "${local.project}-urlrewrite"  
