@@ -7,7 +7,7 @@
 # Create Lambda IAM role and attach policy permissions
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_log_group" "lambda" {
-  name              = "/lambda/${aws_lambda_function.image_optimization.version}"
+  name              = "/lambda/imageoptimization/"
   retention_in_days = 7
 }
 
