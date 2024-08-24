@@ -126,7 +126,7 @@ data "aws_iam_policy_document" "media" {
     sid       = "AllowEC2ListBucket"
     effect    = "Allow"
     actions   = ["s3:GetBucketLocation", "s3:ListBucket"]
-    resources = ["${aws_s3_bucket.this["media"].arn}/*"]
+    resources = [${aws_s3_bucket.this["media"].arn},"${aws_s3_bucket.this["media"].arn}/*"]
     principals {
       type        = "AWS"
       identifiers = values(aws_iam_role.ec2)[*].arn
