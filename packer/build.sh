@@ -34,14 +34,6 @@ MAGENX_NGINX_GITHUB_REPO_API="https://api.github.com/repos/magenx/Magento-nginx-
 # WebStack Packages .deb
 WEB_STACK_CHECK="mysql* rabbitmq* elasticsearch opensearch percona-server* maria* php* nginx* ufw varnish* certbot* redis* webmin"
 
-EXTRA_PACKAGES="curl jq gnupg2 auditd apt-transport-https apt-show-versions ca-certificates lsb-release make autoconf snapd automake libtool uuid-runtime \
-perl openssl unzip screen nfs-common inotify-tools iptables smartmontools mlocate vim wget sudo apache2-utils \
-logrotate git netcat-openbsd patch ipset postfix strace rsyslog geoipupdate moreutils lsof sysstat acl attr iotop expect imagemagick snmp"
-
-PERL_MODULES="liblwp-protocol-https-perl libdbi-perl libconfig-inifiles-perl libdbd-mysql-perl libterm-readkey-perl"
-
-PHP_PACKAGES=(cli fpm common mysql zip gd mbstring curl xml bcmath intl ldap soap oauth apcu)
-
 ###################################################################################
 ###                              CLEANUP AND SET TIMEZONE                       ###
 ###################################################################################
@@ -462,7 +454,7 @@ fi
 
 if [[ "${INSTANCE_NAME}" ~= "(frontend|admin)" ]]; then
 apt -qqy update
-apt -qq -y install ${parameter["LINUX_PACKAGES"]} ${parameter["PERL_MODULES"]}
+apt -qq -y install ${parameter["LINUX_PACKAGES"]}
 
 # BUILD EFS UTILS
 cd /tmp
