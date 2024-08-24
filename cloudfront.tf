@@ -60,11 +60,6 @@ resource "aws_cloudfront_distribution" "this" {
       lambda_arn   = aws_lambda_function.image_optimization.qualified_arn
       include_body = false
     }
-
-    function_association {
-      event_type = "viewer-request"
-      function_arn = aws_cloudfront_function.this.arn
-    }
   }
   
   origin {
