@@ -36,11 +36,11 @@ resource "aws_cloudfront_response_headers_policy" "this" {
   name = "${local.project}-response-headers"
   cors_config {
     access_control_allow_credentials = false
-    access_control_allow_headers     = ["*"]
-    access_control_allow_methods     = ["GET"]
-    access_control_allow_origins     = ["*"]
-    access_control_max_age_sec       = 600
-    origin_override                  = false
+    access_control_allow_headers { items = ["*"] }
+    access_control_allow_methods { items = ["GET"] }
+    access_control_allow_origins { items = ["*"] }
+    access_control_max_age_sec  = 600
+    origin_override             = false
   }
 
   custom_headers_config {
