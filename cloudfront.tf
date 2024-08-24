@@ -91,7 +91,7 @@ resource "aws_cloudfront_distribution" "this" {
   }
 
   origin {
-    domain_name = aws_lambda_function_url.image_optimization.function_url
+    domain_name = split("/",aws_lambda_function_url.image_optimization.function_url)[2]
     origin_id   = "${var.magento["domain"]}-lambda-images-optimization"
     origin_access_control_id = aws_cloudfront_origin_access_control.this.id
     custom_origin_config {
