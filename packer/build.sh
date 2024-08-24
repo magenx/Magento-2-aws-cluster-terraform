@@ -452,7 +452,7 @@ fi
 ###                           FRONTEND ADMIN  CONFIGURATION                     ###
 ###################################################################################
 
-if [[ "${INSTANCE_NAME}" ~= "(frontend|admin)" ]]; then
+if [[ "${INSTANCE_NAME}" =~ (frontend|admin) ]]; then
 apt -qqy update
 apt -qq -y install ${parameter["LINUX_PACKAGES"]}
 
