@@ -75,28 +75,18 @@ data "archive_file" "lambda_image_optimization" {
   output_path      = "${abspath(path.root)}/lambda/image_optimization/index.mjs.zip"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Upload Lambda function zip archive to s3 bucket
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_s3_object" "lambda_image_optimization" {
-  depends_on = [data.archive_file.lambda_image_optimization]
-  bucket     = aws_s3_bucket.this["system"].id
-  key        = "lambda/image_optimization/index.js.zip"
-  source     = data.archive_file.lambda_image_optimization.output_path
-  etag       = filemd5(data.archive_file.lambda_image_optimization.output_path)
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Lambda function with variables
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lambda_function" "image_optimization" {
-  depends_on    = [aws_s3_object.lambda_image_optimization]
+  provider      = aws.useast1
   function_name = "${local.project}-image-optimization"
   role          = aws_iam_role.lambda.arn
-  s3_bucket     = aws_s3_bucket.this["system"].id
-  s3_key        = aws_s3_object.lambda_image_optimization.key
+  filename      = "${abspath(path.root)}/lambda/image_optimization/index.mjs.zip"
+  source_code_hash = data.archive_file.lambda_image_optimization.output_base64sha256
   runtime       = "nodejs20.x"
   handler       = "index.handler"
-  memory_size   = 1500
-  timeout       = 60
+  memory_size   = 128
+  timeout       = 5
   publish       = true
   environment {
     variables = {
@@ -106,8 +96,21 @@ resource "aws_lambda_function" "image_optimization" {
       maxImageSize               = "4700000"
    }
   }
-  vpc_config {
-    subnet_ids = values(aws_subnet.this).*.id 
-    security_group_ids = [aws_security_group.lambda.id]
-  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Lambda function url
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_lambda_function_url" "image_optimization" {
+  function_name      = aws_lambda_function.image_optimization.function_name
+  qualifier          = aws_lambda_alias.image_optimization.name
+  authorization_type = "AWS_IAM"
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Lambda function alias
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_lambda_alias" "image_optimization" {
+  name             = "${local.project}-image-optimization"
+  description      = "Lambda image optimization alias for ${local.project}"
+  function_name    = aws_lambda_function.image_optimization.arn
+  function_version = "$LATEST"
 }
