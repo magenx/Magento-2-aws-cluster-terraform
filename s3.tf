@@ -75,14 +75,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
 data "aws_iam_policy_document" "media" {
   statement {
     sid       = "AllowCloudFrontAccess"
-    effect    = "Deny"
+    effect    = "Allow"
     actions   = ["s3:GetObject"]
     resources = ["${aws_s3_bucket.this["media"].arn}/*"]
-    condition {
-      test     = "StringNotEquals"
-      variable = "s3:x-amz-meta-file-type"
-      values   = ["image/jpeg", "image/png", "image/gif", "image/webp", "text/css", "application/javascript"]
-    }
     principals {
       type        = "AWS"
       identifiers = [aws_cloudfront_origin_access_identity.this.iam_arn]
@@ -91,14 +86,9 @@ data "aws_iam_policy_document" "media" {
 
   statement {
     sid       = "AllowLambdaGet"
-    effect    = "Deny"
+    effect    = "Allow"
     actions = ["s3:GetObject"]
     resources = ["${aws_s3_bucket.this["media"].arn}/*"]
-    condition {
-      test     = "StringNotEquals"
-      variable = "s3:x-amz-meta-file-type"
-      values   = ["image/jpeg", "image/png", "image/gif", "image/webp"]
-    }
     principals {
       type        = "AWS"
       identifiers = [aws_iam_role.lambda.arn]
@@ -107,7 +97,7 @@ data "aws_iam_policy_document" "media" {
 
   statement {
     sid       = "AllowEC2PutObject"
-    effect    = "Deny"
+    effect    = "Allow"
     actions   = ["s3:PutObject"]
     resources = ["${aws_s3_bucket.this["media"].arn}/*"]
     principals {
@@ -118,11 +108,6 @@ data "aws_iam_policy_document" "media" {
       test     = "StringNotEquals"
       variable = "aws:SourceVpc"
       values   = [aws_vpc.this.id]
-    }
-    condition {
-      test     = "StringNotEquals"
-      variable = "s3:x-amz-meta-file-type"
-      values   = ["image/jpeg", "image/png", "image/gif", "image/webp", "text/css", "application/javascript"]
     }
   }
 
@@ -154,14 +139,9 @@ data "aws_iam_policy_document" "media" {
 data "aws_iam_policy_document" "mediaoptimized" {
   statement {
     sid       = "AllowLambdaGetPut"
-    effect    = "Deny"
+    effect    = "Allow"
     actions = ["s3:PutObject","s3:GetObject"]
     resources = ["${aws_s3_bucket.this["media-optimized"].arn}/*"]
-    condition {
-      test     = "StringNotEquals"
-      variable = "s3:x-amz-meta-file-type"
-      values   = ["image/jpeg", "image/png", "image/gif", "image/webp"]
-    }
     principals {
       type        = "AWS"
       identifiers = [aws_iam_role.lambda.arn]
