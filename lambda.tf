@@ -101,6 +101,7 @@ resource "aws_lambda_function" "image_optimization" {
 # Lambda function url
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lambda_function_url" "image_optimization" {
+  provider           = aws.useast1
   function_name      = aws_lambda_function.image_optimization.function_name
   qualifier          = aws_lambda_alias.image_optimization.name
   authorization_type = "AWS_IAM"
@@ -109,6 +110,7 @@ resource "aws_lambda_function_url" "image_optimization" {
 # Lambda function alias
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lambda_alias" "image_optimization" {
+  provider         = aws.useast1
   name             = "${local.project}-image-optimization"
   description      = "Lambda image optimization alias for ${local.project}"
   function_name    = aws_lambda_function.image_optimization.arn
