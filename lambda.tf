@@ -97,6 +97,7 @@ resource "aws_lambda_function" "image_optimization" {
   handler       = "index.handler"
   memory_size   = 1500
   timeout       = 60
+  publish       = true
   environment {
     variables = {
       originalImageBucketName    = aws_s3_bucket.this["media"].id
