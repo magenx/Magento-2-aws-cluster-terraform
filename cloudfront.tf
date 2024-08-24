@@ -10,14 +10,6 @@ resource "aws_cloudfront_origin_access_identity" "this" {
   comment = "CloudFront origin access identity"
 }
 
-resource "aws_cloudfront_function" "this" {
-  publish = true
-  name    = "${local.project}-urlrewrite"  
-  comment = "UrlRewrite function for ${local.project} image optimization"
-  runtime = "cloudfront-js-2.0"
-  code    = file("${abspath(path.root)}/cloudfront/index.js")
-}
-
 resource "aws_cloudfront_distribution" "this" {
   enabled             = true
   retain_on_delete    = false # <- needs variable
