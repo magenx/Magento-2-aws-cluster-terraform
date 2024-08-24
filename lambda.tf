@@ -69,6 +69,7 @@ resource "aws_iam_role" "lambda" {
 # Create Lambda permissions for CloudFront
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lambda_permission" "this" {
+  provider      = aws.useast1
   statement_id  = "AllowCloudFrontServicePrincipal"
   action        = "lambda:InvokeFunctionUrl"
   function_name = aws_lambda_function.image_optimization.function_name
