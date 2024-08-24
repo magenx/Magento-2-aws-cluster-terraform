@@ -167,6 +167,7 @@ data "aws_iam_policy_document" "mediaoptimized" {
       identifiers = [aws_iam_role.lambda.arn]
     }
   }
+}
 
 resource "aws_s3_bucket_policy" "mediaoptimized" {
   bucket = aws_s3_bucket.this["media-optimized"].id
