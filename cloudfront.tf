@@ -170,6 +170,5 @@ resource "aws_cloudfront_distribution" "this" {
     Name = "${local.project}-cloudfront"
   }
 }
-}
 
 
