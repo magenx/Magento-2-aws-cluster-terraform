@@ -106,22 +106,6 @@ data "aws_iam_policy_document" "media" {
   }
 
   statement {
-    sid       = "AllowLambdaGetPut"
-    effect    = "Deny"
-    actions = ["s3:PutObject","s3:GetObject"]
-    resources = ["${aws_s3_bucket.this["media-optimized"].arn}/*"]
-    condition {
-      test     = "StringNotEquals"
-      variable = "s3:x-amz-meta-file-type"
-      values   = ["image/jpeg", "image/png", "image/gif", "image/webp"]
-    }
-    principals {
-      type        = "AWS"
-      identifiers = [aws_iam_role.lambda.arn]
-    }
-  }
-
-  statement {
     sid       = "AllowEC2PutObject"
     effect    = "Deny"
     actions   = ["s3:PutObject"]
@@ -163,6 +147,30 @@ data "aws_iam_policy_document" "media" {
       identifiers = values(aws_iam_role.ec2)[*].arn
     }
   }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create policy to limit S3 media optimized bucket access
+# # ---------------------------------------------------------------------------------------------------------------------#
+data "aws_iam_policy_document" "mediaoptimized" {
+  statement {
+    sid       = "AllowLambdaGetPut"
+    effect    = "Deny"
+    actions = ["s3:PutObject","s3:GetObject"]
+    resources = ["${aws_s3_bucket.this["media-optimized"].arn}/*"]
+    condition {
+      test     = "StringNotEquals"
+      variable = "s3:x-amz-meta-file-type"
+      values   = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+    }
+    principals {
+      type        = "AWS"
+      identifiers = [aws_iam_role.lambda.arn]
+    }
+  }
+
+resource "aws_s3_bucket_policy" "mediaoptimized" {
+  bucket = aws_s3_bucket.this["media-optimized"].id
+  policy = data.aws_iam_policy_document.mediaoptimized.json
 }
 
 resource "aws_s3_bucket_policy" "media" {
