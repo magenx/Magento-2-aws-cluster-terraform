@@ -72,7 +72,7 @@ build {
       "INSTANCE_NAME=${var.INSTANCE_NAME}",
       "PARAMETERSTORE_NAME=${var.PARAMETERSTORE_NAME}"
     ]
-    execute_command  = "sudo -E sh '{{ .Path }}'"
+    execute_command  = "sudo -E bash '{{ .Path }}'"
  }
   
   post-processor "manifest" {
