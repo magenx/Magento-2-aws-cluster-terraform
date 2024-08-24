@@ -73,16 +73,6 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
 # Create policy to limit S3 media bucket access
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_iam_policy_document" "media" {
-  statement {
-    sid       = "AllowCloudFrontAccess"
-    effect    = "Allow"
-    actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.this["media"].arn}/*"]
-    principals {
-      type        = "AWS"
-      identifiers = [aws_cloudfront_origin_access_identity.this.iam_arn]
-   }
-  }
 
   statement {
     sid       = "AllowLambdaGet"
@@ -138,14 +128,24 @@ data "aws_iam_policy_document" "media" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_iam_policy_document" "mediaoptimized" {
   statement {
-    sid       = "AllowLambdaGetPut"
+    sid       = "AllowLambdaPut"
     effect    = "Allow"
-    actions = ["s3:PutObject","s3:GetObject"]
+    actions = ["s3:PutObject"]
     resources = ["${aws_s3_bucket.this["media-optimized"].arn}/*"]
     principals {
       type        = "AWS"
       identifiers = [aws_iam_role.lambda.arn]
     }
+  }
+  statement {
+    sid       = "AllowCloudFrontAccess"
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.this["media-optimized"].arn}/*"]
+    principals {
+      type        = "AWS"
+      identifiers = [aws_cloudfront_origin_access_identity.this.iam_arn]
+   }
   }
 }
 
