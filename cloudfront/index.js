@@ -76,5 +76,5 @@ function handler(event) {
     
     // Remove query strings
     request.querystring = {};
-    
     return request;
+}
