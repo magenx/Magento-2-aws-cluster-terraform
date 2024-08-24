@@ -83,46 +83,6 @@ resource "aws_iam_role_policy" "ses_send" {
   policy = data.aws_iam_policy_document.ses_send[each.key].json
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create inline policy for EC2 service role to limit CodeCommit access
-# # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_iam_policy_document" "codecommit_access" {
-  for_each = var.ec2
-
-  statement {
-    sid     = "codecommitaccessmagento${each.key}"
-    effect  = "Allow"
-    actions = [
-      "codecommit:Get*",
-      "codecommit:List*",
-      "codecommit:GitPull"
-    ]
-    resources = [aws_codecommit_repository.magento.arn]
-    condition {
-      test     = "StringEqualsIfExists"
-      variable = "codecommit:References"
-      values   = ["refs/heads/main"]
-    }
-  }
-
-  statement {
-    sid     = "codecommitaccessservices${each.key}"
-    effect  = "Allow"
-    actions = [
-      "codecommit:Get*",
-      "codecommit:List*",
-      "codecommit:GitPull"
-    ]
-    resources = [aws_codecommit_repository.services.arn]
-  }
-}
-
-resource "aws_iam_role_policy" "codecommit_access" {
-  for_each = var.ec2
-  name     = "${local.project}PolicyForCodeCommitAccess${title(each.key)}"
-  role     = aws_iam_role.ec2[each.key].id
-  policy = data.aws_iam_policy_document.codecommit_access[each.key].json
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create EC2 Instance Profile
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_instance_profile" "ec2" {
