@@ -75,14 +75,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
 data "aws_iam_policy_document" "media" {
   statement {
     sid       = "AllowCloudFrontAccess"
-    effect    = "Deny"
+    effect    = "Allow"
     actions   = ["s3:GetObject"]
     resources = ["${aws_s3_bucket.this["media"].arn}/*"]
-    condition {
-      test     = "StringNotEquals"
-      variable = "s3:x-amz-meta-file-type"
-      values   = ["image/jpeg", "image/png", "image/gif", "image/webp", "text/css", "application/javascript"]
-    }
     principals {
       type        = "AWS"
       identifiers = [aws_cloudfront_origin_access_identity.this.iam_arn]
@@ -91,30 +86,9 @@ data "aws_iam_policy_document" "media" {
 
   statement {
     sid       = "AllowLambdaGet"
-    effect    = "Deny"
+    effect    = "Allow"
     actions = ["s3:GetObject"]
     resources = ["${aws_s3_bucket.this["media"].arn}/*"]
-    condition {
-      test     = "StringNotEquals"
-      variable = "s3:x-amz-meta-file-type"
-      values   = ["image/jpeg", "image/png", "image/gif", "image/webp"]
-    }
-    principals {
-      type        = "AWS"
-      identifiers = [aws_iam_role.lambda.arn]
-    }
-  }
-
-  statement {
-    sid       = "AllowLambdaPut"
-    effect    = "Deny"
-    actions = ["s3:PutObject"]
-    resources = ["${aws_s3_bucket.this["media-optimized"].arn}/*"]
-    condition {
-      test     = "StringNotEquals"
-      variable = "s3:x-amz-meta-file-type"
-      values   = ["image/jpeg", "image/png", "image/gif", "image/webp"]
-    }
     principals {
       type        = "AWS"
       identifiers = [aws_iam_role.lambda.arn]
@@ -123,12 +97,9 @@ data "aws_iam_policy_document" "media" {
 
   statement {
     sid       = "AllowEC2PutObject"
-    effect    = "Deny"
+    effect    = "Allow"
     actions   = ["s3:PutObject"]
-    resources = [
-      "${aws_s3_bucket.this["media"].arn}",
-      "${aws_s3_bucket.this["media"].arn}/*"
-    ]
+    resources = ["${aws_s3_bucket.this["media"].arn}/*"]
     principals {
       type        = "AWS"
       identifiers = values(aws_iam_role.ec2)[*].arn
@@ -138,21 +109,13 @@ data "aws_iam_policy_document" "media" {
       variable = "aws:SourceVpc"
       values   = [aws_vpc.this.id]
     }
-    condition {
-      test     = "StringNotEquals"
-      variable = "s3:x-amz-meta-file-type"
-      values   = ["image/jpeg", "image/png", "image/gif", "image/webp", "text/css", "application/javascript"]
-    }
   }
 
   statement {
     sid       = "AllowEC2GetObject"
     effect    = "Allow"
     actions   = ["s3:GetObject", "s3:GetObjectAcl"]
-    resources = [
-      "${aws_s3_bucket.this["media"].arn}",
-      "${aws_s3_bucket.this["media"].arn}/*"
-    ]
+    resources = ["${aws_s3_bucket.this["media"].arn}/*"]
     principals {
       type        = "AWS"
       identifiers = values(aws_iam_role.ec2)[*].arn
@@ -163,12 +126,32 @@ data "aws_iam_policy_document" "media" {
     sid       = "AllowEC2ListBucket"
     effect    = "Allow"
     actions   = ["s3:GetBucketLocation", "s3:ListBucket"]
-    resources = [aws_s3_bucket.this["media"].arn]
+    resources = ["${aws_s3_bucket.this["media"].arn}","${aws_s3_bucket.this["media"].arn}/*"]
     principals {
       type        = "AWS"
       identifiers = values(aws_iam_role.ec2)[*].arn
     }
   }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create policy to limit S3 media optimized bucket access
+# # ---------------------------------------------------------------------------------------------------------------------#
+data "aws_iam_policy_document" "mediaoptimized" {
+  statement {
+    sid       = "AllowLambdaGetPut"
+    effect    = "Allow"
+    actions = ["s3:PutObject","s3:GetObject"]
+    resources = ["${aws_s3_bucket.this["media-optimized"].arn}/*"]
+    principals {
+      type        = "AWS"
+      identifiers = [aws_iam_role.lambda.arn]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "mediaoptimized" {
+  bucket = aws_s3_bucket.this["media-optimized"].id
+  policy = data.aws_iam_policy_document.mediaoptimized.json
 }
 
 resource "aws_s3_bucket_policy" "media" {
