@@ -11,6 +11,9 @@ sudo yum install -y yum-utils
 sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
 sudo yum -y install terraform packer
 
+## CHECK IF BACKEND CONFIG EXISTS
+if [ ! -e "backend.tf" ]; then
+
 AWS_REGION=$(aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].RegionName')
 
 echo "---"
@@ -114,6 +117,8 @@ terraform {
   }
 }
 EOF
+
+fi
 
 terraform validate
 if  [ $? -ne 0 ]; then
