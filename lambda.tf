@@ -78,13 +78,25 @@ resource "aws_lambda_permission" "this" {
   qualifier     = aws_lambda_alias.image_optimization.name
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create Lambda function npm package
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "null_resource" "npm_install" {
+  provisioner "local-exec" {
+    command = "cd ${abspath(path.root)}/lambda/image_optimization && npm install"
+  }
+  triggers = {
+    always_run = "${filesha256("${abspath(path.root)}/lambda/image_optimization/index.mjs")}"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create Lambda function zip archive 
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "archive_file" "lambda_image_optimization" {
+  depends_on       = [null_resource.npm_install]
   type             = "zip"
-  source_file      = "${abspath(path.root)}/lambda/image_optimization/index.mjs"
+  source_dir       = "${abspath(path.root)}/lambda/image_optimization"
   output_file_mode = "0666"
-  output_path      = "${abspath(path.root)}/lambda/image_optimization/index.mjs.zip"
+  output_path      = "${abspath(path.root)}/lambda/image_optimization.zip"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Lambda function with variables
@@ -93,7 +105,7 @@ resource "aws_lambda_function" "image_optimization" {
   provider      = aws.useast1
   function_name = "${local.project}-image-optimization"
   role          = aws_iam_role.lambda.arn
-  filename      = "${abspath(path.root)}/lambda/image_optimization/index.mjs.zip"
+  filename      = data.archive_file.lambda_image_optimization.output_path
   source_code_hash = data.archive_file.lambda_image_optimization.output_base64sha256
   runtime       = "nodejs20.x"
   handler       = "index.handler"
