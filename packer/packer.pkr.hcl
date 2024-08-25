@@ -44,9 +44,10 @@ source "amazon-ebs" "latest-ami" {
   instance_type   = "c7g.large"
   launch_block_device_mappings {
     device_name = "/dev/xvda"
-    volume_size = "${var["VOLUME_SIZE"]}"
+    volume_size = "${var.VOLUME_SIZE}"
     volume_type = "gp3"
     delete_on_termination = true
+    encrypted   = true
   }
   metadata_options {
     http_endpoint = "enabled"
