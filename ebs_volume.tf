@@ -11,7 +11,7 @@ resource "aws_ebs_volume" "mariadb_data" {
   size              = 250
   type              = "gp3"
   final_snapshot    = true
-  
+  encrypted         = true 
   tags = {
     Name = "mariadb.${var.magento["brand"]}.internal"
   }
