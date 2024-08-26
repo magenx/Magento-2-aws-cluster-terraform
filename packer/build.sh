@@ -45,10 +45,6 @@ if [ ! -z "$installed_packages" ]; then
 apt -qq -y remove --purge "${installed_packages}"
 fi
 
-# configure system/magento timezone
-ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
-dpkg-reconfigure --frontend noninteractive tzdata
-
 ###################################################################################
 ###                               GET PARAMETERSTORE                            ###
 ###################################################################################
@@ -79,6 +75,9 @@ INSTANCE_IP=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.
 ###                          LEMP WEB STACK INSTALLATION                        ###
 ###################################################################################
 
+# configure system/magento timezone
+ln -fs /usr/share/zoneinfo/${parameter["TIMEZONE"]} /etc/localtime
+dpkg-reconfigure --frontend noninteractive tzdata
 
 if [ "${INSTANCE_NAME}" == "mariadb" ]; then
 # MARIADB INSTALLATION
