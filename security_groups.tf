@@ -10,227 +10,93 @@ resource "aws_security_group" "alb" {
   name        = "${local.project}-alb-sg"
   description = "Security group rules for ${local.project} ALB"
   vpc_id      = aws_vpc.this.id
-
-  ingress {
-      description      = "Allow all inbound traffic on the load balancer https listener port"
-      from_port        = 443
-      to_port          = 443
-      protocol         = "tcp"
-      cidr_blocks      = ["0.0.0.0/0"]
-    }
-  
-  ingress {
-      description      = "Allow all inbound traffic on the load balancer http listener port"
-      from_port        = 80
-      to_port          = 80
-      protocol         = "tcp"
-      cidr_blocks      = ["0.0.0.0/0"] 
-    }
-
-  egress {
-      description      = "Allow outbound traffic to instances on the load balancer listener port"
-      from_port        = 80
-      to_port          = 80
-      protocol         = "tcp"
-      security_groups  = [aws_security_group.ec2.id]
-    }
-
   tags = {
     Name = "${local.project}-alb-sg"
   }
 }
 
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create security group and rules for EC2
-# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_vpc_security_group_ingress_rule" "alb" {
+  description       = "Security group rules for ALB ingress"
+  security_group_id = aws_security_group.alb.id
+  ip_protocol       = "-1"
+  cidr_ipv4         = "0.0.0.0/0"
+  tags = {
+    Name = "${local.project}-alb-ingress-sg"
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "alb" {
+  description       = "Security group rules for ALB egress"
+  security_group_id = aws_security_group.alb.id
+  ip_protocol       = "-1"
+  cidr_ipv4         = "0.0.0.0/0"
+  tags = {
+    Name = "${local.project}-alb-egress-sg"
+  }
+}
+
+
+
+
 resource "aws_security_group" "ec2" {
-  name        = "${local.project}-ec2-sg"
-  description = "Security group rules for ${local.project} EC2"
+  for_each    = var.ec2
+  name        = "${local.project}-${each.key}-sg"
+  description = "Security group for ${each.key} EC2"
   vpc_id      = aws_vpc.this.id
-  
   tags = {
-    Name = "${local.project}-ec2-sg"
+    Name = "${local.project}-${each.key}-sg"
   }
 }
 
-resource "aws_security_group_rule" "ec2_https_out" {
-    type        = "egress"
-    description = "Allow outbound traffic on the instance https port"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    security_group_id = aws_security_group.ec2.id
-    }
-
-resource "aws_security_group_rule" "ec2_http_out" {
-    type        = "egress"
-    description = "Allow outbound traffic on the instance http port"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    security_group_id = aws_security_group.ec2.id
-    }
-
-resource "aws_security_group_rule" "ec2_mysql_out" {
-    type        = "egress"
-    description = "Allow outbound traffic on the instance MySql port"
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
-    source_security_group_id = aws_security_group.mariadb.id
-    security_group_id = aws_security_group.ec2.id
-    }
-
-resource "aws_security_group_rule" "ec2_rabbitmq_out" {
-    type        = "egress"
-    description = "Allow outbound traffic on the instance RabbitMQ port"
-    from_port   = 5671
-    to_port     = 5671
-    protocol    = "tcp"
-    source_security_group_id = aws_security_group.rabbitmq.id
-    security_group_id = aws_security_group.ec2.id
-    }
-
-resource "aws_security_group_rule" "ec2_redis_cache_out" {
-    type        = "egress"
-    description = "Allow outbound traffic on the instance Redis port"
-    from_port   = 6380
-    to_port     = 6380
-    protocol    = "tcp"
-    source_security_group_id = aws_security_group.redis.id
-    security_group_id = aws_security_group.ec2.id
-    }
-
-resource "aws_security_group_rule" "ec2_redis_session_out" {
-    type        = "egress"
-    description = "Allow outbound traffic on the instance Redis port"
-    from_port   = 6379
-    to_port     = 6379
-    protocol    = "tcp"
-    source_security_group_id = aws_security_group.redis.id
-    security_group_id = aws_security_group.ec2.id
-    }
-
-resource "aws_security_group_rule" "ec2_efs_out" {
-    type        = "egress"
-    description = "Allow outbound traffic on the instance NFS port"
-    from_port   = 2049
-    to_port     = 2049
-    protocol    = "tcp"
-    source_security_group_id = aws_security_group.efs.id
-    security_group_id = aws_security_group.ec2.id
-    }
-
-resource "aws_security_group_rule" "ec2_ses_out" {
-    type        = "egress"
-    description = "Allow outbound traffic on the region SES port"
-    from_port   = 587
-    to_port     = 587
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    security_group_id = aws_security_group.ec2.id
-    }
-
-resource "aws_security_group_rule" "ec2_opensearch_out" {
-    type        = "egress"
-    description = "Allow outbound traffic on the instance opensearch port"
-    from_port   = 9200
-    to_port     = 9200
-    protocol    = "tcp"
-    source_security_group_id = aws_security_group.opensearch.id
-    security_group_id = aws_security_group.ec2.id
-    }
-
-resource "aws_security_group_rule" "ec2_http_in_ec2" {
-    type        = "ingress"
-    description = "Allow all inbound traffic from ec2 on http port"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    source_security_group_id = aws_security_group.ec2.id
-    security_group_id = aws_security_group.ec2.id
-    }
-
-resource "aws_security_group_rule" "ec2_http_external" {
-    type        = "ingress"
-    description = "Allow all inbound traffic from the load balancer on http port"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    source_security_group_id = aws_security_group.alb.id
-    security_group_id = aws_security_group.ec2.id
-    }
-
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create security group and rules for MariaDB
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group" "mariadb" {
-  name        = "${local.project}-mariadb-sg"
-  description = "Security group rules for ${local.project} MariaDB"
-  vpc_id      = aws_vpc.this.id
-
-  ingress {
-      description      = "Allow all inbound traffic to MySQL port from EC2"
-      from_port        = 3306
-      to_port          = 3306
-      protocol         = "tcp"
-      security_groups  = [aws_security_group.ec2.id]
-    }
-
-  tags = {
-    Name = "${local.project}-mariadb-sg"
-  }
+locals {
+  service_sgs = { for k, v in aws_security_group.ec2 : k => v.id if var.ec2[k].service != null }
 }
 
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create security group and rules for ElastiCache
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group" "redis" {
-  name        = "${local.project}-redis-sg"
-  description = "Security group rules for ${local.project} Redis"
-  vpc_id      = aws_vpc.this.id
-
-  ingress {
-      description      = "Allow all inbound traffic to Redis port from EC2"
-      from_port        = 6379
-      to_port          = 6379
-      protocol         = "tcp"
-      security_groups  = [aws_security_group.ec2.id]
-    }
-  ingress {
-      description      = "Allow all inbound traffic to Redis port from EC2"
-      from_port        = 6380
-      to_port          = 6380
-      protocol         = "tcp"
-      security_groups  = [aws_security_group.ec2.id]
-    }
-
-  tags = {
-    Name = "${local.project}-redis-sg"
-  }
+resource "aws_vpc_security_group_ingress_rule" "frontend_alb" {
+  security_group_id = aws_security_group.ec2["frontend"].id
+  referenced_security_group_id = aws_security_group.alb.id
+  ip_protocol  = "-1"
 }
 
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create security group and rules for RabbitMQ
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group" "rabbitmq" {
-  name        = "${local.project}-rabbitmq-sg"
-  description = "Security group rules for ${local.project} RabbitMQ"
-  vpc_id      = aws_vpc.this.id
+resource "aws_vpc_security_group_ingress_rule" "admin_alb" {
+  security_group_id = aws_security_group.ec2["admin"].id
+  referenced_security_group_id = aws_security_group.alb.id
+  ip_protocol  = "-1"
+}
 
-  ingress {
-      description      = "Allow all inbound traffic to RabbitMQ port from EC2"
-      from_port        = 5671
-      to_port          = 5671
-      protocol         = "tcp"
-      security_groups  = [aws_security_group.ec2.id]
-    }
+resource "aws_vpc_security_group_ingress_rule" "frontend_service" {
+  for_each = local.service_sgs
+  security_group_id = aws_security_group.ec2["frontend"].id
+  referenced_security_group_id = each.value
+  ip_protocol  = "-1"
+}
 
-  tags = {
-    Name = "${local.project}-rabbitmq-sg"
-  }
+resource "aws_vpc_security_group_ingress_rule" "admin_service" {
+  for_each = local.service_sgs
+  security_group_id = aws_security_group.ec2["admin"].id
+  referenced_security_group_id = each.value
+  ip_protocol  = "-1"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "service_frontend" {
+  for_each = local.service_sgs
+  referenced_security_group_id = aws_security_group.ec2["frontend"].id
+  security_group_id = each.value
+  ip_protocol  = "-1"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "service_admin" {
+  for_each = local.service_sgs
+  referenced_security_group_id = aws_security_group.ec2["admin"].id
+  security_group_id = each.value
+  ip_protocol  = "-1"
+}
+
+resource "aws_vpc_security_group_egress_rule" "all" {
+  for_each = aws_security_group.ec2
+  security_group_id = each.value.id
+  ip_protocol  = "-1"
+  cidr_ipv4    = values(aws_subnet.this).0.cidr_block
 }
 
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -238,55 +104,22 @@ resource "aws_security_group" "rabbitmq" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "efs" {
   name        = "${local.project}-efs-sg"
-  description = "Security group rules for ${local.project} EFS"
+  description = "Security group rules for EFS"
   vpc_id      = aws_vpc.this.id
-
-  ingress {
-      description      = "Allow all inbound traffic to EFS port from EC2"
-      from_port        = 0
-      to_port          = 0
-      protocol         = "-1"
-      security_groups  = [aws_security_group.ec2.id]
-    }
- 
-  egress {
-      description      = "Allow all outbound traffic to EC2 port from EFS"
-      from_port        = 0
-      to_port          = 0
-      protocol         = "-1"
-      security_groups  = [aws_security_group.ec2.id]
-    }
-
   tags = {
     Name = "${local.project}-efs-sg"
   }
 }
 
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create security group and rules for opensearch
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_security_group" "opensearch" {
-  name        = "${local.project}-opensearch-sg"
-  description = "Security group rules for ${local.project} opensearch"
-  vpc_id      = aws_vpc.this.id
+resource "aws_vpc_security_group_ingress_rule" "efs" {
+  for_each = aws_security_group.ec2
+  referenced_security_group_id = each.value.id
+  security_group_id = aws_security_group.efs.id
+  ip_protocol  = "-1"
+}
 
-  ingress {
-      description      = "Allow all inbound traffic to opensearch port from EC2"
-      from_port        = 0
-      to_port          = 0
-      protocol         = "-1"
-      security_groups  = [aws_security_group.ec2.id]
-    }
-  
-  egress {
-      description      = "Allow all outbound traffic to EC2 port from opensearch"
-      from_port        = 0
-      to_port          = 0
-      protocol         = "-1"
-      security_groups  = [aws_security_group.ec2.id]
-    }
-
-  tags = {
-    Name = "${local.project}-opensearch-sg"
-  }
+resource "aws_vpc_security_group_egress_rule" "efs" {
+  security_group_id = aws_security_group.efs.id
+  ip_protocol  = "-1"
+  cidr_ipv4    = values(aws_subnet.this).0.cidr_block
 }
