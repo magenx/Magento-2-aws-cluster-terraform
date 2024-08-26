@@ -72,7 +72,7 @@ resource "aws_cloudwatch_event_target" "instance_launch" {
   rule      = aws_cloudwatch_event_rule.instance_launch[each.key].name
   target_id = "${local.project}-${each.key}-instance-launch"
   arn       =  aws_ssm_document.user_data.arn
-  role_arn  =  aws_iam_role.ec2[each.key].arn
+  role_arn  =  aws_iam_instance_profile.ec2[each.key].arn
   
   run_command_targets {
     key    = "tag:Name"
