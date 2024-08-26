@@ -35,9 +35,9 @@ resource "aws_vpc_security_group_egress_rule" "alb" {
   }
 }
 
-
-
-
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create security group and rules for EC2
+# # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_security_group" "ec2" {
   for_each    = var.ec2
   name        = "${local.project}-${each.key}-sg"
@@ -53,12 +53,14 @@ locals {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "frontend_alb" {
+  description = "Security group rules for EC2 and ALB"
   security_group_id = aws_security_group.ec2["frontend"].id
   referenced_security_group_id = aws_security_group.alb.id
   ip_protocol  = "-1"
 }
 
 resource "aws_vpc_security_group_ingress_rule" "admin_alb" {
+  description = "Security group rules for EC2 and ALB"
   security_group_id = aws_security_group.ec2["admin"].id
   referenced_security_group_id = aws_security_group.alb.id
   ip_protocol  = "-1"
@@ -66,6 +68,7 @@ resource "aws_vpc_security_group_ingress_rule" "admin_alb" {
 
 resource "aws_vpc_security_group_ingress_rule" "frontend_service" {
   for_each = local.service_sgs
+  description = "Security group rules for EC2 and ${each.key}"
   security_group_id = aws_security_group.ec2["frontend"].id
   referenced_security_group_id = each.value
   ip_protocol  = "-1"
@@ -73,6 +76,7 @@ resource "aws_vpc_security_group_ingress_rule" "frontend_service" {
 
 resource "aws_vpc_security_group_ingress_rule" "admin_service" {
   for_each = local.service_sgs
+  description = "Security group rules for EC2 and ${each.key}"
   security_group_id = aws_security_group.ec2["admin"].id
   referenced_security_group_id = each.value
   ip_protocol  = "-1"
@@ -80,6 +84,7 @@ resource "aws_vpc_security_group_ingress_rule" "admin_service" {
 
 resource "aws_vpc_security_group_ingress_rule" "service_frontend" {
   for_each = local.service_sgs
+  description = "Security group rules for EC2 and ${each.key}"
   referenced_security_group_id = aws_security_group.ec2["frontend"].id
   security_group_id = each.value
   ip_protocol  = "-1"
@@ -87,6 +92,7 @@ resource "aws_vpc_security_group_ingress_rule" "service_frontend" {
 
 resource "aws_vpc_security_group_ingress_rule" "service_admin" {
   for_each = local.service_sgs
+  description = "Security group rules for EC2 and ${each.key}"
   referenced_security_group_id = aws_security_group.ec2["admin"].id
   security_group_id = each.value
   ip_protocol  = "-1"
@@ -94,9 +100,10 @@ resource "aws_vpc_security_group_ingress_rule" "service_admin" {
 
 resource "aws_vpc_security_group_egress_rule" "all" {
   for_each = aws_security_group.ec2
+  description = "Security group rules for EC2 and ${each.key}"
   security_group_id = each.value.id
   ip_protocol  = "-1"
-  cidr_ipv4    = values(aws_subnet.this).0.cidr_block
+  cidr_ipv4    = "0.0.0.0/0"
 }
 
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -113,12 +120,14 @@ resource "aws_security_group" "efs" {
 
 resource "aws_vpc_security_group_ingress_rule" "efs" {
   for_each = aws_security_group.ec2
+  description = "Security group rules for EFS and ${each.key}"
   referenced_security_group_id = each.value.id
   security_group_id = aws_security_group.efs.id
   ip_protocol  = "-1"
 }
 
 resource "aws_vpc_security_group_egress_rule" "efs" {
+  description = "Security group rules for EFS"
   security_group_id = aws_security_group.efs.id
   ip_protocol  = "-1"
   cidr_ipv4    = values(aws_subnet.this).0.cidr_block
