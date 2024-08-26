@@ -34,7 +34,7 @@ variable "ec2" {
   default = {
     frontend = {
       instance_type    = "c7g.xlarge"
-      private_ip       = null
+      service          = null
       volume_size      = "25"
       warm_pool        = "enabled"
       desired_capacity = "1"
@@ -43,7 +43,7 @@ variable "ec2" {
     }
     admin = {
       instance_type    = "c7g.xlarge"
-      private_ip       = null
+      service          = null
       volume_size      = "25"
       warm_pool        = "enabled"
       desired_capacity = "1"
@@ -70,7 +70,7 @@ variable "ec2" {
     }
     rabbitmq = {
       instance_type    = "c7g.medium"
-      private_ip       = "15"
+      service          = true
       volume_size      = "25"
       warm_pool        = "disabled"
       desired_capacity = "1"
@@ -79,7 +79,7 @@ variable "ec2" {
     }
     mariadb = {
       instance_type    = "m7g.2xlarge"
-      private_ip       = "10"
+      service          = true
       volume_size      = "25"
       warm_pool        = "disabled"
       desired_capacity = "1"
