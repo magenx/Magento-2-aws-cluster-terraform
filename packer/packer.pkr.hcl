@@ -71,7 +71,7 @@ build {
     timeout      = "60s"
     environment_vars = [
       "INSTANCE_NAME=${var.INSTANCE_NAME}",
-      "PARAMETERSTORE=${local.parameter}"
+      "PARAMETERSTORE=${var.PARAMETERSTORE_NAME}"
     ]
     execute_command  = "sudo -E bash '{{ .Path }}'"
  }
