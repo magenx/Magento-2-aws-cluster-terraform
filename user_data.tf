@@ -67,6 +67,7 @@ resource "aws_cloudwatch_event_rule" "instance_launch" {
 # EventBridge Rule Target for SSM Document
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "instance_launch" {
+  depends_on = [aws_autoscaling_group.this]
   for_each  = var.ec2
   rule      = aws_cloudwatch_event_rule.instance_launch[each.key].name
   target_id = "${local.project}-${each.key}-instance-launch"
