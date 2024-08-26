@@ -26,18 +26,18 @@ data "amazon-parameterstore" "env" {
 }
 locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
-  var = "${jsondecode(data.amazon-parameterstore.env.value)}"
+  parameter = "${jsondecode(data.amazon-parameterstore.env.value)}"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create AMI Builder (EBS backed)
 # # ---------------------------------------------------------------------------------------------------------------------#
 source "amazon-ebs" "latest-ami" {
-  ami_name        = "${local.var["PROJECT"]}-${var.INSTANCE_NAME}-${local.timestamp}"
-  ami_description = "AMI for ${local.var["PROJECT"]} ${var.INSTANCE_NAME} - Packer Build ${local.timestamp}"
-  region          = "${local.var["AWS_DEFAULT_REGION"]}"
-  source_ami      = "${local.var["SOURCE_AMI"]}"
+  ami_name        = "${local.parameter["PROJECT"]}-${var.INSTANCE_NAME}-${local.timestamp}"
+  ami_description = "AMI for ${local.parameter["PROJECT"]} ${var.INSTANCE_NAME} - Packer Build ${local.timestamp}"
+  region          = "${local.parameter["AWS_DEFAULT_REGION"]}"
+  source_ami      = "${local.parameter["SOURCE_AMI"]}"
   iam_instance_profile = "${var.IAM_INSTANCE_PROFILE}"
-  subnet_id       = "${local.var["SUBNET_ID"]}"
+  subnet_id       = "${local.parameter["SUBNET_ID"]}"
   ssh_username    = "admin"
   temporary_key_pair_type = "ed25519"
   temporary_security_group_source_public_ip = true
@@ -55,7 +55,7 @@ source "amazon-ebs" "latest-ami" {
     http_put_response_hop_limit = 1
   }
   snapshot_tags = {
-    Name = "${local.var["PROJECT"]}-${var.INSTANCE_NAME}-${local.timestamp}"
+    Name = "${local.parameter["PROJECT"]}-${var.INSTANCE_NAME}-${local.timestamp}"
   }
 }
 
@@ -71,7 +71,7 @@ build {
     timeout      = "60s"
     environment_vars = [
       "INSTANCE_NAME=${var.INSTANCE_NAME}",
-      "PARAMETERSTORE_NAME=${var.PARAMETERSTORE_NAME}"
+      "PARAMETERSTORE=${local.parameter}"
     ]
     execute_command  = "sudo -E bash '{{ .Path }}'"
  }
