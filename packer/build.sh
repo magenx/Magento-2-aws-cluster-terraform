@@ -491,7 +491,9 @@ sed -i "s/example.com/${DOMAIN}/" /etc/varnish/default.vcl
 curl -o /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
 echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
 apt -qq update
-apt -qq -y install php${parameter["PHP_VERSION"]} ${parameter["PHP_PACKAGES"][@]/#/php${parameter["PHP_VERSION"]}-} php-pear
+
+_PHP_PACKAGES+=(${parameter["PHP_PACKAGES"]})
+apt -qq -y install php${parameter["PHP_VERSION"]} ${_PHP_PACKAGES[@]/#/php${parameter["PHP_VERSION"]}-} php-pear
 
 # COMPOSER INSTALLATION
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
