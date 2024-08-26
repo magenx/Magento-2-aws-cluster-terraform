@@ -53,10 +53,7 @@ fi
 apt-get -qqy update
 apt-get -qqy install jq
 
-export INSTANCE_NAME=${INSTANCE_NAME}
-export PARAMETERSTORE_NAME=${PARAMETERSTORE_NAME}
-
-PARAMETER=$(sudo aws ssm get-parameter --name "${PARAMETERSTORE_NAME}" --query 'Parameter.Value' --output text)
+PARAMETER=$(sudo aws ssm get-parameter --name "${PARAMETERSTORE}" --query 'Parameter.Value' --output text)
 declare -A parameter
 while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
 
