@@ -52,7 +52,7 @@ variable "ec2" {
     }
     opensearch = {
       instance_type    = "c7g.large"
-      private_ip       = "25"
+      service          = true
       volume_size      = "100"
       warm_pool        = "disabled"
       desired_capacity = "1"
@@ -61,7 +61,7 @@ variable "ec2" {
     }
     redis = {
       instance_type    = "c7g.large"
-      private_ip       = "20"
+      service          = true
       volume_size      = "25"
       warm_pool        = "disabled"
       desired_capacity = "1"
