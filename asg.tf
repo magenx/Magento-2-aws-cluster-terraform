@@ -13,11 +13,9 @@ resource "aws_launch_template" "this" {
   image_id = element(values(data.external.packer[each.key].result), 0)
   instance_type = each.value.instance_type
   monitoring { enabled = true }
-  network_interfaces {
+  network_interfaces { 
     associate_public_ip_address = true
-    security_groups             = [aws_security_group.ec2.id]
-    device_index = each.value.private_ip != null ? 0 : null
-    private_ip_address = each.value.private_ip != null ? cidrhost(values(aws_subnet.this).0.cidr_block, each.value.private_ip) : null
+    security_groups = [aws_security_group.ec2[each.key].id]
   }
   dynamic "tag_specifications" {
     for_each = toset(["instance","volume"])
