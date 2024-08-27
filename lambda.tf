@@ -114,6 +114,7 @@ resource "aws_lambda_function" "image_optimization" {
   publish       = true
   environment {
     variables = {
+      s3BucketRegion             = aws_s3_bucket.this["media"].region
       originalImageBucketName    = aws_s3_bucket.this["media"].id
       transformedImageBucketName = aws_s3_bucket.this["media-optimized"].id
       transformedImageCacheTTL   = "max-age=31622400"
