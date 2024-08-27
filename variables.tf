@@ -23,7 +23,7 @@ variable "string" {
    description = "Generate random string"
    default     = [
       "admin_path", 
-      "mysql_path", 
+      "phpmyadmin", 
       "profiler", 
       "health_check", 
       "project",
