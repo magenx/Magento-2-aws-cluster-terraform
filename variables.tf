@@ -14,7 +14,8 @@ variable "password" {
       "rabbitmq",
       "redis",
       "opensearch",
-      "indexer"
+      "indexer",
+      "blowfish"
    ]
 }
 
