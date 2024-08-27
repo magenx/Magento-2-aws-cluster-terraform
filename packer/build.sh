@@ -743,9 +743,42 @@ sudo -u \${SUDO_USER} n98-magerun2 --root-dir=/home/\${SUDO_USER}/public_html ca
 nginx -t && /usr/bin/systemctl restart nginx.service || echo "[!] Error: check nginx config"
 END
 
-chmod +x /usr/local/bin/*
+# PHPMYADMIN CONFIGURATION
+mkdir -p /usr/share/phpMyAdmin && cd $_
+composer -n create-project phpmyadmin/phpmyadmin .
+cp config.sample.inc.php config.inc.php
+sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${parameter["BLOWFISH"]}';/" config.inc.php
+sed -i "s|.*UploadDir.*|\$cfg['UploadDir'] = '/tmp/';|"  config.inc.php
+sed -i "s|.*SaveDir.*|\$cfg['SaveDir'] = '/tmp/';|"  config.inc.php
+sed -i "/SaveDir/a\
+\$cfg['TempDir'] = '\/tmp\/';"  config.inc.php
+
+sed -i "s/PHPMYADMIN_PLACEHOLDER/${parameter["PHPMYADMIN"]}/g" /etc/nginx/conf_m2/phpmyadmin.conf
+	 	   
+sed -i "s|^listen =.*|listen = /var/run/php/php${parameter["PHP_VERSION"]}-fpm.sock|" /etc/php/${parameter["PHP_VERSION"]}/fpm/pool.d/www.conf
+sed -i "s/^listen.owner.*/listen.owner = nginx/" /etc/php/${parameter["PHP_VERSION"]}/fpm/pool.d/www.conf
+sed -i "s|127.0.0.1:9000|unix:/var/run/php/php${parameter["PHP_VERSION"]}-fpm.sock|"  /etc/nginx/conf_m2/phpmyadmin.conf
+
+
 fi
 
+cat <<END > /home/${parameter["BRAND"]}/.env
+MODE="production"
+DOMAIN="${parameter["DOMAIN"]}"
+ADMIN_PATH="${parameter["ADMIN_PATH"]}"
+REDIS_PASSWORD="${parameter["REDIS_PASSWORD"]}"
+RABBITMQ_PASSWORD="${parameter["RABBITMQ_PASSWORD"]}"
+INDEXER_PASSWORD="${parameter["INDEXER_PASSWORD"]}"
+CRYPT_KEY="${parameter["CRYPT_KEY"]}"
+GRAPHQL_ID_SALT="${parameter["GRAPHQL_ID_SALT"]}"
+DATABASE_NAME="${parameter["DATABASE_NAME]}"
+DATABASE_USER="${parameter["DATABASE_USER]}"
+DATABASE_PASSWORD="${parameter["DATABASE_PASSWORD]}"
+CONFIGURATION_DATE="$(date -u "+%a, %d %b %Y %H:%M:%S %z")"
+END
+
+
+chmod +x /usr/local/bin/*
 systemctl daemon-reload
 systemctl restart nginx.service
 systemctl restart php*fpm.service
