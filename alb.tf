@@ -114,7 +114,7 @@ resource "aws_lb_listener_rule" "phpmyadmin" {
   }
   condition {
     path_pattern {
-      values = ["/mysql_${random_string.this["mysql_path"].result}/*"]
+      values = ["/${random_string.this["phpmyadmin"].result}/*"]
     }
   }
 }
