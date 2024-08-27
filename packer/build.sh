@@ -64,7 +64,7 @@ while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PA
 OPENSEARCH_ENDPOINT="opensearch.${parameter["DNS"]}"
 REDIS_ENDPOINT="redis.${parameter["DNS"]}"
 RABBITMQ_ENDPOINT="rabbitmq.${parameter["DNS"]}"
-DATABASE_ENDPONIT="mariadb.${parameter["DNS"]}"
+DATABASE_ENDPOINT="mariadb.${parameter["DNS"]}"
 
 AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 600")
 INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
@@ -83,10 +83,11 @@ if [ "${INSTANCE_NAME}" == "mariadb" ]; then
 # MARIADB INSTALLATION
 curl -sS ${MARIADB_REPO_CONFIG} | bash -s -- --mariadb-server-version="mariadb-${MARIADB_VERSION}" --skip-maxscale --skip-verify --skip-eol-check
 apt -qq update
-apt -qq -y install mariadb-server
+apt -qq -y install mariadb-server bc
 systemctl enable mariadb
 curl -sSo /etc/my.cnf https://raw.githubusercontent.com/magenx/magento-mysql/master/my.cnf/my.cnf
 INNODB_BUFFER_POOL_SIZE=$(echo "0.90*$(awk '/MemTotal/ { print $2 / (1024*1024)}' /proc/meminfo | cut -d'.' -f1)" | bc | xargs printf "%1.0f")
+if [ "${INNODB_BUFFER_POOL_SIZE}" == "0" ]; then INNODB_BUFFER_POOL_SIZE=1; fi
 sed -i "s/innodb_buffer_pool_size = 4G/innodb_buffer_pool_size = ${INNODB_BUFFER_POOL_SIZE}G/" /etc/my.cnf
 systemctl restart mariadb
 sleep 5
@@ -249,7 +250,6 @@ chmod 640 /etc/redis/${SERVICE}.conf
 
 systemctl daemon-reload
 systemctl enable redis@${SERVICE}
-systemctl restart redis@${SERVICE}
 done
 
 fi
@@ -260,8 +260,6 @@ if [ "${INSTANCE_NAME}" == "rabbitmq" ]; then
 curl -1sLf 'https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/setup.deb.sh' | bash
 curl -1sLf 'https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/setup.deb.sh' | bash
 apt -qq -y install rabbitmq-server=${RABBITMQ_VERSION}
-
-echo "${INSTANCE_IP} ${RABBITMQ_ENDPOINT} rabbitmq" >> /etc/hosts
 
 systemctl stop rabbitmq-server
 systemctl stop epmd*
@@ -274,7 +272,7 @@ ERL_EPMD_ADDRESS=${RABBITMQ_ENDPOINT}
 PID_FILE=/var/lib/rabbitmq/mnesia/rabbitmq_pid
 END
 
-echo '[{kernel, [{inet_dist_use_interface, {${RABBITMQ_ENDPOINT//./,}}}]},{rabbit, [{tcp_listeners, [{"${RABBITMQ_ENDPOINT}", 5672}]}]}].' > /etc/rabbitmq/rabbitmq.config
+echo '[{kernel, [{inet_dist_use_interface, {127,0,0,1}}]},{rabbit, [{tcp_listeners, [{"127.0.0.1", 5672}]}]}].' > /etc/rabbitmq/rabbitmq.config
 
 cat >> /etc/sysctl.conf <<END
 net.ipv6.conf.lo.disable_ipv6 = 0
@@ -338,7 +336,7 @@ echo "deb [signed-by=/usr/share/keyrings/opensearch-keyring] https://artifacts.o
 apt -qq -y update
 env OPENSEARCH_INITIAL_ADMIN_PASSWORD=${parameter["OPENSEARCH_PASSWORD"]} apt -qq -y install opensearch
 
-echo "${INSTANCE_IP} ${OPENSEARCH_ENDPOINT} opensearch" >> /etc/hosts
+echo "${INSTANCE_IP} ${OPENSEARCH_ENDPOINT}" >> /etc/hosts
 
 ## opensearch settings
 cp /etc/opensearch/opensearch.yml /etc/opensearch/opensearch.yml_default
@@ -443,6 +441,8 @@ analysis-icu \
 analysis-phonetic
 
 apt-mark hold opensearch
+
+sed -i "/${OPENSEARCH_ENDPOINT}/d" /etc/hosts
 
 fi
 
