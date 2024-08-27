@@ -93,12 +93,10 @@ variable "ec2" {
 variable "magento" {
   description      = "Map application params | Magento 2"
   default          = {
-    app_version      = "2"
     cidr_block       = "172.35.0.0/16"
     brand            = "magenx"
     domain           = "magenx.org"
     admin_email      = "admin@magenx.org"
-    admin_login      = "admin"
     language         = "en_US"
     currency         = "EUR"
     timezone         = "UTC"
@@ -108,6 +106,8 @@ variable "magento" {
     exclude_linux_packages = "apache2* *apcu-bc"
     composer_user    = "8c681734f22763b50ea0c29dff9e7af2"
     composer_pass    = "02dfee497e669b5db1fe1c8d481d6974"
+    crypt_key        = "change me"
+    grapql_id_salt   = "change me"
   }
 }
 
