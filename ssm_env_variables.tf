@@ -47,7 +47,6 @@ resource "aws_ssm_parameter" "env" {
 "DATABASE_PASSWORD" : "${random_password.this["mariadb"].result}",
 "DATABASE_ROOT_PASSWORD" : "${random_password.this["mariadb_root"].result}",
 "ADMIN_PATH" : "admin_${random_string.this["admin_path"].result}",
-"VERSION" : "${var.magento["app_version"]}",
 "DOMAIN" : "${var.magento["domain"]}",
 "BRAND" : "${var.magento["brand"]}",
 "PHP_USER" : "php-${var.magento["brand"]}",
