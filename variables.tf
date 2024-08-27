@@ -107,7 +107,7 @@ variable "magento" {
     composer_user    = "8c681734f22763b50ea0c29dff9e7af2"
     composer_pass    = "02dfee497e669b5db1fe1c8d481d6974"
     crypt_key        = "change me"
-    grapql_id_salt   = "change me"
+    graphql_id_salt  = "change me"
   }
 }
 
