@@ -171,7 +171,7 @@ resource "aws_cloudwatch_metric_alarm" "scalein" {
 # Create lifecycle transition notification for MariaDB instance termination
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_lifecycle_hook" "this" {
-  name                    = "${local.project} mariadb"
+  name                    = "${local.project}-mariadb"
   autoscaling_group_name  = aws_autoscaling_group.this["mariadb"].name
   lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
   role_arn                = aws_iam_instance_profile.ec2["mariadb"].arn
