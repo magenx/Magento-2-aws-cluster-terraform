@@ -485,7 +485,7 @@ curl -o /etc/varnish/devicedetect.vcl https://raw.githubusercontent.com/varnishc
 curl -o /etc/varnish/devicedetect-include.vcl ${MAGENX_INSTALL_GITHUB_REPO}/devicedetect-include.vcl
 curl -o /etc/varnish/default.vcl ${MAGENX_INSTALL_GITHUB_REPO}/default.vcl
 sed -i "s/PROFILER_PLACEHOLDER/${parameter["PROFILER_PLACEHOLDER"]}/" /etc/varnish/default.vcl
-sed -i "s/example.com/${DOMAIN}/" /etc/varnish/default.vcl
+sed -i "s/example.com/${parameter["DOMAIN"]}/" /etc/varnish/default.vcl
 
 # PHP INSTALLATION
 curl -o /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
@@ -542,7 +542,7 @@ sysctl -q -p
 
 for dir in cli fpm
 do
-cat <<END > /etc/php/${PHP_VERSION}/$dir/conf.d/zz-magenx-overrides.ini
+cat <<END > /etc/php/${parameter["PHP_VERSION"]}/$dir/conf.d/zz-magenx-overrides.ini
 opcache.enable_cli = 1
 opcache.memory_consumption = 512
 opcache.interned_strings_buffer = 4
@@ -584,7 +584,7 @@ max_input_vars = 50000
 session.gc_maxlifetime = 28800
 mysql.allow_persistent = On
 mysqli.allow_persistent = On
-date.timezone = "${TIMEZONE}"
+date.timezone = "${parameter["TIMEZONE"]}"
 END
 done
 
@@ -794,4 +794,4 @@ apt-get autoremove --purge -y
 echo "PS1='\[\e[37m\][\[\e[m\]\[\e[32m\]\u\[\e[m\]\[\e[37m\]@\[\e[m\]\[\e[35m\]\h\[\e[m\]\[\e[37m\]:\[\e[m\]\[\e[36m\]\W\[\e[m\]\[\e[37m\]]\[\e[m\]$ '" >> /etc/bashrc
 
 ## simple installation stats
-curl --silent -X POST https://www.magenx.com/ping_back_id_${INSTANCE_NAME}_domain_${DOMAIN}_geo_${TIMEZONE}_keep_30d >/dev/null 2>&1
+curl --silent -X POST https://www.magenx.com/ping_back_id_${INSTANCE_NAME}_domain_${parameter["DOMAIN"]}_geo_${parameter["TIMEZONE"]}_keep_30d >/dev/null 2>&1
