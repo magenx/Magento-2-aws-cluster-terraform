@@ -115,9 +115,9 @@ END
 chmod 600 /root/.my.cnf /root/.mytop
 
 mariadb <<EOMYSQL
-CREATE USER '${parameter["DATABASE_USER"]}'@'${parameter["CIDR_BLOCK"]/0.0\/16/%}' IDENTIFIED BY '${parameter["DATABASE_PASSWORD"]}';
+CREATE USER '${parameter["DATABASE_USER"]}'@'${parameter["CIDR"]/0.0\/16/%}' IDENTIFIED BY '${parameter["DATABASE_PASSWORD"]}';
 CREATE DATABASE IF NOT EXISTS ${parameter["DATABASE_NAME"]};
-GRANT ALL PRIVILEGES ON ${parameter["DATABASE_NAME"]}.* TO '${parameter["DATABASE_USER"]}'@'${parameter["CIDR_BLOCK"]/0.0\/16/%}' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON ${parameter["DATABASE_NAME"]}.* TO '${parameter["DATABASE_USER"]}'@'${parameter["CIDR"]/0.0\/16/%}' WITH GRANT OPTION;
 exit
 EOMYSQL
 
@@ -626,8 +626,9 @@ ln -s /etc/nginx/sites-available/${parameter["DOMAIN"]}.conf /etc/nginx/sites-en
 sed -i "s/example.com/${parameter["DOMAIN"]}/g" /etc/nginx/sites-available/${parameter["DOMAIN"]}.conf
 
 sed -i "s/example.com/${parameter["DOMAIN"]}/g" /etc/nginx/nginx.conf
-sed -i "s,default.*production php-fpm,default unix:/var/run/${parameter["BRAND"]}.sock; # php-fpm,"  /etc/nginx/conf_m2/maps.conf
-sed -i "s,default.*production app folder,default ${parameter["WEB_ROOT_PATH"]}; magento folder," /etc/nginx/conf_m2/maps.conf
+sed -i "s/set_real_ip_from.*127.0.0.1/set_real_ip_from ${parameter["CIDR"]}/" /etc/nginx/nginx.conf
+sed -i "s,default.*production php-fpm,default unix:/var/run/php/${parameter["BRAND"]}.sock; # php-fpm,"  /etc/nginx/conf_m2/maps.conf
+sed -i "s,default.*production app folder,default ${parameter["WEB_ROOT_PATH"]}; # magento folder," /etc/nginx/conf_m2/maps.conf
 
 # MAGENTO PROFILER
 sed -i "s/PROFILER_PLACEHOLDER/${parameter["PROFILER"]}/" /etc/nginx/conf_m2/maps.conf
@@ -641,7 +642,7 @@ cat <<END > /etc/php/${parameter["PHP_VERSION"]}/fpm/pool.d/${parameter["BRAND"]
 user = php-\$pool
 group = php-\$pool
 
-listen = /var/run/\$pool.sock
+listen = /var/run/php/\$pool.sock
 listen.owner = nginx
 listen.group = php-\$pool
 listen.mode = 0660
