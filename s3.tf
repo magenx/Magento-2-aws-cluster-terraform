@@ -195,8 +195,6 @@ data "aws_iam_policy_document" "system" {
     principals {
       type        = "AWS"
       identifiers = [
-        aws_iam_role.codebuild.arn,
-        aws_iam_role.codepipeline.arn,
         aws_iam_role.config.arn
       ]
     }
@@ -240,30 +238,6 @@ data "aws_iam_policy_document" "system" {
 resource "aws_s3_bucket_policy" "system" {
   bucket = aws_s3_bucket.this["system"].id
   policy = data.aws_iam_policy_document.system.json
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create S3 bucket policy for CodePipeline access
-# # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_iam_policy_document" "backup" {
-  statement {
-    actions   = ["s3:PutObject"]
-    effect    = "Allow"
-    resources = ["${aws_s3_bucket.this["backup"].arn}/*"]
-    principals {
-      type        = "AWS"
-      identifiers = [
-        aws_iam_role.codebuild.arn,
-        aws_iam_role.codepipeline.arn,
-        aws_iam_role.codedeploy.arn
-      ]
-    }
-  }
-  version = "2012-10-17"
-}
-
-resource "aws_s3_bucket_policy" "backup" {
-  bucket = aws_s3_bucket.this["backup"].id
-  policy = data.aws_iam_policy_document.backup.json
 }
 
 
