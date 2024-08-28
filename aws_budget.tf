@@ -9,7 +9,7 @@
 resource "aws_budgets_budget" "all" {
   name              = "${local.project}-budget-monthly-forecasted"
   budget_type       = "COST"
-  limit_amount      = "1000"
+  limit_amount      = "600"
   limit_unit        = "USD"
   time_unit         = "MONTHLY"
 
