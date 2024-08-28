@@ -267,12 +267,12 @@ epmd -kill
 
 cat > /etc/rabbitmq/rabbitmq-env.conf <<END
 NODENAME=rabbit@${RABBITMQ_ENDPOINT}
-NODE_IP_ADDRESS=${RABBITMQ_ENDPOINT}
-ERL_EPMD_ADDRESS=${RABBITMQ_ENDPOINT}
+NODE_IP_ADDRESS=RABBITMQ_ENDPOINT
+ERL_EPMD_ADDRESS=RABBITMQ_ENDPOINT
 PID_FILE=/var/lib/rabbitmq/mnesia/rabbitmq_pid
 END
 
-echo '[{kernel, [{inet_dist_use_interface, {127,0,0,1}}]},{rabbit, [{tcp_listeners, [{"127.0.0.1", 5672}]}]}].' > /etc/rabbitmq/rabbitmq.config
+echo '[{kernel, [{inet_dist_use_interface, {RABBITMQ_ENDPOINT}}]},{rabbit, [{tcp_listeners, [{"RABBITMQ_ENDPOINT", 5672}]}]}].' > /etc/rabbitmq/rabbitmq.config
 
 cat >> /etc/sysctl.conf <<END
 net.ipv6.conf.lo.disable_ipv6 = 0
@@ -287,7 +287,7 @@ After=network.target
 Requires=epmd.socket
 
 [Service]
-ExecStart=/usr/bin/epmd -address ${RABBITMQ_ENDPOINT} -daemon
+ExecStart=/usr/bin/epmd -address RABBITMQ_ENDPOINT -daemon
 Type=simple
 StandardOutput=journal
 StandardError=journal
