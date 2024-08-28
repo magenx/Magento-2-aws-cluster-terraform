@@ -57,6 +57,9 @@ resource "aws_vpc_security_group_ingress_rule" "frontend_alb" {
   security_group_id = aws_security_group.ec2["frontend"].id
   referenced_security_group_id = aws_security_group.alb.id
   ip_protocol  = "-1"
+  tags = {
+    Name = "${local.project}-frontend-alb"
+  }
 }
 
 resource "aws_vpc_security_group_ingress_rule" "admin_alb" {
@@ -64,6 +67,9 @@ resource "aws_vpc_security_group_ingress_rule" "admin_alb" {
   security_group_id = aws_security_group.ec2["admin"].id
   referenced_security_group_id = aws_security_group.alb.id
   ip_protocol  = "-1"
+  tags = {
+    Name = "${local.project}-admin-alb"
+  }
 }
 
 resource "aws_vpc_security_group_ingress_rule" "frontend_service" {
@@ -72,6 +78,9 @@ resource "aws_vpc_security_group_ingress_rule" "frontend_service" {
   security_group_id = aws_security_group.ec2["frontend"].id
   referenced_security_group_id = each.value
   ip_protocol  = "-1"
+  tags = {
+    Name = "${local.project}-frontend-${each.key}"
+  }
 }
 
 resource "aws_vpc_security_group_ingress_rule" "admin_service" {
@@ -80,6 +89,9 @@ resource "aws_vpc_security_group_ingress_rule" "admin_service" {
   security_group_id = aws_security_group.ec2["admin"].id
   referenced_security_group_id = each.value
   ip_protocol  = "-1"
+  tags = {
+    Name = "${local.project}-admin-${each.key}"
+  }
 }
 
 resource "aws_vpc_security_group_ingress_rule" "service_frontend" {
@@ -88,6 +100,9 @@ resource "aws_vpc_security_group_ingress_rule" "service_frontend" {
   referenced_security_group_id = aws_security_group.ec2["frontend"].id
   security_group_id = each.value
   ip_protocol  = "-1"
+  tags = {
+    Name = "${local.project}-${each.key}-frontend"
+  }
 }
 
 resource "aws_vpc_security_group_ingress_rule" "service_admin" {
@@ -96,6 +111,9 @@ resource "aws_vpc_security_group_ingress_rule" "service_admin" {
   referenced_security_group_id = aws_security_group.ec2["admin"].id
   security_group_id = each.value
   ip_protocol  = "-1"
+  tags = {
+    Name = "${local.project}-${each.key}-frontend"
+  }
 }
 
 resource "aws_vpc_security_group_egress_rule" "all" {
@@ -104,6 +122,9 @@ resource "aws_vpc_security_group_egress_rule" "all" {
   security_group_id = each.value.id
   ip_protocol  = "-1"
   cidr_ipv4    = "0.0.0.0/0"
+  tags = {
+    Name = "${local.project}-${each.key}"
+  }
 }
 
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -124,6 +145,9 @@ resource "aws_vpc_security_group_ingress_rule" "efs" {
   referenced_security_group_id = each.value.id
   security_group_id = aws_security_group.efs.id
   ip_protocol  = "-1"
+  tags = {
+    Name = "${local.project}-efs-${each.key}"
+  }
 }
 
 resource "aws_vpc_security_group_egress_rule" "efs" {
@@ -131,4 +155,7 @@ resource "aws_vpc_security_group_egress_rule" "efs" {
   security_group_id = aws_security_group.efs.id
   ip_protocol  = "-1"
   cidr_ipv4    = values(aws_subnet.this).0.cidr_block
+  tags = {
+    Name = "${local.project}-efs"
+  }
 }
