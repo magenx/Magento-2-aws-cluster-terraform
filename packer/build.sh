@@ -803,7 +803,6 @@ dpkg -i amazon-cloudwatch-agent.deb
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
 
 apt-get remove --purge -y \
-awscli* \
 apache2* \
 bind9* \
 samba* \
