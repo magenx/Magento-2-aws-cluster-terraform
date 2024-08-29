@@ -68,8 +68,8 @@ data "aws_iam_policy_document" "media" {
   statement {
     sid       = "AllowLambdaGet"
     effect    = "Allow"
-    actions = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.this["media"].arn}/*"]
+    actions = ["s3:GetObject","s3:ListBucket"]
+    resources = ["${aws_s3_bucket.this["media"].arn}","${aws_s3_bucket.this["media"].arn}/*"]
     principals {
       type        = "AWS"
       identifiers = [aws_iam_role.lambda.arn]
@@ -131,8 +131,8 @@ data "aws_iam_policy_document" "mediaoptimized" {
   statement {
     sid       = "AllowCloudFrontAccess"
     effect    = "Allow"
-    actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.this["media-optimized"].arn}/*"]
+    actions   = ["s3:GetObject","s3:ListBucket"]
+    resources = ["${aws_s3_bucket.this["media-optimized"].arn}","${aws_s3_bucket.this["media-optimized"].arn}/*"]
     principals {
       type        = "AWS"
       identifiers = [aws_cloudfront_origin_access_identity.this.iam_arn]
@@ -161,7 +161,7 @@ data "aws_iam_policy_document" "system" {
       "s3:GetObject"
     ]
     resources = [
-      "${aws_s3_bucket.this["system"].arn}/*"
+      "${aws_s3_bucket.this["system"].arn}","${aws_s3_bucket.this["system"].arn}/*"
     ]
     principals {
       type        = "Service"
