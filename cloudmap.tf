@@ -1,0 +1,31 @@
+
+
+
+///////////////////////////////////////////////////////[ CLOUDMAP DISCOVERY ]/////////////////////////////////////////////
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudMap discovery service with private dns namespace
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_service_discovery_private_dns_namespace" "this" {
+  name        = "${var.magento["brand"]}.internal"
+  description = "Namespace for ${local.project}"
+  vpc         = aws_vpc.this.id
+  tags = {
+    Name = "${local.project}-namespace"
+  }
+}
+
+resource "aws_service_discovery_service" "this" {
+  for_each = { for k, v in var.ec2 : k => v if v.service != null }
+  name     = each.key
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.this.id
+    dns_records {
+      type = "A"
+      ttl  = 60
+    }
+  }
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+}
