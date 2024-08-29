@@ -25,7 +25,7 @@ resource "aws_launch_template" "this" {
          data.aws_default_tags.this.tags,
          {
           Name = "${local.project}-${each.key}-ec2",
-          Hostname = "${each.key}.${aws_route53_zone.this.name}"
+          Hostname = "${each.key}.${var.magento["brand"]}.internal"
         }
       )
     }
