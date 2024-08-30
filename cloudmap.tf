@@ -16,7 +16,7 @@ resource "aws_service_discovery_private_dns_namespace" "this" {
 }
 
 resource "aws_service_discovery_service" "this" {
-  for_each = { for k, v in var.ec2 : k => v if v.service != null }
+  for_each = var.ec2
   name     = each.key
   dns_config {
     namespace_id = aws_service_discovery_private_dns_namespace.this.id
