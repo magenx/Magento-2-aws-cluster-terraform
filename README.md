@@ -95,13 +95,11 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Clone repo:  
 > 
 ```
-  git clone https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
+  git clone -b ec2_v5 https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
 ```
 >  
 ❗ Right after `terraform apply` you will receive email from amazon to approve resources    
 - [x] Adjust your settings, edit your [cidr], [brand], [domain], [email] and other vars in `variables.tf`
-- [x] Define your source repository or use default and enable minimal Magento 2 package to install.
-- [x] Define either [production] or [development] environment variable in `variables.tf`
   
 ❗ ```For production deployment make sure to enable deletion protection and backup retention```  
    
@@ -119,22 +117,23 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 <br />
 
 ## Complete setup:
- `3` autoscaling groups with launch templates configuration from `user_data`  
- `3` target groups for load balancer (varnish frontend admin)   
- `2` load balancers (external/internal) with listeners / rules  
- `1` rds mariadb databases multi AZ  
- `1` elasticsearch domain for Magento catalog search  
- `2` redis elasticache cluster for sessions and cache  
- `1` rabbitmq broker to manage queue messages  
- `4` s3 buckets for [media] images and [system] files and logs (with access policy)  
- `2` codecommit app files repository and services config files repository  
+ `6` autoscaling groups with launch templates + configuration from `user_data`  
+ `6` target groups for load balancer (frontend admin opensearch redis rabbitmq mariadb)   
+ `1` load balancer with listeners / rules  
+ `1` ec2 instance mariadb database
+ `1` ec2 instance elasticsearch domain for Magento catalog search  
+ `1` ec2 instance redis for sessions and cache  
+ `1` ec2 instance rabbitmq broker to manage queue messages  
+ `3` s3 buckets for [media] original images and [system] files and logs (with access policy)    
  `1` cloudfront s3 origin distribution  
+ `1` lambda@edge function to resize images  
+ `1` s3 bucket for [media-optimized] resized images  
  `1` efs file system for shared folders, with mount target per AZ  
  `1` sns topic default subscription to receive email alerts  
  `1` ses user access details for smtp module  
  
  >resources are grouped into a virtual network, VPC dedicated to your brand  
- >the settings initially imply a large store, and are designed for huge traffic.  
+ >the settings initially imply a medium store, and are designed for moderate traffic.  
  >services are clustered and replicated thus ready for failover.
  
 ##
@@ -145,15 +144,13 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Create and use ssm documents and EventBridge rules to automate tasks
 - [x] Simple Email Service authentication + SMTP Magento module
 - [x] CloudWatch agent configured to stream logs
-- [x] All Magento files managed with git only
 - [x] Configuration settings saved in Parameter Store
 - [x] Live shop in production mode / read-only 
 - [x] Security groups configured for every service and instances
 - [x] phpMyAdmin for easy database editing
-- [x] Lambda database dump for data analysis
 - [x] [Lambda@Edge](https://aws.amazon.com/lambda/edge/#Real-time_Image_Transformation) images optimization
 - [x] Enhanced security in AWS and LEMP 
-- [x] AWS Inspector Assessment templates
+- [x] AWS CloudMap for private DNS management
 - [x] AWS Config resource configuraton rules
 - [x] AWS WAF Protection rules  
 
@@ -168,22 +165,23 @@ INFO Found Terraform project main at directory .
 
 Project: main
 
-OVERALL TOTAL       **$981.87 
+OVERALL TOTAL       **$630.87 
 
 ──────────────────────────────────
-294 cloud resources were detected:
-∙ 50 were estimated
-∙ 238 were free
-∙ 6 are not supported
+318 cloud resources were detected:
+∙ 33 were estimated
+∙ 282 were free
+∙ 3 are not supported yet, rerun with --show-skipped to see details
 ```
 > ** conditionally approximate price per month of this infrastructure.  
 
 <br/>
 
 ## :hammer_and_wrench: Magento 2 development | source code:
-- [x] Define your source repository or use default and enable minimal Magento 2 package to install.
-- [x] Check CodePipeline to install Magento 2 and pre-configure modules.
-- [x] EC2 instance user_data configured on boot to clone files from CodeCommit branch.
+- [x] Docker for local development - https://github.com/magenx/Magento-2-docker-configuration
+- [x] Github developer, staging, production + release repository workflow.
+- [x] Github Actions build code.
+- [x] EC2 instance user_data configured on boot to clone files from s3, Github, etc.
 > Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime.
 > Remove replaced components from `composer.json` in `"replace": {}` and run `composer update`  
 > modules configuration here: https://github.com/magenx/Magento-2/blob/main/composer.json  
@@ -201,9 +199,8 @@ OVERALL TOTAL       **$981.87
 
 ## CI/CD scenario:
 - [x] Event driven
-- [x] Services configuration files tracked in CodeCommit repository
-- [x] Changes in CodeCommit repository triggers EventBridge rule.
-- [x] SSM Document pull from CodeCommit repository and cleanup.
+- [x] Services configuration files tracked in Parameter Store
+- [x] SSM Document pull from S3 or Github and cleanup.
 - [X] DevOps with local docker environment - developer and staging.
 - [x] GitHub Actions to build,release and sync with CodeCommit.
 - [x] Change deployment logic to your needs.  
