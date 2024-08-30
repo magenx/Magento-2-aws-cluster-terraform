@@ -16,6 +16,7 @@ packer {
 # # ---------------------------------------------------------------------------------------------------------------------#
 variable "IAM_INSTANCE_PROFILE" {}
 variable "INSTANCE_NAME" {}
+variable "SERVICE_ID" {}
 variable "VOLUME_SIZE" {}
 variable "PARAMETERSTORE_NAME" {}
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -71,6 +72,7 @@ build {
     timeout      = "60s"
     environment_vars = [
       "INSTANCE_NAME=${var.INSTANCE_NAME}",
+      "SERVICE_ID=${var.SERVICE_ID}",
       "PARAMETERSTORE=${var.PARAMETERSTORE_NAME}"
     ]
     execute_command  = "sudo bash -c '{{ .Vars }} {{ .Path }}'"
