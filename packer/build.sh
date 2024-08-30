@@ -69,10 +69,15 @@ DATABASE_ENDPOINT="mariadb.${parameter["DNS"]}"
 cat <<END > /usr/local/bin/metadata
 #!/bin/bash
 # Fetch metadata
-AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 600")
-INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
-INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
-INSTANCE_IP=$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
+AWSTOKEN=\$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 600")
+INSTANCE_ID=\$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
+INSTANCE_TYPE=\$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
+INSTANCE_IP=\$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
+
+# Export variables
+export INSTANCE_ID="\${INSTANCE_ID}"
+export INSTANCE_TYPE="\${INSTANCE_TYPE}"
+export INSTANCE_IP="\${INSTANCE_IP}"
 END
 
 ###################################################################################
