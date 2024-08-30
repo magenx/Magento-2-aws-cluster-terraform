@@ -66,10 +66,14 @@ REDIS_ENDPOINT="redis.${parameter["DNS"]}"
 RABBITMQ_ENDPOINT="rabbitmq.${parameter["DNS"]}"
 DATABASE_ENDPOINT="mariadb.${parameter["DNS"]}"
 
+cat <<END > /usr/local/bin/metadata
+#!/bin/bash
+# Fetch metadata
 AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 600")
-INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
-INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
-INSTANCE_IP=$(curl -s -H "X-aws-ec2-metadata-token: ${AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
+INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
+INSTANCE_TYPE=$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
+INSTANCE_IP=$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
+END
 
 ###################################################################################
 ###                          LEMP WEB STACK INSTALLATION                        ###
@@ -778,8 +782,6 @@ DATABASE_PASSWORD="${parameter["DATABASE_PASSWORD]}"
 CONFIGURATION_DATE="$(date -u "+%a, %d %b %Y %H:%M:%S %z")"
 END
 
-
-chmod +x /usr/local/bin/*
 systemctl daemon-reload
 systemctl restart nginx.service
 systemctl restart php*fpm.service
@@ -787,7 +789,49 @@ systemctl restart varnish.service
 
 fi
 
-###############################################
+###################################################################################
+
+cat <<END > /usr/local/bin/cloudmap-register
+#! /bin/bash
+. /usr/local/bin/metadata
+aws servicediscovery register-instance \
+  --region ${parameter["AWS_DEFAULT_REGION"]} \
+  --service-id ${SERVICE_ID} \
+  --instance-id \${INSTANCE_ID} \
+  --attributes AWS_INSTANCE_IPV4=\${INSTANCE_IP}
+END
+
+cat <<END > /usr/local/bin/cloudmap-deregister
+#! /bin/bash
+. /usr/local/bin/metadata
+aws servicediscovery deregister-instance \
+  --region ${parameter["AWS_DEFAULT_REGION"]} \
+  --service-id ${SERVICE_ID} \
+  --instance-id \${INSTANCE_ID}
+END
+
+cat <<END > /etc/systemd/system/cloudmap.service
+[Unit]
+Description=Run AWS CloudMap service
+Requires=network-online.target network.target
+DefaultDependencies=no
+Before=shutdown.target reboot.target halt.target
+
+[Service]
+Type=oneshot
+KillMode=none
+RemainAfterExit=yes
+
+ExecStart=/usr/local/bin/cloudmap-register
+ExecStop=/usr/local/bin/cloudmap-deregister
+
+[Install]
+WantedBy=multi-user.target
+END
+
+systemctl enable cloudmap.service
+
+###################################################################################
 
 cd /tmp
 wget https://aws-codedeploy-${parameter["AWS_DEFAULT_REGION"]}.s3.amazonaws.com/latest/install
@@ -825,6 +869,7 @@ apt-get autoclean
 apt-get autoremove --purge -y
 
 echo "PS1='\[\e[37m\][\[\e[m\]\[\e[32m\]\u\[\e[m\]\[\e[37m\]@\[\e[m\]\[\e[35m\]\h\[\e[m\]\[\e[37m\]:\[\e[m\]\[\e[36m\]\W\[\e[m\]\[\e[37m\]]\[\e[m\]$ '" >> /etc/bashrc
+chmod +x /usr/local/bin/*
 
 ## simple installation stats
 curl --silent -X POST https://www.magenx.com/ping_back_id_${INSTANCE_NAME}_domain_${parameter["DOMAIN"]}_geo_${parameter["TIMEZONE"]}_keep_30d >/dev/null 2>&1
