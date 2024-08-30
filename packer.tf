@@ -15,6 +15,7 @@ resource "null_resource" "packer" {
 /usr/bin/packer init -force ${abspath(path.root)}/packer/packer.pkr.hcl
 PACKER_LOG=1 PACKER_LOG_PATH="packerlog" /usr/bin/packer build \
 -var INSTANCE_NAME=${each.key} \
+-var SERVICE_ID=${aws_service_discovery_service.this[each.key].id} \
 -var VOLUME_SIZE=${each.value.volume_size} \
 -var IAM_INSTANCE_PROFILE=${aws_iam_instance_profile.ec2[each.key].name} \
 -var PARAMETERSTORE_NAME=${aws_ssm_parameter.env.name} \
