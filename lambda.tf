@@ -109,8 +109,8 @@ resource "aws_lambda_function" "image_optimization" {
   source_code_hash = data.archive_file.lambda_image_optimization.output_base64sha256
   runtime       = "nodejs20.x"
   handler       = "index.handler"
-  memory_size   = 128
-  timeout       = 5
+  memory_size   = 256
+  timeout       = 30
   publish       = true
   environment {
     variables = {
