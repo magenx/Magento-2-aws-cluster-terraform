@@ -61,10 +61,10 @@ while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PA
 ###                              VARIABLES CONSTRUCTOR                          ###
 ###################################################################################
 
-OPENSEARCH_ENDPOINT="opensearch.${parameter["DNS"]}"
-REDIS_ENDPOINT="redis.${parameter["DNS"]}"
-RABBITMQ_ENDPOINT="rabbitmq.${parameter["DNS"]}"
-DATABASE_ENDPOINT="mariadb.${parameter["DNS"]}"
+OPENSEARCH_ENDPOINT="opensearch.${parameter["BRAND"]}.internal"
+REDIS_ENDPOINT="redis.${parameter["BRAND"]}.internal"
+RABBITMQ_ENDPOINT="rabbitmq.${parameter["BRAND"]}.internal"
+DATABASE_ENDPOINT="mariadb.${parameter["BRAND"]}.internal"
 
 cat <<END > /usr/local/bin/metadata
 #!/bin/bash
