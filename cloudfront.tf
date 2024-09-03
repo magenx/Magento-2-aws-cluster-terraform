@@ -72,7 +72,7 @@ resource "aws_cloudfront_distribution" "this" {
   origin_group {
     origin_id  = "${var.magento["domain"]}-images-optimization"
     failover_criteria {
-      status_codes = [403, 500, 503, 504]
+      status_codes = [403, 404, 500, 503, 504]
     }
     member {
       origin_id = "${var.magento["domain"]}-media-optimized-images"
