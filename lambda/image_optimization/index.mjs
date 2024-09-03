@@ -22,6 +22,21 @@ export const handler = async (event) => {
     // The image path from the URL
     const imagePath = path.startsWith('/') ? path.substring(1) : path;
 
+    // Check if the requested file should be processed or ignored
+    const fileExtension = path.split('.').pop().toLowerCase();
+    const supportedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'svg'];
+
+    if (!supportedExtensions.includes(fileExtension)) {
+        // If the file is not an image, return a 302 redirect to the original URL
+        return {
+            statusCode: 302,
+            headers: {
+                'Location': path,
+                'Cache-Control': 'no-cache'
+            }
+        };
+    }
+
     // Extracting operations from query parameters
     const width = queryStringParameters.width ? parseInt(queryStringParameters.width) : null;
     const height = queryStringParameters.height ? parseInt(queryStringParameters.height) : null;
