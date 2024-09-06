@@ -18,6 +18,7 @@ variable "IAM_INSTANCE_PROFILE" {}
 variable "INSTANCE_NAME" {}
 variable "SERVICE_ID" {}
 variable "VOLUME_SIZE" {}
+variable "MARIADB_DATA_VOLUME" {}
 variable "PARAMETERSTORE_NAME" {}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Get environment variables from SSM ParameterStore
@@ -73,6 +74,7 @@ build {
     environment_vars = [
       "INSTANCE_NAME=${var.INSTANCE_NAME}",
       "SERVICE_ID=${var.SERVICE_ID}",
+      "MARIADB_DATA_VOLUME=${var.MARIADB_DATA_VOLUME}",
       "PARAMETERSTORE=${var.PARAMETERSTORE_NAME}"
     ]
     execute_command  = "sudo bash -c '{{ .Vars }} {{ .Path }}'"
