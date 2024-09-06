@@ -143,6 +143,37 @@ EOMYSQL
 
 sed -i "s/bind-address = 127.0.0.1/bind-address = ${DATABASE_ENDPOINT}/" /etc/my.cnf
 
+cat <<END > /etc/systemd/system/attach-ebs-volume.service
+[Unit]
+Description=Attach EBS Volume for MariaDB
+Before=mariadb.service
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'aws ec2 attach-volume --volume-id ${MARIADB_DATA_VOLUME} --instance-id \${INSTANCE_ID} --device /dev/xvdb && while [ ! -e /dev/xvdb ]; do sleep 1; done && mount /dev/xvdb /var/lib/mysql'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+END
+
+cat <<END > /etc/systemd/system/detach-ebs-volume.service
+[Unit]
+Description=Detach EBS volume on shutdown
+Before=shutdown.target reboot.target halt.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'aws ec2 detach-volume --volume-id ${MARIADB_DATA_VOLUME}'
+
+[Install]
+WantedBy=halt.target reboot.target shutdown.target
+END
+
+systemctl enable attach-ebs-volume.service
+systemctl enable detach-ebs-volume.service
+
 fi
 
 
