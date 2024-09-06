@@ -68,6 +68,7 @@ resource "aws_cloudfront_distribution" "this" {
   web_acl_id          = aws_wafv2_web_acl.this.arn
   price_class         = "PriceClass_100"
   comment             = "${var.magento["domain"]} pub/media pub/static"
+  aliases             = ["${var.magento["domain"]}"]
 
   origin_group {
     origin_id  = "${var.magento["domain"]}-images-optimization-group"
@@ -111,9 +112,10 @@ resource "aws_cloudfront_distribution" "this" {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "${var.magento["domain"]}-images-optimization-group"	
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.media.id
-    cache_policy_id          = data.aws_cloudfront_cache_policy.media.id
-    viewer_protocol_policy = "https-only"
+    origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.media.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.this.id
+    cache_policy_id            = data.aws_cloudfront_cache_policy.media.id
+    viewer_protocol_policy     = "https-only"
 
     function_association {
       event_type = "viewer-request"
@@ -126,7 +128,6 @@ resource "aws_cloudfront_distribution" "this" {
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "${var.magento["domain"]}-static"
     origin_request_policy_id = data.aws_cloudfront_origin_request_policy.static.id
-    response_headers_policy_id = aws_cloudfront_response_headers_policy.this.id
     cache_policy_id          = data.aws_cloudfront_cache_policy.static.id
     viewer_protocol_policy = "https-only"
     compress               = true
@@ -161,7 +162,9 @@ resource "aws_cloudfront_distribution" "this" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn = aws_acm_certificate.default.arn
+    ssl_support_method  = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
   
   tags = {
