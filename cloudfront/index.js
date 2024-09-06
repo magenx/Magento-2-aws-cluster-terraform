@@ -47,7 +47,7 @@ function handler(event) {
                     if (request.querystring[operation]['value']) {
                         var quality = parseInt(request.querystring[operation]['value']);
                         if (!isNaN(quality) && (quality > 0)) {
-                            if (quality > 100) quality = 100;
+                            if (quality > 100) quality = 65;
                             normalizedOperations['quality'] = quality.toString();
                         }
                     }
@@ -63,15 +63,15 @@ function handler(event) {
             if (normalizedOperations.quality) normalizedOperationsArray.push('quality='+normalizedOperations.quality);
             if (normalizedOperations.width) normalizedOperationsArray.push('width='+normalizedOperations.width);
             if (normalizedOperations.height) normalizedOperationsArray.push('height='+normalizedOperations.height);
-            request.uri = originalImagePath + '/' + normalizedOperationsArray.join(',');     
+            request.uri = originalImagePath + '?' + normalizedOperationsArray.join('&');     
         } else {
-            // If no valid operation is found, flag the request with /original path suffix
-            request.uri = originalImagePath + '/original';     
+            // If no valid operation is found
+            request.uri = originalImagePath + '?width=250&height=250&quality=65';     
         }
 
     } else {
-        // If no query strings are found, flag the request with /original path suffix
-        request.uri = originalImagePath + '/original'; 
+        // If no query strings are found
+        request.uri = originalImagePath + '?quality=65' 
     }
     
     // Remove query strings
