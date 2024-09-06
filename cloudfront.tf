@@ -125,7 +125,6 @@ resource "aws_cloudfront_distribution" "this" {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "${var.magento["domain"]}-static"
-    viewer_protocol_policy   = "https-only"
     origin_request_policy_id = data.aws_cloudfront_origin_request_policy.static.id
     response_headers_policy_id = aws_cloudfront_response_headers_policy.this.id
     cache_policy_id          = data.aws_cloudfront_cache_policy.static.id
