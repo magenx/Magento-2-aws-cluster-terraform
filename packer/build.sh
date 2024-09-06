@@ -90,8 +90,8 @@ dpkg-reconfigure --frontend noninteractive tzdata
 
 if [ "${INSTANCE_NAME}" == "mariadb" ]; then
 # ATTACH VOLUME
-bash /usr/local/bin/metadata
-aws ec2 attach-volume --volume-id ${MARIADB_DATA_VOLUME} --instance-id ${INSTANCE_ID} --device /dev/xvdb
+. /usr/local/bin/metadata
+aws ec2 attach-volume --volume-id ${MARIADB_DATA_VOLUME} --instance-id \${INSTANCE_ID} --device /dev/xvdb
 FSTYPE=$(blkid -o value -s TYPE /dev/xvdb)
 if [ -z "${FSTYPE}" ] || [ "${FSTYPE}" != "ext4" ]; then
 mkfs.ext4 /dev/xvdb
