@@ -98,12 +98,18 @@ export const handler = async (event) => {
     if (S3_TRANSFORMED_IMAGE_BUCKET) {
         startTime = performance.now();
         try {
+            const metadata = {
+            'cache-control': TRANSFORMED_IMAGE_CACHE_TTL,
+            'width': width ? width.toString() : 'empty',
+            'height': height ? height.toString() : 'empty',
+            'quality': quality ? quality.toString() : 'empty'
+            };
             const putImageCommand = new PutObjectCommand({
                 Body: transformedImage,
                 Bucket: S3_TRANSFORMED_IMAGE_BUCKET,
                 Key: imagePath,
                 ContentType: contentType,
-                Metadata: { 'cache-control': TRANSFORMED_IMAGE_CACHE_TTL }
+                Metadata: { metadata }
             });
             await s3Client.send(putImageCommand);
             timingLog = timingLog + ',img-upload;dur=' + parseInt(performance.now() - startTime);
