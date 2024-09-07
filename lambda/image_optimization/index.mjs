@@ -109,7 +109,7 @@ export const handler = async (event) => {
                 Bucket: S3_TRANSFORMED_IMAGE_BUCKET,
                 Key: imagePath,
                 ContentType: contentType,
-                Metadata: { metadata }
+                Metadata: metadata
             });
             await s3Client.send(putImageCommand);
             timingLog = timingLog + ',img-upload;dur=' + parseInt(performance.now() - startTime);
