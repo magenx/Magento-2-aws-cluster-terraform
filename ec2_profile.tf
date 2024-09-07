@@ -83,6 +83,32 @@ resource "aws_iam_role_policy" "ses_send" {
   policy = data.aws_iam_policy_document.ses_send[each.key].json
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create inline policy for EC2 maridb service role to attach/detach vulume
+# # ---------------------------------------------------------------------------------------------------------------------#
+data "aws_iam_policy_document" "attach_detach_volume" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "ec2:AttachVolume",
+      "ec2:DetachVolume",
+    ]
+    resources = [aws_ebs_volume.mariadb_data.arn]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "ec2:DescribeVolumes"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "ec2_attach_detach_policy" {
+  name   = "MariaDBEC2AttachDetachPolicy"
+  role   = aws_iam_role.ec2["mariadb"].id
+  policy = data.aws_iam_policy_document.attach_detach_volume.json
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create EC2 Instance Profile
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_instance_profile" "ec2" {
