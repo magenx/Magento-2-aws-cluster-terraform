@@ -79,6 +79,7 @@ export INSTANCE_ID="\${INSTANCE_ID}"
 export INSTANCE_TYPE="\${INSTANCE_TYPE}"
 export INSTANCE_IP="\${INSTANCE_IP}"
 END
+chmod +x /usr/local/bin/metadata
 
 ###################################################################################
 ###                          LEMP WEB STACK INSTALLATION                        ###
