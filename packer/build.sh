@@ -93,12 +93,18 @@ if [ "${INSTANCE_NAME}" == "mariadb" ]; then
 # ATTACH VOLUME
 . /usr/local/bin/metadata
 aws ec2 attach-volume --volume-id ${MARIADB_DATA_VOLUME} --instance-id ${INSTANCE_ID} --device /dev/xvdb
+aws ec2 wait volume-in-use --volume-ids ${MARIADB_DATA_VOLUME}
+sleep 5
 FSTYPE=$(blkid -o value -s TYPE /dev/xvdb)
 if [ -z "${FSTYPE}" ] || [ "${FSTYPE}" != "ext4" ]; then
 mkfs.ext4 /dev/xvdb
 fi
-while [ ! -e /dev/xvdb ]; do sleep 1; done && mount /dev/xvdb /var/lib/mysql
+while [ ! -e /dev/xvdb ]; do sleep 1; done && mkdir -p /var/lib/mysql && mount /dev/xvdb /var/lib/mysql
 UUID=$(blkid -s UUID -o value /dev/xvdb)
+if [ -z "$UUID" ]; then
+    echo "UUID is empty. ERROR."
+    exit 1
+fi
 echo "UUID=${UUID} /var/lib/mysql ext4 defaults,nofail 0 2" >> /etc/fstab
 # MARIADB INSTALLATION
 curl -sS ${MARIADB_REPO_CONFIG} | bash -s -- --mariadb-server-version="mariadb-${MARIADB_VERSION}" --skip-maxscale --skip-verify --skip-eol-check
