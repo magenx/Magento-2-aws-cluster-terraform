@@ -40,6 +40,7 @@ resource "aws_acm_certificate_validation" "default" {
 }
 
 resource "aws_acm_certificate_validation" "cloudfront" {
+  provider        = aws.useast1
   certificate_arn = aws_acm_certificate.cloudfront.arn
 }
 
