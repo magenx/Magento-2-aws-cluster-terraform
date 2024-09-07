@@ -92,7 +92,7 @@ data "aws_iam_policy_document" "attach_detach_volume" {
       "ec2:AttachVolume",
       "ec2:DetachVolume",
     ]
-    resources = [aws_ebs_volume.mariadb_data.arn]
+    resources = ["*"]
   }
   statement {
     effect = "Allow"
