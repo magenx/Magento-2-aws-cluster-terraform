@@ -81,7 +81,7 @@ data "aws_security_group" "default" {
 data "aws_cloudfront_origin_request_policy" "media" {
   name = "Managed-CORS-S3Origin"
 }
-data "aws_cloudfront_origin_request_policy" "static" {
+data "aws_cloudfront_origin_request_policy" "alb" {
   name = "Managed-CORS-CustomOrigin"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -90,8 +90,11 @@ data "aws_cloudfront_origin_request_policy" "static" {
 data "aws_cloudfront_cache_policy" "media" {
   name = "Managed-CachingOptimized"
 }
-data "aws_cloudfront_cache_policy" "static" {
+data "aws_cloudfront_cache_policy" "default" {
   name = "UseOriginCacheControlHeaders"
+}
+data "aws_cloudfront_cache_policy" "admin" {
+  name = "Managed-CachingDisabled"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Get get the latest ID of a registered AMI linux distro by owner and version
