@@ -108,7 +108,7 @@ resource "aws_cloudfront_distribution" "this" {
   }
 
   ordered_cache_behavior {
-    path_pattern     = "/media/*"
+    path_pattern     = "/media/catalog/product/*"
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "${var.magento["domain"]}-images-optimization-group"	
@@ -122,20 +122,32 @@ resource "aws_cloudfront_distribution" "this" {
       function_arn = aws_cloudfront_function.this.arn
     }
  }
+
+  ordered_cache_behavior {
+    path_pattern     = var.magento["admin_path"]
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = []
+    target_origin_id = "${var.magento["domain"]}-alb"	
+    origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.admin.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.admin.id
+    cache_policy_id            = data.aws_cloudfront_cache_policy.admin.id
+    viewer_protocol_policy     = "https-only"
+    compress                   = true
+ }
   
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${var.magento["domain"]}-static"
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.static.id
-    cache_policy_id          = data.aws_cloudfront_cache_policy.static.id
-    viewer_protocol_policy = "https-only"
-    compress               = true
+    target_origin_id = "${var.magento["domain"]}-alb"
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.alb.id
+    cache_policy_id          = data.aws_cloudfront_cache_policy.alb.id
+    viewer_protocol_policy   = "https-only"
+    compress                 = true
   }
   
   origin {
     domain_name = aws_lb.this.dns_name
-    origin_id   = "${var.magento["domain"]}-static"
+    origin_id   = "${var.magento["domain"]}-alb"
     custom_origin_config {
        http_port              = 80
        https_port             = 443
