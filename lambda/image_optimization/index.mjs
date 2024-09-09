@@ -65,7 +65,14 @@ export const handler = async (event) => {
     startTime = performance.now();
 
     try {
-        if (width || height) transformedImage = transformedImage.resize(width, height);
+        if (width || height) {
+           transformedImage = transformedImage.resize({
+               width: width || null,
+               height: height || null,
+               fit: Sharp.fit.inside,
+               withoutEnlargement: true
+            });
+        }
         if (imageMetadata.orientation) transformedImage = transformedImage.rotate();
         
         if (format) {
