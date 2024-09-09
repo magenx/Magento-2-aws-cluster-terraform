@@ -84,6 +84,9 @@ data "aws_cloudfront_origin_request_policy" "media" {
 data "aws_cloudfront_origin_request_policy" "alb" {
   name = "Managed-CORS-CustomOrigin"
 }
+data "aws_cloudfront_origin_request_policy" "admin" {
+  name = "Managed-AllViewer"
+}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Get the ID of CloudFront cache policy.
 # # ---------------------------------------------------------------------------------------------------------------------#
