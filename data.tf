@@ -90,11 +90,8 @@ data "aws_cloudfront_origin_request_policy" "admin" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Get the ID of CloudFront cache policy.
 # # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_cloudfront_cache_policy" "media" {
-  name = "Managed-CachingOptimized"
-}
 data "aws_cloudfront_cache_policy" "alb" {
-  name = "UseOriginCacheControlHeaders"
+  name = "UseOriginCacheControlHeaders-QueryStrings"
 }
 data "aws_cloudfront_cache_policy" "admin" {
   name = "Managed-CachingDisabled"
