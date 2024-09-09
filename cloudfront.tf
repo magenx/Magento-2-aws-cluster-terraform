@@ -129,7 +129,6 @@ resource "aws_cloudfront_distribution" "this" {
     cached_methods   = []
     target_origin_id = "${var.magento["domain"]}-alb"	
     origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.admin.id
-    response_headers_policy_id = aws_cloudfront_response_headers_policy.admin.id
     cache_policy_id            = data.aws_cloudfront_cache_policy.admin.id
     viewer_protocol_policy     = "https-only"
     compress                   = true
