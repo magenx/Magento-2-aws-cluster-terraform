@@ -90,7 +90,7 @@ data "aws_cloudfront_origin_request_policy" "alb" {
 data "aws_cloudfront_cache_policy" "media" {
   name = "Managed-CachingOptimized"
 }
-data "aws_cloudfront_cache_policy" "default" {
+data "aws_cloudfront_cache_policy" "alb" {
   name = "UseOriginCacheControlHeaders"
 }
 data "aws_cloudfront_cache_policy" "admin" {
