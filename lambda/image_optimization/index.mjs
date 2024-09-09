@@ -14,6 +14,8 @@ const MAX_IMAGE_SIZE = parseInt(process.env.maxImageSize);
 export const handler = async (event) => {
     // Validate if this is a GET request
     if (!event.requestContext || !event.requestContext.http || !(event.requestContext.http.method === 'GET')) return sendError(400, 'Only GET method is supported', event);
+
+    console.log('Event:', JSON.stringify(event, null, 2));
     
     // Extracting the path and query parameters
     const path = event.requestContext.http.path;
