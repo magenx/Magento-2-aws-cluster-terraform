@@ -32,8 +32,8 @@ resource "aws_cloudfront_function" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create a custom CloudFront Response Headers Policy
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudfront_response_headers_policy" "this" {
-  name = "${local.project}-response-headers"
+resource "aws_cloudfront_response_headers_policy" "media" {
+  name = "${local.project}-response-headers-media"
   cors_config {
     access_control_allow_credentials = false
     access_control_allow_headers { items = ["*"] }
@@ -54,6 +54,29 @@ resource "aws_cloudfront_response_headers_policy" "this" {
       header   = "vary"
       value    = "accept"
       override = true
+    }
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create a custom CloudFront Cache Policy for media
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudfront_cache_policy" "media" {
+  name        = "${local.project}-cache-policy-media"
+  comment     = "Cache policy for media optimization"
+
+  default_ttl = 86400
+  max_ttl     = 31536000
+  min_ttl     = 0
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    cookies_config {
+      cookie_behavior = "none"
+    }
+    headers_config {
+      header_behavior = "none"
+    }
+    query_strings_config {
+      query_string_behavior = "all"
     }
   }
 }
@@ -113,8 +136,8 @@ resource "aws_cloudfront_distribution" "this" {
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "${var.magento["domain"]}-images-optimization-group"	
     origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.media.id
-    response_headers_policy_id = aws_cloudfront_response_headers_policy.this.id
-    cache_policy_id            = data.aws_cloudfront_cache_policy.media.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.media.id
+    cache_policy_id            = aws_cloudfront_cache_policy.media.id
     viewer_protocol_policy     = "https-only"
 
     function_association {
