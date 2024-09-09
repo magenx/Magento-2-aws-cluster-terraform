@@ -124,7 +124,7 @@ resource "aws_cloudfront_distribution" "this" {
  }
 
   ordered_cache_behavior {
-    path_pattern     = var.magento["admin_path"]
+    path_pattern     = "admin_${random_string.this["admin_path"].result}"
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = []
     target_origin_id = "${var.magento["domain"]}-alb"	
