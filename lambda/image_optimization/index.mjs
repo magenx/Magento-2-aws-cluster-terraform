@@ -15,8 +15,6 @@ export const handler = async (event) => {
     // Validate if this is a GET request
     if (!event.requestContext || !event.requestContext.http || !(event.requestContext.http.method === 'GET')) return sendError(400, 'Only GET method is supported', event);
 
-    console.log('Event:', JSON.stringify(event, null, 2));
-    
     // Extracting the path and query parameters
     const path = event.requestContext.http.path;
     const queryStringParameters = event.queryStringParameters || {};
@@ -66,13 +64,11 @@ export const handler = async (event) => {
     var timingLog = 'img-download;dur=' + parseInt(performance.now() - startTime);
     startTime = performance.now();
 
-    console.log(`Resizing to width: ${width}, height: ${height}`);
-
     try {
         if (width || height) {
            transformedImage = transformedImage.resize({
-               width: width || null,
-               height: height || null,
+               width: width,
+               height: height,
                fit: Sharp.fit.inside,
                withoutEnlargement: true
             });
