@@ -64,6 +64,8 @@ export const handler = async (event) => {
     var timingLog = 'img-download;dur=' + parseInt(performance.now() - startTime);
     startTime = performance.now();
 
+    console.log(`Resizing to width: ${width}, height: ${height}`);
+
     try {
         if (width || height) {
            transformedImage = transformedImage.resize({
