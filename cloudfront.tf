@@ -20,16 +20,6 @@ resource "aws_cloudfront_origin_access_control" "this" {
     origin_access_control_origin_type = "lambda"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create CloudFront function
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudfront_function" "this" {
-  publish = true
-  name    = "${local.project}-urlrewrite"
-  comment = "UrlRewrite function for ${local.project} images optimization"
-  runtime = "cloudfront-js-2.0"
-  code    = file("${abspath(path.root)}/cloudfront/index.js")
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create a custom CloudFront Response Headers Policy
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudfront_response_headers_policy" "media" {
@@ -139,11 +129,6 @@ resource "aws_cloudfront_distribution" "this" {
     response_headers_policy_id = aws_cloudfront_response_headers_policy.media.id
     cache_policy_id            = aws_cloudfront_cache_policy.media.id
     viewer_protocol_policy     = "https-only"
-
-    function_association {
-      event_type = "viewer-request"
-      function_arn = aws_cloudfront_function.this.arn
-    }
  }
 
   ordered_cache_behavior {
