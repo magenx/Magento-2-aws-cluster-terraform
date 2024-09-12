@@ -120,11 +120,11 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
  `6` autoscaling groups with launch templates + configuration from `user_data`  
  `6` target groups for load balancer (frontend admin opensearch redis rabbitmq mariadb)   
  `1` load balancer with listeners / rules  
- `1` ec2 instance mariadb database
+ `1` ec2 instance mariadb database  
  `1` ec2 instance elasticsearch domain for Magento catalog search  
  `1` ec2 instance redis for sessions and cache  
  `1` ec2 instance rabbitmq broker to manage queue messages  
- `3` s3 buckets for [media] original images and [system] files and logs (with access policy)    
+ `3` s3 buckets for [media] original images and [system] files and logs (with access policy)  
  `1` cloudfront s3 origin distribution  
  `1` lambda@edge function to resize images  
  `1` s3 bucket for [media-optimized] resized images  
