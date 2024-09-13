@@ -156,7 +156,7 @@ resource "aws_codepipeline" "this" {
         input_artifacts = ["source_output"]
         configuration = {
           ApplicationName     = aws_codedeploy_app.this[action.key].name
-          DeploymentGroupName = aws_codedeploy_deployment_group.this[action.key].id
+          DeploymentGroupName = aws_codedeploy_deployment_group.this[action.key].deployment_group_name
         }
       }
     }
@@ -184,5 +184,21 @@ resource "aws_codedeploy_deployment_group" "this" {
     trigger_events     = ["DeploymentStart","DeploymentSuccess","DeploymentFailure"]
     trigger_name       = "${local.project}-deployment-failure-${each.key}"
     trigger_target_arn = aws_sns_topic.default.arn
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# CodePipeline webhook to check GitHub repository for release
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_codepipeline_webhook" "release" {
+  name            = "${local.project}-github-release-webhook"
+  target_action   = "Source"
+  target_pipeline = aws_codepipeline.this.name
+  authentication  = "GITHUB_HMAC"
+  authentication_configuration {
+    secret_token  = var.github_secret_token
+  }
+  filters {
+    json_path    = "$.action"
+    match_equals = "released"
   }
 }
