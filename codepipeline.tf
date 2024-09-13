@@ -24,6 +24,12 @@ resource "aws_iam_role" "codedeploy" {
     Name = "${local.project}-codedeploy-role"
   }
 }
+
+resource "aws_iam_role_policy_attachment" "AWSCodeDeployRole" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
+  role       = aws_iam_role.codedeploy.name
+}
+
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create policy for CodeDeploy role
 # # ---------------------------------------------------------------------------------------------------------------------#
