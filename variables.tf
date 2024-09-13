@@ -1,4 +1,9 @@
 
+variable "github_secret_token" {
+  description = "The GitHub secret token for webhook authentication"
+  type        = string
+  sensitive   = true
+}
 
 locals {
    # Create global project name to be assigned to all resources
