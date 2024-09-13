@@ -183,11 +183,14 @@ data "aws_iam_policy_document" "system" {
   }
 
   statement {
-    sid    = "AllowCodebuildS3Access"
+    sid    = "AllowCodePipelineS3Access"
     effect = "Allow"
     actions = [
-      "s3:PutObject",
-      "s3:GetObject"
+      "s3:GetObject",
+      "s3:GetObjectVersion",
+      "s3:GetBucketVersioning",
+      "s3:PutObjectAcl",
+      "s3:PutObject"
     ]
     resources = [
       "${aws_s3_bucket.this["system"].arn}/*"
@@ -195,7 +198,9 @@ data "aws_iam_policy_document" "system" {
     principals {
       type        = "AWS"
       identifiers = [
-        aws_iam_role.config.arn
+        aws_iam_role.config.arn,
+        aws_iam_role.codedeploy.arn,
+        aws_iam_role.codepipeline.arn
       ]
     }
   }
