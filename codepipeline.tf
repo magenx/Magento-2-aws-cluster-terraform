@@ -181,7 +181,7 @@ resource "aws_codedeploy_deployment_group" "this" {
   service_role_arn       = aws_iam_role.codedeploy.arn
   autoscaling_groups    = [aws_autoscaling_group.this[each.key].name]
   trigger_configuration {
-    trigger_events     = ["DeploymentFailure"]
+    trigger_events     = ["DeploymentStart","DeploymentSuccess","DeploymentFailure"]
     trigger_name       = "${local.project}-deployment-failure-${each.key}"
     trigger_target_arn = aws_sns_topic.default.arn
   }
