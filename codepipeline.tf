@@ -128,6 +128,7 @@ resource "aws_codepipeline" "this" {
         name            = "Deploy_to_${action.key}_ASG"
         category        = "Deploy"
         owner           = "AWS"
+        version         = "1"
         provider        = "CodeDeploy"
         input_artifacts = ["source_output"]
         configuration = {
