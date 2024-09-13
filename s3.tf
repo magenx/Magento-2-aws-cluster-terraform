@@ -192,9 +192,7 @@ data "aws_iam_policy_document" "system" {
       "s3:PutObjectAcl",
       "s3:PutObject"
     ]
-    resources = [
-      "${aws_s3_bucket.this["system"].arn}/*"
-    ]
+    resources = ["*"]
     principals {
       type        = "AWS"
       identifiers = [
