@@ -782,8 +782,8 @@ END
 tee /etc/logrotate.d/${parameter["BRAND"]} <<END
 ${parameter["WEB_ROOT_PATH"]}/var/log/*.log
 {
-su ${parameter["BRAND]} ${parameter["PHP_USER"]}
-create 660 ${parameter["BRAND]} ${parameter["PHP_USER"]}
+su ${parameter["BRAND"]} ${parameter["PHP_USER"]}
+create 660 ${parameter["BRAND"]} ${parameter["PHP_USER"]}
 weekly
 rotate 2
 notifempty
@@ -829,9 +829,9 @@ RABBITMQ_PASSWORD="${parameter["RABBITMQ_PASSWORD"]}"
 INDEXER_PASSWORD="${parameter["INDEXER_PASSWORD"]}"
 CRYPT_KEY="${parameter["CRYPT_KEY"]}"
 GRAPHQL_ID_SALT="${parameter["GRAPHQL_ID_SALT"]}"
-DATABASE_NAME="${parameter["DATABASE_NAME]}"
-DATABASE_USER="${parameter["DATABASE_USER]}"
-DATABASE_PASSWORD="${parameter["DATABASE_PASSWORD]}"
+DATABASE_NAME="${parameter["DATABASE_NAME"]}"
+DATABASE_USER="${parameter["DATABASE_USER"]}"
+DATABASE_PASSWORD="${parameter["DATABASE_PASSWORD"]}"
 CONFIGURATION_DATE="$(date -u "+%a, %d %b %Y %H:%M:%S %z")"
 END
 
