@@ -126,7 +126,7 @@ resource "aws_codepipeline" "this" {
       category         = "Source"
       owner            = "AWS"
       provider         = "CodeStarSourceConnection"
-      version          = "1"
+      version          = "2"
       output_artifacts = ["source_output"]
       configuration = {
         ConnectionArn    = aws_codestarconnections_connection.this.arn
@@ -146,7 +146,7 @@ resource "aws_codepipeline" "this" {
         name            = "Deploy_to_${action.key}_ASG"
         category        = "Deploy"
         owner           = "AWS"
-        version         = "1"
+        version         = "2"
         provider        = "CodeDeploy"
         input_artifacts = ["source_output"]
         configuration = {
