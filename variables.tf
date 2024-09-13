@@ -104,6 +104,7 @@ variable "magento" {
   description      = "Map application params | Magento 2"
   default          = {
     brand            = "magenx"
+    github_repo      = "magenx/Magento-2"
     domain           = "magenx.org"
     admin_email      = "admin@magenx.org"
     language         = "en_US"
