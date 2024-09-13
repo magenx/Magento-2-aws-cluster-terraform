@@ -133,7 +133,7 @@ resource "aws_codepipeline" "this" {
         input_artifacts = ["source_output"]
         configuration = {
           ApplicationName     = aws_codedeploy_app.this[action.key].name
-          DeploymentGroupName = aws_codedeploy_deployment_group.this[action.key].name
+          DeploymentGroupName = aws_codedeploy_deployment_group.this[action.key].id
         }
       }
     }
