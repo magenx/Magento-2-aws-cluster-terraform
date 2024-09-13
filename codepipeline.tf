@@ -34,6 +34,18 @@ data "aws_iam_policy_document" "codedeploy" {
     actions   = ["sns:Publish"]
     resources = [aws_sns_topic.default.arn]
   }
+  statement {
+    sid    = "AllowCodeDeployToASG"
+    effect = "Allow"
+    actions = [
+      "autoscaling:CompleteLifecycleAction",
+      "autoscaling:DescribeAutoScalingGroups",
+      "autoscaling:PutLifecycleHook",
+      "autoscaling:DeleteLifecycleHook",
+      "autoscaling:RecordLifecycleActionHeartbeat"
+    ]
+    resources = ["*"]
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Attach policy for CodeDeploy role
