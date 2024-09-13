@@ -84,6 +84,11 @@ resource "aws_iam_role" "codepipeline" {
   }
 }
 
+resource "aws_iam_role_policy_attachment" "codepipeline" {
+  role       = aws_iam_role.codepipeline.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess"
+}
+
 data "aws_iam_policy_document" "codepipeline" {
   statement {
     effect    = "Allow"
@@ -110,12 +115,12 @@ resource "aws_codestarconnections_connection" "this" {
 # CodePipeline to pull new release from GitHub and deploy to ASG instances
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codepipeline" "this" {
-  name     = "${local.project}-cdci-pipeline"
-  role_arn = aws_iam_role.codepipeline.arn
-
+  name          = "${local.project}-cdci-pipeline"
+  role_arn      = aws_iam_role.codepipeline.arn
+  pipeline_type = "V2"
   artifact_store {
-    location = aws_s3_bucket.this["system"].bucket
-    type     = "S3"
+    location    = aws_s3_bucket.this["system"].bucket
+    type        = "S3"
   }
 
   stage {
@@ -126,7 +131,7 @@ resource "aws_codepipeline" "this" {
       category         = "Source"
       owner            = "AWS"
       provider         = "CodeStarSourceConnection"
-      version          = "2"
+      version          = "1"
       output_artifacts = ["source_output"]
       configuration = {
         ConnectionArn    = aws_codestarconnections_connection.this.arn
@@ -146,7 +151,7 @@ resource "aws_codepipeline" "this" {
         name            = "Deploy_to_${action.key}_ASG"
         category        = "Deploy"
         owner           = "AWS"
-        version         = "2"
+        version         = "1"
         provider        = "CodeDeploy"
         input_artifacts = ["source_output"]
         configuration = {
