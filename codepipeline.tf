@@ -199,6 +199,6 @@ resource "aws_codepipeline_webhook" "release" {
   }
   filters {
     json_path    = "$.action"
-    match_equals = "released"
+    match_equals = "published"
   }
 }
