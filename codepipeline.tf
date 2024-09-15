@@ -30,9 +30,6 @@ resource "aws_iam_role_policy_attachment" "AWSCodeDeployRole" {
   role       = aws_iam_role.codedeploy.name
 }
 
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create policy for CodeDeploy role
-# # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_iam_policy_document" "codedeploy" {
   statement {
     sid       = "AllowCodeDeploySNSAlertTrigger"
@@ -53,12 +50,59 @@ data "aws_iam_policy_document" "codedeploy" {
     resources = ["*"]
   }
 }
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Attach policy for CodeDeploy role
-# # ---------------------------------------------------------------------------------------------------------------------#
+
 resource "aws_iam_role_policy" "codedeploy" {
   role   = aws_iam_role.codedeploy.name
   policy = data.aws_iam_policy_document.codedeploy.json
+}
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CodeBuild role
+# # ---------------------------------------------------------------------------------------------------------------------#
+data "aws_iam_policy_document" "codebuild_assume_role" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["codebuild.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "codebuild" {
+  name               = "${local.project}-codebuild-role"
+  assume_role_policy = data.aws_iam_policy_document.codebuild_assume_role.json
+  tags = {
+    Name = "${local.project}-codebuild-role"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "codebuild" {
+  role       = aws_iam_role.codebuild.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeBuildAdminAccess"
+}
+
+data "aws_iam_policy_document" "codebuild" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "codepipeline:PollForJobs",
+      "codepipeline:GetPipelineExecution",
+      "codepipeline:GetPipeline",
+      "codepipeline:ListPipelineExecutions"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "codebuild" {
+  name   = "CodeBuildCustomPolicy"
+  role   = aws_iam_role.codebuild.id
+  policy = data.aws_iam_policy_document.codebuild.json
 }
 
 # # ---------------------------------------------------------------------------------------------------------------------#
