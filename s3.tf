@@ -186,6 +186,7 @@ data "aws_iam_policy_document" "system" {
     sid    = "AllowCodePipelineS3Access"
     effect = "Allow"
     actions = [
+      "s3:ListBucket",
       "s3:GetObject",
       "s3:GetObjectVersion",
       "s3:GetBucketVersioning",
