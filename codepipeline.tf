@@ -169,6 +169,7 @@ resource "aws_codepipeline" "this" {
 
   stage {
     name = "Source"
+    namespace = "SourceVariables"
 
     action {
       name             = "GitHub_Source"
@@ -185,10 +186,37 @@ resource "aws_codepipeline" "this" {
       }
     }
   }
+  stage {
+    name = "Build"
 
+    action {
+      name             = "Build"
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      input_artifacts  = ["source_output"]
+      output_artifacts = ["build_output"]
+      configuration = {
+        ProjectName = aws_codebuild_project.this.name
+      }
+    }
+  }
   stage {
     name = "Deploy"
-
+  
+    action {
+      name     = "Approval"
+      category = "Approval"
+      owner    = "AWS"
+      provider = "Manual"
+      version  = "1"
+      run_order = 1
+      configuration = {
+        NotificationArn = aws_sns_topic.default.arn
+        CustomData      = "Approve codepipeline [#{codepipeline.PipelineExecutionId}] Deploy action for ${local.project} [#{SourceVariables.AuthorDate} - #{SourceVariables.CommitId} - #{SourceVariables.CommitMessage}]"
+      }
+    }
     dynamic "action" {
       for_each = { for instance, value in var.ec2 : instance => value if value.service == null }
       content {
@@ -196,8 +224,9 @@ resource "aws_codepipeline" "this" {
         category        = "Deploy"
         owner           = "AWS"
         version         = "1"
+        run_order       = 2
         provider        = "CodeDeploy"
-        input_artifacts = ["source_output"]
+        input_artifacts = ["build_output"]
         configuration = {
           ApplicationName     = aws_codedeploy_app.this[action.key].name
           DeploymentGroupName = aws_codedeploy_deployment_group.this[action.key].deployment_group_name
