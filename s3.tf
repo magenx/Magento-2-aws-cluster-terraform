@@ -200,6 +200,7 @@ data "aws_iam_policy_document" "system" {
       identifiers = [
         aws_iam_role.config.arn,
         aws_iam_role.codedeploy.arn,
+        aws_iam_role.codebuild.arn,
         aws_iam_role.codepipeline.arn
       ]
     }
