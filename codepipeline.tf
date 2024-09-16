@@ -235,7 +235,80 @@ resource "aws_codepipeline" "this" {
     }
   }
 }
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CodeBuild project
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_codebuild_project" "this" {
+  badge_enabled          = false
+  build_timeout          = 60
+  description            = "${local.project}-codebuild-project"
+  name                   = "${local.project}-codebuild-project"
+  queued_timeout         = 480
+  depends_on             = [aws_iam_role.codebuild]
+  service_role           = aws_iam_role.codebuild.arn
+	
+  tags = {
+    Name = "${local.project}-codebuild-project"
+  }
 
+  artifacts {
+    encryption_disabled    = false
+    name                   = "${local.project}-codebuild-project"
+    override_artifact_name = false
+    packaging              = "NONE"
+    type                   = "CODEPIPELINE"
+  }
+
+  cache {
+    modes = []
+    type  = "NO_CACHE"
+  }
+
+  environment {
+    compute_type                = "BUILD_GENERAL1_LARGE"
+    image                       = "aws/codebuild/standard:7.0"
+    image_pull_credentials_type = "CODEBUILD"
+    privileged_mode             = false
+    type                        = "LINUX_CONTAINER"
+	  
+  environment_variable {
+      name  = "PARAMETERSTORE"
+      value = "${aws_ssm_parameter.env.name}"
+      type  = "PARAMETER_STORE"
+    }
+    
+  environment_variable {
+      name  = "PHP_VERSION"
+      value = "${var.magento["php_version"]}"
+      type  = "PLAINTEXT"
+    }
+  }
+	
+  vpc_config {
+    vpc_id             = aws_vpc.this.id
+    subnets            = [values(aws_subnet.this).0.id]
+    security_group_ids = [
+      for k, v in aws_security_group.ec2 : k => v.id if var.ec2[k].service == null
+    ]
+  }
+
+  logs_config {
+    cloudwatch_logs {
+      group_name  = aws_cloudwatch_log_group.codebuild.name
+      stream_name = aws_cloudwatch_log_stream.codebuild.name
+      status      = "ENABLED"
+    }
+
+  s3_logs {
+      status = "DISABLED"
+    }
+  }
+
+  source {
+    buildspec           = "${file("${abspath(path.root)}/codepipeline/buildspec.yml")}"
+    type                = "CODEPIPELINE"
+  }
+}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # CodeDeploy Applications for frontend ASG
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -260,10 +333,10 @@ resource "aws_codedeploy_deployment_group" "this" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# CodePipeline webhook to check GitHub repository for release
+# CodePipeline webhook to check GitHub repository
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_codepipeline_webhook" "release" {
-  name            = "${local.project}-github-release-webhook"
+resource "aws_codepipeline_webhook" "push" {
+  name            = "${local.project}-github-push-webhook"
   target_action   = "Source"
   target_pipeline = aws_codepipeline.this.name
   authentication  = "GITHUB_HMAC"
@@ -271,7 +344,28 @@ resource "aws_codepipeline_webhook" "release" {
     secret_token  = var.github_secret_token
   }
   filters {
-    json_path    = "$.action"
-    match_equals = "published"
+    json_path    = "$.pull_request.base.ref"
+    match_equals = "refs/heads/main"
   }
+  filters {
+    json_path    = "$.pull_request.state"
+    match_equals = "closed"
+  }
+  filters {
+    json_path    = "$.pull_request.merged"
+    match_equals = "true"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudWatch log group and log stream for CodeBuild logs
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_log_group" "codebuild" {
+  name = "${local.project}-codebuild-project"
+  tags = {
+    Name = "${local.project}-codebuild-project"
+  }
+}
+resource "aws_cloudwatch_log_stream" "codebuild" {
+  name = "${local.project}-codebuild-project"
+  log_group_name = aws_cloudwatch_log_group.codebuild.name
 }
