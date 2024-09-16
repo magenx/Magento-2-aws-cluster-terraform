@@ -1,0 +1,37 @@
+version: 0.2
+
+env:
+  shell: bash
+    
+phases:
+  install:
+    on-failure: ABORT
+    runtime-versions:
+      php: ${PHP_VERSION}
+    commands:
+      - echo "Configuration start at $(date)"
+      - php${PHP_VERSION} -m
+      - echo "Configuration end at $(date)"
+  build:
+    on-failure: ABORT
+    commands:
+      - echo "Build start at $(date)"
+      - cd ${CODEBUILD_SRC_DIR}
+      - aws ssm get-parameter --name "/composer/auth" --query Parameter.Value --output text > auth.json
+      - chmod +x bin/magento
+      - composer install --optimize-autoloader --prefer-dist --no-dev
+      - bin/magento setup:di:compile
+      - composer dump-autoload --no-dev --optimize --apcu
+      - bin/magento setup:static-content:deploy -f
+      - echo "Build end at $(date)"
+  post_build:
+    on-failure: ABORT
+    commands:
+      - echo "Post Build start at $(date)"
+      - aws ssm get-parameter --name "/codebuild/appspec" --query Parameter.Value --output text > appspec.yml
+      - aws ssm get-parameter --name "/magento/env" --query Parameter.Value --output text > app/etc/env.php
+      - echo "Post Build end at $(date)"
+artifacts:
+    files:
+      - '**/*'
+    name: builds/${parameter["BRAND"]}/$(date +%Y-%m-%d)/${CODEBUILD_BUILD_NUMBER}/
