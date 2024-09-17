@@ -17,7 +17,7 @@ phases:
     commands:
       - echo "Build start at $(date)"
       - cd ${CODEBUILD_SRC_DIR}
-      - aws ssm get-parameter --name "/composer/auth" --query Parameter.Value --output text > auth.json
+      - echo "${COMPOSER_AUTH}" > auth.json
       - chmod +x bin/magento
       - composer install --optimize-autoloader --prefer-dist --no-dev
       - bin/magento setup:di:compile
@@ -28,8 +28,9 @@ phases:
     on-failure: ABORT
     commands:
       - echo "Post Build start at $(date)"
-      - aws ssm get-parameter --name "/codebuild/appspec" --query Parameter.Value --output text > appspec.yml
-      - aws ssm get-parameter --name "/magento/env" --query Parameter.Value --output text > app/etc/env.php
+      - echo "${CODEDEPLOY_APPSPEC}" > appspec.yml
+      - echo "${MAGENTO_ENV}" > app/etc/env.php
+      - echo "rm -rf --one-file-system --preserve-root" > cleanup.sh
       - echo "Post Build end at $(date)"
 artifacts:
     files:
