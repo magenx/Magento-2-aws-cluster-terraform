@@ -87,6 +87,7 @@ data "aws_iam_policy_document" "codebuild" {
   statement {
     effect = "Allow"
     actions = [
+      "ssm:GetParameter",
       "ssm:GetParameters",
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
@@ -140,6 +141,17 @@ data "aws_iam_policy_document" "codepipeline" {
     actions   = ["codestar-connections:UseConnection"]
     resources = [aws_codestarconnections_connection.this.arn]
   }
+  statement {
+    sid       = "AllowCodeBuildActions",
+    effect    = "Allow",
+    actions   = [
+       "codebuild:StartBuild",
+       "codebuild:StartBuildBatch",
+       "codebuild:BatchGetBuilds",
+       "codebuild:BatchGetBuildBatches"
+       ]
+    resources = ["${aws_codebuild_project.this.arn}"]
+ }
 }
 
 resource "aws_iam_role_policy" "codepipeline" {
