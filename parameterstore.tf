@@ -1,14 +1,14 @@
 
 
 
-/////////////////////////////////////////////////////////[ SYSTEMS MANAGER ]//////////////////////////////////////////////
+///////////////////////////////////////////////[ SYSTEMS MANAGER - PARAMETERSTORE ]///////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create SSM Parameter store for aws params
+# Create SSM Parameter store for aws env
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_parameter" "environment" {
-  name        = "/${local.project}/${local.environment}/environment"
-  description = "Environment variables for ${local.project} in ${data.aws_region.current.name}"
+resource "aws_ssm_parameter" "aws_env" {
+  name        = "/${local.project}/${local.environment}/aws/env"
+  description = "AWS environment for ${local.project} in ${data.aws_region.current.name}"
   type        = "String"
   value       = <<EOF
 {
@@ -65,14 +65,14 @@ resource "aws_ssm_parameter" "environment" {
 }
 EOF
   tags = {
-    Name = "${local.project}-${local.environment}-environment"
+    Name = "${local.project}-${local.environment}-env"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Parameter store for magento env.php
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_parameter" "env" {
-  name        = "/${local.project}/${local.environment}/codebuild/appspec"
+resource "aws_ssm_parameter" "magento_env" {
+  name        = "/${local.project}/${local.environment}/magento/env"
   description = "Magento env.php for ${local.project} in ${data.aws_region.current.name}"
   type        = "String"
   value       = <<EOF
@@ -254,14 +254,14 @@ return [
 ];
 EOF
   tags = {
-    Name = "${local.project}-${local.environment}-envphp"
+    Name = "${local.project}-${local.environment}-magento-envphp"
   }
 {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Parameter store for appspec Codedeploy config
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_parameter" "appspec" {
-  name        = "/${local.project}/${local.environment}/codebuild/appspec"
+resource "aws_ssm_parameter" "codedeploy_appspec" {
+  name        = "/${local.project}/${local.environment}/codedeploy/appspec"
   description = "Codedeploy appspec.yml for ${local.project} in ${data.aws_region.current.name}"
   type        = "String"
   value       = <<EOF
@@ -293,13 +293,13 @@ hooks:
       runas: root
 EOF
   tags = {
-    Name = "${local.project}-${local.environment}-appspec"
+    Name = "${local.project}-${local.environment}-codedeploy-appspec"
   }
 {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Parameter store for composer auth file
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_parameter" "composer" {
+resource "aws_ssm_parameter" "composer_auth" {
   name        = "/${local.project}/${local.environment}/composer/auth"
   description = "Composer auth.json for ${local.project} in ${data.aws_region.current.name}"
   type        = "String"
@@ -314,6 +314,6 @@ resource "aws_ssm_parameter" "composer" {
 }
 EOF
   tags = {
-    Name = "${local.project}-${local.environment}-environment"
+    Name = "${local.project}-${local.environment}-composer-auth"
   }
 {
