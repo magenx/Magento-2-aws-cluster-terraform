@@ -180,7 +180,7 @@ resource "aws_codestarconnections_connection" "this" {
 # CodePipeline to pull new release from GitHub and deploy to ASG instances
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codepipeline" "this" {
-  name          = "${local.project}-cdci-pipeline"
+  name          = "${local.project}-pipeline"
   role_arn      = aws_iam_role.codepipeline.arn
   pipeline_type = "V2"
   artifact_store {
