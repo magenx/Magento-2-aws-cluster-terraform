@@ -170,10 +170,10 @@ resource "aws_codepipeline" "this" {
 
   stage {
     name = "Source"
-    namespace = "SourceVariables"
 
     action {
       name             = "GitHub_Source"
+      namespace        = "SourceVariables"
       category         = "Source"
       owner            = "AWS"
       provider         = "CodeStarSourceConnection"
