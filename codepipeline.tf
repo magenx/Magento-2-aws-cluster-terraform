@@ -80,7 +80,7 @@ resource "aws_iam_role" "codebuild" {
 
 resource "aws_iam_role_policy_attachment" "codebuild" {
   role       = aws_iam_role.codebuild.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeBuildAdminAccess"
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess"
 }
 
 data "aws_iam_policy_document" "codebuild" {
