@@ -95,7 +95,15 @@ data "aws_iam_policy_document" "codebuild" {
       "codepipeline:PollForJobs",
       "codepipeline:GetPipelineExecution",
       "codepipeline:GetPipeline",
-      "codepipeline:ListPipelineExecutions"
+      "codepipeline:ListPipelineExecutions",
+      "ec2:DescribeDhcpOptions",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DescribeSubnets",
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeVpcs",
+      "ec2:DeleteNetworkInterface",
+      "ec2:CreateNetworkInterface",
+      "ec2:CreateNetworkInterfacePermission"
     ]
     resources = ["*"]
   }
