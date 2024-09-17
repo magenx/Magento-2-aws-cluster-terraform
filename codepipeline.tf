@@ -272,11 +272,25 @@ resource "aws_codebuild_project" "this" {
     type                        = "LINUX_CONTAINER"
 	  
   environment_variable {
-      name  = "PARAMETERSTORE"
-      value = "${aws_ssm_parameter.env.name}"
+      name  = "AWS_ENVIRONMENT"
+      value = "${aws_ssm_parameter.aws_env.name}"
       type  = "PARAMETER_STORE"
-    }
-    
+  }
+  environment_variable {
+      name  = "MAGENTO_ENV"
+      value = "${aws_ssm_parameter.magento_env.name}"
+      type  = "PARAMETER_STORE"
+  }
+  environment_variable {
+      name  = "COMPOSER_AUTH"
+      value = "${aws_ssm_parameter.composer_auth.name}"
+      type  = "PARAMETER_STORE"
+  }
+  environment_variable {
+      name  = "CODEDEPLOY_APPSPEC"
+      value = "${aws_ssm_parameter.codedeploy_appspec.name}"
+      type  = "PARAMETER_STORE"
+  }
   environment_variable {
       name  = "PHP_VERSION"
       value = "${var.magento["php_version"]}"
