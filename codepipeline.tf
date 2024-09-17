@@ -142,8 +142,8 @@ data "aws_iam_policy_document" "codepipeline" {
     resources = [aws_codestarconnections_connection.this.arn]
   }
   statement {
-    sid       = "AllowCodeBuildActions",
-    effect    = "Allow",
+    sid       = "AllowCodeBuildActions"
+    effect    = "Allow"
     actions   = [
        "codebuild:StartBuild",
        "codebuild:StartBuildBatch",
