@@ -75,6 +75,7 @@ resource "aws_ssm_parameter" "magento_env" {
   name        = "/${local.project}/${local.environment}/magento/env"
   description = "Magento env.php for ${local.project} in ${data.aws_region.current.name}"
   type        = "String"
+  tier        = "Advanced"
   value       = <<EOF
 <?php
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
