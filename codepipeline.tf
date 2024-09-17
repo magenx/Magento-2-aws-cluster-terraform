@@ -303,7 +303,7 @@ resource "aws_codebuild_project" "this" {
     vpc_id             = aws_vpc.this.id
     subnets            = [values(aws_subnet.this).0.id]
     security_group_ids = [
-      for k, v in aws_security_group.ec2 : k => v.id if var.ec2[k].service == null
+      for k, v in aws_security_group.ec2 : v.id if var.ec2[k].service == null
     ]
   }
 
