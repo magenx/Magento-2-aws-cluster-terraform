@@ -19,12 +19,12 @@ variable "INSTANCE_NAME" {}
 variable "SERVICE_ID" {}
 variable "VOLUME_SIZE" {}
 variable "MARIADB_DATA_VOLUME" {}
-variable "PARAMETERSTORE_NAME" {}
+variable "AWS_ENVIRONMENT" {}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Get environment variables from SSM ParameterStore
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "amazon-parameterstore" "env" {
-  name = "${var.PARAMETERSTORE_NAME}"
+  name = "${var.AWS_ENVIRONMENT}"
 }
 locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
@@ -75,7 +75,7 @@ build {
       "INSTANCE_NAME=${var.INSTANCE_NAME}",
       "SERVICE_ID=${var.SERVICE_ID}",
       "MARIADB_DATA_VOLUME=${var.MARIADB_DATA_VOLUME}",
-      "PARAMETERSTORE=${var.PARAMETERSTORE_NAME}"
+      "AWS_ENVIRONMENT=${var.AWS_ENVIRONMENT}"
     ]
     execute_command  = "sudo bash -c '{{ .Vars }} {{ .Path }}'"
  }
