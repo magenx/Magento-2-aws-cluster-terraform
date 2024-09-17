@@ -358,15 +358,15 @@ resource "aws_codepipeline_webhook" "push" {
   authentication_configuration {
     secret_token  = var.github_secret_token
   }
-  filters {
+  filter {
     json_path    = "$.pull_request.base.ref"
     match_equals = "refs/heads/main"
   }
-  filters {
+  filter {
     json_path    = "$.pull_request.state"
     match_equals = "closed"
   }
-  filters {
+  filter {
     json_path    = "$.pull_request.merged"
     match_equals = "true"
   }
