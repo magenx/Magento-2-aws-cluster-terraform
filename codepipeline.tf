@@ -318,14 +318,6 @@ resource "aws_codebuild_project" "this" {
       type  = "PLAINTEXT"
     }
   }
-	
-  vpc_config {
-    vpc_id             = aws_vpc.this.id
-    subnets            = [values(aws_subnet.this).0.id]
-    security_group_ids = [
-      for k, v in aws_security_group.ec2 : v.id if var.ec2[k].service == null
-    ]
-  }
 
   logs_config {
     cloudwatch_logs {
