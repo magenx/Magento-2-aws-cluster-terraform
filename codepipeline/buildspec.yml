@@ -10,7 +10,8 @@ phases:
       php: ${PHP_VERSION}
     commands:
       - echo "Configuration start at $(date)"
-      - php${PHP_VERSION} -m
+      - php -m
+      - php -v
       - echo "Configuration end at $(date)"
   build:
     on-failure: ABORT
