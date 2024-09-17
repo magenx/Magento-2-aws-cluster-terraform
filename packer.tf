@@ -19,7 +19,7 @@ PACKER_LOG=1 PACKER_LOG_PATH="packer-${each.key}.log" /usr/bin/packer build \
 -var VOLUME_SIZE=${each.value.volume_size} \
 -var MARIADB_DATA_VOLUME=${aws_ebs_volume.mariadb_data.id} \
 -var IAM_INSTANCE_PROFILE=${aws_iam_instance_profile.ec2[each.key].name} \
--var PARAMETERSTORE_NAME=${aws_ssm_parameter.environment.name} \
+-var AWS_ENVIRONMENT=${aws_ssm_parameter.aws_env.name} \
 packer.pkr.hcl
 END
   }
