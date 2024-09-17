@@ -87,6 +87,7 @@ data "aws_iam_policy_document" "codebuild" {
   statement {
     effect = "Allow"
     actions = [
+      "ssm:GetParameters",
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents",
