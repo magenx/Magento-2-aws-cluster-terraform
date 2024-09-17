@@ -316,4 +316,4 @@ EOF
   tags = {
     Name = "${local.project}-${local.environment}-composer-auth"
   }
-{
+}
