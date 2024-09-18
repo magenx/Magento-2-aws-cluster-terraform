@@ -117,7 +117,7 @@ variable "magento" {
     timezone         = "UTC"
     php_version      = "8.3"
     php_packages     = "cli fpm common mysql zip gd mbstring curl xml bcmath intl soap oauth apcu"
-    linux_packages   = "nfs-common unzip git patch python3-pip acl attr imagemagick snmp syslog-ng binutils pkg-config libssl-dev"
+    linux_packages   = "nfs-common unzip git patch python3-pip acl attr imagemagick binutils pkg-config libssl-dev"
     exclude_linux_packages = "apache2* *apcu-bc"
     composer_user    = "8c681734f22763b50ea0c29dff9e7af2"
     composer_pass    = "02dfee497e669b5db1fe1c8d481d6974"
