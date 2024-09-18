@@ -51,7 +51,7 @@ fi
 
 # stack update
 apt -qqy update
-apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common
+apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng
 
 ###################################################################################
 ###                               GET PARAMETERSTORE                            ###
