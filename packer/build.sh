@@ -35,7 +35,7 @@ MAGENX_NGINX_GITHUB_REPO_API="https://api.github.com/repos/magenx/Magento-nginx-
 WEB_STACK_CHECK="mysql* rabbitmq* elasticsearch opensearch percona-server* maria* php* nginx* ufw varnish* certbot* redis* webmin"
 
 ###################################################################################
-###                              CLEANUP AND SET TIMEZONE                       ###
+###                                    CLEANUP                                  ###
 ###################################################################################
 ## Debian
 
@@ -46,12 +46,16 @@ apt -qq -y remove --purge "${installed_packages}"
 fi
 
 ###################################################################################
-###                               GET PARAMETERSTORE                            ###
+###                                LINUX UPDATE                                 ###
 ###################################################################################
 
-# get parameters
-apt-get -qqy update
-apt-get -qqy install jq
+# stack update
+apt -qqy update
+apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common
+
+###################################################################################
+###                               GET PARAMETERSTORE                            ###
+###################################################################################
 
 PARAMETER=$(aws ssm get-parameter --name "${AWS_ENVIRONMENT}" --query 'Parameter.Value' --output text)
 declare -A parameter
