@@ -317,6 +317,11 @@ resource "aws_codebuild_project" "this" {
       value = "${var.magento["php_version"]}"
       type  = "PLAINTEXT"
     }
+  environment_variable {
+      name  = "ADMIN_DEPLOYMENT_GROUP_ID"
+      value = "${aws_codedeploy_deployment_group.this["admin"].deployment_group_id}"
+      type  = "PLAINTEXT"
+    }
   }
 
   logs_config {
@@ -324,7 +329,7 @@ resource "aws_codebuild_project" "this" {
       group_name  = aws_cloudwatch_log_group.codebuild.name
       stream_name = aws_cloudwatch_log_stream.codebuild.name
       status      = "ENABLED"
-    }
+  }
 
   s3_logs {
       status = "DISABLED"
