@@ -101,9 +101,7 @@ data "aws_cloudfront_cache_policy" "admin" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_ami" "distro" {
   most_recent = true
-  #owners      = ["099720109477"] # ubuntu
   owners      = ["136693071363"] # debian
-
   filter {
     name   = "name"
     values = ["debian-12-arm64*"] # debian
@@ -120,12 +118,3 @@ data "external" "packer" {
     INSTANCE_NAME = each.key
   }
  }
-# # ---------------------------------------------------------------------------------------------------------------------#
-#  Get IP address where Packer Builder is running to add to EC2 security group to allow ssh access
-# # ---------------------------------------------------------------------------------------------------------------------#
-data "http" "packer" {
-  url = "https://ifconfig.co/json"
-  request_headers = {
-    Accept = "application/json"
-  }
-}
