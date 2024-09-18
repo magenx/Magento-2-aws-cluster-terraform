@@ -764,6 +764,21 @@ php_admin_value[opcache.log_verbosity_level] = 1
 php_admin_value[opcache.preferred_memory_model] = ""
 php_admin_value[opcache.jit_buffer_size] = 536870912
 php_admin_value[opcache.jit] = 1235
+
+env[MODE] = production
+env[BRAND] = ${parameter["BRAND"]}
+env[DOMAIN] = ${parameter["DOMAIN"]}
+env[ADMIN_PATH] = ${parameter["ADMIN_PATH"]}
+env[REDIS_PASSWORD] = ${parameter["REDIS_PASSWORD"]}
+env[RABBITMQ_PASSWORD] = ${parameter["RABBITMQ_PASSWORD"]}
+env[INDEXER_PASSWORD] = ${parameter["INDEXER_PASSWORD"]}
+env[CRYPT_KEY] = ${parameter["CRYPT_KEY"]}
+env[GRAPHQL_ID_SALT] = ${parameter["GRAPHQL_ID_SALT"]}
+env[DATABASE_NAME] = ${parameter["DATABASE_NAME"]}
+env[DATABASE_USER] = ${parameter["DATABASE_USER"]}
+env[DATABASE_PASSWORD] = ${parameter["DATABASE_PASSWORD"]}
+env[CONFIGURATION_DATE] = $(date -u "+%a, %d %b %Y %H:%M:%S %z")
+
 END
 
 
