@@ -32,6 +32,15 @@ phases:
       - echo "${CODEDEPLOY_APPSPEC}" > appspec.yml
       - echo "${MAGENTO_ENV}" > app/etc/env.php
       - echo "rm -rf --one-file-system --preserve-root" > cleanup.sh
+      - |
+        echo "if [ "\${DEPLOYMENT_GROUP_ID}" == "\${ADMIN_DEPLOYMENT_GROUP_ID}" ]; then
+        bin/magento setup:db:status --no-ansi -n
+        if [[ \$? -ne 0 ]]; then
+        bin/magento setup:upgrade --keep-generated --no-ansi -n
+        fi
+        sudo cacheflush
+        fi" > setup.sh
+      - chmod +x cleanup.sh setup.sh
       - echo "Post Build end at $(date)"
 artifacts:
     files:
