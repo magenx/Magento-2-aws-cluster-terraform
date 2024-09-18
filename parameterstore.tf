@@ -78,9 +78,6 @@ resource "aws_ssm_parameter" "magento_env" {
   tier        = "Advanced"
   value       = <<EOF
 <?php
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->load();
-
 return [
     'backend' => [
         'frontName' => getenv('ADMIN_PATH')
@@ -292,6 +289,10 @@ hooks:
     - location: cleanup.sh
       timeout: 60
       runas: root
+  AfterInstall:
+    - location: setup.sh
+      timeout: 60
+      runas: ${var.magento["brand"]}
 EOF
   tags = {
     Name = "${local.project}-${local.environment}-codedeploy-appspec"
