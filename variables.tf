@@ -5,22 +5,22 @@ variable "github_secret_token" {
 }
 
 variable "composer_user" {
-  description = "The GitHub secret token for webhook authentication"
+  description = "Magento 2 composer auth user"
   type        = string
 }
 
 variable "composer_pass" {
-  description = "The GitHub secret token for webhook authentication"
+  description = "Magento 2 composer auth password"
   type        = string
 }
 
 variable "crypt_key" {
-  description = "The GitHub secret token for webhook authentication"
+  description = "Magento 2 master crypt key"
   type        = string
 }
 
 variable "graphql_id_salt" {
-  description = "The GitHub secret token for webhook authentication"
+  description = "Magento 2 graphql salt id"
   type        = string
 }
 
