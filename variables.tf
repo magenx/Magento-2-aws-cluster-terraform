@@ -2,31 +2,26 @@
 variable "github_secret_token" {
   description = "The GitHub secret token for webhook authentication"
   type        = string
-  sensitive   = true
 }
 
 variable "composer_user" {
   description = "The GitHub secret token for webhook authentication"
   type        = string
-  sensitive   = true
 }
 
 variable "composer_pass" {
   description = "The GitHub secret token for webhook authentication"
   type        = string
-  sensitive   = true
 }
 
 variable "crypt_key" {
   description = "The GitHub secret token for webhook authentication"
   type        = string
-  sensitive   = true
 }
 
 variable "graphql_id_salt" {
   description = "The GitHub secret token for webhook authentication"
   type        = string
-  sensitive   = true
 }
 
 locals {
