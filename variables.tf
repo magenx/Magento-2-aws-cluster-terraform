@@ -5,6 +5,30 @@ variable "github_secret_token" {
   sensitive   = true
 }
 
+variable "composer_user" {
+  description = "The GitHub secret token for webhook authentication"
+  type        = string
+  sensitive   = true
+}
+
+variable "composer_pass" {
+  description = "The GitHub secret token for webhook authentication"
+  type        = string
+  sensitive   = true
+}
+
+variable "crypt_key" {
+  description = "The GitHub secret token for webhook authentication"
+  type        = string
+  sensitive   = true
+}
+
+variable "graphql_id_salt" {
+  description = "The GitHub secret token for webhook authentication"
+  type        = string
+  sensitive   = true
+}
+
 locals {
    # Create global project name to be assigned to all resources
    project = lower("${var.magento["brand"]}-${random_string.this["project"].result}")
@@ -119,10 +143,6 @@ variable "magento" {
     php_packages     = "cli fpm common mysql zip gd mbstring curl xml bcmath intl soap oauth apcu"
     linux_packages   = "nfs-common unzip git patch python3-pip acl attr imagemagick binutils pkg-config libssl-dev"
     exclude_linux_packages = "apache2* *apcu-bc"
-    composer_user    = "8c681734f22763b50ea0c29dff9e7af2"
-    composer_pass    = "02dfee497e669b5db1fe1c8d481d6974"
-    crypt_key        = "change me"
-    graphql_id_salt  = "change me"
   }
 }
 
