@@ -67,8 +67,13 @@ build {
     "source.amazon-ebs.latest-ami"
   ]
 
+  provisioner "file" {
+    sources     = ["./build_header.sh", "./build_footer.sh"]
+    destination = "/tmp/"
+  }
+
   provisioner "shell" {
-    script = "./build.sh"
+    script = "./build_${var.INSTANCE_NAME}.sh"
     pause_before = "10s"
     timeout      = "60s"
     environment_vars = [
