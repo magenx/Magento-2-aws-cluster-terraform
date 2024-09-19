@@ -25,6 +25,6 @@ END
   }
  triggers = {
     ami_creation_date = data.aws_ami.distro.creation_date
-    build_script      = filesha256("${abspath(path.root)}/packer/build.sh")
+    build_script      = filesha256("${abspath(path.root)}/packer/build_${each.key}.sh")
   }
 }
