@@ -58,10 +58,7 @@ resource "aws_ssm_parameter" "aws_env" {
 "PHP_VERSION" : "${var.magento["php_version"]}",
 "PHP_INI" : "/etc/php/${var.magento["php_version"]}/fpm/php.ini",
 "PHP_FPM_POOL" : "/etc/php/${var.magento["php_version"]}/fpm/pool.d/www.conf",
-"HTTP_X_HEADER" : "${random_uuid.this.result}",
-"LINUX_PACKAGES" : "${var.magento["linux_packages"]}",
-"PHP_PACKAGES" : "${var.magento["php_packages"]}",
-"EXCLUDE_LINUX_PACKAGES" : "${var.magento["exclude_linux_packages"]}"
+"HTTP_X_HEADER" : "${random_uuid.this.result}"
 }
 EOF
   tags = {
