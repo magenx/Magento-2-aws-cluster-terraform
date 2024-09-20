@@ -125,9 +125,6 @@ variable "magento" {
     currency         = "EUR"
     timezone         = "UTC"
     php_version      = "8.3"
-    php_packages     = "cli fpm common mysql zip gd mbstring curl xml bcmath intl soap oauth apcu"
-    linux_packages   = "nfs-common unzip git patch python3-pip acl attr imagemagick binutils pkg-config libssl-dev"
-    exclude_linux_packages = "apache2* *apcu-bc"
   }
 }
 
