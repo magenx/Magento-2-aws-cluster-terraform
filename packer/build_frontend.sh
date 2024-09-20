@@ -7,8 +7,14 @@
 ###################################################################################
 
 if [[ "${INSTANCE_NAME}" =~ (frontend|admin) ]]; then
+# Debian
+# PHP packages 
+PHP_PACKAGES=(cli fpm common mysql zip gd mbstring curl xml bcmath intl soap oauth apcu)
+# Linux packages
+LINUX_PACKAGES="nfs-common unzip git patch python3-pip acl attr imagemagick binutils pkg-config libssl-dev"
+
 apt -qqy update
-apt -qq -y install ${parameter["LINUX_PACKAGES"]}
+apt -qq -y install ${LINUX_PACKAGES}
 
 # BUILD EFS UTILS
 cd /tmp
@@ -45,16 +51,10 @@ sed -i "s/example.com/${parameter["DOMAIN"]}/" /etc/varnish/default.vcl
 # PHP INSTALLATION
 curl -o /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
 echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
+
 apt -qq update
-
-_PHP_PACKAGES+=(${parameter["PHP_PACKAGES"]})
-apt -qq -y install php${parameter["PHP_VERSION"]} ${_PHP_PACKAGES[@]/#/php${parameter["PHP_VERSION"]}-} php-pear
-
-# COMPOSER INSTALLATION
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-php composer-setup.php --${COMPOSER_VERSION} --install-dir=/usr/bin --filename=composer
-php -r "unlink('composer-setup.php');"
-
+apt -qq -y install php${parameter["PHP_VERSION"]} ${PHP_PACKAGES[@]/#/php${parameter["PHP_VERSION"]}-} php-pear
+ 
 # SYSCTL PARAMETERS
 cat <<END > /etc/sysctl.conf
 fs.file-max = 1000000
@@ -313,6 +313,11 @@ sudo -u \${SUDO_USER} n98-magerun2 --root-dir=/home/\${SUDO_USER}/public_html ca
 /usr/bin/systemctl restart php${parameter["PHP_VERSION"]}-fpm.service
 nginx -t && /usr/bin/systemctl restart nginx.service || echo "[!] Error: check nginx config"
 END
+
+# COMPOSER INSTALLATION
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php --${COMPOSER_VERSION} --install-dir=/usr/bin --filename=composer
+php -r "unlink('composer-setup.php');"
 
 # PHPMYADMIN CONFIGURATION
 mkdir -p /usr/share/phpMyAdmin && cd $_
