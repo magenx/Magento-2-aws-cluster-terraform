@@ -4,16 +4,6 @@ variable "github_secret_token" {
   type        = string
 }
 
-variable "composer_user" {
-  description = "Magento 2 composer auth user"
-  type        = string
-}
-
-variable "composer_pass" {
-  description = "Magento 2 composer auth password"
-  type        = string
-}
-
 variable "crypt_key" {
   description = "Magento 2 master crypt key"
   type        = string
