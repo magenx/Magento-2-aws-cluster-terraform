@@ -15,9 +15,17 @@ resource "aws_budgets_budget" "all" {
 
   notification {
     comparison_operator        = "GREATER_THAN"
+    threshold                  = 75
+    threshold_type             = "PERCENTAGE"
+    notification_type          = "FORECASTED"
+    subscriber_sns_topic_arns  = [aws_sns_topic.default.arn]
+  }
+
+  notification {
+    comparison_operator        = "GREATER_THAN"
     threshold                  = 100
     threshold_type             = "PERCENTAGE"
     notification_type          = "FORECASTED"
-    subscriber_email_addresses = [var.magento["admin_email"]]
+    subscriber_sns_topic_arns  = [aws_sns_topic.default.arn]
   }
 }
