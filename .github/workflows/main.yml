@@ -1,0 +1,35 @@
+name: Pull, Create Symlink, and Push
+
+on:
+  push:
+    branches:
+      - ec2_v5
+  workflow_dispatch:
+
+jobs:
+  create_symlink:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: 'ec2_v5'
+
+    - name: Create symlink
+      run: |
+        ln -sf packer/build_frontend.sh packer/build_admin.sh
+
+    - name: Configure git
+      run: |
+        git config --global user.name 'github-actions'
+        git config --global user.email 'github-actions@github.com'
+
+    - name: Commit changes
+      run: |
+        git add .
+        git commit -m "Created symlink for build_frontend.sh"
+
+    - name: Push changes
+      run: |
+        git push origin ec2_v5
