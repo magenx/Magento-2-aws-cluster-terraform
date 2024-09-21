@@ -18,7 +18,8 @@ jobs:
 
     - name: Create symlink
       run: |
-        ln -sf packer/build_frontend.sh packer/build_admin.sh
+        cd packer/
+        ln -sf build_frontend.sh build_admin.sh
 
     - name: Configure git
       run: |
