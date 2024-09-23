@@ -91,17 +91,17 @@ version: 0.0
 os: linux
 files:
   - source: /
-    destination: /home/${var.magento["brand"]}/public_html
+    destination: /home/${var.magento["brand"]}/releases/deployment_id
 file_exists_behavior: OVERWRITE
 permissions:
-  - object: /home/${var.magento["brand"]}/public_html
+  - object: /home/${var.magento["brand"]}/releases/deployment_id
     pattern: "**"
     owner: ${var.magento["brand"]}
     group: php-${var.magento["brand"]}
     mode: 660
     type:
       - file
-  - object: /home/${var.magento["brand"]}/public_html
+  - object: /home/${var.magento["brand"]}/releases/deployment_id
     pattern: "**"
     owner: ${var.magento["brand"]}
     group: php-${var.magento["brand"]}
@@ -110,13 +110,21 @@ permissions:
       - directory
 hooks:
   BeforeInstall:
-    - location: cleanup.sh
+    - location: setup.sh
       timeout: 60
       runas: root
   AfterInstall:
-    - location: setup.sh
+    - location: deploy.sh
       timeout: 60
       runas: ${var.magento["brand"]}
+  ApplicationStart:
+    - location: upgrade.sh
+      timeout: 60
+      runas: ${var.magento["brand"]}
+  ValidateService:
+    - location: cleanup.sh
+      timeout: 60
+      runas: root
 EOF
   tags = {
     Name = "${local.project}-${local.environment}-codedeploy-appspec"
