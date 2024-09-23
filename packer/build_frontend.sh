@@ -150,20 +150,20 @@ useradd -d /home/${parameter["BRAND"]} -s /bin/bash ${parameter["BRAND"]}
 useradd -M -s /sbin/nologin -d /home/${parameter["BRAND"]} php-${parameter["BRAND"]}
 usermod -g php-${parameter["BRAND"]} ${parameter["BRAND"]}
 
-# MAGENTO FOLDERS PERMISSIONS
+# MAGENTO FOLDERS PERMISSIONS | release/shared symlink to public_html deployment
 mkdir -p ${parameter["WEB_ROOT_PATH"]}
+mkdir -p /home/${parameter["BRAND"]}/{releases,shared}
 chmod 711 /home/${parameter["BRAND"]}
-chown -R ${parameter["BRAND"]}:php-${parameter["BRAND"]} ${parameter["WEB_ROOT_PATH"]}
-chmod 2750 ${parameter["WEB_ROOT_PATH"]}
-setfacl -R -m m:r-X,u:${parameter["BRAND"]}:rwX,g:php-${parameter["BRAND"]}:r-X,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:php-${parameter["BRAND"]}:r-X,d:o::- ${parameter["WEB_ROOT_PATH"]}
-setfacl -R -m u:nginx:r-X,d:u:nginx:r-X ${parameter["WEB_ROOT_PATH"]}
+mkdir -p /home/${parameter["BRAND"]}/shared/{pub/media,var}
+chown -R ${parameter["BRAND"]}:php-${parameter["BRAND"]} /home/${parameter["BRAND"]}/{releases,shared}
+chmod 2750 /home/${parameter["BRAND"]}/releases
+chmod 2770 /home/${parameter["BRAND"]}/shared/{pub/media,var}
+setfacl -R -m m:r-X,u:${parameter["BRAND"]}:rwX,g:php-${parameter["BRAND"]}:r-X,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:php-${parameter["BRAND"]}:r-X,d:o::- /home/${parameter["BRAND"]}/releases
+setfacl -R -m m:r-X,u:${parameter["BRAND"]}:rwX,g:php-${parameter["BRAND"]}:rwX,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:php-${parameter["BRAND"]}:rwX,d:o::- /home/${parameter["BRAND"]}/shared
+setfacl -R -m u:nginx:r-X,d:u:nginx:r-X /home/${parameter["BRAND"]}/{releases,shared}
 
-echo '${parameter["EFS_SYSTEM_ID"]}:/ ${parameter["WEB_ROOT_PATH"]}/var efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_VAR"]} 0 0' >> /etc/fstab
-echo '${parameter["EFS_SYSTEM_ID"]}:/ ${parameter["WEB_ROOT_PATH"]}/pub/media efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_MEDIA"]} 0 0' >> /etc/fstab
-
-mkdir -p ${parameter["WEB_ROOT_PATH"]}/{pub/media,var}
-chown -R ${parameter["BRAND"]}:${parameter["PHP_USER"]} ${parameter["WEB_ROOT_PATH"]}/
-chmod 2770 ${parameter["WEB_ROOT_PATH"]}/{pub/media,var}
+echo '${parameter["EFS_SYSTEM_ID"]}:/ /home/${parameter["BRAND"]}/shared/var efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_VAR"]} 0 0' >> /etc/fstab
+echo '${parameter["EFS_SYSTEM_ID"]}:/ /home/${parameter["BRAND"]}/shared/pub/media efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_MEDIA"]} 0 0' >> /etc/fstab
 
 # DOWNLOADING NGINX CONFIG FILES
 curl -o /etc/nginx/fastcgi_params  ${MAGENX_NGINX_GITHUB_REPO}magento2/fastcgi_params
