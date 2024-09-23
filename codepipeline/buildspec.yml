@@ -35,10 +35,10 @@ phases:
         echo "
         #!/bin/bash
         # before install
-        BUNDLE_DIR="/opt/codedeploy-agent/deployment-root/${DEPLOYMENT_GROUP_ID}/${DEPLOYMENT_ID}/deployment-archive"
-        APPSPEC_FILE="${BUNDLE_DIR}/appspec.yml"
+        BUNDLE_DIR="/opt/codedeploy-agent/deployment-root/\${DEPLOYMENT_GROUP_ID}/\${DEPLOYMENT_ID}/deployment-archive"
+        APPSPEC_FILE="\${BUNDLE_DIR}/appspec.yml"
         # Replace paths in appspec.yml
-        sed -i "s|deployment_id|\${DEPLOYMENT_ID}|g" "${APPSPEC_FILE}"
+        sed -i "s|deployment_id|\${DEPLOYMENT_ID}|g" "\${APPSPEC_FILE}"
         # Symlink shared folders
         SHARED="/home/${BRAND}/shared"
         NEW_RELEASE="/home/${BRAND}/releases/\${DEPLOYMENT_ID}"
