@@ -303,11 +303,6 @@ resource "aws_codebuild_project" "this" {
       type  = "PARAMETER_STORE"
   }
   environment_variable {
-      name  = "MAGENTO_CONFIG"
-      value = "${aws_ssm_parameter.magento_config.name}"
-      type  = "PARAMETER_STORE"
-  }
-  environment_variable {
       name  = "COMPOSER_AUTH"
       value = "${aws_ssm_parameter.composer_auth.name}"
       type  = "PARAMETER_STORE"
