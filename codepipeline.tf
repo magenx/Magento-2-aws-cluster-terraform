@@ -293,9 +293,9 @@ resource "aws_codebuild_project" "this" {
     type                        = "LINUX_CONTAINER"
 	  
   environment_variable {
-      name  = "AWS_ENVIRONMENT"
-      value = "${aws_ssm_parameter.aws_env.name}"
-      type  = "PARAMETER_STORE"
+      name  = "BRAND"
+      value = "${var.magento["brand"]}"
+      type  = "PLAINTEXT"
   }
   environment_variable {
       name  = "MAGENTO_ENV"
