@@ -64,7 +64,7 @@ phases:
         echo "
         #!/bin/bash
         # application start
-        if [ "\${DEPLOYMENT_GROUP_ID}" == "\${ADMIN_DEPLOYMENT_GROUP_ID}" ]; then
+        if [ "\${DEPLOYMENT_GROUP_ID}" == "${ADMIN_DEPLOYMENT_GROUP_ID}" ]; then
         bin/magento setup:db:status --no-ansi -n
         if [[ \$? -ne 0 ]]; then
         bin/magento setup:upgrade --keep-generated --no-ansi -n
