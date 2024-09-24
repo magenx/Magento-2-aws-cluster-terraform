@@ -13,7 +13,7 @@ echo "deb [signed-by=/usr/share/keyrings/opensearch-keyring] https://artifacts.o
 apt -qq -y update
 env OPENSEARCH_INITIAL_ADMIN_PASSWORD=${parameter["OPENSEARCH_PASSWORD"]} apt -qq -y install opensearch
 
-echo "${INSTANCE_IP} ${OPENSEARCH_ENDPOINT}" >> /etc/hosts
+echo "127.0.0.1 ${OPENSEARCH_ENDPOINT}" >> /etc/hosts
 
 ## opensearch settings
 cp /etc/opensearch/opensearch.yml /etc/opensearch/opensearch.yml_default
