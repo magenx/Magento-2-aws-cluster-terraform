@@ -113,9 +113,7 @@ curl -u  ${parameter["OPENSEARCH_ADMIN"]}:${parameter["OPENSEARCH_PASSWORD"]} -X
 EOF
 )"
 
-/usr/share/opensearch/bin/opensearch-plugin install --batch \
-analysis-icu \
-analysis-phonetic
+/usr/share/opensearch/bin/opensearch-plugin install --batch analysis-icu analysis-phonetic
 
 apt-mark hold opensearch
 
