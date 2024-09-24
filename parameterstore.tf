@@ -80,20 +80,6 @@ resource "aws_ssm_parameter" "magento_env" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create SSM Parameter store for magento config.php
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_parameter" "magento_config" {
-  name        = "/${local.project}/${local.environment}/magento/config"
-  description = "Magento config.php for ${local.project} in ${data.aws_region.current.name}"
-  type        = "String"
-  tier        = "Advanced"
-  value       = file("${abspath(path.root)}/parameterstore/config.php")
-  tags = {
-    Name = "${local.project}-${local.environment}-magento-config"
-    Hash = filesha256("${abspath(path.root)}/parameterstore/config.php")
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Parameter store for appspec Codedeploy config
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_parameter" "codedeploy_appspec" {
