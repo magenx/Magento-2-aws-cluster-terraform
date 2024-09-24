@@ -15,7 +15,7 @@ env OPENSEARCH_INITIAL_ADMIN_PASSWORD=${parameter["OPENSEARCH_PASSWORD"]} apt -q
 
 echo "127.0.0.1 ${OPENSEARCH_ENDPOINT}" >> /etc/hosts
 
-## opensearch settings
+# opensearch settings
 cp /etc/opensearch/opensearch.yml /etc/opensearch/opensearch.yml_default
 cat > /etc/opensearch/opensearch.yml <<END
 #--------------------------------------------------------------------#
