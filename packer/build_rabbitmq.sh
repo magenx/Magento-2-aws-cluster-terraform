@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 . /tmp/build_header.sh
 
