@@ -21,9 +21,16 @@ phases:
       - echo "${COMPOSER_AUTH}" > auth.json
       - chmod +x bin/magento
       - composer install --optimize-autoloader --prefer-dist --no-dev
+      - bin/magento module:enable --all
       - bin/magento setup:di:compile
       - composer dump-autoload --no-dev --optimize --apcu
-      - bin/magento setup:static-content:deploy -f
+      - |
+        bin/magento setup:static-content:deploy \
+        --language=en_US \
+        --area=frontend --theme=Magento/blank --theme=Magento/luma \
+        --area=adminhtml --theme=Magento/backend \
+        --jobs=8 \
+        --force
       - echo "Build end at $(date)"
   post_build:
     on-failure: ABORT
