@@ -124,13 +124,12 @@ END
 cat <<END > /etc/systemd/system/cloudmap.service
 [Unit]
 Description=Run AWS CloudMap service
-Requires=network-online.target network.target
-DefaultDependencies=no
-Before=shutdown.target reboot.target halt.target
+Requires=network-online.target
+After=network-online.target
 
 [Service]
 Type=oneshot
-KillMode=none
+KillMode=process
 RemainAfterExit=yes
 
 ExecStart=/usr/local/bin/cloudmap-register
