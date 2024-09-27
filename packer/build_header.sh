@@ -79,11 +79,13 @@ cat <<END > /usr/local/bin/metadata
 # Fetch metadata
 AWSTOKEN=\$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 600")
 INSTANCE_ID=\$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
+INSTANCE_HOSTNAME=\$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Hostname)
 INSTANCE_TYPE=\$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
 INSTANCE_IP=\$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
 
 # Export variables
 export INSTANCE_ID="\${INSTANCE_ID}"
+export INSTANCE_HOSTNAME="\${INSTANCE_HOSTNAME}"
 export INSTANCE_TYPE="\${INSTANCE_TYPE}"
 export INSTANCE_IP="\${INSTANCE_IP}"
 END
@@ -105,6 +107,10 @@ dpkg-reconfigure --frontend noninteractive tzdata
 cat <<END > /usr/local/bin/cloudmap-register
 #! /bin/bash
 . /usr/local/bin/metadata
+if ! grep -q "${INSTANCE_IP}  ${INSTANCE_HOSTNAME}" /etc/hosts; then
+  echo "${INSTANCE_IP}  ${INSTANCE_HOSTNAME}" >> /etc/hosts
+fi
+hostnamectl set-hostname ${INSTANCE_HOSTNAME}
 aws servicediscovery register-instance \
   --region ${parameter["AWS_DEFAULT_REGION"]} \
   --service-id ${SERVICE_ID} \
