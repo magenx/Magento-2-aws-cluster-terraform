@@ -11,7 +11,7 @@ if [ "${INSTANCE_NAME}" == "opensearch" ]; then
 curl -o- https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --dearmor --batch --yes -o /usr/share/keyrings/opensearch-keyring
 echo "deb [signed-by=/usr/share/keyrings/opensearch-keyring] https://artifacts.opensearch.org/releases/bundle/opensearch/${OPENSEARCH_VERSION}/apt stable main" > /etc/apt/sources.list.d/opensearch-${OPENSEARCH_VERSION}.list
 apt -qq -y update
-env OPENSEARCH_INITIAL_ADMIN_PASSWORD=${parameter["OPENSEARCH_PASSWORD"]} apt -qq -y install netcat-traditional opensearch
+env OPENSEARCH_INITIAL_ADMIN_PASSWORD=${parameter["OPENSEARCH_PASSWORD"]} apt -qq -y install netcat-traditional opensearch=2.15.0
 
 echo "127.0.0.1 ${OPENSEARCH_ENDPOINT}" >> /etc/hosts
 
