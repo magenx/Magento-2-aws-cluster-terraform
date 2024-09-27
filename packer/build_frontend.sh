@@ -161,7 +161,7 @@ mkdir -p ${parameter["WEB_ROOT_PATH"]}
 mkdir -p /home/${parameter["BRAND"]}/{releases,shared}
 chmod 711 /home/${parameter["BRAND"]}
 mkdir -p /home/${parameter["BRAND"]}/shared/{pub/media,var}
-chown -R ${parameter["BRAND"]}:php-${parameter["BRAND"]} /home/${parameter["BRAND"]}/{releases,shared}
+chown -R ${parameter["BRAND"]}:php-${parameter["BRAND"]} ${parameter["WEB_ROOT_PATH"]} /home/${parameter["BRAND"]}/{releases,shared}
 chmod 2750 /home/${parameter["BRAND"]}/releases
 chmod 2770 /home/${parameter["BRAND"]}/shared/{pub/media,var}
 setfacl -R -m m:r-X,u:${parameter["BRAND"]}:rwX,g:php-${parameter["BRAND"]}:r-X,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:php-${parameter["BRAND"]}:r-X,d:o::- /home/${parameter["BRAND"]}/releases
