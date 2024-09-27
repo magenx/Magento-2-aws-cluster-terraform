@@ -360,8 +360,33 @@ DATABASE_PASSWORD="${parameter["DATABASE_PASSWORD"]}"
 CONFIGURATION_DATE="$(date -u "+%a, %d %b %Y %H:%M:%S %z")"
 END
 
+cat <<END > /usr/local/bin/vhost-config
+#! /bin/bash
+. /usr/local/bin/metadata
+sed -i "s/listen 80;/listen \${INSTANCE_IP}:80;/" /etc/nginx/sites-available/${parameter["DOMAIN"]}.conf
+sed -i "s/localhost/\${INSTANCE_IP}/g" /etc/varnish/default.vcl
+systemctl restart varnish nginx php${parameter["PHP_VERSION"]}-fpm
+END
+
+cat <<END > /etc/systemd/system/vhost-config.service
+[Unit]
+Description=Configure instance IP address
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+KillMode=process
+RemainAfterExit=no
+
+ExecStart=/usr/local/bin/vhost-config
+
+[Install]
+WantedBy=multi-user.target
+END
+
 systemctl daemon-reload
-systemctl restart nginx.service php*fpm.service varnish.service
+systemctl enable vhost-config.service
 
 fi
 
