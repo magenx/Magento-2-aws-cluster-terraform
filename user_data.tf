@@ -19,18 +19,7 @@ mainSteps:
     inputs:
       runCommand:
         - |-
-          AWSTOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
-          INSTANCE_IP=$(curl -s -H "X-aws-ec2-metadata-token: $${AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
-          INSTANCE_HOSTNAME=$(curl -s -H "X-aws-ec2-metadata-token: $${AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Hostname)
-        - |-
-          echo "$${INSTANCE_IP}  $${INSTANCE_HOSTNAME}" >> /etc/hosts
-          hostnamectl set-hostname $${INSTANCE_HOSTNAME}
-        - |-
-          if [ -d "/home/${var.magento["brand"]}/public_html/" ]; then
-            sed -i "s/listen 80;/listen $${INSTANCE_IP}:80;/" /etc/nginx/sites-available/${var.magento["domain"]}.conf
-            sed -i "s/localhost/$${INSTANCE_IP}/g" /etc/varnish/default.vcl
-            systemctl restart varnish nginx php${var.magento["php_version"]}-fpm
-          fi
+          ## some commands
 EOF
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
