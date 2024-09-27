@@ -168,8 +168,8 @@ setfacl -R -m m:r-X,u:${parameter["BRAND"]}:rwX,g:php-${parameter["BRAND"]}:r-X,
 setfacl -R -m m:r-X,u:${parameter["BRAND"]}:rwX,g:php-${parameter["BRAND"]}:rwX,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:php-${parameter["BRAND"]}:rwX,d:o::- /home/${parameter["BRAND"]}/shared
 setfacl -R -m u:nginx:r-X,d:u:nginx:r-X /home/${parameter["BRAND"]}/{releases,shared}
 
-echo '${parameter["EFS_SYSTEM_ID"]}:/ /home/${parameter["BRAND"]}/shared/var efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_VAR"]} 0 0' >> /etc/fstab
-echo '${parameter["EFS_SYSTEM_ID"]}:/ /home/${parameter["BRAND"]}/shared/pub/media efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_MEDIA"]} 0 0' >> /etc/fstab
+echo "${parameter["EFS_SYSTEM_ID"]}:/ /home/${parameter["BRAND"]}/shared/var efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_VAR"]} 0 0" >> /etc/fstab
+echo "${parameter["EFS_SYSTEM_ID"]}:/ /home/${parameter["BRAND"]}/shared/pub/media efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_MEDIA"]} 0 0" >> /etc/fstab
 
 # DOWNLOADING NGINX CONFIG FILES
 curl -o /etc/nginx/fastcgi_params  ${MAGENX_NGINX_GITHUB_REPO}magento2/fastcgi_params
