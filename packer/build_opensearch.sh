@@ -66,7 +66,7 @@ systemctl restart opensearch.service
 
 # create opensearch indexer role/user
 timeout 10 sh -c 'until nc -z $0 $1; do sleep 1; done' ${OPENSEARCH_ENDPOINT} 9200
-grep -m 1 '\[GREEN\].*security' <(tail -f /var/log/opensearch/${parameter["BRAND"]}.log)
+curl -XGET -u ${parameter["OPENSEARCH_ADMIN"]}:${parameter["OPENSEARCH_PASSWORD"]} "http://${OPENSEARCH_ENDPOINT}:9200/_cluster/health?wait_for_status=green&timeout=60s"
 sleep 5
 
 # Create role
