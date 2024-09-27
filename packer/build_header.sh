@@ -146,11 +146,6 @@ systemctl enable cloudmap.service
 ###                            AWS SERVICES CONFIGURATION                       ###
 ###################################################################################
 
-cd /tmp
-wget https://aws-codedeploy-${parameter["AWS_DEFAULT_REGION"]}.s3.amazonaws.com/latest/install
-chmod +x ./install
-./install auto
-
 wget https://s3.${parameter["AWS_DEFAULT_REGION"]}.amazonaws.com/amazon-ssm-${parameter["AWS_DEFAULT_REGION"]}/latest/debian_arm64/amazon-ssm-agent.deb
 dpkg -i amazon-ssm-agent.deb
 systemctl enable amazon-ssm-agent
