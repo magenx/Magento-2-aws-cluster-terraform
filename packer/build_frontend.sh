@@ -361,7 +361,7 @@ CONFIGURATION_DATE="$(date -u "+%a, %d %b %Y %H:%M:%S %z")"
 END
 
 cat <<END > /usr/local/bin/vhost-config
-#! /bin/bash
+#!/bin/bash
 . /usr/local/bin/metadata
 sed -i "s/listen 80;/listen \${INSTANCE_IP}:80;/" /etc/nginx/sites-available/${parameter["DOMAIN"]}.conf
 sed -i "s/localhost/\${INSTANCE_IP}/g" /etc/varnish/default.vcl
