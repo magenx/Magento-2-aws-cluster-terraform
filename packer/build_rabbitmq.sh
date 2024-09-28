@@ -77,6 +77,30 @@ rabbitmqctl set_permissions -p / ${parameter["BRAND"]} ".*" ".*" ".*"
 
 apt-mark hold erlang rabbitmq-server
 
+cat <<END > /etc/systemd/system/rabbitmq-route.service
+[Unit]
+Description=Configure rabbitmq instance IP address
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+KillMode=process
+RemainAfterExit=no
+
+ExecStart=/usr/local/bin/rabbitmq-route
+
+[Install]
+WantedBy=multi-user.target
+END
+
+cat <<END > /usr/local/bin/rabbitmq-route
+#!/bin/bash
+. /usr/local/bin/metadata
+iptables -t nat -A PREROUTING -d \${INSTANCE_IP} -p tcp --dport 5672 -j DNAT --to-destination 127.0.0.1:5672
+iptables -t nat -A POSTROUTING -j MASQUERADE
+END
+
 fi
 
 ###################################################################################
