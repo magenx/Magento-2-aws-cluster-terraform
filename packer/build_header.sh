@@ -105,7 +105,7 @@ dpkg-reconfigure --frontend noninteractive tzdata
 ###################################################################################
 
 cat <<END > /usr/local/bin/cloudmap-register
-#! /bin/bash
+#!/bin/bash
 . /usr/local/bin/metadata
 if ! grep -q "${INSTANCE_IP}  ${INSTANCE_HOSTNAME}" /etc/hosts; then
   echo "${INSTANCE_IP}  ${INSTANCE_HOSTNAME}" >> /etc/hosts
@@ -119,7 +119,7 @@ aws servicediscovery register-instance \
 END
 
 cat <<END > /usr/local/bin/cloudmap-deregister
-#! /bin/bash
+#!/bin/bash
 . /usr/local/bin/metadata
 aws servicediscovery deregister-instance \
   --region ${parameter["AWS_DEFAULT_REGION"]} \
