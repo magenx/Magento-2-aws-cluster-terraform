@@ -21,7 +21,6 @@ phases:
       - echo "${COMPOSER_AUTH}" > auth.json
       - chmod +x bin/magento
       - composer install --optimize-autoloader --prefer-dist --no-dev
-      - bin/magento module:enable --all
       - bin/magento setup:di:compile
       - composer dump-autoload --no-dev --optimize --apcu
       - |
