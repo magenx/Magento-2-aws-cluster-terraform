@@ -90,7 +90,6 @@ export INSTANCE_TYPE="\${INSTANCE_TYPE}"
 export INSTANCE_IP="\${INSTANCE_IP}"
 END
 chmod +x /usr/local/bin/metadata
-. /usr/local/bin/metadata
 
 ###################################################################################
 ###                                   SET TIMEZONE                              ###
@@ -107,10 +106,10 @@ dpkg-reconfigure --frontend noninteractive tzdata
 cat <<END > /usr/local/bin/cloudmap-register
 #!/bin/bash
 . /usr/local/bin/metadata
-if ! grep -q "${INSTANCE_IP}  ${INSTANCE_HOSTNAME}" /etc/hosts; then
-  echo "${INSTANCE_IP}  ${INSTANCE_HOSTNAME}" >> /etc/hosts
+if ! grep -q "\${INSTANCE_IP}  \${INSTANCE_HOSTNAME}" /etc/hosts; then
+  echo "\${INSTANCE_IP}  \${INSTANCE_HOSTNAME}" >> /etc/hosts
 fi
-hostnamectl set-hostname ${INSTANCE_HOSTNAME}
+hostnamectl set-hostname \${INSTANCE_HOSTNAME}
 aws servicediscovery register-instance \
   --region ${parameter["AWS_DEFAULT_REGION"]} \
   --service-id ${SERVICE_ID} \
