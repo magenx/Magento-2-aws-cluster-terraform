@@ -9,18 +9,19 @@
 if [[ "${INSTANCE_NAME}" =~ (frontend|admin) ]]; then
 # Debian
 
+# PHP packages 
+PHP_PACKAGES=(cli fpm common mysql zip gd mbstring curl xml bcmath intl soap oauth apcu)
+# Linux packages
+LINUX_PACKAGES="nfs-common unzip git patch python3-pip acl attr imagemagick binutils pkg-config libssl-dev ruby"
+
+apt -qqy update
+apt -qq -y install ${LINUX_PACKAGES}
+
+# CODEDEPLOY AGENT
 cd /tmp
 wget https://aws-codedeploy-${parameter["AWS_DEFAULT_REGION"]}.s3.amazonaws.com/latest/install
 chmod +x ./install
 ./install auto
-
-# PHP packages 
-PHP_PACKAGES=(cli fpm common mysql zip gd mbstring curl xml bcmath intl soap oauth apcu)
-# Linux packages
-LINUX_PACKAGES="nfs-common unzip git patch python3-pip acl attr imagemagick binutils pkg-config libssl-dev"
-
-apt -qqy update
-apt -qq -y install ${LINUX_PACKAGES}
 
 # BUILD EFS UTILS
 cd /tmp
