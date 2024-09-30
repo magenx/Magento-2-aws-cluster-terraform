@@ -26,7 +26,7 @@ echo "UUID=${UUID} /var/lib/mysql ext4 defaults,nofail 0 2" >> /etc/fstab
 # MARIADB INSTALLATION
 curl -sS ${MARIADB_REPO_CONFIG} | bash -s -- --mariadb-server-version="mariadb-${MARIADB_VERSION}" --skip-maxscale --skip-verify --skip-eol-check
 apt -qq update
-apt -qq -y install mariadb-server bc
+apt -qq -y install mariadb-server bc libdbd-mariadb-perl
 systemctl enable mariadb
 curl -sSo /etc/my.cnf https://raw.githubusercontent.com/magenx/magento-mysql/master/my.cnf/my.cnf
 INNODB_BUFFER_POOL_SIZE=$(echo "0.90*$(awk '/MemTotal/ { print $2 / (1024*1024)}' /proc/meminfo | cut -d'.' -f1)" | bc | xargs printf "%1.0f")
