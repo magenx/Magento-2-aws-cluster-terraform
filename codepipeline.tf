@@ -32,12 +32,6 @@ resource "aws_iam_role_policy_attachment" "AWSCodeDeployRole" {
 
 data "aws_iam_policy_document" "codedeploy" {
   statement {
-    sid       = "AllowCodeDeploySNSAlertTrigger"
-    effect    = "Allow"
-    actions   = ["sns:Publish"]
-    resources = [aws_sns_topic.default.arn]
-  }
-  statement {
     sid    = "AllowCodeDeployToASG"
     effect = "Allow"
     actions = [
@@ -145,6 +139,13 @@ resource "aws_iam_role_policy_attachment" "codepipeline" {
 
 data "aws_iam_policy_document" "codepipeline" {
   statement {
+    sid       = "AllowCodeDeploySNSAlertTrigger"
+    effect    = "Allow"
+    actions   = ["sns:Publish"]
+    resources = [aws_sns_topic.default.arn]
+  }
+  statement {
+    sid       = "AllowCodestarConnection"
     effect    = "Allow"
     actions   = ["codestar-connections:UseConnection"]
     resources = [aws_codestarconnections_connection.this.arn]
@@ -355,6 +356,7 @@ resource "aws_codedeploy_app" "this" {
 resource "aws_codedeploy_deployment_group" "this" {
   for_each = { for instance, value in var.ec2 : instance => value if value.service == null }
   deployment_group_name  = "${local.project}-deployment-group-${each.key}"
+  deployment_config_name = "CodeDeployDefault.AllAtOnce"
   app_name               = aws_codedeploy_app.this[each.key].name
   service_role_arn       = aws_iam_role.codedeploy.arn
   autoscaling_groups    = [aws_autoscaling_group.this[each.key].name]
