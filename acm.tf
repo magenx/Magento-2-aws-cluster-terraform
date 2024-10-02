@@ -20,6 +20,7 @@ resource "aws_acm_certificate" "default" {
 }
 
 resource "aws_acm_certificate" "cloudfront" {
+  count                     = data.aws_region.current.name == "us-east-1" ? 0 : 1
   provider                  = aws.useast1
   domain_name               = "${var.magento["domain"]}"
   subject_alternative_names = ["*.${var.magento["domain"]}"]
@@ -40,7 +41,8 @@ resource "aws_acm_certificate_validation" "default" {
 }
 
 resource "aws_acm_certificate_validation" "cloudfront" {
+  count           = data.aws_region.current.name == "us-east-1" ? 0 : 1
   provider        = aws.useast1
-  certificate_arn = aws_acm_certificate.cloudfront.arn
+  certificate_arn = aws_acm_certificate.cloudfront[0].arn
 }
 
