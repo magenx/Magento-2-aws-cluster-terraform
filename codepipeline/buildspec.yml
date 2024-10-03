@@ -48,6 +48,7 @@ phases:
         # Symlink shared folders
         SHARED="/home/${BRAND}/shared"
         NEW_RELEASE="/home/${BRAND}/releases/\${DEPLOYMENT_ID}"
+        mkdir -p \${NEW_RELEASE}
         ln -nfs "\${SHARED}/var" "\${NEW_RELEASE}/var"
         ln -nfs "\${SHARED}/pub/media" "\${NEW_RELEASE}/pub/media"
         " > setup.sh
