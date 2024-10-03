@@ -64,6 +64,12 @@ phases:
           echo "Deployment error!"
          exit 1
         fi
+        # Check if the directory is an EFS mount
+        if ! df -T "\${NEW_RELEASE}/pub/media" | grep -q "efs"; then
+          echo "The media directory is not an EFS mount."
+          echo "Deployment error!"
+         exit 1
+        fi
         # Perform symlink swap to point to the new release
         ln -nfs "\${NEW_RELEASE}" "\${PUBLIC_HTML}"
         " > deploy.sh
@@ -73,7 +79,7 @@ phases:
         # application start
         if [ "\${DEPLOYMENT_GROUP_ID}" == "${ADMIN_DEPLOYMENT_GROUP_ID}" ]; then
         bin/magento setup:db:status --no-ansi -n
-        if [[ \$? -ne 0 ]]; then
+        if [[ \$? -eq 2 ]]; then
         bin/magento setup:upgrade --keep-generated --no-ansi -n
         fi
         sudo cacheflush
@@ -85,6 +91,7 @@ phases:
         # validate service
         cd /home/${BRAND}/releases
         ls -dt */ | tail -n +2 | xargs rm -rf
+        cd /home/${BRAND}/releases/\${DEPLOYMENT_ID}
         rm setup.sh deploy.sh upgrade.sh cleanup.sh appspec.yml
         " > cleanup.sh
       - chmod +x setup.sh deploy.sh upgrade.sh cleanup.sh
