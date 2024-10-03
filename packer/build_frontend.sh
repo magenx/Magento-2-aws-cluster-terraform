@@ -26,6 +26,8 @@ chmod +x ./install
 # BUILD EFS UTILS
 cd /tmp
 git clone https://github.com/aws/efs-utils
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+. "$HOME/.cargo/env"
 cd efs-utils
 ./build-deb.sh
 apt-get -y install ./build/amazon-efs-utils*deb
@@ -158,11 +160,10 @@ useradd -M -s /sbin/nologin -d /home/${parameter["BRAND"]} php-${parameter["BRAN
 usermod -g php-${parameter["BRAND"]} ${parameter["BRAND"]}
 
 # MAGENTO FOLDERS PERMISSIONS | release/shared symlink to public_html deployment
-mkdir -p ${parameter["WEB_ROOT_PATH"]}
 mkdir -p /home/${parameter["BRAND"]}/{releases,shared}
 chmod 711 /home/${parameter["BRAND"]}
 mkdir -p /home/${parameter["BRAND"]}/shared/{pub/media,var}
-chown -R ${parameter["BRAND"]}:php-${parameter["BRAND"]} ${parameter["WEB_ROOT_PATH"]} /home/${parameter["BRAND"]}/{releases,shared}
+chown -R ${parameter["BRAND"]}:php-${parameter["BRAND"]} /home/${parameter["BRAND"]}/{releases,shared}
 chmod 2750 /home/${parameter["BRAND"]}/releases
 chmod 2770 /home/${parameter["BRAND"]}/shared/{pub/media,var}
 setfacl -R -m m:r-X,u:${parameter["BRAND"]}:rwX,g:php-${parameter["BRAND"]}:r-X,o::-,d:u:${parameter["BRAND"]}:rwX,d:g:php-${parameter["BRAND"]}:r-X,d:o::- /home/${parameter["BRAND"]}/releases
