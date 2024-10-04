@@ -292,7 +292,23 @@ cat <<END >> ~/.bashrc
 export HISTTIMEFORMAT="%d/%m/%y %T "
 END
 
+
+#################################
+# ADMIN INSTANCE CONFIGURATION
+#################################
 if [ "${INSTANCE_NAME}" == "admin" ]; then
+
+# ADD MAGENTO CRONJOB
+BP_HASH="$(echo -n "${parameter["WEB_ROOT_PATH"]}" | openssl dgst -sha256 | awk '{print $2}')"
+crontab -l -u ${parameter["PHP_USER"]} > /tmp/${parameter["PHP_USER"]}_crontab
+tee -a /tmp/${parameter["PHP_USER"]}_crontab <<END
+#~ MAGENTO START ${BP_HASH}
+* * * * * /usr/bin/php${parameter["PHP_VERSION"]} ${parameter["WEB_ROOT_PATH"]}/bin/magento cron:run 2>&1 | grep -v "Ran jobs by schedule" >> ${parameter["WEB_ROOT_PATH"]}/var/log/magento.cron.log
+#~ MAGENTO END ${BP_HASH}
+END
+crontab -u ${parameter["PHP_USER"]} /tmp/${parameter["PHP_USER"]}_crontab
+rm /tmp/${parameter["PHP_USER"]}_crontab
+
 # SUDO CONFIGURATION
 tee -a /etc/sudoers <<END
 ${parameter["BRAND"]} ALL=(ALL) NOPASSWD: /usr/local/bin/cacheflush
