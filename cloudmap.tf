@@ -25,8 +25,4 @@ resource "aws_service_discovery_service" "this" {
       ttl  = 60
     }
   }
-  health_check_config {
-    failure_threshold = 2
-    type              = "TCP"
-  }
 }
