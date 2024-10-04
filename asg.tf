@@ -170,11 +170,38 @@ resource "aws_cloudwatch_metric_alarm" "scalein" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create lifecycle transition notification for MariaDB instance termination
 # # ---------------------------------------------------------------------------------------------------------------------#
+data "aws_iam_policy_document" "autoscaling_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["autoscaling.amazonaws.com"]
+    }
+  }
+}
+resource "aws_iam_role" "autoscaling" {
+  name = "${local.project}-autoscaling-role"
+  assume_role_policy = data.aws_iam_policy_document.autoscaling_assume_role_policy.json
+}
+data "aws_iam_policy_document" "lifecycle_hook" {
+  statement {
+    actions = ["sns:Publish"]
+    resources = [
+        aws_sns_topic.default.arn
+    ]
+  }
+}
+resource "aws_iam_policy" "lifecycle_hook" {
+  name        = "${local.project}-lifecycle-hook"
+  description = "Policy for Auto Scaling to publish to SNS for lifecycle hooks"
+  policy = data.aws_iam_policy_document.lifecycle_hook.json
+}
+
 resource "aws_autoscaling_lifecycle_hook" "this" {
   name                    = "${local.project}-mariadb"
   autoscaling_group_name  = aws_autoscaling_group.this["mariadb"].name
   lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
-  role_arn                = aws_iam_instance_profile.ec2["mariadb"].arn
+  role_arn                = aws_iam_role.autoscaling.arn
   notification_target_arn = aws_sns_topic.default.arn
   heartbeat_timeout       = 300
 }
