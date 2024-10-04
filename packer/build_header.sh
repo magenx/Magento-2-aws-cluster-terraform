@@ -146,8 +146,7 @@ END
 cat <<END > /etc/systemd/system/cloudmap-deregister.service
 [Unit]
 Description=Deregister AWS CloudMap service on shutdown
-Requires=network.target
-After=network.target
+Requires=network-online.target
 
 DefaultDependencies=no
 Before=shutdown.target reboot.target halt.target hibernate.target
@@ -155,7 +154,7 @@ Before=shutdown.target reboot.target halt.target hibernate.target
 [Service]
 Type=oneshot
 ExecStart=/usr/local/bin/cloudmap-deregister
-RemainAfterExit=yes
+RemainAfterExit=no
 
 [Install]
 WantedBy=halt.target reboot.target shutdown.target hibernate.target
