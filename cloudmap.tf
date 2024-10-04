@@ -22,10 +22,14 @@ resource "aws_service_discovery_service" "this" {
     namespace_id = aws_service_discovery_private_dns_namespace.this.id
     dns_records {
       type = "A"
-      ttl  = 60
+      ttl  = 10
     }
   }
   health_check_custom_config {
     failure_threshold = 1
+  }
+  force_destroy = true
+  tags = {
+    Name = "${local.project}-${each.key}-service"
   }
 }
