@@ -196,6 +196,10 @@ resource "aws_iam_policy" "lifecycle_hook" {
   description = "Policy for Auto Scaling to publish to SNS for lifecycle hooks"
   policy = data.aws_iam_policy_document.lifecycle_hook.json
 }
+resource "aws_iam_role_policy_attachment" "lifecycle_hook" {
+  policy_arn = aws_iam_policy.lifecycle_hook.arn
+  role       = aws_iam_role.autoscaling.name
+}
 
 resource "aws_autoscaling_lifecycle_hook" "this" {
   name                    = "${local.project}-mariadb"
