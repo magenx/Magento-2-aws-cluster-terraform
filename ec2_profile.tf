@@ -56,6 +56,27 @@ resource "aws_iam_role_policy" "sns_publish" {
   policy = data.aws_iam_policy_document.sns_publish[each.key].json
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create inline policy for EC2 service role to put parameterstore
+# # ---------------------------------------------------------------------------------------------------------------------#
+data "aws_iam_policy_document" "ssm_put_parameter" {
+  for_each = var.ec2
+  statement {
+    sid    = "SSMPutParameter${each.key}"
+    effect = "Allow"
+    actions = [
+      "ssm:PutParameter"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "ssm_put_parameter" {
+  for_each = var.ec2
+  name     = "SSMPutParameter${title(each.key)}"
+  role     = aws_iam_role.ec2[each.key].id
+  policy = data.aws_iam_policy_document.ssm_put_parameter[each.key].json
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create inline policy for EC2 service role to send ses emails
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_iam_policy_document" "ses_send" {
