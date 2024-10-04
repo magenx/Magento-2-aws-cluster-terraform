@@ -126,9 +126,9 @@ aws servicediscovery deregister-instance \
   --instance-id \${INSTANCE_ID}
 END
 
-cat <<END > /etc/systemd/system/cloudmap.service
+cat <<END > /etc/systemd/system/cloudmap-register.service
 [Unit]
-Description=Run AWS CloudMap service
+Description=Register AWS CloudMap service on boot
 Requires=network-online.target
 After=network-online.target
 
@@ -138,13 +138,30 @@ KillMode=process
 RemainAfterExit=yes
 
 ExecStart=/usr/local/bin/cloudmap-register
-ExecStop=/usr/local/bin/cloudmap-deregister
 
 [Install]
 WantedBy=multi-user.target
 END
 
-systemctl enable cloudmap.service
+cat <<END > /etc/systemd/system/cloudmap-deregister.service
+[Unit]
+Description=Deregister AWS CloudMap service on shutdown
+Requires=network.target
+After=network.target
+
+DefaultDependencies=no
+Before=shutdown.target reboot.target halt.target hibernate.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/cloudmap-deregister
+RemainAfterExit=yes
+
+[Install]
+WantedBy=halt.target reboot.target shutdown.target hibernate.target
+END
+
+systemctl enable cloudmap-deregister.service cloudmap-register.service
 
 ###################################################################################
 ###                            AWS SERVICES CONFIGURATION                       ###
