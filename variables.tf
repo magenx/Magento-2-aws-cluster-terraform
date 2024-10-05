@@ -4,6 +4,11 @@ variable "github_secret_token" {
   type        = string
 }
 
+variable "github_repo" {
+  description = "Magento GitHub repository"
+  type        = string
+}
+
 variable "crypt_key" {
   description = "Magento 2 master crypt key"
   type        = string
@@ -11,6 +16,31 @@ variable "crypt_key" {
 
 variable "graphql_id_salt" {
   description = "Magento 2 graphql salt id"
+  type        = string
+}
+
+variable "brand" {
+  description = "Business brand name"
+  type        = string
+}
+
+variable "domain" {
+  description = "Shop domain name"
+  type        = string
+}
+
+variable "admin_email" {
+  description = "Shop admin email"
+  type        = string
+}
+
+variable "timezone" {
+  description = "Server and shop timezone"
+  type        = string
+}
+
+variable "php_version" {
+  description = "PHP version"
   type        = string
 }
 
@@ -111,20 +141,6 @@ variable "ec2" {
       min_size         = "1"
       max_size         = "1"
     }
-  }
-}
-
-variable "magento" {
-  description      = "Map application params | Magento 2"
-  default          = {
-    brand            = "magenx"
-    github_repo      = "magenx/Magento-2"
-    domain           = "magenx.org"
-    admin_email      = "admin@magenx.org"
-    language         = "en_US"
-    currency         = "EUR"
-    timezone         = "UTC"
-    php_version      = "8.3"
   }
 }
 
