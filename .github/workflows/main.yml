@@ -1,0 +1,29 @@
+name: Replace Magento Variables
+
+on:
+  push:
+    branches:
+      - ec2_v5
+      
+  workflow_dispatch:
+  
+jobs:
+  replace-vars:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ec2_v5
+
+      - name: Replace var.magento["name"] with var.name
+        run: |
+          find . -type f -exec sed -i 's/var\.magento\[\("\)\([a-z_]*\)\("\)\]/var.\2/g' {} \;
+
+      - name: Commit changes
+        run: |
+          git config --local user.name "github-actions"
+          git config --local user.email "actions@github.com"
+          git add .
+          git commit -m "Replaced var.magento['name'] with var.name"
+          git push origin ec2_v5
