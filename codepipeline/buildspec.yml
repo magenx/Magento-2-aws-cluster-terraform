@@ -51,6 +51,8 @@ phases:
         mkdir -p \${NEW_RELEASE}/pub
         ln -nfs "\${SHARED}/var" "\${NEW_RELEASE}/var"
         ln -nfs "\${SHARED}/pub/media" "\${NEW_RELEASE}/pub/media"
+        chown -h ${BRAND}:php-${BRAND} "\${NEW_RELEASE}/var"
+        chown -h ${BRAND}:php-${BRAND} "\${NEW_RELEASE}/pub/media"
         " > setup.sh
       - |
         echo "
