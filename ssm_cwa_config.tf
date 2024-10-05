@@ -24,12 +24,12 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
             },
             %{ if each.key == "admin" ~}
             {
-                "file_path": "/home/${var.magento["brand"]}/public_html/var/log/php-fpm-error.log",
+                "file_path": "/home/${var.brand}/public_html/var/log/php-fpm-error.log",
                 "log_group_name": "${local.project}_php_app_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
             },
             {
-                "file_path": "/home/${var.magento["brand"]}/public_html/var/log/exception.log",
+                "file_path": "/home/${var.brand}/public_html/var/log/exception.log",
                 "log_group_name": "${local.project}_app_error_logs",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
             },

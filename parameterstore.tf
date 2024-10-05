@@ -23,7 +23,7 @@ resource "aws_ssm_parameter" "aws_env" {
 "EFS_ACCESS_POINT_VAR" : "${aws_efs_access_point.this["var"].id}",
 "EFS_ACCESS_POINT_MEDIA" : "${aws_efs_access_point.this["media"].id}",
 "SNS_TOPIC_ARN" : "${aws_sns_topic.default.arn}",
-"RABBITMQ_USER" : "${var.magento["brand"]}",
+"RABBITMQ_USER" : "${var.brand}",
 "RABBITMQ_PASSWORD" : "${random_password.this["rabbitmq"].result}",
 "OPENSEARCH_ADMIN" : "${random_string.this["opensearch"].result}",
 "OPENSEARCH_PASSWORD" : "${random_password.this["opensearch"].result}",
@@ -37,17 +37,17 @@ resource "aws_ssm_parameter" "aws_env" {
 "SES_SECRET" : "${aws_iam_access_key.ses_smtp_user_access_key.secret}",
 "SES_PASSWORD" : "${aws_iam_access_key.ses_smtp_user_access_key.ses_smtp_password_v4}",
 "SES_ENDPOINT" : "email-smtp.${data.aws_region.current.name}.amazonaws.com",
-"DATABASE_NAME" : "${var.magento["brand"]}",
-"DATABASE_USER" : "${var.magento["brand"]}",
+"DATABASE_NAME" : "${var.brand}",
+"DATABASE_USER" : "${var.brand}",
 "DATABASE_PASSWORD" : "${random_password.this["mariadb"].result}",
 "DATABASE_ROOT_PASSWORD" : "${random_password.this["mariadb_root"].result}",
 "ADMIN_PATH" : "admin_${random_string.this["admin_path"].result}",
-"DOMAIN" : "${var.magento["domain"]}",
-"BRAND" : "${var.magento["brand"]}",
-"PHP_USER" : "php-${var.magento["brand"]}",
-"ADMIN_EMAIL" : "${var.magento["admin_email"]}",
-"WEB_ROOT_PATH" : "/home/${var.magento["brand"]}/public_html",
-"TIMEZONE" : "${var.magento["timezone"]}",
+"DOMAIN" : "${var.domain}",
+"BRAND" : "${var.brand}",
+"PHP_USER" : "php-${var.brand}",
+"ADMIN_EMAIL" : "${var.admin_email}",
+"WEB_ROOT_PATH" : "/home/${var.brand}/public_html",
+"TIMEZONE" : "${var.timezone}",
 "SECURITY_HEADER" : "${random_uuid.this.result}",
 "HEALTH_CHECK_LOCATION" : "${random_string.this["health_check"].result}",
 "PHPMYADMIN" : "${random_string.this["phpmyadmin"].result}",
@@ -56,9 +56,9 @@ resource "aws_ssm_parameter" "aws_env" {
 "RESOLVER" : "${cidrhost(aws_vpc.this.cidr_block, 2)}",
 "CRYPT_KEY" : "${var.crypt_key}",
 "GRAPHQL_ID_SALT" : "${var.graphql_id_salt}",
-"PHP_VERSION" : "${var.magento["php_version"]}",
-"PHP_INI" : "/etc/php/${var.magento["php_version"]}/fpm/php.ini",
-"PHP_FPM_POOL" : "/etc/php/${var.magento["php_version"]}/fpm/pool.d/www.conf",
+"PHP_VERSION" : "${var.php_version}",
+"PHP_INI" : "/etc/php/${var.php_version}/fpm/php.ini",
+"PHP_FPM_POOL" : "/etc/php/${var.php_version}/fpm/pool.d/www.conf",
 "HTTP_X_HEADER" : "${random_uuid.this.result}"
 }
 EOF
@@ -92,20 +92,20 @@ version: 0.0
 os: linux
 files:
   - source: /
-    destination: /home/${var.magento["brand"]}/releases/deployment_id
+    destination: /home/${var.brand}/releases/deployment_id
 file_exists_behavior: OVERWRITE
 permissions:
-  - object: /home/${var.magento["brand"]}/releases/deployment_id
+  - object: /home/${var.brand}/releases/deployment_id
     pattern: "**"
-    owner: ${var.magento["brand"]}
-    group: php-${var.magento["brand"]}
+    owner: ${var.brand}
+    group: php-${var.brand}
     mode: 660
     type:
       - file
-  - object: /home/${var.magento["brand"]}/releases/deployment_id
+  - object: /home/${var.brand}/releases/deployment_id
     pattern: "**"
-    owner: ${var.magento["brand"]}
-    group: php-${var.magento["brand"]}
+    owner: ${var.brand}
+    group: php-${var.brand}
     mode: 2770
     type:
       - directory
@@ -117,11 +117,11 @@ hooks:
   AfterInstall:
     - location: deploy.sh
       timeout: 60
-      runas: ${var.magento["brand"]}
+      runas: ${var.brand}
   ApplicationStart:
     - location: upgrade.sh
       timeout: 60
-      runas: ${var.magento["brand"]}
+      runas: ${var.brand}
   ValidateService:
     - location: cleanup.sh
       timeout: 60

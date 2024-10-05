@@ -202,7 +202,7 @@ resource "aws_codepipeline" "this" {
       output_artifacts = ["source_output"]
       configuration = {
         ConnectionArn    = aws_codestarconnections_connection.this.arn
-        FullRepositoryId = var.magento["github_repo"]
+        FullRepositoryId = var.github_repo
         BranchName       = "main"
         DetectChanges    = "true"
       }
@@ -295,7 +295,7 @@ resource "aws_codebuild_project" "this" {
 	  
   environment_variable {
       name  = "BRAND"
-      value = "${var.magento["brand"]}"
+      value = "${var.brand}"
       type  = "PLAINTEXT"
   }
   environment_variable {
@@ -315,7 +315,7 @@ resource "aws_codebuild_project" "this" {
   }
   environment_variable {
       name  = "PHP_VERSION"
-      value = "${var.magento["php_version"]}"
+      value = "${var.php_version}"
       type  = "PLAINTEXT"
     }
   environment_variable {

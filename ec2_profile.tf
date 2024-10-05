@@ -92,7 +92,7 @@ data "aws_iam_policy_document" "ses_send" {
     condition {
       test     = "StringEquals"
       variable = "ses:FromAddress"
-      values   = [var.magento["admin_email"]]
+      values   = [var.admin_email]
     }
   }
 }

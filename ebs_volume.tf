@@ -13,6 +13,6 @@ resource "aws_ebs_volume" "mariadb_data" {
   final_snapshot    = true
   encrypted         = true 
   tags = {
-    Name = "mariadb.${var.magento["brand"]}.internal"
+    Name = "mariadb.${var.brand}.internal"
   }
 }

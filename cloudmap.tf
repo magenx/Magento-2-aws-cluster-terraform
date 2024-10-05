@@ -7,7 +7,7 @@
 # Create CloudMap discovery service with private dns namespace
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_service_discovery_private_dns_namespace" "this" {
-  name        = "${var.magento["brand"]}.internal"
+  name        = "${var.brand}.internal"
   description = "Namespace for ${local.project}"
   vpc         = aws_vpc.this.id
   tags = {
