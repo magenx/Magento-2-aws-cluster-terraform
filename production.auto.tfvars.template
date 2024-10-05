@@ -1,0 +1,10 @@
+# Rename this file to production.auto.tfvars and customize your variables #
+github_secret_token = "xxx"
+crypt_key           = "xxx"
+graphql_id_salt     = "xxx"
+brand               = "magenx"
+github_repo         = "magenx/Magento-2"
+domain              = "magenx.org"
+admin_email         = "admin@magenx.org"
+timezone            = "UTC"
+php_version         = "8.3"
