@@ -192,9 +192,9 @@ variable "efs" {
     permissions = string
   }))
   default = {
-    "var"    = { uid = 1001, gid = 1002, permissions = "2770" }
-    "media"  = { uid = 1001, gid = 1002, permissions = "2770" }
-    "backup" = { uid = 0,    gid = 0,    permissions = "2700" }
+    var    = { uid = 1001, gid = 1002, permissions = "2770" }
+    media  = { uid = 1001, gid = 1002, permissions = "2770" }
+    backup = { uid = 0,    gid = 0,    permissions = "2700" }
   }
 }
 
