@@ -22,6 +22,7 @@ resource "aws_ssm_parameter" "aws_env" {
 "EFS_SYSTEM_ID" : "${aws_efs_file_system.this.id}",
 "EFS_ACCESS_POINT_VAR" : "${aws_efs_access_point.this["var"].id}",
 "EFS_ACCESS_POINT_MEDIA" : "${aws_efs_access_point.this["media"].id}",
+"EFS_ACCESS_POINT_BACKUP" : "${aws_efs_access_point.this["backup"].id}",
 "SNS_TOPIC_ARN" : "${aws_sns_topic.default.arn}",
 "RABBITMQ_USER" : "${var.brand}",
 "RABBITMQ_PASSWORD" : "${random_password.this["rabbitmq"].result}",
