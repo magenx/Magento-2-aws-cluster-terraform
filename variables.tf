@@ -184,6 +184,20 @@ variable "efs" {
     }
 }
 
+# Variable for EFS paths, UIDs, GIDs, and permissions
+variable "efs" {
+  type = map(object({
+    uid         = number
+    gid         = number
+    permissions = string
+  }))
+  default = {
+    "var"    = { uid = 1001, gid = 1002, permissions = "2770" }
+    "media"  = { uid = 1001, gid = 1002, permissions = "2770" }
+    "backup" = { uid = 0,    gid = 0,    permissions = "2700" }
+  }
+}
+
 variable "ec2_instance_profile_policy" {
   description = "Policy attach to EC2 Instance Profile"
   type        = set(string)
