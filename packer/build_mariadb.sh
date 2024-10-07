@@ -26,7 +26,7 @@ echo "UUID=${UUID} /var/lib/mysql ext4 defaults,nofail 0 2" >> /etc/fstab
 # MARIADB INSTALLATION
 curl -sS ${MARIADB_REPO_CONFIG} | bash -s -- --mariadb-server-version="mariadb-${MARIADB_VERSION}" --skip-maxscale --skip-verify --skip-eol-check
 apt -qq update
-apt -qq -y install mariadb-server bc libdbd-mariadb-perl
+apt -qq -y install mariadb-server bc libdbd-mariadb-perl git binutils pkg-config libssl-dev
 systemctl enable mariadb
 curl -sSo /etc/my.cnf https://raw.githubusercontent.com/magenx/magento-mysql/master/my.cnf/my.cnf
 INNODB_BUFFER_POOL_SIZE=$(echo "0.90*$(awk '/MemTotal/ { print $2 / (1024*1024)}' /proc/meminfo | cut -d'.' -f1)" | bc | xargs printf "%1.0f")
@@ -97,6 +97,36 @@ END
 
 systemctl enable attach-ebs-volume.service
 systemctl enable detach-ebs-volume.service
+
+mkdir -p /backup
+echo "${parameter["EFS_SYSTEM_ID"]}:/ /backup efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_BACKUP"]} 0 0" >> /etc/fstab
+
+cat <<END > /etc/cron.daily/database_backup
+#!/bin/bash
+
+BACKUP_DIR="/backup
+DATE=\$(date +"%d-%m-%Y")
+TIMER=\$(date +"%H-%M-%S")
+
+mkdir -p "\${BACKUP_DIR}/\${DATE}"
+DATABASES=\$(mysql -e "SHOW DATABASES;" | grep -Ev "(Database|information_schema|performance_schema|mysql|sys)")
+for DATABASE in \${DATABASES}; do
+    FILE="\${BACKUP}/\${DATE}/mysql-\${DATABASE}-\${DATE}-\${TIMER}.sql.gz"
+    mysqldump --single-transaction --routines --triggers --events --databases \${DATABASE} | gzip > "\${FILE}"
+done
+END
+
+chmod +x /etc/cron.daily/database_backup
+
+# BUILD EFS UTILS
+cd /tmp
+git clone https://github.com/aws/efs-utils
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+. "$HOME/.cargo/env"
+cd efs-utils
+./build-deb.sh
+apt-get -y install ./build/amazon-efs-utils*deb
+rm -rf ~/.cargo ~/.rustup
 
 fi
 
