@@ -56,7 +56,7 @@ plugins.security.system_indices.indices: [".plugins-ml-config", ".plugins-ml-con
 END
 
 ## OpenSearch jvm options
-HEAP_SIZE=$(echo "0.50*$(awk '/MemTotal/ { print $2 / (1024*1024)}' /proc/meminfo | cut -d'.' -f1)" | bc | xargs printf "%1.0f")
+HEAP_SIZE=$(echo "0.70*$(awk '/MemTotal/ { print $2 / (1024*1024)}' /proc/meminfo | cut -d'.' -f1)" | bc | xargs printf "%1.0f")
 if [ "${HEAP_SIZE}" == "0" ]; then HEAP_SIZE=1; fi
 
 cat <<END > /etc/opensearch/jvm.options.d/${parameter["BRAND"]}.options
