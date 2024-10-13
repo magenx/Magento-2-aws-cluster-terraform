@@ -101,4 +101,4 @@ phases:
 artifacts:
     files:
       - '**/*'
-    name: builds/${parameter["BRAND"]}/$(date +%Y-%m-%d)/${CODEBUILD_BUILD_NUMBER}/
+    name: builds/${BRAND}/$(date +%Y-%m-%d)/${CODEBUILD_BUILD_NUMBER}/
