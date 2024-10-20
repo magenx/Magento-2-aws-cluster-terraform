@@ -405,20 +405,6 @@ END
 systemctl daemon-reload
 systemctl enable vhost-config.service
 
-# LOOP ALL NGINX CONFIG TO PARAMETERSTORE
-NGINX_DIR="/etc/nginx"
-PARAMETERSTORE_PATH="/${parameter["PROJECT"]}/${parameter["ENVIRONMENT"]}/nginx/${INSTANCE_NAME}"
-
-find "${NGINX_DIR}" ! -type l -name "*.conf" | while read -r FILE; do
-  CONFIG_PATH=$(realpath --relative-to="${NGINX_DIR}" "${FILE}")
-  CONTENT=$(cat "${FILE}")
-  aws ssm put-parameter \
-    --name "${PARAMETERSTORE_PATH}/${CONFIG_PATH}" \
-    --value "${CONTENT}" \
-    --type "String" \
-    --tier "Intelligent-Tiering"
-done
-
 fi
 
 ###################################################################################
