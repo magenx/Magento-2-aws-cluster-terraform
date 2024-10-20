@@ -194,7 +194,7 @@ resource "aws_codepipeline" "this" {
 
     action {
       name             = "Magento_Source"
-      namespace        = "SourceVariables"
+      namespace        = "MagentoSourceVariables"
       category         = "Source"
       owner            = "AWS"
       provider         = "CodeStarSourceConnection"
@@ -245,7 +245,7 @@ resource "aws_codepipeline" "this" {
     name = "Deploy"
   
     action {
-      name     = "Approval"
+      name     = "Magento_Depoly_Approval"
       category = "Approval"
       owner    = "AWS"
       provider = "Manual"
@@ -253,13 +253,13 @@ resource "aws_codepipeline" "this" {
       run_order = 1
       configuration = {
         NotificationArn = aws_sns_topic.default.arn
-        CustomData      = "Approve codepipeline [#{codepipeline.PipelineExecutionId}] Deploy action for ${local.project} [#{SourceVariables.AuthorDate} - #{SourceVariables.CommitId} - #{SourceVariables.CommitMessage}]"
+        CustomData      = "Approve codepipeline [#{codepipeline.PipelineExecutionId}] Deploy action for ${local.project} [#{MagentoSourceVariables.AuthorDate} - #{MagentoSourceVariables.CommitId} - #{MagentoSourceVariables.CommitMessage}]"
       }
     }
     dynamic "action" {
       for_each = { for instance, value in var.ec2 : instance => value if value.service == null }
       content {
-        name            = "Deploy_to_${action.key}_ASG"
+        name            = "Magento_Deploy_to_${action.key}_ASG"
         category        = "Deploy"
         owner           = "AWS"
         version         = "1"
