@@ -193,13 +193,13 @@ resource "aws_codepipeline" "this" {
     name = "Source"
 
     action {
-      name             = "GitHub_Source"
+      name             = "Magento_Source"
       namespace        = "SourceVariables"
       category         = "Source"
       owner            = "AWS"
       provider         = "CodeStarSourceConnection"
       version          = "1"
-      output_artifacts = ["source_output"]
+      output_artifacts = ["magento_source_output"]
       configuration = {
         ConnectionArn    = aws_codestarconnections_connection.this.arn
         FullRepositoryId = var.github_repo
@@ -207,20 +207,37 @@ resource "aws_codepipeline" "this" {
         DetectChanges    = "true"
       }
     }
+
+    action {
+      name             = "Buildspec_Source"
+      namespace        = "BuildspecSourceVariables"
+      category         = "Source"
+      owner            = "AWS"
+      provider         = "CodeStarSourceConnection"
+      version          = "1"
+      output_artifacts = ["buildspec_source_output"]
+      configuration = {
+        ConnectionArn    = aws_codestarconnections_connection.this.arn
+        FullRepositoryId = var.github_repo
+        BranchName       = "buildspec"
+        DetectChanges    = "false"
+      }
+    }
   }
   stage {
     name = "Build"
 
     action {
-      name             = "Build"
+      name             = "Magento_Build"
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"
       version          = "1"
-      input_artifacts  = ["source_output"]
-      output_artifacts = ["build_output"]
+      input_artifacts  = ["magento_source_output","buildspec_source_output"]
+      output_artifacts = ["complete_build_output"]
       configuration = {
         ProjectName = aws_codebuild_project.this.name
+        PrimarySource = "buildspec_source_output"
       }
     }
   }
@@ -248,7 +265,7 @@ resource "aws_codepipeline" "this" {
         version         = "1"
         run_order       = 2
         provider        = "CodeDeploy"
-        input_artifacts = ["build_output"]
+        input_artifacts = ["complete_build_output"]
         configuration = {
           ApplicationName     = aws_codedeploy_app.this[action.key].name
           DeploymentGroupName = aws_codedeploy_deployment_group.this[action.key].deployment_group_name
@@ -265,7 +282,7 @@ resource "aws_codebuild_project" "this" {
   build_timeout          = 60
   description            = "${local.project}-codebuild-project"
   name                   = "${local.project}-codebuild-project"
-  queued_timeout         = 480
+  queued_timeout         = 300
   depends_on             = [aws_iam_role.codebuild]
   service_role           = aws_iam_role.codebuild.arn
 	
@@ -338,8 +355,7 @@ resource "aws_codebuild_project" "this" {
   }
 
   source {
-    buildspec           = "${file("${abspath(path.root)}/codepipeline/buildspec.yml")}"
-    type                = "CODEPIPELINE"
+    type = "CODEPIPELINE"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
