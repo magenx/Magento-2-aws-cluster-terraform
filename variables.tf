@@ -106,7 +106,7 @@ variable "ec2" {
       max_size         = "5"
     }
     opensearch = {
-      instance_type    = "c7g.large"
+      instance_type    = "c7g.xlarge"
       service          = true
       volume_size      = "100"
       warm_pool        = "disabled"
