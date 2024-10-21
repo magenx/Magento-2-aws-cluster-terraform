@@ -9,7 +9,7 @@
 <br />
 
 ## AWS Graviton4 Processor - Enabling the best performance in EC2:
-<img src="https://github.com/user-attachments/assets/45ad089f-2321-46ea-9f02-415ad669801a" width="300" height="165"> <img src="https://github.com/user-attachments/assets/c0213f80-129d-42e4-82e0-0c253240a564" width="300" height="165"> <img src="https://github.com/user-attachments/assets/72aa2031-99d8-44c6-90ea-b63944cd19f7" width="300" height="165">
+<img src="https://github.com/user-attachments/assets/45ad089f-2321-46ea-9f02-415ad669801a" width="295" height="165"> <img src="https://github.com/user-attachments/assets/c0213f80-129d-42e4-82e0-0c253240a564" width="295" height="165"> <img src="https://github.com/user-attachments/assets/72aa2031-99d8-44c6-90ea-b63944cd19f7" width="295" height="165">
 
 
 > [Amazon EC2 C8g instances upgrade](https://aws.amazon.com/ec2/instance-types/c8g/)  
