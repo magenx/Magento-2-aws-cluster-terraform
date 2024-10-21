@@ -245,7 +245,7 @@ resource "aws_codepipeline" "this" {
     name = "Deploy"
   
     action {
-      name     = "Magento_Depoly_Approval"
+      name     = "Magento_Deploy_Approval"
       category = "Approval"
       owner    = "AWS"
       provider = "Manual"
