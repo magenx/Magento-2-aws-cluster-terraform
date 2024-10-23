@@ -292,8 +292,7 @@ resource "aws_codebuild_project" "this" {
 
   artifacts {
     encryption_disabled    = false
-    name                   = "${local.project}-codebuild-project"
-    override_artifact_name = false
+    override_artifact_name = true
     packaging              = "NONE"
     type                   = "CODEPIPELINE"
   }
