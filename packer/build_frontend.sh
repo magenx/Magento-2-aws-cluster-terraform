@@ -26,12 +26,12 @@ chmod +x ./install
 # BUILD EFS UTILS
 cd /tmp
 git clone https://github.com/aws/efs-utils
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 . "$HOME/.cargo/env"
 cd efs-utils
 ./build-deb.sh
 apt-get -y install ./build/amazon-efs-utils*deb
-rm -rf ~/.cargo ~/.rustup
+rustup self uninstall -y
 
 # NGINX INSTALLATION
 echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
