@@ -367,30 +367,6 @@ resource "aws_codedeploy_deployment_group" "this" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# CodePipeline webhook to check GitHub repository
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_codepipeline_webhook" "push" {
-  name            = "${local.project}-github-push-webhook"
-  target_action   = "Source"
-  target_pipeline = aws_codepipeline.this.name
-  authentication  = "GITHUB_HMAC"
-  authentication_configuration {
-    secret_token  = var.github_secret_token
-  }
-  filter {
-    json_path    = "$.pull_request.base.ref"
-    match_equals = "refs/heads/main"
-  }
-  filter {
-    json_path    = "$.pull_request.state"
-    match_equals = "closed"
-  }
-  filter {
-    json_path    = "$.pull_request.merged"
-    match_equals = "true"
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch log group and log stream for CodeBuild logs
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_log_group" "codebuild" {
