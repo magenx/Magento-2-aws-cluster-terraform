@@ -11,7 +11,7 @@ if [ "${INSTANCE_NAME}" == "mariadb" ]; then
 . /usr/local/bin/metadata
 ATTACHED_STATE=$(aws ec2 describe-volumes --volume-ids ${MARIADB_DATA_VOLUME} --query "Volumes[0].Attachments[0].State" --output text)
 if [ "${ATTACHED_STATE}" == "attached" ]; then
-    echo "Volume is attached, exiting."
+    echo "Volume is attached."
 else
 aws ec2 attach-volume --volume-id ${MARIADB_DATA_VOLUME} --instance-id ${INSTANCE_ID} --device /dev/xvdb
 aws ec2 wait volume-in-use --volume-ids ${MARIADB_DATA_VOLUME}
@@ -46,6 +46,8 @@ DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 FLUSH PRIVILEGES;
 exit
 EOMYSQL
+
+fi
 
 cat > /root/.my.cnf <<END
 [client]
@@ -143,7 +145,6 @@ END
 systemctl enable attach-ebs-volume.service
 systemctl enable detach-ebs-volume.service
 
-fi
 fi
 fi
 
