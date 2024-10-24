@@ -1,9 +1,4 @@
 
-variable "github_secret_token" {
-  description = "The GitHub secret token for webhook authentication"
-  type        = string
-}
-
 variable "github_repo" {
   description = "Magento GitHub repository"
   type        = string
@@ -174,13 +169,6 @@ variable "alb" {
   default     = {
     rps_threshold      = "5000"
     error_threshold    = "25"
-    }
-}
-
-variable "efs" {
-  description = "Create shared folders in EFS"
-  default     = {
-    path      = ["var","media"]
     }
 }
 
