@@ -9,13 +9,16 @@
 if [ "${INSTANCE_NAME}" == "mariadb" ]; then
 # ATTACH VOLUME
 . /usr/local/bin/metadata
+ATTACHED_STATE=$(aws ec2 describe-volumes --volume-ids ${MARIADB_DATA_VOLUME} --query "Volumes[0].Attachments[0].State" --output text)
+if [ "${ATTACHED_STATE}" == "attached" ]; then
+    echo "Volume is attached, exiting."
+else
 aws ec2 attach-volume --volume-id ${MARIADB_DATA_VOLUME} --instance-id ${INSTANCE_ID} --device /dev/xvdb
 aws ec2 wait volume-in-use --volume-ids ${MARIADB_DATA_VOLUME}
 sleep 5
 FSTYPE=$(blkid -o value -s TYPE /dev/xvdb)
 if [ -z "${FSTYPE}" ] || [ "${FSTYPE}" != "ext4" ]; then
 mkfs.ext4 /dev/xvdb
-fi
 while [ ! -e /dev/xvdb ]; do sleep 1; done && mkdir -p /var/lib/mysql && mount /dev/xvdb /var/lib/mysql
 UUID=$(blkid -s UUID -o value /dev/xvdb)
 if [ -z "$UUID" ]; then
@@ -67,37 +70,6 @@ EOMYSQL
 
 sed -i "s/bind-address = 127.0.0.1/bind-address = ${DATABASE_ENDPOINT}/" /etc/my.cnf
 
-cat <<END > /etc/systemd/system/attach-ebs-volume.service
-[Unit]
-Description=Attach EBS Volume for MariaDB
-Before=mariadb.service
-After=network.target
-
-[Service]
-Type=oneshot
-ExecStart=/bin/bash -c 'aws ec2 attach-volume --volume-id ${MARIADB_DATA_VOLUME} --instance-id \${INSTANCE_ID} --device /dev/xvdb && while [ ! -e /dev/xvdb ]; do sleep 1; done && mount /dev/xvdb /var/lib/mysql'
-RemainAfterExit=yes
-
-[Install]
-WantedBy=multi-user.target
-END
-
-cat <<END > /etc/systemd/system/detach-ebs-volume.service
-[Unit]
-Description=Detach EBS volume on shutdown
-Before=shutdown.target reboot.target halt.target
-
-[Service]
-Type=oneshot
-ExecStart=/bin/bash -c 'aws ec2 detach-volume --volume-id ${MARIADB_DATA_VOLUME}'
-
-[Install]
-WantedBy=halt.target reboot.target shutdown.target
-END
-
-systemctl enable attach-ebs-volume.service
-systemctl enable detach-ebs-volume.service
-
 mkdir -p /backup
 echo "${parameter["EFS_SYSTEM_ID"]}:/ /backup efs _netdev,noresvport,tls,iam,accesspoint=${parameter["EFS_ACCESS_POINT_BACKUP"]} 0 0" >> /etc/fstab
 
@@ -128,6 +100,51 @@ cd efs-utils
 apt-get -y install ./build/amazon-efs-utils*deb
 rustup self uninstall -y
 
+cat <<END > /usr/local/bin/attach-ebs-volume
+#!/bin/bash
+. /usr/local/bin/metadata
+aws ec2 attach-volume --volume-id ${MARIADB_DATA_VOLUME} --instance-id \${INSTANCE_ID} --device /dev/xvdb && while [ ! -e /dev/xvdb ]; do sleep 1; done && mount /dev/xvdb /var/lib/mysql
+END
+
+cat <<END > /usr/local/bin/detach-ebs-volume
+#!/bin/bash
+. /usr/local/bin/metadata
+aws ec2 detach-volume --volume-id ${MARIADB_DATA_VOLUME}
+END
+
+cat <<END > /etc/systemd/system/attach-ebs-volume.service
+[Unit]
+Description=Attach EBS Volume for MariaDB
+Before=mariadb.service
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/attach-ebs-volume
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+END
+
+cat <<END > /etc/systemd/system/detach-ebs-volume.service
+[Unit]
+Description=Detach EBS volume on shutdown
+Before=shutdown.target reboot.target halt.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/detach-ebs-volume
+
+[Install]
+WantedBy=halt.target reboot.target shutdown.target
+END
+
+systemctl enable attach-ebs-volume.service
+systemctl enable detach-ebs-volume.service
+
+fi
+fi
 fi
 
 ###################################################################################
