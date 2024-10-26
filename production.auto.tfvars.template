@@ -1,5 +1,4 @@
 # Rename this file to production.auto.tfvars and customize your variables #
-github_secret_token = "xxx"
 crypt_key           = "xxx"
 graphql_id_salt     = "xxx"
 brand               = "magenx"
