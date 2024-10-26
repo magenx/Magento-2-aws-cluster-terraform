@@ -1,4 +1,43 @@
 
+variable "github_repo" {
+  description = "Magento GitHub repository"
+  type        = string
+}
+
+variable "crypt_key" {
+  description = "Magento 2 master crypt key"
+  type        = string
+}
+
+variable "graphql_id_salt" {
+  description = "Magento 2 graphql salt id"
+  type        = string
+}
+
+variable "brand" {
+  description = "Business brand name"
+  type        = string
+}
+
+variable "domain" {
+  description = "Shop domain name"
+  type        = string
+}
+
+variable "admin_email" {
+  description = "Shop admin email"
+  type        = string
+}
+
+variable "timezone" {
+  description = "Server and shop timezone"
+  type        = string
+}
+
+variable "php_version" {
+  description = "PHP version"
+  type        = string
+}
 
 locals {
    # Create global project name to be assigned to all resources
@@ -16,6 +55,16 @@ variable "password" {
       "redis",
       "opensearch"
    ]
+}
+
+variable "vpc" {
+  description      = "Configuration for VPC"
+  default          = {
+    enable_dns_support   = true
+    enable_dns_hostnames = true
+    instance_tenancy     = "default"
+    cidr_block           = "172.35.0.0/16"
+  }
 }
 
 variable "string" {
@@ -40,28 +89,6 @@ variable "ec2" {
    }
 }
 
-variable "magento" {
-  description      = "Map Magento 2 parameters"
-  default          = {
-    version          = "2"
-    cidr_block       = "172.30.0.0/16"
-    brand            = "magenx"
-    domain           = "magenx.org"
-    admin_email      = "admin@magenx.org"
-    admin_login      = "admin"
-    admin_firstname  = "Hereis"
-    admin_lastname   = "Myname"
-    language         = "en_US"
-    currency         = "EUR"
-    timezone         = "UTC"
-    php_version      = "8.3"
-    php_packages     = "cli fpm json common mysql zip gd mbstring curl xml bcmath intl soap oauth apcu"
-    linux_packages   = "nfs-common git patch python3-pip acl attr imagemagick snmp rsync binutils pkg-config libssl-dev"
-    exclude_linux_packages = "apache2* *apcu-bc"
-    composer_user    = "8c681734f22763b50ea0c29dff9e7af2"
-    composer_pass    = "02dfee497e669b5db1fe1c8d481d6974"
-  }
-}
 
 variable "opensearch" {
   description      = "Map OpenSearch configuration values"
