@@ -24,44 +24,89 @@ resource "aws_iam_role" "codedeploy" {
     Name = "${local.project}-codedeploy-role"
   }
 }
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create policy for CodeDeploy role
-# # ---------------------------------------------------------------------------------------------------------------------#
+
+resource "aws_iam_role_policy_attachment" "AWSCodeDeployRole" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
+  role       = aws_iam_role.codedeploy.name
+}
+
 data "aws_iam_policy_document" "codedeploy" {
   statement {
-    sid       = "AllowCodeDeploySNSAlertTrigger"
-    effect    = "Allow"
-    actions   = ["sns:Publish"]
-    resources = [aws_sns_topic.default.arn]
+    sid    = "AllowCodeDeployToASG"
+    effect = "Allow"
+    actions = [
+      "autoscaling:CompleteLifecycleAction",
+      "autoscaling:DescribeAutoScalingGroups",
+      "autoscaling:PutLifecycleHook",
+      "autoscaling:DeleteLifecycleHook",
+      "autoscaling:RecordLifecycleActionHeartbeat"
+    ]
+    resources = ["*"]
   }
 }
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Attach policy for CodeDeploy role
-# # ---------------------------------------------------------------------------------------------------------------------#
+
 resource "aws_iam_role_policy" "codedeploy" {
   role   = aws_iam_role.codedeploy.name
   policy = data.aws_iam_policy_document.codedeploy.json
 }
+
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create policy for CodeBuild role
+# Create CodeBuild role
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_iam_policy_document" "codebuild_assume_role" {
   statement {
     effect = "Allow"
-    actions = ["sts:AssumeRole"]
     principals {
       type        = "Service"
       identifiers = ["codebuild.amazonaws.com"]
     }
+    actions = ["sts:AssumeRole"]
   }
 }
+
 resource "aws_iam_role" "codebuild" {
-  name        = "${local.project}-codebuild-role"
-  description = "Allows CodeBuild to call AWS services on your behalf."
+  name               = "${local.project}-codebuild-role"
   assume_role_policy = data.aws_iam_policy_document.codebuild_assume_role.json
   tags = {
     Name = "${local.project}-codebuild-role"
   }
+}
+
+resource "aws_iam_role_policy_attachment" "codebuild" {
+  role       = aws_iam_role.codebuild.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess"
+}
+
+data "aws_iam_policy_document" "codebuild" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "ssm:GetParameter",
+      "ssm:GetParameters",
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "codepipeline:PollForJobs",
+      "codepipeline:GetPipelineExecution",
+      "codepipeline:GetPipeline",
+      "codepipeline:ListPipelineExecutions",
+      "ec2:DescribeDhcpOptions",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DescribeSubnets",
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeVpcs",
+      "ec2:DeleteNetworkInterface",
+      "ec2:CreateNetworkInterface",
+      "ec2:CreateNetworkInterfacePermission"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "codebuild" {
+  name   = "CodeBuildCustomPolicy"
+  role   = aws_iam_role.codebuild.id
+  policy = data.aws_iam_policy_document.codebuild.json
 }
 
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -87,83 +132,250 @@ resource "aws_iam_role" "codepipeline" {
   }
 }
 
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create SSM Document runShellScript to pull main branch from CodeCommit
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_document" "codecommit_pull_main" {
-  name          = "${local.project}-codecommit-pull-main-changes"
-  document_type = "Command"
-  document_format = "YAML"
-  target_type   = "/AWS::EC2::Instance"
-  content = <<EOT
----
-schemaVersion: "2.2"
-description: "Pull code changes from CodeCommit main branch"
-parameters:
-mainSteps:
-- action: "aws:runShellScript"
-  name: "${replace(local.project,"-","")}CodeCommitPullMainChanges"
-  inputs:
-    runCommand:
-    - |-
-      #!/bin/bash
-      cd /home/${var.magento["brand"]}/public_html
-      su ${var.magento["brand"]} -s /bin/bash -c "git fetch origin"
-      su ${var.magento["brand"]} -s /bin/bash -c "git reset --hard origin/main"
-      su ${var.magento["brand"]} -s /bin/bash -c "bin/magento setup:db:status --no-ansi -n"
-      if [[ $? -ne 0 ]]; then
-      su ${var.magento["brand"]} -s /bin/bash -c "bin/magento setup:upgrade --keep-generated --no-ansi -n"
-      fi
-      systemctl restart php*fpm.service
-      systemctl restart nginx.service
-      su ${var.magento["brand"]} -s /bin/bash -c "bin/magento cache:flush"
-EOT
+resource "aws_iam_role_policy_attachment" "codepipeline" {
+  role       = aws_iam_role.codepipeline.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess"
 }
+
+data "aws_iam_policy_document" "codepipeline" {
+  statement {
+    sid       = "AllowCodeDeploySNSAlertTrigger"
+    effect    = "Allow"
+    actions   = ["sns:Publish"]
+    resources = [aws_sns_topic.default.arn]
+  }
+  statement {
+    sid       = "AllowCodestarConnection"
+    effect    = "Allow"
+    actions   = ["codestar-connections:UseConnection"]
+    resources = [aws_codestarconnections_connection.this.arn]
+  }
+  statement {
+    sid       = "AllowCodeBuildActions"
+    effect    = "Allow"
+    actions   = [
+       "codebuild:StartBuild",
+       "codebuild:StartBuildBatch",
+       "codebuild:BatchGetBuilds",
+       "codebuild:BatchGetBuildBatches"
+       ]
+    resources = ["${aws_codebuild_project.this.arn}"]
+ }
+}
+
+resource "aws_iam_role_policy" "codepipeline" {
+  name   = "${local.project}-codepipeline-policy"
+  role   = aws_iam_role.codepipeline.id
+  policy = data.aws_iam_policy_document.codepipeline.json
+}
+  
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create EventBridge rule to monitor CodeCommit repository state
+# GitHub Connection (Version 2)
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_rule" "codecommit_pull_main" {
-  name        = "${local.project}-CodeCommit-Repository-State-Change-Main"
-  description = "CloudWatch monitor Codecommit repository state change main branch"
-  event_pattern = jsonencode({
-    source       = ["aws.codecommit"]
-    detail-type  = ["CodeCommit Repository State Change"]
-    resources    = [aws_codecommit_repository.magento.arn]
-    detail = {
-      referenceType = ["branch"]
-      referenceName = ["main"]
+resource "aws_codestarconnections_connection" "this" {
+  name = "${local.project}-github-connection"
+  provider_type = "GitHub"
+}
+
+# # ---------------------------------------------------------------------------------------------------------------------#
+# CodePipeline to pull new release from GitHub and deploy to ASG instances
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_codepipeline" "this" {
+  name          = "${local.project}-pipeline"
+  role_arn      = aws_iam_role.codepipeline.arn
+  pipeline_type = "V2"
+  artifact_store {
+    location    = aws_s3_bucket.this["system"].bucket
+    type        = "S3"
+  }
+
+  stage {
+    name = "Source"
+
+    action {
+      name             = "Magento_Source"
+      namespace        = "MagentoSourceVariables"
+      category         = "Source"
+      owner            = "AWS"
+      provider         = "CodeStarSourceConnection"
+      version          = "1"
+      output_artifacts = ["magento_source_output"]
+      configuration = {
+        ConnectionArn    = aws_codestarconnections_connection.this.arn
+        FullRepositoryId = var.github_repo
+        BranchName       = "main"
+        DetectChanges    = "true"
+      }
     }
-  })
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create EventBridge target to execute SSM Document
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_target" "codecommit_pull_main" {
-  rule      = aws_cloudwatch_event_rule.codecommit_pull_main.name
-  target_id = "${local.project}-Magento-Deployment-Script"
-  arn       = aws_ssm_document.codecommit_pull_main.arn
-  role_arn  = aws_iam_role.eventbridge_service_role.arn
- 
-dynamic "run_command_targets" {
-    for_each = var.ec2
-    content {
-      key      = "tag:Name"
-      values   = [aws_launch_template.this[run_command_targets.key].tag_specifications[0].tags.Name]
+
+    action {
+      name             = "Buildspec_Source"
+      namespace        = "BuildspecSourceVariables"
+      category         = "Source"
+      owner            = "AWS"
+      provider         = "CodeStarSourceConnection"
+      version          = "1"
+      output_artifacts = ["buildspec_source_output"]
+      configuration = {
+        ConnectionArn    = aws_codestarconnections_connection.this.arn
+        FullRepositoryId = var.github_repo
+        BranchName       = "buildspec"
+        DetectChanges    = "false"
+      }
+    }
+  }
+  stage {
+    name = "Build"
+
+    action {
+      name             = "Magento_Build"
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      input_artifacts  = ["magento_source_output","buildspec_source_output"]
+      output_artifacts = ["complete_build_output"]
+      configuration = {
+        ProjectName = aws_codebuild_project.this.name
+        PrimarySource = "buildspec_source_output"
+      }
+    }
+  }
+  stage {
+    name = "Deploy"
+  
+    action {
+      name     = "Magento_Deploy_Approval"
+      category = "Approval"
+      owner    = "AWS"
+      provider = "Manual"
+      version  = "1"
+      run_order = 1
+      configuration = {
+        NotificationArn = aws_sns_topic.default.arn
+        CustomData      = "Approve codepipeline [#{codepipeline.PipelineExecutionId}] Deploy action for ${local.project} [#{MagentoSourceVariables.AuthorDate} - #{MagentoSourceVariables.CommitId} - #{MagentoSourceVariables.CommitMessage}]"
+      }
+    }
+    dynamic "action" {
+      for_each = var.ec2
+      content {
+        name            = "Magento_Deploy_to_${action.key}_ASG"
+        category        = "Deploy"
+        owner           = "AWS"
+        version         = "1"
+        run_order       = 2
+        provider        = "CodeDeploy"
+        input_artifacts = ["complete_build_output"]
+        configuration = {
+          ApplicationName     = aws_codedeploy_app.this[action.key].name
+          DeploymentGroupName = aws_codedeploy_deployment_group.this[action.key].deployment_group_name
+        }
+      }
     }
   }
 }
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CodeBuild project
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_codebuild_project" "this" {
+  badge_enabled          = false
+  build_timeout          = 60
+  description            = "${local.project}-codebuild-project"
+  name                   = "${local.project}-codebuild-project"
+  queued_timeout         = 300
+  depends_on             = [aws_iam_role.codebuild]
+  service_role           = aws_iam_role.codebuild.arn
+	
+  tags = {
+    Name = "${local.project}-codebuild-project"
+  }
 
+  artifacts {
+    encryption_disabled    = false
+    override_artifact_name = true
+    packaging              = "NONE"
+    type                   = "CODEPIPELINE"
+  }
+
+  cache {
+    modes = []
+    type  = "NO_CACHE"
+  }
+
+  environment {
+    compute_type                = "BUILD_GENERAL1_LARGE"
+    image                       = "aws/codebuild/standard:7.0"
+    image_pull_credentials_type = "CODEBUILD"
+    privileged_mode             = false
+    type                        = "LINUX_CONTAINER"
+	  
+  environment_variable {
+      name  = "BRAND"
+      value = "${var.brand}"
+      type  = "PLAINTEXT"
+  }
+  environment_variable {
+      name  = "PHP_VERSION"
+      value = "${var.php_version}"
+      type  = "PLAINTEXT"
+    }
+  environment_variable {
+      name  = "ADMIN_DEPLOYMENT_GROUP_ID"
+      value = "${aws_codedeploy_deployment_group.this["admin"].deployment_group_id}"
+      type  = "PLAINTEXT"
+    }
+  }
+
+  logs_config {
+    cloudwatch_logs {
+      group_name  = aws_cloudwatch_log_group.codebuild.name
+      stream_name = aws_cloudwatch_log_stream.codebuild.name
+      status      = "ENABLED"
+  }
+
+  s3_logs {
+      status = "DISABLED"
+    }
+  }
+
+  source {
+    type = "CODEPIPELINE"
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# CodeDeploy Applications for frontend ASG
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_codedeploy_app" "this" {
+  for_each = var.ec2
+  name = "${local.project}-codedeploy-app-${each.key}"
+  compute_platform = "Server"
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# CodeDeploy Deployment Groups for ASGs
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_codedeploy_deployment_group" "this" {
+  for_each = var.ec2
+  deployment_group_name  = "${local.project}-deployment-group-${each.key}"
+  deployment_config_name = "CodeDeployDefault.AllAtOnce"
+  app_name               = aws_codedeploy_app.this[each.key].name
+  service_role_arn       = aws_iam_role.codedeploy.arn
+  autoscaling_groups    = [aws_autoscaling_group.this[each.key].name]
+  trigger_configuration {
+    trigger_events     = ["DeploymentStart","DeploymentSuccess","DeploymentFailure"]
+    trigger_name       = "${local.project}-deployment-failure-${each.key}"
+    trigger_target_arn = aws_sns_topic.default.arn
+  }
+}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch log group and log stream for CodeBuild logs
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_log_group" "codecommit_pull_main" {
-  name = "${local.project}-codecommit-pull-main"
+resource "aws_cloudwatch_log_group" "codebuild" {
+  name = "${local.project}-codebuild-project"
   tags = {
-    Name = "${local.project}-codecommit-pull-main"
+    Name = "${local.project}-codebuild-project"
   }
 }
-
-resource "aws_cloudwatch_log_stream" "codecommit_pull_main" {
-  name = "${local.project}-codecommit-pull-main"
-  log_group_name = aws_cloudwatch_log_group.codecommit_pull_main.name
+resource "aws_cloudwatch_log_stream" "codebuild" {
+  name = "${local.project}-codebuild-project"
+  log_group_name = aws_cloudwatch_log_group.codebuild.name
 }
