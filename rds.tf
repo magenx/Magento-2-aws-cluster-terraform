@@ -32,36 +32,81 @@ resource "aws_db_parameter_group" "this" {
     Name = "${local.project}-parameters"
   }
 }
+
+data "aws_iam_policy_document" "monitoring_rds_assume_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["monitoring.rds.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "rds_enhanced_monitoring" {
+  description         = "IAM Role for RDS Enhanced monitoring"
+  path                = "/"
+  assume_role_policy  = data.aws_iam_policy_document.monitoring_rds_assume_role.json
+  managed_policy_arns = ["arn:${data.aws_region.current.name}:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"]
+  tags = {
+    Name = "${local.project}-rds-enhanced-monitoring"
+  }
+}
+
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create RDS instance
+# Create RDS Aurora cluster and instance
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_db_instance" "this" {
-  identifier             = "${local.project}-rds"
-  allocated_storage      = var.rds["allocated_storage"]
-  max_allocated_storage  = var.rds["max_allocated_storage"]
-  storage_type           = var.rds["storage_type"]
-  storage_encrypted      = var.rds["storage_encrypted"]
-  engine                 = var.rds["engine"]
-  engine_version         = var.rds["engine_version"]
-  instance_class         = var.rds["instance_class"]
-  multi_az               = var.rds["multi_az"]
-  db_name                = local.db_name
-  username               = var.magento["brand"]
-  password               = random_password.this["rds"].result
-  parameter_group_name   = aws_db_parameter_group.this.id
-  skip_final_snapshot    = var.rds["skip_final_snapshot"]
-  vpc_security_group_ids = [aws_security_group.rds.id]
-  db_subnet_group_name   = aws_db_subnet_group.this.name
+resource "aws_rds_cluster" "this" {
+  cluster_identifier          = "${local.project}-aurora-cluster"
+  engine                      = var.rds["engine"]
+  engine_version              = var.rds["engine_version"]
+  availability_zones          = []
+  db_subnet_group_name        = aws_db_subnet_group.this.name
+  vpc_security_group_ids      = [aws_security_group.rds.id]
+  port                        = "3306"
+  database_name               = local.db_name
+  master_username                  = var.magento["brand"]
+  master_password                  = random_password.this["rds"].result
+  db_cluster_parameter_group_name  = aws_rds_cluster_parameter_group.this.id
+  db_instance_parameter_group_name = aws_db_parameter_group.this.id
+  backup_retention_period          = var.rds["backup_retention_period"]
+  storage_encrypted               = var.rds["storage_encrypted"]
+  storage_type                    = var.rds["storage_type"]
+  apply_immediately               = true
+  skip_final_snapshot             = var.rds["skip_final_snapshot"]
+  final_snapshot_identifier       = var.rds["skip_final_snapshot"] ? null : "${local.project}-${local.db_name}-${formatdate("YYYYMMDDHHMMSS", timestamp())}"
   enabled_cloudwatch_logs_exports = [var.rds["enabled_cloudwatch_logs_exports"]]
-  performance_insights_enabled    = var.rds["performance_insights_enabled"]
-  copy_tags_to_snapshot           = var.rds["copy_tags_to_snapshot"]
-  backup_retention_period         = var.rds["backup_retention_period"]
-  delete_automated_backups        = var.rds["delete_automated_backups"]
-  deletion_protection             = var.rds["deletion_protection"]
   tags = {
     Name = "${local.project}-rds"
   }
+
+  lifecycle {
+    ignore_changes = [
+      replication_source_identifier,
+      snapshot_identifier,
+      engine_version
+    ]
+  }
 }
+
+resource "aws_rds_cluster_instance" "this" {
+  identifier                   = "${local.project}-aurora-cluster-instance"
+  cluster_identifier           = aws_rds_cluster.this.id
+  engine                       = var.rds["engine"]
+  engine_version               = var.rds["engine_version"]
+  instance_class               = var.rds["instance_class"]
+  db_subnet_group_name         = aws_db_subnet_group.this.name
+  db_parameter_group_name      = aws_db_parameter_group.this.id
+  performance_insights_enabled = var.rds["performance_insights_enabled"]
+  monitoring_interval          = var.monitoring_interval
+  monitoring_role_arn          = aws_iam_role.rds_enhanced_monitoring.arn
+  apply_immediately            = true
+  tags = {
+    Name = "${local.project}-aurora-cluster-instance"
+  }
+}
+
+
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create RDS instance event subscription
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -69,7 +114,7 @@ resource "aws_db_event_subscription" "db_event_subscription" {
   name      = "${local.project}-rds-event-subscription"
   sns_topic = aws_sns_topic.default.arn
   source_type = "db-instance"
-  source_ids = [aws_db_instance.this.identifier]
+  source_ids = [aws_rds_cluster_instance.this.identifier]
   event_categories = [
     "availability",
     "deletion",
@@ -101,7 +146,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.this.id
+    DBInstanceIdentifier = aws_rds_cluster_instance.this.id
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -121,7 +166,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_memory" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.this.id
+    DBInstanceIdentifier = aws_rds_cluster_instance.this.id
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -156,7 +201,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_connections_anomaly" {
       unit        = "Count"
 
       dimensions = {
-        DBInstanceIdentifier = aws_db_instance.this.id
+        DBInstanceIdentifier = aws_rds_cluster_instance.this.id
       }
     }
   }
@@ -178,6 +223,6 @@ resource "aws_cloudwatch_metric_alarm" "rds_max_connections" {
   ok_actions          = ["${aws_sns_topic.default.arn}"]
 
   dimensions = {
-    DBInstanceIdentifier = aws_db_instance.this.id
+    DBInstanceIdentifier = aws_rds_cluster_instance.this.id
   }
 }
