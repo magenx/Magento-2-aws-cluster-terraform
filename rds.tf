@@ -65,7 +65,7 @@ resource "aws_rds_cluster" "this" {
   vpc_security_group_ids      = [aws_security_group.rds.id]
   port                        = "3306"
   database_name               = local.db_name
-  master_username                  = var.magento["brand"]
+  master_username                  = var.brand
   master_password                  = random_password.this["rds"].result
   db_cluster_parameter_group_name  = aws_rds_cluster_parameter_group.this.id
   db_instance_parameter_group_name = aws_db_parameter_group.this.id
