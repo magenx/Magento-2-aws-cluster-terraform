@@ -104,7 +104,7 @@ variable "ec2" {
       instance_type    = "c7g.large"
       service          = null
       volume_size      = "25"
-      warm_pool        = "enabled"
+      warm_pool        = "disabled"
       desired_capacity = "1"
       min_size         = "1"
       max_size         = "5"
