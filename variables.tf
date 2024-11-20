@@ -100,6 +100,15 @@ variable "ec2" {
       min_size         = "1"
       max_size         = "5"
     }
+    varnish = {
+      instance_type    = "c7g.large"
+      service          = null
+      volume_size      = "25"
+      warm_pool        = "enabled"
+      desired_capacity = "1"
+      min_size         = "1"
+      max_size         = "5"
+    }
     opensearch = {
       instance_type    = "c7g.xlarge"
       service          = true
