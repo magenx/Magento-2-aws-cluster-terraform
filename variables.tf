@@ -83,10 +83,9 @@ variable "vpc" {
 variable "ec2" {
   default = {
     frontend = {
-      instance_type    = "c7g.xlarge"
+      instance_type    = "c8g.xlarge"
       service          = null
       volume_size      = "25"
-      warm_pool        = "enabled"
       desired_capacity = "1"
       min_size         = "1"
       max_size         = "5"
@@ -95,7 +94,6 @@ variable "ec2" {
       instance_type    = "c7g.xlarge"
       service          = null
       volume_size      = "25"
-      warm_pool        = "enabled"
       desired_capacity = "1"
       min_size         = "1"
       max_size         = "5"
@@ -104,43 +102,38 @@ variable "ec2" {
       instance_type    = "c7g.large"
       service          = null
       volume_size      = "25"
-      warm_pool        = "disabled"
       desired_capacity = "1"
       min_size         = "1"
       max_size         = "5"
     }
     opensearch = {
-      instance_type    = "c7g.xlarge"
+      instance_type    = "c7g.large"
       service          = true
       volume_size      = "100"
-      warm_pool        = "disabled"
       desired_capacity = "1"
       min_size         = "1"
       max_size         = "1"
     }
     redis = {
-      instance_type    = "c7g.large"
+      instance_type    = "c6g.medium"
       service          = true
       volume_size      = "25"
-      warm_pool        = "disabled"
       desired_capacity = "1"
       min_size         = "1"
       max_size         = "1"
     }
     rabbitmq = {
-      instance_type    = "c7g.medium"
+      instance_type    = "c6g.medium"
       service          = true
       volume_size      = "25"
-      warm_pool        = "disabled"
       desired_capacity = "1"
       min_size         = "1"
       max_size         = "1"
     }
     mariadb = {
-      instance_type    = "m7g.2xlarge"
+      instance_type    = "m7g.xlarge"
       service          = true
       volume_size      = "25"
-      warm_pool        = "disabled"
       desired_capacity = "1"
       min_size         = "1"
       max_size         = "1"
