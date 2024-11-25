@@ -87,8 +87,8 @@ resource "aws_autoscaling_group" "this" {
           min = 8192
           max = 16384
         }
-        cpu_manufacturers      = ["amazon-web-services"] # Graviton
-        allowed_instance_types = ["*g.*"] # Exclude t-series if needed
+        cpu_manufacturers      = ["amazon-web-services"]
+        allowed_instance_types = ["*g.*"]
       }
      }
    }
