@@ -220,6 +220,7 @@ variable "aws_config_rule" {
   EC2_IMDSV2_CHECK                          = "AWS::EC2::Instance"
   EC2_VOLUME_INUSE_CHECK                    = "AWS::EC2::Volume"
   ELB_DELETION_PROTECTION_ENABLED           = "AWS::ElasticLoadBalancingV2::LoadBalancer"
+  EC2_MANAGEDINSTANCE_PLATFORM_CHECK        = "AWS::SSM::ManagedInstanceInventory"
   }
 }
 
