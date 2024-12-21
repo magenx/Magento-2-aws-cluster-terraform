@@ -5,39 +5,13 @@
 #        All rights reserved.                                                     #
 #=================================================================================#
 SELF=$(basename $0)
-MAGENX_VERSION=$(curl -s https://api.github.com/repos/magenx/Magento-2-server-installation/tags 2>&1 | head -3 | grep -oP '(?<=")\d.*(?=")')
-MAGENX_BASE="https://magenx.sh"
-
-###################################################################################
-###                              REPOSITORY AND PACKAGES                        ###
-###################################################################################
-
-# Github installation repository raw url
-MAGENX_INSTALL_GITHUB_REPO="https://raw.githubusercontent.com/magenx/Magento-2-server-installation/master"
-
-## Version lock
-COMPOSER_VERSION="2.4"
-RABBITMQ_VERSION="3.12*"
-MARIADB_VERSION="10.11"
-OPENSEARCH_VERSION="2.x"
-VARNISH_VERSION="75"
-REDIS_VERSION="7"
-
-# Repositories
-MARIADB_REPO_CONFIG="https://downloads.mariadb.com/MariaDB/mariadb_repo_setup"
-
-# Nginx configuration
-NGINX_VERSION=$(curl -s http://nginx.org/en/download.html | grep -oP '(?<=gz">nginx-).*?(?=</a>)' | head -1)
-MAGENX_NGINX_GITHUB_REPO="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/"
-MAGENX_NGINX_GITHUB_REPO_API="https://api.github.com/repos/magenx/Magento-nginx-config/contents/magento2"
-
-# WebStack Packages .deb
-WEB_STACK_CHECK="mysql* rabbitmq* elasticsearch opensearch percona-server* maria* php* nginx* ufw varnish* certbot* redis* webmin"
 
 ###################################################################################
 ###                                    CLEANUP                                  ###
 ###################################################################################
 ## Debian
+# WebStack Packages .deb
+WEB_STACK_CHECK="mysql* rabbitmq* elasticsearch opensearch percona-server* maria* php* nginx* ufw varnish* certbot* redis* webmin"
 
 # check if web stack is clean and clean it
 installed_packages="$(apt -qq list --installed ${WEB_STACK_CHECK} 2> /dev/null | cut -d'/' -f1 | tr '\n' ' ')"
