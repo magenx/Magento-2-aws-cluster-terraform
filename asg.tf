@@ -35,14 +35,13 @@ resource "aws_launch_template" "this" {
          {
           Name = "${local.project}-${each.key}-ec2",
           Hostname = "${each.key}.${var.brand}.internal"
+          Instance_Name = each.key
+          Cloudmap_Service_Id  = aws_service_discovery_service.this[each.key].id
         }
       )
     }
   }
   user_data = base64encode(templatefile("${abspath(path.root)}/userdata/userdata.tpl", {
-    INSTANCE_NAME   = each.key
-    SERVICE_ID      = aws_service_discovery_service.this[each.key].id
-    VOLUME_SIZE     = each.value.volume_size
     AWS_ENVIRONMENT = aws_ssm_parameter.aws_env.name
   }))
   metadata_options {
