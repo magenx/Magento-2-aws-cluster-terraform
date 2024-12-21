@@ -10,8 +10,17 @@ resource "aws_launch_template" "this" {
   for_each = var.ec2
   name = "${local.project}-${each.key}-ltpl"
   iam_instance_profile { name = aws_iam_instance_profile.ec2[each.key].name }
-  image_id = element(values(data.external.packer[each.key].result), 0)
+  image_id = data.aws_ami.distro.id
   instance_type = each.value.instance_type
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      volume_size = each.value.volume_size
+      volume_type = "gp3"
+      encrypted   = true
+      delete_on_termination = true
+    }
+  }
   monitoring { enabled = true }
   network_interfaces { 
     associate_public_ip_address = true
@@ -30,6 +39,12 @@ resource "aws_launch_template" "this" {
       )
     }
   }
+  user_data = base64encode(templatefile("${abspath(path.root)}/userdata/userdata.tpl", {
+    INSTANCE_NAME   = each.key
+    SERVICE_ID      = aws_service_discovery_service.this[each.key].id
+    VOLUME_SIZE     = each.value.volume_size
+    AWS_ENVIRONMENT = aws_ssm_parameter.aws_env.name
+  }))
   metadata_options {
     http_endpoint               = "enabled"
     http_tokens                 = "required"
