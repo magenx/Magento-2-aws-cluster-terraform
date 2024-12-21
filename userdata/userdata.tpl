@@ -39,10 +39,13 @@ while IFS== read -r key value; do parameter["$key"]="$value"; done < <(echo ${PA
 ###                           SET PRIVATE ROUTE53 HOSTNAMES                     ###
 ###################################################################################
 
-OPENSEARCH_ENDPOINT="opensearch.${parameter["BRAND"]}.internal"
-REDIS_ENDPOINT="redis.${parameter["BRAND"]}.internal"
-RABBITMQ_ENDPOINT="rabbitmq.${parameter["BRAND"]}.internal"
-DATABASE_ENDPOINT="mariadb.${parameter["BRAND"]}.internal"
+export FRONTEND_ENDPOINT="frontend.${parameter["BRAND"]}.internal"
+export ADMIN_ENDPOINT="admin.${parameter["BRAND"]}.internal"
+export VARNISH_ENDPOINT="varnish.${parameter["BRAND"]}.internal"
+export OPENSEARCH_ENDPOINT="opensearch.${parameter["BRAND"]}.internal"
+export REDIS_ENDPOINT="redis.${parameter["BRAND"]}.internal"
+export RABBITMQ_ENDPOINT="rabbitmq.${parameter["BRAND"]}.internal"
+export DATABASE_ENDPOINT="mariadb.${parameter["BRAND"]}.internal"
 
 ###################################################################################
 ###                             GET INSTANCE METADATA                           ###
@@ -52,14 +55,20 @@ cat <<END > /usr/local/bin/metadata
 #!/bin/bash
 # Fetch metadata
 AWSTOKEN=\$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 600")
+REGION=\$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/placement/region)
 INSTANCE_ID=\$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-id)
 INSTANCE_HOSTNAME=\$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Hostname)
+INSTANCE_NAME=\$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Instance_Name)
+CLOUDMAP_SERVICE_ID=\$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/tags/instance/Cloudmap_Service_Id)
 INSTANCE_TYPE=\$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/instance-type)
 INSTANCE_IP=\$(curl -s -H "X-aws-ec2-metadata-token: \${AWSTOKEN}" http://169.254.169.254/latest/meta-data/local-ipv4)
 
 # Export variables
+export REGION="\${REGION}"
 export INSTANCE_ID="\${INSTANCE_ID}"
 export INSTANCE_HOSTNAME="\${INSTANCE_HOSTNAME}"
+export INSTANCE_NAME="\${INSTANCE_NAME}"
+export CLOUDMAP_SERVICE_ID="\${CLOUDMAP_SERVICE_ID}"
 export INSTANCE_TYPE="\${INSTANCE_TYPE}"
 export INSTANCE_IP="\${INSTANCE_IP}"
 END
@@ -85,8 +94,8 @@ if ! grep -q "\${INSTANCE_IP}  \${INSTANCE_HOSTNAME}" /etc/hosts; then
 fi
 hostnamectl set-hostname \${INSTANCE_HOSTNAME}
 aws servicediscovery register-instance \
-  --region ${parameter["AWS_DEFAULT_REGION"]} \
-  --service-id ${SERVICE_ID} \
+  --region \${REGION"} \
+  --service-id \${CLOUDMAP_SERVICE_ID} \
   --instance-id \${INSTANCE_ID} \
   --attributes AWS_INSTANCE_IPV4=\${INSTANCE_IP}
 END
@@ -95,8 +104,8 @@ cat <<END > /usr/local/bin/cloudmap-deregister
 #!/bin/bash
 . /usr/local/bin/metadata
 aws servicediscovery deregister-instance \
-  --region ${parameter["AWS_DEFAULT_REGION"]} \
-  --service-id ${SERVICE_ID} \
+  --region \${REGION} \
+  --service-id \${CLOUDMAP_SERVICE_ID} \
   --instance-id \${INSTANCE_ID}
 END
 
@@ -140,11 +149,11 @@ systemctl enable cloudmap-deregister.service cloudmap-register.service
 ###                            AWS SERVICES CONFIGURATION                       ###
 ###################################################################################
 
-wget https://s3.${parameter["AWS_DEFAULT_REGION"]}.amazonaws.com/amazon-ssm-${parameter["AWS_DEFAULT_REGION"]}/latest/debian_arm64/amazon-ssm-agent.deb
+wget https://s3.${REGION}.amazonaws.com/amazon-ssm-${REGION}/latest/debian_arm64/amazon-ssm-agent.deb
 dpkg -i amazon-ssm-agent.deb
 systemctl enable amazon-ssm-agent
 
-wget https://s3.${parameter["AWS_DEFAULT_REGION"]}.amazonaws.com/amazoncloudwatch-agent-${parameter["AWS_DEFAULT_REGION"]}/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb
+wget https://s3.${REGION}.amazonaws.com/amazoncloudwatch-agent-${REGION}/ubuntu/arm64/latest/amazon-cloudwatch-agent.deb
 dpkg -i amazon-cloudwatch-agent.deb
-/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-\${INSTANCE_NAME}.json
 
