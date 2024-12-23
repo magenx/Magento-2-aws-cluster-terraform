@@ -94,7 +94,7 @@ resource "aws_autoscaling_group" "this" {
         }
       override {
         instance_requirements {
-          vcpus {
+          vcpu_count {
             min = 4
             max = 8
           }
