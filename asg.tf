@@ -64,7 +64,7 @@ resource "aws_launch_template" "this" {
 resource "aws_autoscaling_group" "this" {
   for_each = var.ec2
   name = "${local.project}-${each.key}-asg"
-  vpc_zone_identifier = [values(aws_subnet.this).0.id]
+  vpc_zone_identifier = [values(aws_subnet.this).*.id]
   desired_capacity    = each.value.desired_capacity
   min_size            = each.value.min_size
   max_size            = each.value.max_size
@@ -81,32 +81,34 @@ resource "aws_autoscaling_group" "this" {
   }
   dynamic "mixed_instances_policy" {
     for_each = each.value.max_size > 1 ? [1] : []
-    instances_distribution {
-      on_demand_base_capacity                  = 1
-      on_demand_percentage_above_base_capacity = 0
-      spot_allocation_strategy                 = "capacity-optimized"
-    }
-    launch_template {
-      launch_template_specification {
-        launch_template_id = aws_launch_template.example.id
-        version            = "$Latest"
+    content {
+      instances_distribution {
+        on_demand_base_capacity                  = 1
+        on_demand_percentage_above_base_capacity = 0
+        spot_allocation_strategy                 = "capacity-optimized"
       }
-    override {
-      instance_requirements {
-        vcpus {
-          min = 4
-          max = 8
+      launch_template {
+        launch_template_specification {
+          launch_template_id = aws_launch_template.example.id
+          version            = "$Latest"
         }
-        memory_mib {
-          min = 8192
-          max = 16384
+      override {
+        instance_requirements {
+          vcpus {
+            min = 4
+            max = 8
+          }
+          memory_mib {
+            min = 8192
+            max = 16384
+          }
+          cpu_manufacturers      = ["amazon-web-services"]
+          allowed_instance_types = ["*g.*"]
         }
-        cpu_manufacturers      = ["amazon-web-services"]
-        allowed_instance_types = ["*g.*"]
+       }
       }
      }
-   }
-  }
+    }
   instance_refresh {
     strategy = "Rolling"
     preferences {
