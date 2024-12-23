@@ -22,7 +22,7 @@ resource "aws_launch_template" "this" {
     }
   }
   monitoring { enabled = true }
-  network_interfaces { 
+  network_interfaces {
     associate_public_ip_address = true
     security_groups = [aws_security_group.ec2[each.key].id]
   }
