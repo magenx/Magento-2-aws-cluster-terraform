@@ -107,14 +107,3 @@ data "aws_ami" "distro" {
     values = ["debian-12-arm64*"] # debian
   }
 }
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Get AMI image_id generated from manifest with external data script
-# # ---------------------------------------------------------------------------------------------------------------------#
-data "external" "packer" {
-   depends_on = [null_resource.packer]
-   for_each = var.ec2
-   program = ["/bin/bash", "${abspath(path.root)}/packer/ami_id.sh"] 
-   query = {
-    INSTANCE_NAME = each.key
-  }
- }
