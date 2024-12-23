@@ -64,7 +64,7 @@ resource "aws_launch_template" "this" {
 resource "aws_autoscaling_group" "this" {
   for_each = var.ec2
   name = "${local.project}-${each.key}-asg"
-  vpc_zone_identifier = [values(aws_subnet.this).*.id]
+  vpc_zone_identifier = values(aws_subnet.this).*.id
   desired_capacity    = each.value.desired_capacity
   min_size            = each.value.min_size
   max_size            = each.value.max_size
@@ -75,7 +75,7 @@ resource "aws_autoscaling_group" "this" {
   dynamic "launch_template" {
     for_each = each.value.max_size > 1 ? [] : [1]
     content {
-      id      = aws_launch_template.this[each.key].id
+      id      = aws_launch_template.this[each.key].name
       version = "$Latest"
     }
   }
@@ -89,7 +89,7 @@ resource "aws_autoscaling_group" "this" {
       }
       launch_template {
         launch_template_specification {
-          launch_template_id = aws_launch_template.this.id
+          launch_template_id = aws_launch_template.this[each.key].name
           version            = "$Latest"
         }
       override {
