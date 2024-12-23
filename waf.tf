@@ -156,6 +156,6 @@ resource "aws_wafv2_web_acl" "this" {
 # Associate AWS WAFv2 with ALB
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_wafv2_web_acl_association" "this" {
-  resource_arn = aws_alb.this.arn
+  resource_arn = aws_lb.this.arn
   web_acl_arn  = aws_wafv2_web_acl.this.arn
 }
