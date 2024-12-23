@@ -4,16 +4,6 @@ variable "github_repo" {
   type        = string
 }
 
-variable "crypt_key" {
-  description = "Magento 2 master crypt key"
-  type        = string
-}
-
-variable "graphql_id_salt" {
-  description = "Magento 2 graphql salt id"
-  type        = string
-}
-
 variable "brand" {
   description = "Business brand name"
   type        = string
@@ -26,16 +16,6 @@ variable "domain" {
 
 variable "admin_email" {
   description = "Shop admin email"
-  type        = string
-}
-
-variable "timezone" {
-  description = "Server and shop timezone"
-  type        = string
-}
-
-variable "php_version" {
-  description = "PHP version"
   type        = string
 }
 
