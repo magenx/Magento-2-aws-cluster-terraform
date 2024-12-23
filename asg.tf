@@ -75,7 +75,7 @@ resource "aws_autoscaling_group" "this" {
   dynamic "launch_template" {
     for_each = each.value.max_size > 1 ? [] : [1]
     content {
-      id      = aws_launch_template.example[each.key].id
+      id      = aws_launch_template.this[each.key].id
       version = "$Latest"
     }
   }
@@ -89,7 +89,7 @@ resource "aws_autoscaling_group" "this" {
       }
       launch_template {
         launch_template_specification {
-          launch_template_id = aws_launch_template.example.id
+          launch_template_id = aws_launch_template.this.id
           version            = "$Latest"
         }
       override {
