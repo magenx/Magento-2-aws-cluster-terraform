@@ -33,5 +33,4 @@ provider "aws" {
 }
 provider "null" {}
 provider "random" {}
-provider "external" {}
 provider "archive" {}
