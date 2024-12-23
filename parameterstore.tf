@@ -56,18 +56,12 @@ resource "aws_ssm_parameter" "aws_env" {
 "PHP_USER" : "php-${var.brand}",
 "ADMIN_EMAIL" : "${var.admin_email}",
 "WEB_ROOT_PATH" : "/home/${var.brand}/public_html",
-"TIMEZONE" : "${var.timezone}",
 "SECURITY_HEADER" : "${random_uuid.this.result}",
 "HEALTH_CHECK_LOCATION" : "${random_string.this["health_check"].result}",
 "PHPMYADMIN" : "${random_string.this["phpmyadmin"].result}",
 "BLOWFISH" : "${random_password.this["blowfish"].result}",
 "PROFILER" : "${random_string.this["profiler"].result}",
 "RESOLVER" : "${cidrhost(aws_vpc.this.cidr_block, 2)}",
-"CRYPT_KEY" : "${var.crypt_key}",
-"GRAPHQL_ID_SALT" : "${var.graphql_id_salt}",
-"PHP_VERSION" : "${var.php_version}",
-"PHP_INI" : "/etc/php/${var.php_version}/fpm/php.ini",
-"PHP_FPM_POOL" : "/etc/php/${var.php_version}/fpm/pool.d/www.conf",
 "HTTP_X_HEADER" : "${random_uuid.this.result}"
 }
 EOF
