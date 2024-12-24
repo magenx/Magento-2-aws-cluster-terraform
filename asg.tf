@@ -71,43 +71,9 @@ resource "aws_autoscaling_group" "this" {
   health_check_grace_period = var.asg["health_check_grace_period"]
   health_check_type         = var.asg["health_check_type"]
   target_group_arns  = [aws_lb_target_group.this[each.key].arn]
-  capacity_rebalance = each.value.max_size > 1 ? true : false
-  dynamic "launch_template" {
-    for_each = each.value.max_size > 1 ? [] : [1]
-    content {
+  launch_template {
       id      = aws_launch_template.this[each.key].id
       version = "$Latest"
-    }
-  }
-  dynamic "mixed_instances_policy" {
-    for_each = each.value.max_size > 1 ? [1] : []
-    content {
-      instances_distribution {
-        on_demand_base_capacity                  = 1
-        on_demand_percentage_above_base_capacity = 0
-        spot_allocation_strategy                 = "capacity-optimized"
-      }
-      launch_template {
-        launch_template_specification {
-          launch_template_id = aws_launch_template.this[each.key].id
-          version            = "$Latest"
-        }
-      override {
-        instance_requirements {
-          vcpu_count {
-            min = 4
-            max = 8
-          }
-          memory_mib {
-            min = 8192
-            max = 16384
-          }
-          cpu_manufacturers      = ["amazon-web-services"]
-          allowed_instance_types = ["*g.*"]
-        }
-       }
-      }
-     }
     }
   instance_refresh {
     strategy = "Rolling"
