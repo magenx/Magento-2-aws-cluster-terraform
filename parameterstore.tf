@@ -31,7 +31,6 @@ resource "aws_ssm_parameter" "aws_env" {
 "CLOUDMAP_OPENSEARCH_SERVICE_ID" : "${aws_service_discovery_service.this["opensearch"].id}",
 "CLOUDMAP_REDIS_SERVICE_ID" : "${aws_service_discovery_service.this["redis"].id}",
 "CLOUDMAP_RABBITMQ_SERVICE_ID" : "${aws_service_discovery_service.this["rabbitmq"].id}",
-"MARIADB_DATA_VOLUME" : "${aws_ebs_volume.mariadb_data.id}",
 "RABBITMQ_USER" : "${var.brand}",
 "RABBITMQ_PASSWORD" : "${random_password.this["rabbitmq"].result}",
 "OPENSEARCH_ADMIN" : "${random_string.this["opensearch"].result}",
