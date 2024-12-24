@@ -21,6 +21,18 @@ resource "aws_launch_template" "this" {
       delete_on_termination = true
     }
   }
+  dynamic "block_device_mappings" {
+    for_each = each.key == "mariadb" ? [1] : []
+    content {
+      device_name = "/dev/xvdb"
+      ebs {
+        volume_size = "250"
+        volume_type = "gp3"
+        encrypted   = true
+        delete_on_termination = false
+      }
+    }
+  }
   monitoring { enabled = true }
   network_interfaces {
     associate_public_ip_address = true
