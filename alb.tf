@@ -106,7 +106,7 @@ resource "aws_cloudwatch_metric_alarm" "httpcode_target_5xx_count" {
   alarm_actions       = ["${aws_sns_topic.default.arn}"]
   ok_actions          = ["${aws_sns_topic.default.arn}"]
   dimensions = {
-    TargetGroup  = aws_lb_target_group.this["frontend"].arn
+    TargetGroup  = aws_lb_target_group.this.arn
     LoadBalancer = aws_lb.this.arn
   }
 }
