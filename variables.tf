@@ -63,7 +63,7 @@ variable "vpc" {
 variable "ec2" {
   default = {
     frontend = {
-      instance_type    = "m8g.large"
+      instance_type    = "c7g.xlarge"
       service          = null
       volume_size      = "25"
       desired_capacity = "1"
