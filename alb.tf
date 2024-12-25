@@ -10,9 +10,9 @@ resource "aws_lb" "this" {
   name               = "${local.project}-alb"
   internal           = false
   load_balancer_type = "application"
-  drop_invalid_header_fields = true
   security_groups    = [aws_security_group.alb.id]
   subnets            = values(aws_subnet.this).*.id
+  drop_invalid_header_fields = true
   access_logs {
     bucket  = aws_s3_bucket.this["system"].bucket
     prefix  = "ALB"
@@ -23,16 +23,20 @@ resource "aws_lb" "this" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create Target Groups for Load Balancers
+# Create Target Group for Load Balancer
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_target_group" "this" {
-  for_each    = var.ec2
   name        = "${local.project}-${each.key}"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.this.id
   health_check {
-    path = "/${random_string.this["health_check"].result}"
+    path                = "/${random_string.this["health_check"].result}"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 3
+    unhealthy_threshold = 2
+    matcher             = "200"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -71,50 +75,18 @@ resource "aws_lb_listener" "http" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for Load Balancer - forward to frontend
+# Create conditional listener rule for Load Balancer - forward to varnish
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "frontend" {
+resource "aws_lb_listener_rule" "varnish" {
   listener_arn = aws_lb_listener.https.arn
   priority     = 30
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.this["frontend"].arn
+    target_group_arn = aws_lb_target_group.this.arn
   }
   condition {
     host_header {
       values = [var.domain]
-    }
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for Load Balancer - forward to admin
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "admin" {
-  listener_arn = aws_lb_listener.https.arn
-  priority     = 20
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this["admin"].arn
-  }
-  condition {
-    path_pattern {
-      values = ["/admin_${random_string.this["admin_path"].result}/*"]
-    }
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for Load Balancer - forward to phpmyadmin
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "phpmyadmin" {
-  listener_arn = aws_lb_listener.https.arn
-  priority     = 10
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this["admin"].arn
-  }
-  condition {
-    path_pattern {
-      values = ["/${random_string.this["phpmyadmin"].result}/*"]
     }
   }
 }
