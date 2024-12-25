@@ -26,7 +26,7 @@ resource "aws_lb" "this" {
 # Create Target Group for Load Balancer
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_target_group" "this" {
-  name        = "${local.project}-${each.key}"
+  name        = "${local.project}-varnish"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.this.id
