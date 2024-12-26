@@ -7,7 +7,7 @@
 
 ## Debian
 # WebStack Packages .deb
-WEB_STACK_CHECK="mysql* rabbitmq* elasticsearch opensearch percona-server* maria* php* nginx* ufw varnish* certbot* redis* webmin"
+WEB_STACK_CHECK="mysql* rabbitmq* elasticsearch opensearch percona-server* maria* php* nginx* apache* ufw varnish* certbot* redis* webmin"
 
 # check if web stack is clean and clean it
 INSTALLED_PACKAGES="$(apt -qq list --installed $${WEB_STACK_CHECK} 2> /dev/null | cut -d'/' -f1 | tr '\n' ' ')"
@@ -17,15 +17,43 @@ fi
 
 # stack update
 apt -qqy update
-apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng
+apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng snapd
 
+# Parameter store query script
 cat <<END > /usr/local/bin/parameterstore
 #!/bin/bash
 PARAMETER=$(aws ssm get-parameter --name "${AWS_ENVIRONMENT}" --query 'Parameter.Value' --output text)
 declare -A parameter
 while IFS== read -r key value; do parameter["$${key}"]="$${value}"; done < <(echo $${PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
 END
-
-# Make the script executable
 chmod +x /usr/local/bin/parameterstore
+. /usr/local/bin/parameterstore
 
+# Create local setup directories
+INIT_DIRECTORY="/opt/$${parameter["BRAND"]}/instance"
+INSTANCE_DIRECTORY="/opt/$${parameter["BRAND"]}/${INSTANCE_NAME}"
+mkdir -p "$${INIT_DIRECTORY}"
+mkdir -p "$${INSTANCE_DIRECTORY}"
+touch $${INIT_DIRECTORY}/init
+
+# Download configuration files from s3
+aws s3 sync --quiet "s3://$${S3_SYSTEM_BUCKET}/setup/instance/" "$${INIT_DIRECTORY}/" && \
+aws s3 sync --quiet "s3://$${S3_SYSTEM_BUCKET}/setup/${INSTANCE_NAME}/" "$${INSTANCE_DIRECTORY}/"
+
+# Check if both sync commands were successful
+if [ $? -eq 0 ]; then
+    # Execute scripts in order from INIT_DIRECTORY
+    for SCRIPT in "$${INIT_DIRECTORY}"/*.sh; do
+        [ -f "$${SCRIPT}" ] && bash "$${SCRIPT}"
+    done
+    # Execute scripts in order from INSTANCE_DIRECTORY
+    for SCRIPT in "$${INSTANCE_DIRECTORY}"/*.sh; do
+        [ -f "$${SCRIPT}" ] && bash "$${SCRIPT}"
+    done
+else
+    echo "Error syncing files from S3"
+    exit 0
+fi
+
+# Install ssm agent
+snap install amazon-ssm-agent --classic
