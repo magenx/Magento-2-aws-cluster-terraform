@@ -50,7 +50,7 @@ resource "aws_launch_template" "this" {
       )
     }
   }
-  user_data = base64encode(templatefile("${abspath(path.root)}/userdata/userdata.tpl", {
+  user_data = base64encode(templatefile("${abspath(path.root)}/user_data/user_data.tpl", {
     AWS_ENVIRONMENT = aws_ssm_parameter.aws_env.name
     S3_SYSTEM_BUCKET = aws_s3_bucket.this["system"].bucket
     INSTANCE_NAME = each.key
