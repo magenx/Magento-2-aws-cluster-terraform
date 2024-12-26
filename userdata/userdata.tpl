@@ -42,11 +42,11 @@ aws s3 sync --quiet "s3://${S3_SYSTEM_BUCKET}/setup/${INSTANCE_NAME}/" "$${INSTA
 # Check if both sync commands were successful
 if [ $? -eq 0 ]; then
     # Execute scripts in order from INIT_DIRECTORY
-    for SCRIPT in "$${INIT_DIRECTORY}"/*.sh; do
+    for SCRIPT in $(ls "$${INIT_DIRECTORY}"/*.sh | sort); do
         [ -f "$${SCRIPT}" ] && bash "$${SCRIPT}"
     done
     # Execute scripts in order from INSTANCE_DIRECTORY
-    for SCRIPT in "$${INSTANCE_DIRECTORY}"/*.sh; do
+    for SCRIPT in $(ls "$${INSTANCE_DIRECTORY}"/*.sh | sort); do
         [ -f "$${SCRIPT}" ] && bash "$${SCRIPT}"
     done
 else
