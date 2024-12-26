@@ -23,6 +23,13 @@ mainSteps:
 EOF
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Emit events to EventBridge
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_s3_bucket_notification" "this" {
+  bucket      = aws_s3_bucket.this["system"].id
+  eventbridge = true
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document association with Auto Scaling Group
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_association" "user_data" {
@@ -32,37 +39,34 @@ resource "aws_ssm_association" "user_data" {
     key    = "tag:aws:autoscaling:groupName"
     values = [aws_autoscaling_group.this[each.key].name]
   }
-  output_location {
-    s3_bucket_name = aws_s3_bucket.this["system"].bucket
-    s3_key_prefix  = "user_data_${each.key}"
-    s3_region      = data.aws_region.current.name
-  }
-  association_name = "User-Data-for-EC2-instances-in-${aws_autoscaling_group.this[each.key].name}"
+  association_name = "Configuration-for-EC2-instances-in-${aws_autoscaling_group.this[each.key].name}"
   document_version = "$LATEST"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# EventBridge Rule for EC2 Instance Launch
+# EventBridge Rule for S3 bucket object event
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_rule" "instance_launch" {
-  for_each    = var.ec2
-  name        = "${local.project}-${each.key}-instance-launch"
-  description = "Trigger on ASG launch EC2 instance success"
+resource "aws_cloudwatch_event_rule" "s3_update" {
+  name        =  "${local.project}-s3-update-setup"
+  description = "Trigger SSM document when s3 system bucket updated"
   event_pattern = jsonencode({
-    source      = ["aws.autoscaling"]
-    detail-type = ["EC2 Instance Launch Successful"]
+    "source"         : ["aws.s3"],
+    "detail-type"    : ["Object Created"],
+    "detail"         : {
+      "bucket"          : { "name" : [aws_s3_bucket.this["system"].bucket] },
+      "object"          : { "key" : [{ "prefix" : "setup/" }] }
+    }
   })
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule Target for SSM Document
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_target" "instance_launch" {
+resource "aws_cloudwatch_event_target" "instance_setup" {
   depends_on = [aws_autoscaling_group.this]
   for_each  = var.ec2
-  rule      = aws_cloudwatch_event_rule.instance_launch[each.key].name
-  target_id = "${local.project}-${each.key}-instance-launch"
+  rule      = aws_cloudwatch_event_rule.s3_update.name
+  target_id = "${local.project}-${each.key}-instance-setup"
   arn       =  aws_ssm_document.user_data.arn
   role_arn  =  aws_iam_role.ec2[each.key].arn
-  
   run_command_targets {
     key    = "tag:Name"
     values = ["${local.project}-${each.key}-ec2"]
