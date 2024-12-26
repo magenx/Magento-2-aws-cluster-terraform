@@ -27,18 +27,17 @@ declare -A parameter
 while IFS== read -r key value; do parameter["$${key}"]="$${value}"; done < <(echo $${PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
 END
 chmod +x /usr/local/bin/parameterstore
-. /usr/local/bin/parameterstore
 
 # Create local setup directories
-INIT_DIRECTORY="/opt/$${parameter["BRAND"]}/instance"
-INSTANCE_DIRECTORY="/opt/$${parameter["BRAND"]}/${INSTANCE_NAME}"
+INIT_DIRECTORY="/opt/${BRAND}/instance"
+INSTANCE_DIRECTORY="/opt/${BRAND}/${INSTANCE_NAME}"
 mkdir -p "$${INIT_DIRECTORY}"
 mkdir -p "$${INSTANCE_DIRECTORY}"
 touch $${INIT_DIRECTORY}/init
 
 # Download configuration files from s3
-aws s3 sync --quiet "s3://$${S3_SYSTEM_BUCKET}/setup/instance/" "$${INIT_DIRECTORY}/" && \
-aws s3 sync --quiet "s3://$${S3_SYSTEM_BUCKET}/setup/${INSTANCE_NAME}/" "$${INSTANCE_DIRECTORY}/"
+aws s3 sync --quiet "s3://${S3_SYSTEM_BUCKET}/setup/instance/" "$${INIT_DIRECTORY}/" && \
+aws s3 sync --quiet "s3://${S3_SYSTEM_BUCKET}/setup/${INSTANCE_NAME}/" "$${INSTANCE_DIRECTORY}/"
 
 # Check if both sync commands were successful
 if [ $? -eq 0 ]; then
