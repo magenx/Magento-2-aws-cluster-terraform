@@ -45,16 +45,15 @@ resource "aws_launch_template" "this" {
        tags = merge(
          data.aws_default_tags.this.tags,
          {
-          Name = "${local.project}-${each.key}-ec2",
-          Hostname = "${each.key}.${var.brand}.internal"
-          Instance_Name = each.key
-          Cloudmap_Service_Id  = aws_service_discovery_service.this[each.key].id
+          Name = "${local.project}-${each.key}-ec2"
         }
       )
     }
   }
   user_data = base64encode(templatefile("${abspath(path.root)}/userdata/userdata.tpl", {
     AWS_ENVIRONMENT = aws_ssm_parameter.aws_env.name
+    S3_SYSTEM_BUCKET = aws_s3_bucket.this["system"].bucket
+    INSTANCE_NAME = each.key
   }))
   metadata_options {
     http_endpoint               = "enabled"
