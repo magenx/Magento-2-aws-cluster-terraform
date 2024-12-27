@@ -46,14 +46,15 @@ resource "aws_ssm_association" "user_data" {
 # EventBridge Rule for S3 bucket object event
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "s3_update" {
-  name        =  "${local.project}-s3-update-setup"
-  description = "Trigger SSM document when s3 system bucket updated"
+  for_each    = var.ec2
+  name        = "${local.project}-${each.key}-s3-update-setup"
+  description = "Trigger SSM document when s3 system bucket updated for ${each.key}"
   event_pattern = jsonencode({
-    "source"         : ["aws.s3"],
-    "detail-type"    : ["Object Created"],
-    "detail"         : {
-      "bucket"          : { "name" : [aws_s3_bucket.this["system"].bucket] },
-      "object"          : { "key" : [{ "prefix" : "setup/" }] }
+    "source"       : ["aws.s3"],
+    "detail-type"  : ["Object Created"],
+    "detail"       : {
+      "bucket"     : { "name" : [aws_s3_bucket.this["system"].bucket] },
+      "object"     : { "key" : [{ "prefix" : "setup/${each.key}/" }] }
     }
   })
 }
@@ -63,7 +64,7 @@ resource "aws_cloudwatch_event_rule" "s3_update" {
 resource "aws_cloudwatch_event_target" "instance_setup" {
   depends_on = [aws_autoscaling_group.this]
   for_each  = var.ec2
-  rule      = aws_cloudwatch_event_rule.s3_update.name
+  rule      = aws_cloudwatch_event_rule.s3_update[each.key].name
   target_id = "${local.project}-${each.key}-instance-setup"
   arn       =  aws_ssm_document.user_data.arn
   role_arn  =  aws_iam_role.ec2[each.key].arn
