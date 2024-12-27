@@ -40,7 +40,7 @@ aws s3 sync $${OPTIONS} "s3://${S3_SYSTEM_BUCKET}/setup/${INSTANCE_NAME}/" "$${I
 # Check if both sync commands were successful
 if [ $? -eq 0 ]; then
     # Execute scripts in order from INIT_DIRECTORY
-    for SCRIPT in $$(ls "${INIT_DIRECTORY}"/*.sh | sort); do
+    for SCRIPT in $$(ls "$${INIT_DIRECTORY}"/*.sh | sort); do
         HASH_DIR="$${INIT_DIRECTORY}/.hash"
         LOG_FILE="$${INIT_DIRECTORY}/log/$(basename "$${SCRIPT}").log"
         HASH_FILE="$${HASH_DIR}/$(basename "$${SCRIPT}").md5sum"
