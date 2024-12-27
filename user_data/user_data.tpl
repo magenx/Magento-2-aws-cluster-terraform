@@ -33,7 +33,7 @@ mkdir -p "$${INSTANCE_DIRECTORY}/{.hash,log}"
 touch $${INIT_DIRECTORY}/init
 
 # Download configuration files from s3
-OPTIONS="--quiet --exact-timestamps --checksum-mode ENABLED --checksum-algorithm SHA256"
+OPTIONS="--quiet --exact-timestamps --checksum-mode=ENABLED --checksum-algorithm=SHA256"
 aws s3 sync $${OPTIONS} "s3://${S3_SYSTEM_BUCKET}/setup/instance/" "$${INIT_DIRECTORY}/" && \
 aws s3 sync $${OPTIONS} "s3://${S3_SYSTEM_BUCKET}/setup/${INSTANCE_NAME}/" "$${INSTANCE_DIRECTORY}/"
 
