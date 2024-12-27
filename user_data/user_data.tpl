@@ -72,7 +72,7 @@ fi
 # Install ssm agent
 cd /tmp
 REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
-wget https://s3.${REGION}.amazonaws.com/amazon-ssm-${REGION}/latest/debian_arm64/amazon-ssm-agent.deb
+wget https://s3.$${REGION}.amazonaws.com/amazon-ssm-$${REGION}/latest/debian_arm64/amazon-ssm-agent.deb
 dpkg -i amazon-ssm-agent.deb
 systemctl enable amazon-ssm-agent
 systemctl start amazon-ssm-agent
