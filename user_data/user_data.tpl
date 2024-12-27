@@ -43,8 +43,8 @@ aws s3 sync $${OPTIONS} "s3://${S3_SYSTEM_BUCKET}/setup/${INSTANCE_NAME}/" "$${I
 if [ $? -eq 0 ]; then
     # Execute scripts in order from INIT_DIRECTORY
     for SCRIPT in $(ls "$${INIT_DIRECTORY}"/*.sh | sort); do
-        HASH_DIR="$${INIT_DIRECTORY}/.hash"
         LOG_FILE="$${INIT_DIRECTORY}/log/$(basename "$${SCRIPT}").log"
+        HASH_DIR="$${INIT_DIRECTORY}/.hash"
         HASH_FILE="$${HASH_DIR}/$(basename "$${SCRIPT}").md5sum"
         NEW_HASH=$(md5sum "$${SCRIPT}" | awk '{print $1}')        
         if [ ! -f "$${HASH_FILE}" ] || [ "$${NEW_HASH}" != "$(cat "$${HASH_FILE}")" ]; then
@@ -55,8 +55,8 @@ if [ $? -eq 0 ]; then
     done
     # Execute scripts in order from INSTANCE_DIRECTORY
     for SCRIPT in $(ls "$${INSTANCE_DIRECTORY}"/*.sh | sort); do
-        HASH_DIR="$${INSTANCE_DIRECTORY}/.hash"
         LOG_FILE="$${INSTANCE_DIRECTORY}/log/$(basename "$${SCRIPT}").log"
+        HASH_DIR="$${INSTANCE_DIRECTORY}/.hash"
         HASH_FILE="$${HASH_DIR}/$(basename "$${SCRIPT}").md5sum"
         NEW_HASH=$(md5sum "$${SCRIPT}" | awk '{print $1}')        
         if [ ! -f "$${HASH_FILE}" ] || [ "$${NEW_HASH}" != "$(cat "$${HASH_FILE}")" ]; then
