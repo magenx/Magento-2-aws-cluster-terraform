@@ -14,7 +14,7 @@ fi
 
 # stack update
 apt -qqy update
-apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng snapd
+apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core
 
 # Parameter store query script
 cat <<END > /usr/local/bin/parameterstore
@@ -69,4 +69,8 @@ else
 fi
 
 # Install ssm agent
-snap install amazon-ssm-agent --classic
+REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
+wget https://s3.${REGION}.amazonaws.com/amazon-ssm-${REGION}/latest/debian_arm64/amazon-ssm-agent.deb
+dpkg -i amazon-ssm-agent.deb
+systemctl enable amazon-ssm-agent
+systemctl start amazon-ssm-agent
