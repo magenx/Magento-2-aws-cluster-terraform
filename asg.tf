@@ -54,6 +54,7 @@ resource "aws_launch_template" "this" {
     AWS_ENVIRONMENT = aws_ssm_parameter.aws_env.name
     S3_SYSTEM_BUCKET = aws_s3_bucket.this["system"].bucket
     INSTANCE_NAME = each.key
+    BRAND = var.brand
   }))
   metadata_options {
     http_endpoint               = "enabled"
