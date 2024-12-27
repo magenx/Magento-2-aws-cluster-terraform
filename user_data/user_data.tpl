@@ -33,6 +33,7 @@ mkdir -p "$${INSTANCE_DIRECTORY}/{.hash,log}"
 touch $${INIT_DIRECTORY}/init
 
 # Download configuration files from s3
+echo "$(aws --version)"
 OPTIONS="--quiet --exact-timestamps --checksum-mode=ENABLED --checksum-algorithm=SHA256"
 aws s3 sync $${OPTIONS} "s3://${S3_SYSTEM_BUCKET}/setup/instance/" "$${INIT_DIRECTORY}/" && \
 aws s3 sync $${OPTIONS} "s3://${S3_SYSTEM_BUCKET}/setup/${INSTANCE_NAME}/" "$${INSTANCE_DIRECTORY}/"
@@ -69,6 +70,7 @@ else
 fi
 
 # Install ssm agent
+cd /tmp
 REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
 wget https://s3.${REGION}.amazonaws.com/amazon-ssm-${REGION}/latest/debian_arm64/amazon-ssm-agent.deb
 dpkg -i amazon-ssm-agent.deb
