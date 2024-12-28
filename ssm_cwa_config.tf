@@ -52,7 +52,8 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
             {
                 "file_path": "/var/log/syslog",
                 "log_group_name": "${local.project}_system_syslog",
-                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
+                "retention_in_days": 30
             }
             ]
           }
