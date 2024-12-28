@@ -40,8 +40,13 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
             },
             {
-                "file_path": "/var/log/apt/history.log",
-                "log_group_name": "${local.project}_system_apt_history",
+                "file_path": "/var/log/apt/**.log",
+                "log_group_name": "${local.project}_system_apt",
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
+            },
+            {
+                "file_path": "/opt/${var.brand}/${each.key}/**.log",
+                "log_group_name": "${local.project}_instance_configuration",
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
             },
             {
