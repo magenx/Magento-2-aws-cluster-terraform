@@ -23,7 +23,7 @@ cat <<END > /usr/local/bin/parameterstore
 #!/bin/bash
 PARAMETER=\$(aws ssm get-parameter --name "${AWS_ENVIRONMENT}" --query 'Parameter.Value' --output text)
 declare -A parameter
-while IFS== read -r key value; do parameter["$${key}"]="$${value}"; done < <(echo $${PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
+while IFS== read -r key value; do parameter["\$${key}"]="\$${value}"; done < <(echo \$${PARAMETER} | jq -r 'to_entries[] | .key + "=" + .value')
 END
 chmod +x /usr/local/bin/parameterstore
 
