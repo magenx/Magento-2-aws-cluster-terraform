@@ -28,24 +28,27 @@ END
 chmod +x /usr/local/bin/parameterstore
 
 # Create local setup directories
-INIT_DIRECTORY="/opt/${BRAND}/instance"
-INSTANCE_DIRECTORY="/opt/${BRAND}/${INSTANCE_NAME}"
-mkdir -p "$${INIT_DIRECTORY}/{.hash,log}"
-mkdir -p "$${INSTANCE_DIRECTORY}/{.hash,log}"
-touch $${INIT_DIRECTORY}/init
+LOG_DIRECTORY="/opt/${BRAND}/setup/log"
+HASH_DIRECTORY="/opt/${BRAND}/setup/.hash"
+INIT_DIRECTORY="/opt/${BRAND}/setup/instance"
+INSTANCE_DIRECTORY="/opt/${BRAND}/setup/${INSTANCE_NAME}"
+mkdir -p "$${LOG_DIRECTORY}"
+mkdir -p "$${HASH_DIRECTORY}"
+mkdir -p "$${INIT_DIRECTORY}"
+mkdir -p "$${INSTANCE_DIRECTORY}"
+touch /opt/${BRAND}/init
 
 # Download configuration files from s3
-OPTIONS="--quiet --exact-timestamps --checksum-mode=ENABLED --checksum-algorithm=SHA256"
-aws s3 sync $${OPTIONS} "s3://${S3_SYSTEM_BUCKET}/setup/instance/" "$${INIT_DIRECTORY}/" && \
-aws s3 sync $${OPTIONS} "s3://${S3_SYSTEM_BUCKET}/setup/${INSTANCE_NAME}/" "$${INSTANCE_DIRECTORY}/"
+OPTIONS="--quiet --exact-timestamps --delete --checksum-mode ENABLED --checksum-algorithm SHA256"
+aws s3 sync "s3://${S3_SYSTEM_BUCKET}/setup/instance" "$${INIT_DIRECTORY}" $${OPTIONS} && \
+aws s3 sync "s3://${S3_SYSTEM_BUCKET}/setup/${INSTANCE_NAME}" "$${INSTANCE_DIRECTORY}" $${OPTIONS}
 
 # Check if both sync commands were successful
 if [ $? -eq 0 ]; then
     # Execute scripts in order from INIT_DIRECTORY
     for SCRIPT in $(ls "$${INIT_DIRECTORY}"/*.sh | sort); do
-        LOG_FILE="$${INIT_DIRECTORY}/log/$(basename "$${SCRIPT}").log"
-        HASH_DIR="$${INIT_DIRECTORY}/.hash"
-        HASH_FILE="$${HASH_DIR}/$(basename "$${SCRIPT}").md5sum"
+        LOG_FILE="$${LOG_DIRECTORY}/$(basename "$${SCRIPT}").log"
+        HASH_FILE="$${HASH_DIRECTORY}/$(basename "$${SCRIPT}").md5sum"
         NEW_HASH=$(md5sum "$${SCRIPT}" | awk '{print $1}')        
         if [ ! -f "$${HASH_FILE}" ] || [ "$${NEW_HASH}" != "$(cat "$${HASH_FILE}")" ]; then
             echo "$${NEW_HASH}" > "$${HASH_FILE}"
@@ -55,9 +58,8 @@ if [ $? -eq 0 ]; then
     done
     # Execute scripts in order from INSTANCE_DIRECTORY
     for SCRIPT in $(ls "$${INSTANCE_DIRECTORY}"/*.sh | sort); do
-        LOG_FILE="$${INSTANCE_DIRECTORY}/log/$(basename "$${SCRIPT}").log"
-        HASH_DIR="$${INSTANCE_DIRECTORY}/.hash"
-        HASH_FILE="$${HASH_DIR}/$(basename "$${SCRIPT}").md5sum"
+        LOG_FILE="$${LOG_DIRECTORY}/$(basename "$${SCRIPT}").log"
+        HASH_FILE="$${HASH_DIRECTORY}/$(basename "$${SCRIPT}").md5sum"
         NEW_HASH=$(md5sum "$${SCRIPT}" | awk '{print $1}')        
         if [ ! -f "$${HASH_FILE}" ] || [ "$${NEW_HASH}" != "$(cat "$${HASH_FILE}")" ]; then
             echo "$${NEW_HASH}" > "$${HASH_FILE}"
