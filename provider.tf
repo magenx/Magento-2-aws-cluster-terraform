@@ -25,7 +25,7 @@ provider "aws" {
   default_tags {
    tags = {
    Managed      = "terraform"
-   Config       = var.brand
+   Brand        = var.brand
    Environment  = local.environment
    Dns          = "${var.brand}.internal"
   }
