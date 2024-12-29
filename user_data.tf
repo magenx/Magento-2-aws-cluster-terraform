@@ -20,11 +20,12 @@ mainSteps:
       runCommand:
         - |-
           # Create local setup directories
+          INSTANCE_NAME=$(metadata tags/instance/Instance_name)
           SETUP_DIRECTORY="/opt/${var.brand}"
           LOG_DIRECTORY="$${SETUP_DIRECTORY}/setup/log"
           HASH_DIRECTORY="$${SETUP_DIRECTORY}/setup/.hash"
           INIT_DIRECTORY="$${SETUP_DIRECTORY}/setup/instance"
-          INSTANCE_DIRECTORY="$${SETUP_DIRECTORY}/setup/{{ INSTANCE_NAME }}"
+          INSTANCE_DIRECTORY="$${SETUP_DIRECTORY}/setup/$${INSTANCE_NAME}"
           mkdir -p "$${LOG_DIRECTORY}"
           mkdir -p "$${HASH_DIRECTORY}"
           mkdir -p "$${INIT_DIRECTORY}"
@@ -34,7 +35,7 @@ mainSteps:
           # Download configuration files from s3
           OPTIONS="--quiet --exact-timestamps --delete --checksum-mode ENABLED --checksum-algorithm SHA256"
           aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/setup/instance" "$${INIT_DIRECTORY}" $${OPTIONS} && \
-          aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/setup/{{ INSTANCE_NAME }}" "$${INSTANCE_DIRECTORY}" $${OPTIONS}
+          aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/setup/$${INSTANCE_NAME}" "$${INSTANCE_DIRECTORY}" $${OPTIONS}
 
           # Check if both sync commands were successful
           if [ $? -eq 0 ]; then
