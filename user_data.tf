@@ -13,13 +13,66 @@ resource "aws_ssm_document" "user_data" {
   content = <<EOF
 schemaVersion: "2.2"
 description: "Bootstrapping EC2 instance with UserData"
+parameters:
+  INSTANCE_NAME:
+    type: "String"
+    description: "The name of the ec2 instance"
+  S3_SYSTEM_BUCKET:
+    type: "String"
+    description: "The name of the s3 system bucket"
+  BRAND:
+    type: "String"
+    description: "The name of the brand
 mainSteps:
   - name: "BootstrappingEC2"
     action: "aws:runShellScript"
     inputs:
       runCommand:
         - |-
-          ## some commands
+          # Create local setup directories
+          SETUP_DIRECTORY="/opt/{{ BRAND }}"
+          LOG_DIRECTORY="${SETUP_DIRECTORY}/setup/log"
+          HASH_DIRECTORY="${SETUP_DIRECTORY}/setup/.hash"
+          INIT_DIRECTORY="${SETUP_DIRECTORY}/setup/instance"
+          INSTANCE_DIRECTORY="${SETUP_DIRECTORY}/setup/{{ INSTANCE_NAME }}"
+          mkdir -p "${LOG_DIRECTORY}"
+          mkdir -p "${HASH_DIRECTORY}"
+          mkdir -p "${INIT_DIRECTORY}"
+          mkdir -p "${INSTANCE_DIRECTORY}"
+          touch /opt/${var.brand}/init
+
+          # Download configuration files from s3
+          OPTIONS="--quiet --exact-timestamps --delete --checksum-mode ENABLED --checksum-algorithm SHA256"
+          aws s3 sync "s3://{{ S3_SYSTEM_BUCKET }}/setup/instance" "${INIT_DIRECTORY}" ${OPTIONS} && \
+          aws s3 sync "s3://{{ S3_SYSTEM_BUCKET }}/setup/{{ INSTANCE_NAME }}" "${INSTANCE_DIRECTORY}" ${OPTIONS}
+
+          # Check if both sync commands were successful
+          if [ $? -eq 0 ]; then
+              # Execute scripts in order from INIT_DIRECTORY
+              for SCRIPT in $(ls "${INIT_DIRECTORY}"/*.sh | sort); do
+                  LOG_FILE="${LOG_DIRECTORY}/$(basename "${SCRIPT}").log"
+                  HASH_FILE="${HASH_DIRECTORY}/$(basename "${SCRIPT}").md5sum"
+                  NEW_HASH=$(md5sum "${SCRIPT}" | awk '{print $1}')        
+                  if [ ! -f "${HASH_FILE}" ] || [ "${NEW_HASH}" != "$(cat "${HASH_FILE}")" ]; then
+                      echo "${NEW_HASH}" > "${HASH_FILE}"
+                      echo -e "\n$(date) Running: ${SCRIPT}" | tee -a "${LOG_FILE}"
+                      bash "${SCRIPT}" >>"${LOG_FILE}" 2>&1
+                  fi
+              done
+              # Execute scripts in order from INSTANCE_DIRECTORY
+              for SCRIPT in $(ls "${INSTANCE_DIRECTORY}"/*.sh | sort); do
+                  LOG_FILE="${LOG_DIRECTORY}/$(basename "${SCRIPT}").log"
+                  HASH_FILE="${HASH_DIRECTORY}/$(basename "${SCRIPT}").md5sum"
+                  NEW_HASH=$(md5sum "${SCRIPT}" | awk '{print $1}')        
+                  if [ ! -f "${HASH_FILE}" ] || [ "${NEW_HASH}" != "$(cat "${HASH_FILE}")" ]; then
+                      echo "${NEW_HASH}" > "${HASH_FILE}"
+                      echo -e "\n$(date) Running: ${SCRIPT}" | tee -a "${LOG_FILE}"
+                      bash "${SCRIPT}" >>"${LOG_FILE}" 2>&1
+                  fi
+              done
+          else
+              echo "Error syncing files from S3"
+          fi
 EOF
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -72,4 +125,9 @@ resource "aws_cloudwatch_event_target" "instance_setup" {
     key    = "tag:Name"
     values = ["${local.project}-${each.key}-ec2"]
   }
+  input = jsonencode({
+    BRAND            = var.brand
+    INSTANCE_NAME    = each.key
+    S3_SYSTEM_BUCKET = aws_s3_bucket.this["system"].bucket
+  })
 }
