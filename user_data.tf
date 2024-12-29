@@ -75,16 +75,16 @@ resource "aws_s3_bucket_notification" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document association with Auto Scaling Group
 # # ---------------------------------------------------------------------------------------------------------------------#
-#resource "aws_ssm_association" "user_data" {
-#  for_each = var.ec2
-#  name     = aws_ssm_document.user_data.name
-#  targets {
-#    key    = "tag:aws:autoscaling:groupName"
-#    values = [aws_autoscaling_group.this[each.key].name]
-#  }
-#  association_name = "Configuration-for-EC2-instances-in-${aws_autoscaling_group.this[each.key].name}"
-#  document_version = "$LATEST"
-#}
+resource "aws_ssm_association" "user_data" {
+  for_each = var.ec2
+  name     = aws_ssm_document.user_data.name
+  targets {
+    key    = "tag:aws:autoscaling:groupName"
+    values = [aws_autoscaling_group.this[each.key].name]
+  }
+  association_name = "Configuration-for-EC2-instances-in-${aws_autoscaling_group.this[each.key].name}"
+  document_version = "$LATEST"
+}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule for S3 bucket object event
 # # ---------------------------------------------------------------------------------------------------------------------#
