@@ -15,6 +15,8 @@ fi
 # stack update
 apt -qqy update
 apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core snapd
+echo "export PATH=$$PATH:/snap/bin" >> ~/.bashrc
+source ~/.bashrc
 snap install amazon-ssm-agent --classic
 snap install aws-cli --classic
 
