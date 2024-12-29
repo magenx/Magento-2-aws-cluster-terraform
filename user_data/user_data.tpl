@@ -24,15 +24,15 @@ snap install aws-cli --classic
 cat <<END > /usr/local/bin/parameterstore
 #!/bin/bash
 parameterstore() {
-    local key=$1
+    local key=$$1
     aws ssm get-parameter --name "${AWS_ENVIRONMENT}" --query 'Parameter.Value' --output text | jq -r ".$${key}"
 }
-if [ "$#" -eq 0 ]; then
-    echo "Usage: $0 <parameter-key>"
-    echo "Example: $0 BRAND"
+if [ "$$#" -eq 0 ]; then
+    echo "Usage: $$0 <parameter-key>"
+    echo "Example: $$0 BRAND"
     exit 1
 fi
-key=$1
+key=$$1
 parameterstore "$${key}"
 END
 chmod +x /usr/local/bin/parameterstore
