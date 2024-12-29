@@ -13,16 +13,6 @@ resource "aws_ssm_document" "user_data" {
   content = <<EOF
 schemaVersion: "2.2"
 description: "Bootstrapping EC2 instance with UserData"
-parameters:
-  INSTANCE_NAME:
-    type: "String"
-    description: "The name of the ec2 instance"
-  S3_SYSTEM_BUCKET:
-    type: "String"
-    description: "The name of the s3 system bucket"
-  BRAND:
-    type: "String"
-    description: "The name of the brand
 mainSteps:
   - name: "BootstrappingEC2"
     action: "aws:runShellScript"
@@ -125,9 +115,4 @@ resource "aws_cloudwatch_event_target" "instance_setup" {
     key    = "tag:Name"
     values = ["${local.project}-${each.key}-ec2"]
   }
-  input = jsonencode({
-    BRAND            = var.brand
-    INSTANCE_NAME    = each.key
-    S3_SYSTEM_BUCKET = aws_s3_bucket.this["system"].bucket
-  })
 }
