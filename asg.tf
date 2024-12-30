@@ -54,6 +54,10 @@ resource "aws_launch_template" "this" {
   }
   user_data = base64encode(<<EOF
 #!/bin/bash
+# update and install
+apt -qq update
+apt -qqy remove --purge awscli
+apt -qqy install unzip
 # install ssm manager
 mkdir /tmp/ssm
 cd /tmp/ssm
@@ -62,7 +66,6 @@ dpkg -i amazon-ssm-agent.deb
 systemctl enable amazon-ssm-agent
 systemctl start amazon-ssm-agent
 # install aws cli v2
-apt remove --purge awscli
 mkdir /tmp/awscli
 cd /tmp/awscli
 curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
