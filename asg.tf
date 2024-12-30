@@ -46,16 +46,11 @@ resource "aws_launch_template" "this" {
          data.aws_default_tags.this.tags,
          {
           Name = "${local.project}-${each.key}-ec2"
+          Instance_name = each.key
         }
       )
     }
   }
-  user_data = base64encode(templatefile("${abspath(path.root)}/user_data/user_data.tpl", {
-    AWS_ENVIRONMENT = aws_ssm_parameter.aws_env.name
-    S3_SYSTEM_BUCKET = aws_s3_bucket.this["system"].bucket
-    INSTANCE_NAME = each.key
-    BRAND = var.brand
-  }))
   metadata_options {
     http_endpoint               = "enabled"
     http_tokens                 = "required"
@@ -115,14 +110,12 @@ for_each = aws_autoscaling_group.this
 group_names = [
     aws_autoscaling_group.this[each.key].name
   ]
-
   notifications = [
     "autoscaling:EC2_INSTANCE_LAUNCH",
     "autoscaling:EC2_INSTANCE_TERMINATE",
     "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
     "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
   ]
-
   topic_arn = aws_sns_topic.default.arn
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -186,7 +179,7 @@ resource "aws_cloudwatch_metric_alarm" "scalein" {
   alarm_actions     = [aws_autoscaling_policy.scalein[each.key].arn]
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create lifecycle transition notification for MariaDB instance termination
+# Create lifecycle transition notification for EC2 instance launch and termination
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_iam_policy_document" "autoscaling_assume_role_policy" {
   statement {
@@ -219,9 +212,19 @@ resource "aws_iam_role_policy_attachment" "lifecycle_hook" {
   role       = aws_iam_role.autoscaling.name
 }
 
-resource "aws_autoscaling_lifecycle_hook" "this" {
-  name                    = "${local.project}-mariadb"
-  autoscaling_group_name  = aws_autoscaling_group.this["mariadb"].name
+resource "aws_autoscaling_lifecycle_hook" "ec2_launch" {
+  for_each                = var.ec2
+  name                    = "${local.project}-${each.key}-launch-hook"
+  autoscaling_group_name  = aws_autoscaling_group.this[each.key].name
+  lifecycle_transition    = "autoscaling:EC2_INSTANCE_LAUNCHING"
+  role_arn                = aws_iam_role.autoscaling.arn
+  notification_target_arn = aws_sns_topic.default.arn
+  heartbeat_timeout       = 300
+}
+resource "aws_autoscaling_lifecycle_hook" "ec2_termination" {
+  for_each                = var.ec2
+  name                    = "${local.project}-${each.key}-termination-hook"
+  autoscaling_group_name  = aws_autoscaling_group.this[each.key].name
   lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
   role_arn                = aws_iam_role.autoscaling.arn
   notification_target_arn = aws_sns_topic.default.arn
