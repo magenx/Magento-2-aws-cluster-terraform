@@ -42,15 +42,15 @@ mainSteps:
           cat <<'END' > /usr/local/bin/parameterstore
           #!/bin/bash
           parameterstore() {
-              local KEY=$$1
+              local KEY=$1
               aws ssm get-parameter --name "${aws_ssm_parameter.aws_env.name}" --query 'Parameter.Value' --output text | jq -r ".$${KEY}"
           }
-          if [ "$$#" -eq 0 ]; then
-              echo "Usage: $$0 <parameter-key>"
-              echo "Example: $$0 BRAND"
+          if [ "$#" -eq 0 ]; then
+              echo "Usage: $0 <parameter-key>"
+              echo "Example: $0 BRAND"
               exit 1
           fi
-          KEY=$$1
+          KEY=$1
           parameterstore "$${KEY}"
           END
           chmod +x /usr/local/bin/parameterstore
@@ -64,7 +64,7 @@ mainSteps:
           METADATA_URL="http://169.254.169.254/latest"
           # Function to get metadata
           metadata() {
-              local FIELD=$$1
+              local FIELD=$1
               # Fetch the token
               TOKEN=$(curl -sSf -X PUT "$${METADATA_URL}/api/token" \
                   -H "X-aws-ec2-metadata-token-ttl-seconds: 300") || {
@@ -78,12 +78,12 @@ mainSteps:
                   exit 1
               }
           }
-          if [ "$$#" -eq 0 ]; then
-              echo "Usage: $$0 <metadata-field>"
-              echo "Example: $$0 instance-id"
+          if [ "$#" -eq 0 ]; then
+              echo "Usage: $0 <metadata-field>"
+              echo "Example: $0 instance-id"
               exit 1
           fi
-          FIELD=$$1
+          FIELD=$1
           metadata "$${FIELD}"
           END
           chmod +x /usr/local/bin/metadata
