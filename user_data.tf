@@ -20,7 +20,7 @@ mainSteps:
       runCommand:
         - |-
           if [ ! -f "/root/webstack_clean" ]; then
-            WEB_STACK_CHECK="mysql* rabbitmq* elasticsearch opensearch percona-server* maria* php* nginx* apache* ufw varnish* certbot* redis* webmin awscli"
+            WEB_STACK_CHECK="mysql* rabbitmq* elasticsearch opensearch percona-server* maria* php* nginx* apache* ufw varnish* certbot* redis* webmin"
             INSTALLED_PACKAGES="$(apt -qq list --installed $${WEB_STACK_CHECK} 2> /dev/null | cut -d'/' -f1 | tr '\n' ' ')"
             if [ ! -z "$${INSTALLED_PACKAGES}" ]; then
               apt -qq -y remove --purge "$${INSTALLED_PACKAGES}"
