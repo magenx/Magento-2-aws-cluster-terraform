@@ -156,13 +156,14 @@ mainSteps:
           INSTANCE_ID="$(metadata instance-id)"
           INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
           INSTANCE_HOSTNAME="$(metadata tags/instance/Hostname)"
+          CLOUDMAP_SERVICE_ID="$(parameterstore $${INSTANCE_NAME^^}_CLOUDMAP_SERVICE_ID)"
           if ! grep -q "$${INSTANCE_IP}  $${INSTANCE_HOSTNAME}" /etc/hosts; then
             echo "$${INSTANCE_IP}  $${INSTANCE_HOSTNAME}" >> /etc/hosts
           fi
           hostnamectl set-hostname $${INSTANCE_HOSTNAME}
           aws servicediscovery register-instance \
             --region ${data.aws_region.current.name} \
-            --service-id $(parameterstore $${INSTANCE_NAME^^}_CLOUDMAP_SERVICE_ID) \
+            --service-id $${CLOUDMAP_SERVICE_ID} \
             --instance-id $${INSTANCE_ID} \
             --attributes AWS_INSTANCE_IPV4=$${INSTANCE_IP}
 EOF
