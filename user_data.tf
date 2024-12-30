@@ -43,7 +43,8 @@ mainSteps:
           #!/bin/bash
           parameterstore() {
               local KEY=$1
-              aws ssm get-parameter --name "${aws_ssm_parameter.aws_env.name}" --query 'Parameter.Value' --output text | jq -r ".$${KEY}"
+              local PARAMETER_NAME="/${local.project}/${local.environment}/$${KEY}"
+              aws ssm get-parameter --name "$${PARAMETER_NAME}" --with-decryption --query 'Parameter.Value' --output text
           }
           if [ "$#" -eq 0 ]; then
               echo "Usage: $0 <parameter-key>"
