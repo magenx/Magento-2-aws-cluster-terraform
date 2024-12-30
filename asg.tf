@@ -47,7 +47,7 @@ resource "aws_launch_template" "this" {
          {
           Name = "${local.project}-${each.key}-ec2"
           Instance_name = each.key
-          Hostname = ${each.key}.${var.brand}.internal
+          Hostname = "${each.key}.${var.brand}.internal"
         }
       )
     }
