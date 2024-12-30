@@ -48,16 +48,16 @@ mainSteps:
           cat <<END > /usr/local/bin/parameterstore
           #!/bin/bash
           parameterstore() {
-              local key=$$1
-              aws ssm get-parameter --name "${AWS_ENVIRONMENT}" --query 'Parameter.Value' --output text | jq -r ".$${key}"
+              local KEY=$$1
+              aws ssm get-parameter --name "${AWS_ENVIRONMENT}" --query 'Parameter.Value' --output text | jq -r ".$${KEY}"
           }
           if [ "$$#" -eq 0 ]; then
               echo "Usage: $$0 <parameter-key>"
               echo "Example: $$0 BRAND"
               exit 1
           fi
-          key=$$1
-          parameterstore "$${key}"
+          KEY=$$1
+          parameterstore "$${KEY}"
           END
           chmod +x /usr/local/bin/parameterstore
   - name: "EC2MetadataQueryScript"
@@ -148,9 +148,28 @@ mainSteps:
     inputs:
       runCommand:
         - |-
+          INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
           cd /tmp
           wget https://amazoncloudwatch-agent.s3.amazonaws.com/debian/arm64/latest/amazon-cloudwatch-agent.deb
           dpkg -i amazon-cloudwatch-agent.deb
-          /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-${INSTANCE_NAME}.json
+          /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-$${INSTANCE_NAME}.json
+  - name: "InstallCloudWatchAgent"
+    action: "aws:runShellScript"
+    inputs:
+      runCommand:
+        - |-
+          INSTANCE_IP="$(metadata local_ipv4)"
+          INSTANCE_ID="$(metadata instance-id)"
+          INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
+          INSTANCE_HOSTNAME="$(metadata tags/instance/Hostname)"
+          if ! grep -q "$${INSTANCE_IP}  $${INSTANCE_HOSTNAME}" /etc/hosts; then
+            echo "$${INSTANCE_IP}  $${INSTANCE_HOSTNAME}" >> /etc/hosts
+          fi
+          hostnamectl set-hostname $${INSTANCE_HOSTNAME}
+          aws servicediscovery register-instance \
+            --region ${data.aws_region.current.name} \
+            --service-id $(parameterstore $${INSTANCE_NAME}_CLOUDMAP_SERVICE_ID) \
+            --instance-id $${INSTANCE_ID} \
+            --attributes AWS_INSTANCE_IPV4=$${INSTANCE_IP}
 EOF
 }
