@@ -39,7 +39,7 @@ mainSteps:
     inputs:
       runCommand:
         - |-
-          cat <<END > /usr/local/bin/parameterstore
+          cat <<'END' > /usr/local/bin/parameterstore
           #!/bin/bash
           parameterstore() {
               local KEY=$$1
@@ -59,7 +59,7 @@ mainSteps:
     inputs:
       runCommand:
         - |-
-          cat <<END > /usr/local/bin/metadata
+          cat <<'END' > /usr/local/bin/metadata
           #!/bin/bash
           METADATA_URL="http://169.254.169.254/latest"
           # Function to get metadata
@@ -74,7 +74,7 @@ mainSteps:
               # Fetch the metadata value
               curl -sSf -X GET "$${METADATA_URL}/meta-data/$${FIELD}" \
                   -H "X-aws-ec2-metadata-token: $${TOKEN}" || {
-                  echo "Error: Unable to fetch metadata for field '$${FIELD}'." >&2
+                  echo "Error: Unable to fetch metadata for field $${FIELD}." >&2
                   exit 1
               }
           }
@@ -84,7 +84,7 @@ mainSteps:
               exit 1
           fi
           FIELD=$$1
-          metadata "$$FIELD"
+          metadata "$${FIELD}"
           END
           chmod +x /usr/local/bin/metadata
   - name: "InstanceConfiguration"
