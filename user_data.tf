@@ -163,7 +163,7 @@ mainSteps:
           hostnamectl set-hostname $${INSTANCE_HOSTNAME}
           aws servicediscovery register-instance \
             --region ${data.aws_region.current.name} \
-            --service-id $${CLOUDMAP_SERVICE_ID} \
+            --service-id "$${CLOUDMAP_SERVICE_ID}" \
             --instance-id $${INSTANCE_ID} \
             --attributes AWS_INSTANCE_IPV4=$${INSTANCE_IP}
 EOF
