@@ -49,7 +49,7 @@ mainSteps:
           #!/bin/bash
           parameterstore() {
               local KEY=$$1
-              aws ssm get-parameter --name "${AWS_ENVIRONMENT}" --query 'Parameter.Value' --output text | jq -r ".$${KEY}"
+              aws ssm get-parameter --name "${aws_ssm_parameter.aws_env.name}" --query 'Parameter.Value' --output text | jq -r ".$${KEY}"
           }
           if [ "$$#" -eq 0 ]; then
               echo "Usage: $$0 <parameter-key>"
@@ -78,7 +78,7 @@ mainSteps:
                   exit 1
               }
               # Fetch the metadata value
-              curl -sSf -X GET "$${METADATA_URL}/meta-data/${FIELD}" \
+              curl -sSf -X GET "$${METADATA_URL}/meta-data/$${FIELD}" \
                   -H "X-aws-ec2-metadata-token: $${TOKEN}" || {
                   echo "Error: Unable to fetch metadata for field '$${FIELD}'." >&2
                   exit 1
