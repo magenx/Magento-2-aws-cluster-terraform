@@ -54,12 +54,20 @@ resource "aws_launch_template" "this" {
   }
   user_data = base64encode(<<EOF
 #!/bin/bash
+# install ssm manager
 mkdir /tmp/ssm
 cd /tmp/ssm
 wget https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_arm64/amazon-ssm-agent.deb
 dpkg -i amazon-ssm-agent.deb
 systemctl enable amazon-ssm-agent
 systemctl start amazon-ssm-agent
+# install aws cli v2
+apt remove --purge awscli
+mkdir /tmp/awscli
+cd /tmp/awscli
+curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+bash ./aws/install
 EOF
   )
   metadata_options {
