@@ -152,7 +152,7 @@ mainSteps:
     inputs:
       runCommand:
         - |-
-          INSTANCE_IP="$(metadata local_ipv4)"
+          INSTANCE_IP="$(metadata local-ipv4)"
           INSTANCE_ID="$(metadata instance-id)"
           INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
           INSTANCE_HOSTNAME="$(metadata tags/instance/Hostname)"
