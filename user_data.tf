@@ -33,13 +33,7 @@ mainSteps:
       runCommand:
         - |-
           apt -qqy update
-          apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core snapd
-          if ! grep -q 'snap' ~/.bashrc; then
-            echo 'export PATH=$PATH:/snap/bin' >> ~/.bashrc
-            . ~/.bashrc
-          fi
-          snap list | grep -q "^amazon-ssm-agent" || snap install amazon-ssm-agent --classic
-          snap list | grep -q "^aws-cli" || snap install aws-cli --classic
+          apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core
   - name: "ParameterstoreQueryScript"
     action: "aws:runShellScript"
     inputs:
