@@ -137,16 +137,6 @@ mainSteps:
           else
               echo "Error syncing files from S3"
           fi
-  - name: "InstallCloudWatchAgent"
-    action: "aws:runShellScript"
-    inputs:
-      runCommand:
-        - |-
-          INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
-          cd /tmp
-          wget https://amazoncloudwatch-agent.s3.amazonaws.com/debian/arm64/latest/amazon-cloudwatch-agent.deb
-          dpkg -i amazon-cloudwatch-agent.deb
-          /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-$${INSTANCE_NAME}.json
   - name: "CloudMapInstanceRegistration"
     action: "aws:runShellScript"
     inputs:
@@ -166,5 +156,15 @@ mainSteps:
             --service-id $${CLOUDMAP_SERVICE_ID} \
             --instance-id $${INSTANCE_ID} \
             --attributes AWS_INSTANCE_IPV4=$${INSTANCE_IP}
+  - name: "InstallCloudWatchAgent"
+    action: "aws:runShellScript"
+    inputs:
+      runCommand:
+        - |-
+          INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
+          cd /tmp
+          wget https://amazoncloudwatch-agent.s3.amazonaws.com/debian/arm64/latest/amazon-cloudwatch-agent.deb
+          dpkg -i amazon-cloudwatch-agent.deb
+          /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-$${INSTANCE_NAME}.json
 EOF
 }
