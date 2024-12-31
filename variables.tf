@@ -95,7 +95,7 @@ variable "ec2" {
       max_size         = "1"
     }
     redis = {
-      instance_type    = "c6g.medium"
+      instance_type    = "c7g.medium"
       service          = true
       volume_size      = "25"
       desired_capacity = "1"
@@ -103,7 +103,7 @@ variable "ec2" {
       max_size         = "1"
     }
     rabbitmq = {
-      instance_type    = "c6g.medium"
+      instance_type    = "c7g.medium"
       service          = true
       volume_size      = "25"
       desired_capacity = "1"
