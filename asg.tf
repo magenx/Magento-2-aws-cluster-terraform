@@ -91,6 +91,7 @@ EOF
 # Create Autoscaling Groups
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_autoscaling_group" "this" {
+  depends_on = [aws_ssm_parameter.aws_env]
   for_each = var.ec2
   name = "${local.project}-${each.key}-asg"
   vpc_zone_identifier = values(aws_subnet.this).*.id
