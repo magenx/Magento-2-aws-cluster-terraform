@@ -107,7 +107,7 @@ mainSteps:
           touch $${SETUP_DIRECTORY}/init
 
           # Download configuration files from s3
-          OPTIONS="--quiet --exact-timestamps --delete --checksum-mode ENABLED --checksum-algorithm SHA256"
+          OPTIONS="--quiet --exact-timestamps --delete"
           aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/setup/instance" "$${INIT_DIRECTORY}" $${OPTIONS} && \
           aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/setup/$${INSTANCE_NAME}" "$${INSTANCE_DIRECTORY}" $${OPTIONS}
 
