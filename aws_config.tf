@@ -44,7 +44,8 @@ resource "aws_config_configuration_recorder" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_config_configuration_recorder_status" "this" {
   depends_on = [aws_config_delivery_channel.this]
-  name       = aws_config_configuration_recorder.this.name
+  for_each   = aws_config_configuration_recorder.this
+  name       = each.value.name
   is_enabled = true
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
