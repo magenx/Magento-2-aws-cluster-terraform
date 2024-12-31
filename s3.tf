@@ -34,7 +34,7 @@ resource "aws_s3_bucket_ownership_controls" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create S3 bucket encryption
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
+resource "aws_s3_bucket_server_side_encryption_uration" "this" {
   for_each = aws_s3_bucket.this
   bucket   = aws_s3_bucket.this[each.key].id
   rule {
@@ -57,7 +57,7 @@ resource "aws_s3_bucket_public_access_block" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Cleanup maedia optimized bucket filter
 # # ---------------------------------------------------------------------------------------------------------------------#	  
-resource "aws_s3_bucket_lifecycle_configuration" "this" {
+resource "aws_s3_bucket_lifecycle_uration" "this" {
   bucket = aws_s3_bucket.this["media-optimized"].id
   rule {
     id     = "${local.project}-cleanup-images"
@@ -186,25 +186,6 @@ data "aws_iam_policy_document" "system" {
     principals {
       type        = "AWS"
       identifiers = [data.aws_elb_service_account.current.arn]
-    }
-  }
-
-  statement {
-    sid    = "ConfigS3Access"
-    effect = "Allow"
-    actions = [
-      "s3:ListBucket",
-      "s3:GetBucketAcl",
-      "s3:PutObject"
-    ]
-    resources = [
-      "${aws_s3_bucket.this["system"].arn}","${aws_s3_bucket.this["system"].arn}/*"
-    ]
-    principals {
-      type        = "AWS"
-      identifiers = [
-        aws_iam_role.config.arn
-      ]
     }
   }
 
