@@ -51,7 +51,7 @@ resource "aws_cloudwatch_event_rule" "s3_update" {
   })
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# EventBridge Rule Target for SSM Document
+# EventBridge Rule Target for SSM Document User Data
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "instance_setup" {
   depends_on = [aws_autoscaling_group.this]
@@ -59,6 +59,35 @@ resource "aws_cloudwatch_event_target" "instance_setup" {
   rule      = aws_cloudwatch_event_rule.s3_update[each.key].name
   target_id = "${local.project}-${each.key}-instance-setup"
   arn       =  aws_ssm_document.user_data.arn
+  role_arn  =  aws_iam_role.ec2[each.key].arn
+  run_command_targets {
+    key    = "tag:Name"
+    values = ["${local.project}-${each.key}-ec2"]
+  }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# EventBridge Rule for EC2 instance termination lifecycle
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_event_rule" "ec2_termination" {
+  name        = "${local.project}-ec2-termination-rule"
+  description = "Trigger on EC2 instance termination"
+  event_pattern = jsonencode({
+    "source" : ["aws.autoscaling"],
+    "detail-type" : ["EC2 Instance-terminate Lifecycle Action"],
+    "detail" : {
+      "LifecycleTransition" : ["autoscaling:EC2_INSTANCE_TERMINATING"]
+    }
+  })
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# EventBridge Rule Target for SSM Document CloudMap Deregister
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_event_target" "ec2_termination" {
+  depends_on = [aws_autoscaling_group.this]
+  for_each  = var.ec2
+  rule      = aws_cloudwatch_event_rule.ec2_termination[each.key].name
+  target_id = "${local.project}-${each.key}-cloudmap-deregister"
+  arn       =  aws_ssm_document.cloudmap_deregister.arn
   role_arn  =  aws_iam_role.ec2[each.key].arn
   run_command_targets {
     key    = "tag:Name"
