@@ -69,7 +69,8 @@ resource "aws_cloudwatch_event_target" "instance_setup" {
 # EventBridge Rule for EC2 instance termination lifecycle
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "ec2_termination" {
-  name        = "${local.project}-ec2-termination-rule"
+  for_each    = var.ec2
+  name        = "${local.project}-${each.key}-ec2-termination-rule"
   description = "Trigger on EC2 instance termination"
   event_pattern = jsonencode({
     "source" : ["aws.autoscaling"],
