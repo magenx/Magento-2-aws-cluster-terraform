@@ -110,4 +110,4 @@ data "aws_ami" "distro" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Get get the AWS Config Configuration Recorder
 # # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_config_configuration_recorder_status" "existing" {}
+data "aws_config_configuration_recorder" "existing" {}
