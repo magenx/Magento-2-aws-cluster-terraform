@@ -29,7 +29,9 @@ resource "aws_config_config_rule" "this" {
 # Create AWS Config recorder
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_config_configuration_recorder" "this" {
-  name     = "${local.project}-recorder"
+  for_each = length(data.aws_config_configuration_recorder_status.existing.recorders) == 0 ? 
+              { "default" = "recorder" } : {}
+  name     = each.key
   role_arn = aws_iam_role.config.arn
   recording_group {
     all_supported                 = false
@@ -37,7 +39,6 @@ resource "aws_config_configuration_recorder" "this" {
     resource_types                = var.resource_types
   }
 }
-
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create AWS Config recorder status
 # # ---------------------------------------------------------------------------------------------------------------------#
