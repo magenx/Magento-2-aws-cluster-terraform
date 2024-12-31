@@ -34,7 +34,7 @@ resource "aws_s3_bucket_ownership_controls" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create S3 bucket encryption
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_s3_bucket_server_side_encryption_uration" "this" {
+resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
   for_each = aws_s3_bucket.this
   bucket   = aws_s3_bucket.this[each.key].id
   rule {
@@ -57,7 +57,7 @@ resource "aws_s3_bucket_public_access_block" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Cleanup maedia optimized bucket filter
 # # ---------------------------------------------------------------------------------------------------------------------#	  
-resource "aws_s3_bucket_lifecycle_uration" "this" {
+resource "aws_s3_bucket_lifecycle_configuration" "this" {
   bucket = aws_s3_bucket.this["media-optimized"].id
   rule {
     id     = "${local.project}-cleanup-images"
