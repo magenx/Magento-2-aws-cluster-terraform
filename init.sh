@@ -9,7 +9,7 @@ echo "[!][INFO] First run - install terraform"
 echo "---"
 sudo yum install -y yum-utils
 sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
-sudo yum -y install terraform packer
+sudo yum -y install terraform
 
 ## CHECK IF BACKEND CONFIG EXISTS
 if [ ! -e "backend.tf" ]; then
