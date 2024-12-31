@@ -19,6 +19,7 @@ mainSteps:
     inputs:
       runCommand:
         - |-
+          #!/bin/bash
           if [ ! -f "/root/webstack_clean" ]; then
             WEB_STACK_CHECK="mysql* rabbitmq* elasticsearch opensearch percona-server* maria* php* nginx* apache* ufw varnish* certbot* redis* webmin"
             INSTALLED_PACKAGES="$(apt -qq list --installed $${WEB_STACK_CHECK} 2> /dev/null | cut -d'/' -f1 | tr '\n' ' ')"
@@ -93,6 +94,7 @@ mainSteps:
     inputs:
       runCommand:
         - |-
+          #!/bin/bash
           # Create local setup directories
           INSTANCE_NAME=$(metadata tags/instance/Instance_name)
           SETUP_DIRECTORY="/opt/${var.brand}/setup"
@@ -143,6 +145,7 @@ mainSteps:
     inputs:
       runCommand:
         - |-
+          #!/bin/bash
           INSTANCE_IP="$(metadata local-ipv4)"
           INSTANCE_ID="$(metadata instance-id)"
           INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
@@ -162,6 +165,7 @@ mainSteps:
     inputs:
       runCommand:
         - |-
+          #!/bin/bash
           INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
           cd /tmp
           wget https://amazoncloudwatch-agent.s3.amazonaws.com/debian/arm64/latest/amazon-cloudwatch-agent.deb
