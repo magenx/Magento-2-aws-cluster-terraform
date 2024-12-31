@@ -29,8 +29,8 @@ resource "aws_config_config_rule" "this" {
 # Create AWS Config recorder
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_config_configuration_recorder" "this" {
-  count    = data.aws_config_configuration_recorder_status.existing.recorders == [] ? 1 : 0
-  name     = each.key
+  for_each = data.aws_config_configuration_recorder.existing.name == "" ? 1 : 0
+  name     = default
   role_arn = aws_iam_role.config.arn
   recording_group {
     all_supported                 = false
@@ -44,7 +44,7 @@ resource "aws_config_configuration_recorder" "this" {
 resource "aws_config_configuration_recorder_status" "this" {
   depends_on = [aws_config_delivery_channel.this]
   for_each   = aws_config_configuration_recorder.this
-  name       = each.value.name
+  name       = each.key
   is_enabled = true
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
