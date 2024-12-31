@@ -176,7 +176,6 @@ variable "ec2_instance_profile_policy" {
   "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
   "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
   "arn:aws:iam::aws:policy/AmazonElasticFileSystemClientReadWriteAccess",
-  "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
   ]
 }
 
@@ -187,34 +186,6 @@ variable "eventbridge_policy" {
   "arn:aws:iam::aws:policy/service-role/CloudWatchEventsBuiltInTargetExecutionAccess", 
   "arn:aws:iam::aws:policy/service-role/CloudWatchEventsInvocationAccess",
   "arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole"
-  ]
-}
-
-variable "aws_config_rule" {
-  description = "Use AWS Config to evaluate critical configuration settings for your AWS resources."
-  default     = {
-  ROOT_ACCOUNT_MFA_ENABLED                  = ""
-  MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS        = "AWS::IAM::User"
-  EC2_STOPPED_INSTANCE                      = "AWS::EC2::Instance"
-  INCOMING_SSH_DISABLED                     = "AWS::EC2::SecurityGroup"
-  EC2_IMDSV2_CHECK                          = "AWS::EC2::Instance"
-  EC2_VOLUME_INUSE_CHECK                    = "AWS::EC2::Volume"
-  ELB_DELETION_PROTECTION_ENABLED           = "AWS::ElasticLoadBalancingV2::LoadBalancer"
-  EC2_MANAGEDINSTANCE_PLATFORM_CHECK        = "AWS::SSM::ManagedInstanceInventory"
-  }
-}
-
-# Define the variable for resource types
-variable "resource_types" {
-  type = list(string)
-  default = [
-    "AWS::EC2::Instance",
-    "AWS::S3::Bucket",
-    "AWS::IAM::Role",
-    "AWS::IAM::User",
-    "AWS::EC2::VPC",
-    "AWS::EC2::Subnet",
-    "AWS::EC2::SecurityGroup"
   ]
 }
 
