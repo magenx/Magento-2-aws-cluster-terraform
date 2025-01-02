@@ -253,3 +253,23 @@ resource "aws_autoscaling_lifecycle_hook" "ec2_termination" {
   notification_target_arn = aws_sns_topic.default.arn
   heartbeat_timeout       = 300
 }
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudWatch alarm for disk_used_percent metric
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_metric_alarm" "disk_free_alarm" {
+  for_each            = var.ec2
+  alarm_name          = "${local.project}-${each.key}-disk-free-alarm"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "used_percent"
+  namespace           = "${local.project}"
+  period              = 120
+  statistic           = "Average"
+  threshold           = 80
+  alarm_description   = "Triggered when disk used percent exceeds 80%"
+  actions_enabled     = true
+  dimensions = { AutoScalingGroupName = aws_autoscaling_group.this[each.key].name }
+  alarm_actions = [aws_sns_topic.default.arn]
+  ok_actions = [aws_sns_topic.default.arn]
+  insufficient_data_actions = [aws_sns_topic.default.arn]
+}
