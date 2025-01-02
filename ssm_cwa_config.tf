@@ -60,10 +60,29 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
         },
         "log_stream_name": "${local.project}",
         "force_flush_interval" : 60
+      },
+  "metrics": {
+    "namespace": "${local.project}",
+    "append_dimensions": {
+      "InstanceId": "$${aws:InstanceId}",
+      "AutoScalingGroupName": "$${aws:AutoScalingGroupName}"
+    },
+    "metrics_collected": {
+      "disk": {
+        "measurement": [
+          "free",
+          "total",
+          "used",
+          "used_percent",
+          "inodes_free",
+        ],
+        "resources": ["*"],
+        "ignore_file_system_types": ["sysfs", "tmpfs"]
       }
+    }
+  }
 }
 EOF
-
   tags = {
     Name = "amazon-cloudwatch-agent-${each.key}.json"
   }
