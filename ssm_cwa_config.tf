@@ -87,4 +87,3 @@ EOF
     Name = "amazon-cloudwatch-agent-${each.key}.json"
   }
 }
-
