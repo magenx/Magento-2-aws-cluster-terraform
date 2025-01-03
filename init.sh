@@ -5,14 +5,8 @@ if [[ -f "lock.lock" ]]; then
 fi
 
 echo "---"
-echo "[!][INFO] First run - install terraform"
+echo "[!][INFO] First run - create backend config"
 echo "---"
-yum install -y yum-utils
-yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
-yum -y install terraform
-
-mv production.auto.tfvars.template production.auto.tfvars
-vim production.auto.tfvars
 
 ## CHECK IF BACKEND CONFIG EXISTS
 if [ ! -e "backend.tf" ]; then
