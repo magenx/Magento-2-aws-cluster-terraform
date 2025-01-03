@@ -20,7 +20,6 @@ read -e -p "[?] Enter the S3 bucket name: " -i "magenx-terraform-state-lock" STA
 read -e -p "[?] Enter the key: " -i "terraform.tfstate" OBJECT_KEY
 read -e -p "[?] Enter the region: " -i "${AWS_REGION}" AWS_REGION
 read -e -p "[?] Enter the DynamoDB table name: " -i "magenx-terraform-state-lock" DYNAMODB_TABLE
-read -e -p "[?] Enter the workspace: " -i "production" WORKSPACE
 
 echo "---"
 echo "[!][INFO] Creating S3 bucket and dynamodb table"
@@ -118,6 +117,8 @@ EOF
 cp backend.tf /home/cloudshell-user/
 
 fi
+
+read -e -p "[?] Enter the workspace: " -i "production" WORKSPACE
 
 terraform init
 if  [ $? -ne 0 ]; then
