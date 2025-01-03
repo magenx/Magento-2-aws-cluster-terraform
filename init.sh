@@ -7,9 +7,12 @@ fi
 echo "---"
 echo "[!][INFO] First run - install terraform"
 echo "---"
-sudo yum install -y yum-utils
-sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
-sudo yum -y install terraform
+yum install -y yum-utils
+yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+yum -y install terraform
+
+mv production.auto.tfvars.template production.auto.tfvars
+vim production.auto.tfvars
 
 ## CHECK IF BACKEND CONFIG EXISTS
 if [ ! -e "backend.tf" ]; then
@@ -117,6 +120,8 @@ terraform {
   }
 }
 EOF
+
+cp backend.tf /home/cloudshell-user/
 
 fi
 
