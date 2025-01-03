@@ -116,7 +116,7 @@ resource "aws_cloudwatch_event_rule" "ec2_launch" {
 resource "aws_cloudwatch_event_target" "ec2_launch" {
   depends_on = [aws_autoscaling_group.this]
   for_each  = var.ec2
-  rule      = aws_cloudwatch_event_rule.ec2_termination[each.key].name
+  rule      = aws_cloudwatch_event_rule.ec2_launch[each.key].name
   target_id = "${local.project}-${each.key}-instance-launch-setup"
   arn       =  aws_ssm_document.user_data.arn
   role_arn  =  aws_iam_role.ec2[each.key].arn
