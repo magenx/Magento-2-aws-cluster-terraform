@@ -83,33 +83,36 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] [Subscribe to Debian 12 ARM](https://aws.amazon.com/marketplace/pp/prodview-63gms6fbfaota)
 - [x] Choose an AWS Region
 - [x] Start AWS CloudShell [fastest way to deploy and debug]
-- [x] Install Terraform:
+- [x] Create quick start script:
 ```
-   sudo yum install -y yum-utils
-   sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
-   sudo yum -y install packer terraform
+   cat <<'END' > install
+   yum install -y yum-utils
+   yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+   yum -y install terraform
+   mkdir /home/magento && cd $_
+   git clone https://github.com/magenx/Magento-2-aws-cluster-terraform -b ec2_v5 .
+   mv production.auto.tfvars.template production.auto.tfvars
+   vim production.auto.tfvars
+   END
 ```
-- [x] Create deployment directory:  
+- [x] Switch to root user and create workdir:  
 ```
-  mkdir magento && cd magento
+  sudo -i
+  mkdir /home/magento && cd /home/magento
 ```
-- [x] Clone repo:  
+- [x] Run quick start script:  
 > 
 ```
-  git clone -b ec2_v5 https://github.com/magenx/Magento-2-aws-cluster-terraform.git .
+  bash ../cloudshell-user/install
 ```
 >  
 ❗ Right after `terraform apply` you will receive email from amazon to approve resources    
-- [x] Adjust your settings, edit your [cidr], [brand], [domain], [email] and other vars in `variables.tf`
+- [x] Adjust your settings
   
 ❗ ```For production deployment make sure to enable deletion protection and backup retention```  
    
 - [x] Run:
 ```
-   terraform fmt
-   terraform init
-   terraform workspace new production
-   terraform plan -out production.plan.out -no-color 2>&1 > production.plan.out.txt
    terraform apply
 ```
 > to destroy infrastructure: ```terraform destroy```  
