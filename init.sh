@@ -119,12 +119,12 @@ cp backend.tf /home/cloudshell-user/
 
 fi
 
-terraform validate
+terraform init
 if  [ $? -ne 0 ]; then
 exit 1
 fi
 
-terraform init
+terraform validate
 if  [ $? -ne 0 ]; then
 exit 1
 fi
