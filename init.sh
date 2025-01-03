@@ -16,10 +16,10 @@ AWS_REGION=$(aws ec2 describe-availability-zones --output text --query 'Availabi
 echo "---"
 echo "[?][INPUT] Enter parameters for S3 backend config:"
 echo "---"
-read -e -p "[?] Enter the S3 bucket name: " -i "magenx-terraform-state-lock" STATE_BUCKET
+read -e -p "[?] Enter the S3 bucket name: " -i "magenx-terraform-state-lock-${RANDOM}" STATE_BUCKET
 read -e -p "[?] Enter the key: " -i "terraform.tfstate" OBJECT_KEY
 read -e -p "[?] Enter the region: " -i "${AWS_REGION}" AWS_REGION
-read -e -p "[?] Enter the DynamoDB table name: " -i "magenx-terraform-state-lock" DYNAMODB_TABLE
+read -e -p "[?] Enter the DynamoDB table name: " -i "${STATE_BUCKET}" DYNAMODB_TABLE
 
 echo "---"
 echo "[!][INFO] Creating S3 bucket and dynamodb table"
@@ -114,7 +114,7 @@ terraform {
 }
 EOF
 
-cp backend.tf /home/cloudshell-user/
+cp backend.tf /home/cloudshell-user/backend.tf_$(date)
 
 fi
 
