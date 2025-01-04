@@ -38,9 +38,8 @@ resource "aws_ssm_association" "user_data" {
 # EventBridge Rule for S3 bucket object event
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "s3_update" {
-  for_each    = var.ec2
-  name        = "${local.project}-${each.key}-s3-update-setup"
-  description = "Trigger SSM document when s3 system bucket updated for ${each.key}"
+  name        = "${local.project}-s3-update-setup"
+  description = "Trigger SSM document when s3 system bucket updated"
   event_pattern = jsonencode({
     "source"       : ["aws.s3"],
     "detail-type"  : ["Object Created"],
@@ -55,36 +54,38 @@ resource "aws_cloudwatch_event_rule" "s3_update" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "s3_update" {
   depends_on = [aws_autoscaling_group.this]
-  for_each  = var.ec2
-  rule      = aws_cloudwatch_event_rule.s3_update[each.key].name
-  target_id = "${local.project}-${each.key}-instance-s3-update-setup"
+  rule      = aws_cloudwatch_event_rule.s3_update.name
+  target_id = "${local.project}-instance-s3-update-setup"
   arn       =  aws_ssm_document.user_data.arn
   role_arn  =  aws_iam_role.ec2[each.key].arn
-  run_command_targets {
-    key    = "tag:Name"
-    values = ["${local.project}-${each.key}-ec2"]
+  input_transformer {
+    input_paths = {
+      instanceId = "$.detail.EC2InstanceId"
+    }
+    input_template = <<EOF
+    {
+    "instanceId": "<instanceId>"
+    }
+    EOF
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule for EC2 instance termination lifecycle
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "ec2_terminating" {
-  for_each    = var.ec2
   name        = "${local.project}-${each.key}-ec2-terminating-rule"
   description = "Trigger on EC2 instance terminating"
   event_pattern = jsonencode({
     "source" : ["aws.autoscaling"],
     "detail-type" : ["EC2 Instance-terminate Lifecycle Action"],
     "detail" : {
-      "LifecycleTransition" : ["autoscaling:EC2_INSTANCE_TERMINATING"]
-      "AutoScalingGroupName": [aws_autoscaling_group.this[each.key].name]
+      "LifecycleTransition" : ["autoscaling:EC2_INSTANCE_TERMINATING"],
       "Origin": [ "AutoScalingGroup" ],
       "Destination": [ "EC2" ]
     }
   })
 }
 resource "aws_cloudwatch_event_rule" "ec2_to_warm_pool" {
-  for_each    = var.ec2
   name        = "${local.project}-${each.key}-ec2-to-warm-pool-rule"
   description = "Trigger on EC2 instances entering the warm pool"
   event_pattern = jsonencode({
@@ -97,7 +98,6 @@ resource "aws_cloudwatch_event_rule" "ec2_to_warm_pool" {
 })
 }
 resource "aws_cloudwatch_event_rule" "asg_to_warm_pool" {
-  for_each    = var.ec2
   name        = "${local.project}-${each.key}-asg-to-warm-pool-rule"
   description = "Trigger on EC2 instances returning to the warm pool on scale in"
   event_pattern = jsonencode({
@@ -114,7 +114,6 @@ resource "aws_cloudwatch_event_rule" "asg_to_warm_pool" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "ec2_terminating" {
   depends_on = [aws_autoscaling_group.this]
-  for_each  = var.ec2
   rule      = aws_cloudwatch_event_rule.ec2_terminating[each.key].name
   target_id = "${local.project}-${each.key}-cloudmap-deregister"
   arn       =  aws_ssm_document.cloudmap_deregister.arn
@@ -131,33 +130,37 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# EventBridge Rule for EC2 instance launch and warmup lifecycle
+# EventBridge Rule for EC2 instance launch from warm pool
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_rule" "ec2_launch" {
-  for_each    = var.ec2
-  name        = "${local.project}-${each.key}-ec2-launch-ssm"
+resource "aws_cloudwatch_event_rule" "warm_pool_to_asg_launch" {
+  name        = "${local.project}-${each.key}-warm-pool-to-asg-launch-ssm"
   description = "Trigger on EC2 instance launching"
   event_pattern = jsonencode({
-    "source"       : ["aws.autoscaling"],
-    "detail-type"  : ["EC2 Instance-launch Lifecycle Action"],
-    "detail"       : {
-      "LifecycleTransition" : ["autoscaling:EC2_INSTANCE_LAUNCHING"],
-      "AutoScalingGroupName": [aws_autoscaling_group.this[each.key].name]
-    }
+  "source": [ "aws.autoscaling" ],
+  "detail-type": [ "EC2 Instance-launch Lifecycle Action" ],
+  "detail": {
+      "Origin": [ "WarmPool" ],
+      "Destination": [ "AutoScalingGroup" ]
+   }
   })
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule Target for SSM Document Bootstrap and refresh configuration
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_target" "ec2_launch" {
+resource "aws_cloudwatch_event_target" "warm_pool_to_asg_launch" {
   depends_on = [aws_autoscaling_group.this]
-  for_each  = var.ec2
-  rule      = aws_cloudwatch_event_rule.ec2_launch[each.key].name
-  target_id = "${local.project}-${each.key}-instance-launch-setup"
+  rule      = aws_cloudwatch_event_rule.warm_pool_to_asg_launch.name
+  target_id = "${local.project}-${each.key}-warm-pool-to-asg-launch-setup"
   arn       =  aws_ssm_document.user_data.arn
   role_arn  =  aws_iam_role.ec2[each.key].arn
-  run_command_targets {
-    key    = "tag:Name"
-    values = ["${local.project}-${each.key}-ec2"]
+  input_transformer {
+    input_paths = {
+      instanceId = "$.detail.EC2InstanceId"
+    }
+    input_template = <<EOF
+    {
+    "instanceId": "<instanceId>"
+    }
+    EOF
   }
 }
