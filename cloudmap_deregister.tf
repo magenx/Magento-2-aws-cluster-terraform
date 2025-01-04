@@ -9,23 +9,32 @@
 resource "aws_ssm_document" "cloudmap_deregister" {
   name            = "CloudMapDeregister"
   document_format = "YAML"
-  document_type   = "Command"
+  document_type   = "Automation"
   content = <<EOF
-schemaVersion: "2.2"
-description: "CloudMap Deregister"
+schemaVersion: "0.3"
+description: "Deregister instance from CloudMap on termination"
+parameters:
+  instanceId:
+    type: String
 mainSteps:
-  - name: "CloudMapInstanceDeRegistration"
-    action: "aws:runShellScript"
+  - name: DeregisterInstance
+    action: aws:runCommand
     inputs:
-      runCommand:
-        - |-
-          #!/bin/bash
-          INSTANCE_ID="$(metadata instance-id)"
-          INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
-          CLOUDMAP_SERVICE_ID="$(parameterstore $${INSTANCE_NAME^^}_CLOUDMAP_SERVICE_ID)"
-          aws servicediscovery deregister-instance \
-            --region ${data.aws_region.current.name} \
-            --service-id $${CLOUDMAP_SERVICE_ID} \
-            --instance-id $${INSTANCE_ID}
+      DocumentName: "AWS-RunShellScript"
+      InstanceIds:
+        - "{{ instanceId }}"
+      TimeoutSeconds: 60
+      Parameters:
+        commands:
+          - |-
+            #!/bin/bash
+            INSTANCE_ID="{{ instanceId }}"
+            INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
+            CLOUDMAP_SERVICE_ID="$(parameterstore $${INSTANCE_NAME^^}_CLOUDMAP_SERVICE_ID)"
+            aws servicediscovery deregister-instance \
+              --region ${data.aws_region.current.name} \
+              --service-id $${CLOUDMAP_SERVICE_ID} \
+              --instance-id $${INSTANCE_ID}
+        executionTimeout: "60"
 EOF
 }
