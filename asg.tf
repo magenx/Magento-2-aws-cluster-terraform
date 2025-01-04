@@ -143,9 +143,7 @@ group_names = [
   ]
   notifications = [
     "autoscaling:EC2_INSTANCE_LAUNCH",
-    "autoscaling:EC2_INSTANCE_LAUNCHING",
     "autoscaling:EC2_INSTANCE_TERMINATE",
-    "autoscaling:EC2_INSTANCE_TERMINATING",
     "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
     "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
   ]
@@ -251,7 +249,6 @@ resource "aws_autoscaling_lifecycle_hook" "ec2_launch" {
   autoscaling_group_name  = aws_autoscaling_group.this[each.key].name
   lifecycle_transition    = "autoscaling:EC2_INSTANCE_LAUNCHING"
   role_arn                = aws_iam_role.ec2[each.key].arn
-  notification_target_arn = aws_cloudwatch_event_rule.ec2_launch[each.key].arn
   heartbeat_timeout       = 300
 }
 resource "aws_autoscaling_lifecycle_hook" "ec2_terminating" {
@@ -260,7 +257,6 @@ resource "aws_autoscaling_lifecycle_hook" "ec2_terminating" {
   autoscaling_group_name  = aws_autoscaling_group.this[each.key].name
   lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
   role_arn                = aws_iam_role.ec2[each.key].arn
-  notification_target_arn = aws_cloudwatch_event_rule.ec2_terminating[each.key].arn
   heartbeat_timeout       = 300
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
