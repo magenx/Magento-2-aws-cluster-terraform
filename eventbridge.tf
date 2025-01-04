@@ -24,16 +24,16 @@ resource "aws_iam_role" "eventbridge_service_role" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document association with Auto Scaling Group
 # # ---------------------------------------------------------------------------------------------------------------------#
-#resource "aws_ssm_association" "user_data" {
-#  for_each = var.ec2
-#  name     = aws_ssm_document.user_data.name
-#  targets {
-#    key    = "tag:aws:autoscaling:groupName"
-#    values = [aws_autoscaling_group.this[each.key].name]
-#  }
-#  association_name = "Configuration-for-EC2-instances-in-${aws_autoscaling_group.this[each.key].name}"
-#  document_version = "$LATEST"
-#}
+resource "aws_ssm_association" "user_data" {
+  for_each = var.ec2
+  name     = aws_ssm_document.user_data.name
+  targets {
+    key    = "tag:aws:autoscaling:groupName"
+    values = [aws_autoscaling_group.this[each.key].name]
+  }
+  association_name = "Configuration-for-EC2-instances-in-${aws_autoscaling_group.this[each.key].name}"
+  document_version = "$LATEST"
+}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule for S3 bucket object event
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -77,8 +77,37 @@ resource "aws_cloudwatch_event_rule" "ec2_terminating" {
     "detail-type" : ["EC2 Instance-terminate Lifecycle Action"],
     "detail" : {
       "LifecycleTransition" : ["autoscaling:EC2_INSTANCE_TERMINATING"]
+      "AutoScalingGroupName": [aws_autoscaling_group.this[each.key].name]
+      "Origin": [ "AutoScalingGroup" ],
+      "Destination": [ "EC2" ]
     }
   })
+}
+resource "aws_cloudwatch_event_rule" "ec2_to_warm_pool" {
+  for_each    = var.ec2
+  name        = "${local.project}-${each.key}-ec2-to-warm-pool-rule"
+  description = "Trigger on EC2 instances entering the warm pool"
+  event_pattern = jsonencode({
+  "source": [ "aws.autoscaling" ],
+  "detail-type": [ "EC2 Instance-launch Lifecycle Action" ],
+  "detail": {
+      "Origin": [ "EC2" ],
+      "Destination": [ "WarmPool" ]
+   }
+})
+}
+resource "aws_cloudwatch_event_rule" "asg_to_warm_pool" {
+  for_each    = var.ec2
+  name        = "${local.project}-${each.key}-asg-to-warm-pool-rule"
+  description = "Trigger on EC2 instances returning to the warm pool on scale in"
+  event_pattern = jsonencode({
+  "source": [ "aws.autoscaling" ],
+  "detail-type": [ "EC2 Instance-terminate Lifecycle Action" ],
+  "detail": {
+      "Origin": [ "AutoScalingGroup" ],
+      "Destination": [ "WarmPool" ]
+   }
+})
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule Target for SSM Document CloudMap Deregister
@@ -90,9 +119,15 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
   target_id = "${local.project}-${each.key}-cloudmap-deregister"
   arn       =  aws_ssm_document.cloudmap_deregister.arn
   role_arn  =  aws_iam_role.ec2[each.key].arn
-  run_command_targets {
-    key    = "tag:Name"
-    values = ["${local.project}-${each.key}-ec2"]
+  input_transformer {
+    input_paths = {
+      instanceId = "$.detail.EC2InstanceId"
+    }
+    input_template = <<EOF
+    {
+    "instanceId": "<instanceId>"
+    }
+    EOF
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -107,6 +142,7 @@ resource "aws_cloudwatch_event_rule" "ec2_launch" {
     "detail-type"  : ["EC2 Instance-launch Lifecycle Action"],
     "detail"       : {
       "LifecycleTransition" : ["autoscaling:EC2_INSTANCE_LAUNCHING"],
+      "AutoScalingGroupName": [aws_autoscaling_group.this[each.key].name]
     }
   })
 }
