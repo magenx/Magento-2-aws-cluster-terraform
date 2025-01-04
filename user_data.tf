@@ -89,6 +89,38 @@ mainSteps:
           metadata "$${FIELD}"
           END
           chmod +x /usr/local/bin/metadata
+  - name: "LatestReleaseDeployment"
+    action: "aws:runShellScript"
+    inputs:
+      runCommand:
+        - |-
+          #!/bin/bash
+          # Get latest release package
+          LATEST_RELEASE=$(aws s3 ls s3://${aws_s3_bucket.this["system"].bucket}/releases/ --recursive | sort | tail -n 1 | awk '{print $3}')
+          SHARED_DIRECTORY="/home/${var.brand}/shared"
+          LATEST_RELEASE_DIRECTORY="/home/${var.brand}/releases/$${LATEST_RELEASE}"
+          mkdir -p ${LATEST_RELEASE_DIRECTORY}/pub
+          # Symlink shared folders
+          ln -nfs "$${SHARED_DIRECTORY}/var" "$${LATEST_RELEASE_DIRECTORY}/var"
+          ln -nfs "$${SHARED_DIRECTORY}/pub/media" "$${LATEST_RELEASE_DIRECTORY}/pub/media"
+          # Sync latest release package
+          aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/releases/$${LATEST_RELEASE}/" "$${LATEST_RELEASE_DIRECTORY}"
+          # Ensure the new release directory exists
+          if [ ! -d "$${LATEST_RELEASE_DIRECTORY}" ]; then
+            echo "New release directory not found!"
+            echo "Deployment error!"
+            exit 1
+          fi
+          # Check if the directory is an EFS mount
+          if ! df -T "$${LATEST_RELEASE_DIRECTORY}/pub/media" | grep -q "efs"; then
+            echo "The media directory is not an EFS mount."
+            echo "Deployment error!"
+            exit 1
+          fi
+          # Unzip lastest release package
+          unzip '*.zip' && rm -f *.zip
+          # Perform symlink swap to point to the new release
+          ln -nfs "$${LATEST_RELEASE_DIRECTORY}" "$${PUBLIC_HTML}"
   - name: "InstanceConfiguration"
     action: "aws:runShellScript"
     inputs:
@@ -107,12 +139,10 @@ mainSteps:
           mkdir -p "$${INIT_DIRECTORY}"
           mkdir -p "$${INSTANCE_DIRECTORY}"
           touch $${SETUP_DIRECTORY}/init
-
           # Download configuration files from s3
           OPTIONS="--quiet --exact-timestamps --delete"
           aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/setup/instance" "$${INIT_DIRECTORY}" $${OPTIONS} && \
           aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/setup/$${INSTANCE_NAME}" "$${INSTANCE_DIRECTORY}" $${OPTIONS}
-
           # Check if both sync commands were successful
           if [ $? -eq 0 ]; then
               # Execute scripts in order from INIT_DIRECTORY
