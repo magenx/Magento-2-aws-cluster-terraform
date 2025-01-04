@@ -114,7 +114,7 @@ terraform {
 }
 EOF
 
-cp backend.tf /home/cloudshell-user/"backend.tf_$(date)"
+cp backend.tf /home/cloudshell-user/"backend.tf_${STATE_BUCKET##*-}"
 
 fi
 
