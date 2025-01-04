@@ -242,25 +242,6 @@ resource "aws_iam_role_policy_attachment" "lifecycle_hook" {
   policy_arn = aws_iam_policy.lifecycle_hook.arn
   role       = aws_iam_role.autoscaling.name
 }
-
-resource "aws_autoscaling_lifecycle_hook" "ec2_launch" {
-  for_each                = var.ec2
-  name                    = "${local.project}-${each.key}-launch-hook-ssm"
-  autoscaling_group_name  = aws_autoscaling_group.this[each.key].name
-  lifecycle_transition    = "autoscaling:EC2_INSTANCE_LAUNCHING"
-  notification_target_arn = aws_sns_topic.default.arn
-  role_arn                = aws_iam_role.autoscaling.arn
-  heartbeat_timeout       = 300
-}
-resource "aws_autoscaling_lifecycle_hook" "ec2_terminating" {
-  for_each                = var.ec2
-  name                    = "${local.project}-${each.key}-terminating-hook-ssm"
-  autoscaling_group_name  = aws_autoscaling_group.this[each.key].name
-  lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
-  notification_target_arn = aws_sns_topic.default.arn
-  role_arn                = aws_iam_role.autoscaling.arn
-  heartbeat_timeout       = 300
-}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch alarm for disk_used_percent metric
 # # ---------------------------------------------------------------------------------------------------------------------#
