@@ -68,10 +68,10 @@ resource "aws_cloudwatch_event_target" "s3_update" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule for EC2 instance termination lifecycle
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_rule" "ec2_termination" {
+resource "aws_cloudwatch_event_rule" "ec2_terminating" {
   for_each    = var.ec2
-  name        = "${local.project}-${each.key}-ec2-termination-rule"
-  description = "Trigger on EC2 instance termination"
+  name        = "${local.project}-${each.key}-ec2-terminating-rule"
+  description = "Trigger on EC2 instance terminating"
   event_pattern = jsonencode({
     "source" : ["aws.autoscaling"],
     "detail-type" : ["EC2 Instance-terminate Lifecycle Action"],
@@ -83,10 +83,10 @@ resource "aws_cloudwatch_event_rule" "ec2_termination" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule Target for SSM Document CloudMap Deregister
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_target" "ec2_termination" {
+resource "aws_cloudwatch_event_target" "ec2_terminating" {
   depends_on = [aws_autoscaling_group.this]
   for_each  = var.ec2
-  rule      = aws_cloudwatch_event_rule.ec2_termination[each.key].name
+  rule      = aws_cloudwatch_event_rule.ec2_terminating[each.key].name
   target_id = "${local.project}-${each.key}-cloudmap-deregister"
   arn       =  aws_ssm_document.cloudmap_deregister.arn
   role_arn  =  aws_iam_role.ec2[each.key].arn
@@ -106,7 +106,7 @@ resource "aws_cloudwatch_event_rule" "ec2_launch" {
     "source" : ["aws.autoscaling"],
     "detail-type" : ["EC2 Instance-launch Lifecycle Action"],
     "detail" : {
-      "LifecycleTransition" : ["autoscaling:EC2_INSTANCE_LAUNCHING"]
+      "LifecycleTransition" : ["autoscaling:EC2_INSTANCE_LAUNCH"]
     }
   })
 }
