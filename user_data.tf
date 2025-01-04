@@ -104,7 +104,7 @@ mainSteps:
           ln -nfs "$${SHARED_DIRECTORY}/var" "$${LATEST_RELEASE_DIRECTORY}/var"
           ln -nfs "$${SHARED_DIRECTORY}/pub/media" "$${LATEST_RELEASE_DIRECTORY}/pub/media"
           # Sync latest release package
-          aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/releases/$${LATEST_RELEASE}/" "$${LATEST_RELEASE_DIRECTORY}"
+          aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/releases/$${LATEST_RELEASE}" "$${LATEST_RELEASE_DIRECTORY}"
           # Ensure the new release directory exists
           if [ ! -d "$${LATEST_RELEASE_DIRECTORY}" ]; then
             echo "New release directory not found!"
@@ -118,6 +118,7 @@ mainSteps:
             exit 1
           fi
           # Unzip lastest release package
+          cd $${LATEST_RELEASE_DIRECTORY}
           unzip '*.zip' && rm -f *.zip
           # Perform symlink swap to point to the new release
           ln -nfs "$${LATEST_RELEASE_DIRECTORY}" "$${PUBLIC_HTML}"
