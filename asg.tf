@@ -248,6 +248,7 @@ resource "aws_autoscaling_lifecycle_hook" "ec2_launch" {
   name                    = "${local.project}-${each.key}-launch-hook-ssm"
   autoscaling_group_name  = aws_autoscaling_group.this[each.key].name
   lifecycle_transition    = "autoscaling:EC2_INSTANCE_LAUNCHING"
+  notification_target_arn = aws_sns_topic.default.arn
   role_arn                = aws_iam_role.ec2[each.key].arn
   heartbeat_timeout       = 300
 }
@@ -256,6 +257,7 @@ resource "aws_autoscaling_lifecycle_hook" "ec2_terminating" {
   name                    = "${local.project}-${each.key}-terminating-hook-ssm"
   autoscaling_group_name  = aws_autoscaling_group.this[each.key].name
   lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
+  notification_target_arn = aws_sns_topic.default.arn
   role_arn                = aws_iam_role.ec2[each.key].arn
   heartbeat_timeout       = 300
 }
