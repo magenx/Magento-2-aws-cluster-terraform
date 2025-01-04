@@ -249,7 +249,7 @@ resource "aws_autoscaling_lifecycle_hook" "ec2_launch" {
   for_each                = var.ec2
   name                    = "${local.project}-${each.key}-launch-hook-ssm"
   autoscaling_group_name  = aws_autoscaling_group.this[each.key].name
-  lifecycle_transition    = "autoscaling:EC2_INSTANCE_LAUNCH"
+  lifecycle_transition    = "autoscaling:EC2_INSTANCE_LAUNCHING"
   role_arn                = aws_iam_role.ec2[each.key].arn
   notification_target_arn = aws_cloudwatch_event_rule.ec2_launch[each.key].arn
   heartbeat_timeout       = 300
