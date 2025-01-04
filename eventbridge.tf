@@ -100,13 +100,13 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "ec2_launch" {
   for_each    = var.ec2
-  name        = "${local.project}-${each.key}-ec2-launch-rule"
+  name        = "${local.project}-${each.key}-ec2-launch-ssm"
   description = "Trigger on EC2 instance launching"
   event_pattern = jsonencode({
-    "source" : ["aws.autoscaling"],
-    "detail-type" : ["EC2 Instance-launch Lifecycle Action"],
-    "detail" : {
-      "LifecycleTransition" : ["autoscaling:EC2_INSTANCE_LAUNCH"]
+    "source"       : ["aws.autoscaling"],
+    "detail-type"  : ["EC2 Instance-launch Lifecycle Action"],
+    "detail"       : {
+      "LifecycleTransition" : ["autoscaling:EC2_INSTANCE_LAUNCHING"],
     }
   })
 }
