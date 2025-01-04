@@ -143,7 +143,9 @@ group_names = [
   ]
   notifications = [
     "autoscaling:EC2_INSTANCE_LAUNCH",
+    "autoscaling:EC2_INSTANCE_LAUNCHING",
     "autoscaling:EC2_INSTANCE_TERMINATE",
+    "autoscaling:EC2_INSTANCE_TERMINATING",
     "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
     "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
   ]
@@ -210,7 +212,7 @@ resource "aws_cloudwatch_metric_alarm" "scalein" {
   alarm_actions     = [aws_autoscaling_policy.scalein[each.key].arn]
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create lifecycle transition notification for EC2 instance launch and termination
+# Create lifecycle transition notification for EC2 instance launch and terminate
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_iam_policy_document" "autoscaling_assume_role_policy" {
   statement {
@@ -245,20 +247,20 @@ resource "aws_iam_role_policy_attachment" "lifecycle_hook" {
 
 resource "aws_autoscaling_lifecycle_hook" "ec2_launch" {
   for_each                = var.ec2
-  name                    = "${local.project}-${each.key}-launch-hook"
+  name                    = "${local.project}-${each.key}-launch-hook-ssm"
   autoscaling_group_name  = aws_autoscaling_group.this[each.key].name
-  lifecycle_transition    = "autoscaling:EC2_INSTANCE_LAUNCHING"
-  role_arn                = aws_iam_role.autoscaling.arn
-  notification_target_arn = aws_sns_topic.default.arn
+  lifecycle_transition    = "autoscaling:EC2_INSTANCE_LAUNCH"
+  role_arn                = aws_iam_role.ec2[each.key].arn
+  notification_target_arn = aws_cloudwatch_event_rule.ec2_launch[each.key].arn
   heartbeat_timeout       = 300
 }
-resource "aws_autoscaling_lifecycle_hook" "ec2_termination" {
+resource "aws_autoscaling_lifecycle_hook" "ec2_terminating" {
   for_each                = var.ec2
-  name                    = "${local.project}-${each.key}-termination-hook"
+  name                    = "${local.project}-${each.key}-terminating-hook-ssm"
   autoscaling_group_name  = aws_autoscaling_group.this[each.key].name
   lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
-  role_arn                = aws_iam_role.autoscaling.arn
-  notification_target_arn = aws_sns_topic.default.arn
+  role_arn                = aws_iam_role.ec2[each.key].arn
+  notification_target_arn = aws_cloudwatch_event_rule.ec2_terminating[each.key].arn
   heartbeat_timeout       = 300
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
