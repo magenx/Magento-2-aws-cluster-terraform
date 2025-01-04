@@ -249,7 +249,7 @@ resource "aws_autoscaling_lifecycle_hook" "ec2_launch" {
   autoscaling_group_name  = aws_autoscaling_group.this[each.key].name
   lifecycle_transition    = "autoscaling:EC2_INSTANCE_LAUNCHING"
   notification_target_arn = aws_sns_topic.default.arn
-  role_arn                = aws_iam_role.ec2[each.key].arn
+  role_arn                = aws_iam_role.autoscaling.arn
   heartbeat_timeout       = 300
 }
 resource "aws_autoscaling_lifecycle_hook" "ec2_terminating" {
@@ -258,7 +258,7 @@ resource "aws_autoscaling_lifecycle_hook" "ec2_terminating" {
   autoscaling_group_name  = aws_autoscaling_group.this[each.key].name
   lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
   notification_target_arn = aws_sns_topic.default.arn
-  role_arn                = aws_iam_role.ec2[each.key].arn
+  role_arn                = aws_iam_role.autoscaling.arn
   heartbeat_timeout       = 300
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
