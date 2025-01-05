@@ -38,7 +38,7 @@ mainSteps:
       TopicArn: ${aws_sns_topic.default.arn}
       Message: "Init EC2 with user_data @ {{ instanceId }}"
   - name: ExecuteInitEC2WithUserData
-    action: aws:runCommand
+    action: "aws:runCommand"
     inputs:
       DocumentName: "InitEC2WithUserData"
       InstanceIds:
