@@ -4,6 +4,19 @@
 /////////////////////////////////////////////[ SYSTEM MANAGER DOCUMENT USER DATA ]////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Document association with Auto Scaling Group
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_ssm_association" "user_data" {
+  for_each = var.ec2
+  name     = aws_ssm_document.user_data.name
+  targets {
+    key    = "tag:aws:autoscaling:groupName"
+    values = [aws_autoscaling_group.this[each.key].name]
+  }
+  association_name = "InitEC2WithUserData-${aws_autoscaling_group.this[each.key].name}"
+  document_version = "$LATEST"
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document to get InitEC2WithUserData document
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "get_user_data" {
