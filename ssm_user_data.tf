@@ -49,7 +49,17 @@ resource "aws_ssm_document" "user_data" {
   content = <<EOF
 schemaVersion: "2.2"
 description: "Init EC2 instance with UserData"
+parameters:
+  instanceId:
+    type: String
 mainSteps:
+  - name: "SendNotification"
+    action: "aws:executeAwsApi"
+    inputs:
+      Service: "sns"
+      Api: "Publish"
+      TopicArn: ${aws_sns_topic.default.arn}
+      Message: "Init EC2 with user_data @ {{ instanceId }}"
   - name: "WebStackCleanup"
     action: "aws:runShellScript"
     inputs:
