@@ -129,6 +129,40 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
     EOF
   }
 }
+resource "aws_cloudwatch_event_target" "ec2_to_warm_pool" {
+  depends_on = [aws_autoscaling_group.this]
+  rule       = aws_cloudwatch_event_rule.ec2_to_warm_pool.name
+  target_id  = "${local.project}-cloudmap-deregister"
+  arn        = aws_ssm_document.cloudmap_deregister.arn
+  role_arn   = aws_iam_role.eventbridge_service_role.arn
+  input_transformer {
+    input_paths = {
+      instanceId = "$.detail.EC2InstanceId"
+    }
+    input_template = <<EOF
+    {
+    "instanceId": "<instanceId>"
+    }
+    EOF
+  }
+}
+resource "aws_cloudwatch_event_target" "asg_to_warm_pool" {
+  depends_on = [aws_autoscaling_group.this]
+  rule       = aws_cloudwatch_event_rule.asg_to_warm_pool.name
+  target_id  = "${local.project}-cloudmap-deregister"
+  arn        = aws_ssm_document.cloudmap_deregister.arn
+  role_arn   = aws_iam_role.eventbridge_service_role.arn
+  input_transformer {
+    input_paths = {
+      instanceId = "$.detail.EC2InstanceId"
+    }
+    input_template = <<EOF
+    {
+    "instanceId": "<instanceId>"
+    }
+    EOF
+  }
+}
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule for EC2 instance launch from warm pool
 # # ---------------------------------------------------------------------------------------------------------------------#
