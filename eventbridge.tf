@@ -54,10 +54,10 @@ resource "aws_cloudwatch_event_rule" "s3_update" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "s3_update" {
   depends_on = [aws_autoscaling_group.this]
-  rule      = aws_cloudwatch_event_rule.s3_update.name
-  target_id = "${local.project}-instance-s3-update-setup"
-  arn       =  aws_ssm_document.user_data.arn
-  role_arn  =  aws_iam_role.ec2[each.key].arn
+  rule       = aws_cloudwatch_event_rule.s3_update.name
+  target_id  = "${local.project}-instance-s3-update-setup"
+  arn        = aws_ssm_document.get_user_data.arn
+  role_arn   = aws_iam_role.eventbridge_service_role.arn
   input_transformer {
     input_paths = {
       instanceId = "$.detail.EC2InstanceId"
@@ -73,8 +73,8 @@ resource "aws_cloudwatch_event_target" "s3_update" {
 # EventBridge Rule for EC2 instance termination lifecycle
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "ec2_terminating" {
-  name        = "${local.project}-${each.key}-ec2-terminating-rule"
-  description = "Trigger on EC2 instance terminating"
+  name          = "${local.project}-ec2-terminating-rule"
+  description   = "Trigger on EC2 instance terminating"
   event_pattern = jsonencode({
     "source" : ["aws.autoscaling"],
     "detail-type" : ["EC2 Instance-terminate Lifecycle Action"],
@@ -86,8 +86,8 @@ resource "aws_cloudwatch_event_rule" "ec2_terminating" {
   })
 }
 resource "aws_cloudwatch_event_rule" "ec2_to_warm_pool" {
-  name        = "${local.project}-${each.key}-ec2-to-warm-pool-rule"
-  description = "Trigger on EC2 instances entering the warm pool"
+  name          = "${local.project}-ec2-to-warm-pool-rule"
+  description   = "Trigger on EC2 instances entering the warm pool"
   event_pattern = jsonencode({
   "source": [ "aws.autoscaling" ],
   "detail-type": [ "EC2 Instance-launch Lifecycle Action" ],
@@ -98,8 +98,8 @@ resource "aws_cloudwatch_event_rule" "ec2_to_warm_pool" {
 })
 }
 resource "aws_cloudwatch_event_rule" "asg_to_warm_pool" {
-  name        = "${local.project}-${each.key}-asg-to-warm-pool-rule"
-  description = "Trigger on EC2 instances returning to the warm pool on scale in"
+  name          = "${local.project}-asg-to-warm-pool-rule"
+  description   = "Trigger on EC2 instances returning to the warm pool on scale in"
   event_pattern = jsonencode({
   "source": [ "aws.autoscaling" ],
   "detail-type": [ "EC2 Instance-terminate Lifecycle Action" ],
@@ -114,10 +114,10 @@ resource "aws_cloudwatch_event_rule" "asg_to_warm_pool" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "ec2_terminating" {
   depends_on = [aws_autoscaling_group.this]
-  rule      = aws_cloudwatch_event_rule.ec2_terminating[each.key].name
-  target_id = "${local.project}-${each.key}-cloudmap-deregister"
-  arn       =  aws_ssm_document.cloudmap_deregister.arn
-  role_arn  =  aws_iam_role.ec2[each.key].arn
+  rule       = aws_cloudwatch_event_rule.ec2_terminating.name
+  target_id  = "${local.project}-cloudmap-deregister"
+  arn        = aws_ssm_document.cloudmap_deregister.arn
+  role_arn   = aws_iam_role.eventbridge_service_role.arn
   input_transformer {
     input_paths = {
       instanceId = "$.detail.EC2InstanceId"
@@ -133,7 +133,7 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
 # EventBridge Rule for EC2 instance launch from warm pool
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "warm_pool_to_asg_launch" {
-  name        = "${local.project}-${each.key}-warm-pool-to-asg-launch-ssm"
+  name        = "${local.project}-warm-pool-to-asg-launch-ssm"
   description = "Trigger on EC2 instance launching"
   event_pattern = jsonencode({
   "source": [ "aws.autoscaling" ],
@@ -149,10 +149,10 @@ resource "aws_cloudwatch_event_rule" "warm_pool_to_asg_launch" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "warm_pool_to_asg_launch" {
   depends_on = [aws_autoscaling_group.this]
-  rule      = aws_cloudwatch_event_rule.warm_pool_to_asg_launch.name
-  target_id = "${local.project}-${each.key}-warm-pool-to-asg-launch-setup"
-  arn       =  aws_ssm_document.user_data.arn
-  role_arn  =  aws_iam_role.ec2[each.key].arn
+  rule       = aws_cloudwatch_event_rule.warm_pool_to_asg_launch.name
+  target_id  = "${local.project}-warm-pool-to-asg-launch-setup"
+  arn        = aws_ssm_document.get_user_data.arn
+  role_arn   = aws_iam_role.eventbridge_service_role.arn
   input_transformer {
     input_paths = {
       instanceId = "$.detail.EC2InstanceId"
