@@ -4,15 +4,38 @@
 /////////////////////////////////////////////[ SYSTEM MANAGER DOCUMENT USER DATA ]////////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Document to get InitEC2WithUserData document
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_ssm_document" "get_user_data" {
+  name            = "GetInitEC2WithUserData"
+  document_format = "YAML"
+  document_type   = "Automation"
+  content = <<EOF
+schemaVersion: "0.3"
+description: "Automate execution of InitEC2WithUserData on an instance"
+parameters:
+  instanceId:
+    type: String
+mainSteps:
+  - name: ExecuteInitEC2WithUserData
+    action: aws:runCommand
+    inputs:
+      DocumentName: "InitEC2WithUserData"
+      InstanceIds:
+        - "{{ instanceId }}"
+      TimeoutSeconds: 120
+EOF
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document to configure EC2 instances in Auto Scaling Group
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "user_data" {
-  name            = "BootstrappingEC2WithUserData"
+  name            = "InitEC2WithUserData"
   document_format = "YAML"
   document_type   = "Command"
   content = <<EOF
 schemaVersion: "2.2"
-description: "Bootstrapping EC2 instance with UserData"
+description: "Init EC2 instance with UserData"
 mainSteps:
   - name: "WebStackCleanup"
     action: "aws:runShellScript"
