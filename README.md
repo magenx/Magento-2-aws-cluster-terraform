@@ -210,12 +210,6 @@ OVERALL TOTAL       **$630.87
 - [x] Change deployment logic to your needs.  
    
 <br />
-
-## AMI configuration and build using Packer:
-- [x] Build custom AMI with Packer configuration
-- [x] Reuse AMI in Terraform to create launch_template 
-   
-<br />
    
 ## :e-mail: Contact us for installation and support:
 We can launch this project for your store in a short time. Many big retailers have already migrated to this architecture.
