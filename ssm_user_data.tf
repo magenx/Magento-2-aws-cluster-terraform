@@ -110,6 +110,13 @@ mainSteps:
           #!/bin/bash
           # Get latest release package
           LATEST_RELEASE=$(aws s3 ls s3://${aws_s3_bucket.this["system"].bucket}/releases/ --recursive | sort | tail -n 1 | awk '{print $3}')
+          RELEASES_DIRECTORY="/home/${var.brand}/releases"
+          for DIRECTORY in $${RELEASES_DIRECTORY}/*; do
+            if [ "$(basename "$${DIRECTORY}")" == "$${LATEST_RELEASE}" ]; then
+              echo "Release directory $${LATEST_RELEASE} already exists. Exiting..."
+              exit 1
+            fi
+          done
           SHARED_DIRECTORY="/home/${var.brand}/shared"
           LATEST_RELEASE_DIRECTORY="/home/${var.brand}/releases/$${LATEST_RELEASE}"
           mkdir -p $${LATEST_RELEASE_DIRECTORY}/pub
