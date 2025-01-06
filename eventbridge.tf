@@ -43,7 +43,7 @@ resource "aws_cloudwatch_event_rule" "s3_update" {
   name        = "${local.project}-s3-update-setup"
   description = "Trigger SSM document when s3 system bucket updated"
   event_pattern = jsonencode({
-    "source"       : ["aws.s3"],
+    "source": ["aws.s3"],
     "detail-type"  : ["Object Created"],
     "detail"       : {
       "bucket"     : { "name" : [aws_s3_bucket.this["system"].bucket] },
@@ -58,15 +58,15 @@ resource "aws_cloudwatch_event_target" "s3_update" {
   depends_on = [aws_autoscaling_group.this]
   rule       = aws_cloudwatch_event_rule.s3_update.name
   target_id  = "${local.project}-instance-s3-update-setup"
-  arn        = aws_ssm_document.get_user_data.arn
+  arn        = aws_ssm_document.user_data.arn
   role_arn   = aws_iam_role.eventbridge_service_role.arn
   input_transformer {
     input_paths = {
-      instanceId = "$.detail.EC2InstanceId"
+      ObjectKey = "$.detail.object.key"
     }
     input_template = <<EOF
     {
-    "instanceId": "<instanceId>"
+    "ObjectKey": "<ObjectKey>"
     }
     EOF
   }
