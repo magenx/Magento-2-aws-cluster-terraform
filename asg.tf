@@ -101,14 +101,6 @@ resource "aws_autoscaling_group" "this" {
   health_check_grace_period = var.asg["health_check_grace_period"]
   health_check_type         = var.asg["health_check_type"]
   target_group_arns  = [aws_lb_target_group.this.arn]
-  dynamic "warm_pool" {
-    for_each = each.value.max_size > 1 ? [1] : []
-    content {
-      pool_state                  = "Hibernated"
-      min_size                    = each.value.min_size
-      max_group_prepared_capacity = each.value.min_size
-    }
-  }
   launch_template {
       id      = aws_launch_template.this[each.key].id
       version = "$Latest"
