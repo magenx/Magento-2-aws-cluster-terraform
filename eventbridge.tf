@@ -17,9 +17,24 @@ data "aws_iam_policy_document" "eventbridge_assume_role" {
   }
 }
 resource "aws_iam_role" "eventbridge_service_role" {
-  name = "${local.project}-EventBridgeServiceRole"
-  description = "Provides EventBridge manage events on your behalf."
+  name               = "${local.project}-EventBridgeServiceRole"
+  description        = "Provides EventBridge manage events on your behalf."
   assume_role_policy = data.aws_iam_policy_document.eventbridge_assume_role.json
+}
+data "aws_iam_policy_document" "eventbridge_ssm_policy" {
+  statement {
+    effect    = "Allow"
+    actions   = ["ssm:StartAutomationExecution"]
+    resources = ["arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:document/*"]
+  }
+}
+resource "aws_iam_policy" "eventbridge_ssm_policy" {
+  name   = "${local.project}-EventBridgeSSMPolicy"
+  policy = data.aws_iam_policy_document.eventbridge_ssm_policy.json
+}
+resource "aws_iam_role_policy_attachment" "eventbridge_ssm_policy_attach" {
+  role       = aws_iam_role.eventbridge_service_role.name
+  policy_arn = aws_iam_policy.eventbridge_ssm_policy.arn
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule for S3 bucket object event
@@ -44,6 +59,7 @@ resource "aws_cloudwatch_event_target" "s3_update" {
   rule       = aws_cloudwatch_event_rule.s3_update.name
   target_id  = "${local.project}-instance-s3-update-setup"
   arn        = aws_ssm_document.get_user_data.arn
+  role_arn   = aws_iam_role.eventbridge_service_role.arn
   input_transformer {
     input_paths = {
       instanceId = "$.detail.EC2InstanceId"
@@ -79,6 +95,7 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
   rule       = aws_cloudwatch_event_rule.ec2_terminating.name
   target_id  = "${local.project}-cloudmap-deregister"
   arn        = aws_ssm_document.cloudmap_deregister.arn
+  role_arn   = aws_iam_role.eventbridge_service_role.arn
   input_transformer {
     input_paths = {
       instanceId = "$.detail.EC2InstanceId"
