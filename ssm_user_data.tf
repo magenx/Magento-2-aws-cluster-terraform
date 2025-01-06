@@ -17,36 +17,6 @@ resource "aws_ssm_association" "user_data" {
   document_version = "$LATEST"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create SSM Document to get InitEC2WithUserData document
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_document" "get_user_data" {
-  name            = "GetInitEC2WithUserData"
-  document_format = "YAML"
-  document_type   = "Automation"
-  content = <<EOF
-schemaVersion: "0.3"
-description: "Automate execution of InitEC2WithUserData on an instance"
-parameters:
-  instanceId:
-    type: String
-mainSteps:
-  - name: "SendNotification"
-    action: "aws:executeAwsApi"
-    inputs:
-      Service: "sns"
-      Api: "Publish"
-      TopicArn: ${aws_sns_topic.default.arn}
-      Message: "Init EC2 with user_data @ {{ instanceId }}"
-  - name: ExecuteInitEC2WithUserData
-    action: "aws:runCommand"
-    inputs:
-      DocumentName: "InitEC2WithUserData"
-      InstanceIds:
-        - "{{ instanceId }}"
-      TimeoutSeconds: 120
-EOF
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document to configure EC2 instances in Auto Scaling Group
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "user_data" {
