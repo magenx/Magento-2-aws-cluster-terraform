@@ -141,3 +141,5 @@ terraform plan -out ${WORKSPACE}.plan.out -no-color 2>&1 > ${WORKSPACE}.plan.out
 ls -l ${WORKSPACE}.plan.out.txt
 
 touch lock.lock
+cd /home/magento
+echo "terraform apply"
