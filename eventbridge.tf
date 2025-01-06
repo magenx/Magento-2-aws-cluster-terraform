@@ -44,7 +44,6 @@ resource "aws_cloudwatch_event_target" "s3_update" {
   rule       = aws_cloudwatch_event_rule.s3_update.name
   target_id  = "${local.project}-instance-s3-update-setup"
   arn        = aws_ssm_document.get_user_data.arn
-  role_arn   = aws_iam_role.eventbridge_service_role.arn
   input_transformer {
     input_paths = {
       instanceId = "$.detail.EC2InstanceId"
@@ -80,7 +79,6 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
   rule       = aws_cloudwatch_event_rule.ec2_terminating.name
   target_id  = "${local.project}-cloudmap-deregister"
   arn        = aws_ssm_document.cloudmap_deregister.arn
-  role_arn   = aws_iam_role.eventbridge_service_role.arn
   input_transformer {
     input_paths = {
       instanceId = "$.detail.EC2InstanceId"
