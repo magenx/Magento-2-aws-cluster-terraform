@@ -25,7 +25,7 @@ data "aws_iam_policy_document" "eventbridge_ssm_policy" {
   statement {
     effect    = "Allow"
     actions   = ["ssm:StartAutomationExecution"]
-    resources = ["arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:document/*"]
+    resources = ["arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"]
   }
 }
 resource "aws_iam_policy" "eventbridge_ssm_policy" {
