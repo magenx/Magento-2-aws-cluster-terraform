@@ -28,6 +28,13 @@ data "aws_iam_policy_document" "eventbridge_ssm_policy" {
     resources = ["arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"]
   }
 }
+data "aws_iam_policy_document" "eventbridge_sqs_policy" {
+  statement {
+    effect = "Allow"
+    actions   = ["sqs:SendMessage"]
+    resources = ["arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"]
+  }
+}
 resource "aws_iam_policy" "eventbridge_ssm_policy" {
   name   = "${local.project}-EventBridgeSSMPolicy"
   policy = data.aws_iam_policy_document.eventbridge_ssm_policy.json
@@ -35,6 +42,10 @@ resource "aws_iam_policy" "eventbridge_ssm_policy" {
 resource "aws_iam_role_policy_attachment" "eventbridge_ssm_policy_attach" {
   role       = aws_iam_role.eventbridge_service_role.name
   policy_arn = aws_iam_policy.eventbridge_ssm_policy.arn
+}
+resource "aws_iam_role_policy_attachment" "eventbridge_ssm_policy_attach" {
+  role       = aws_iam_role.eventbridge_service_role.name
+  policy_arn = aws_iam_policy.eventbridge_sqs_policy.arn
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule for S3 bucket object event
@@ -60,6 +71,9 @@ resource "aws_cloudwatch_event_target" "s3_update" {
   target_id  = "${local.project}-instance-s3-update-setup"
   arn        = aws_ssm_document.user_data.arn
   role_arn   = aws_iam_role.eventbridge_service_role.arn
+  dead_letter_config {
+    arn = aws_sqs_queue.deadletterqueue.arn
+  }
   input_transformer {
     input_paths = {
       ObjectKey = "$.detail.object.key"
@@ -96,6 +110,9 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
   target_id  = "${local.project}-cloudmap-deregister"
   arn        = aws_ssm_document.cloudmap_deregister.arn
   role_arn   = aws_iam_role.eventbridge_service_role.arn
+  dead_letter_config {
+    arn = aws_sqs_queue.deadletterqueue.arn
+  }
   input_transformer {
     input_paths = {
       instanceId = "$.detail.EC2InstanceId"
