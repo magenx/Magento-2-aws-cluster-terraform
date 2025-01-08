@@ -39,6 +39,10 @@ resource "aws_iam_policy" "eventbridge_ssm_policy" {
   name   = "${local.project}-EventBridgeSSMPolicy"
   policy = data.aws_iam_policy_document.eventbridge_ssm_policy.json
 }
+resource "aws_iam_policy" "eventbridge_sqs_policy" {
+  name   = "${local.project}-EventBridgeSSMPolicy"
+  policy = data.aws_iam_policy_document.eventbridge_ssm_policy.json
+}
 resource "aws_iam_role_policy_attachment" "eventbridge_ssm_policy_attach" {
   role       = aws_iam_role.eventbridge_service_role.name
   policy_arn = aws_iam_policy.eventbridge_ssm_policy.arn
@@ -72,7 +76,7 @@ resource "aws_cloudwatch_event_target" "s3_update" {
   arn        = aws_ssm_document.user_data.arn
   role_arn   = aws_iam_role.eventbridge_service_role.arn
   dead_letter_config {
-    arn = aws_sqs_queue.deadletterqueue.arn
+    arn = aws_sqs_queue.dead_letter_queue.arn
   }
   input_transformer {
     input_paths = {
@@ -111,7 +115,7 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
   arn        = aws_ssm_document.cloudmap_deregister.arn
   role_arn   = aws_iam_role.eventbridge_service_role.arn
   dead_letter_config {
-    arn = aws_sqs_queue.deadletterqueue.arn
+    arn = aws_sqs_queue.dead_letter_queue.arn
   }
   input_transformer {
     input_paths = {
