@@ -26,6 +26,11 @@ resource "aws_ssm_document" "user_data" {
   content = <<EOF
 schemaVersion: "2.2"
 description: "Init EC2 instance with UserData"
+parameters:
+  LogFileName:
+    type: String
+    description: "SSM Document Execution log file"
+    default: "/tmp/ssm_execution_log.txt"
 mainSteps:
   - name: "WebStackCleanup"
     action: "aws:runShellScript"
@@ -33,6 +38,7 @@ mainSteps:
       runCommand:
         - |-
           #!/bin/bash
+          echo "Start document $(date)" > {{ LogFileName }}
           if [ ! -f "/root/webstack_clean" ]; then
             WEB_STACK_CHECK="mysql* rabbitmq* elasticsearch opensearch percona-server* maria* php* nginx* apache* ufw varnish* certbot* redis* webmin"
             INSTALLED_PACKAGES="$(apt -qq list --installed $${WEB_STACK_CHECK} 2> /dev/null | cut -d'/' -f1 | tr '\n' ' ')"
@@ -108,6 +114,7 @@ mainSteps:
       runCommand:
         - |-
           #!/bin/bash
+          echo "Start realease step $(date)" >> {{ LogFileName }}
           # Get latest release package
           LATEST_RELEASE=$(aws s3 ls s3://${aws_s3_bucket.this["system"].bucket}/releases/ --recursive | sort | tail -n 1 | awk '{print $3}')
           RELEASES_DIRECTORY="/home/${var.brand}/releases"
@@ -148,6 +155,7 @@ mainSteps:
       runCommand:
         - |-
           #!/bin/bash
+          echo "Start configuration step $(date)" >> {{ LogFileName }}
           # Create local setup directories
           INSTANCE_NAME=$(metadata tags/instance/Instance_name)
           SETUP_DIRECTORY="/opt/${var.brand}/setup"
@@ -197,6 +205,7 @@ mainSteps:
       runCommand:
         - |-
           #!/bin/bash
+          echo "Start cloudmap registration step $(date)" >> {{ LogFileName }}
           INSTANCE_IP="$(metadata local-ipv4)"
           INSTANCE_ID="$(metadata instance-id)"
           INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
@@ -222,5 +231,20 @@ mainSteps:
           wget https://amazoncloudwatch-agent.s3.amazonaws.com/debian/arm64/latest/amazon-cloudwatch-agent.deb
           dpkg -i amazon-cloudwatch-agent.deb
           /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:amazon-cloudwatch-agent-$${INSTANCE_NAME}.json
+  - name: "SendExecutionLog"
+    action: "aws:runShellScript"
+    inputs:
+      runCommand:
+        - |-
+          #!/bin/bash
+          echo "Instance uptime: $(uptime)" >> {{ LogFileName }}
+          echo "INSTANCE_ID: $(metadata instance-id)" >> {{ LogFileName }}
+          echo "INSTANCE_NAME: $(metadata tags/instance/Instance_name)" >> {{ LogFileName }}
+          echo "INSTANCE_HOSTNAME: $(hostname)" >> {{ LogFileName }}
+          echo "Instance ready: $(date)" >> {{ LogFileName }}
+          aws sns publish \
+            --topic-arn aws_sns_topic.default.arn \
+            --subject "SSM Document Execution Log on $${INSTANCE_NAME}" \
+            --message file://{{ LogFileName }}
 EOF
 }
