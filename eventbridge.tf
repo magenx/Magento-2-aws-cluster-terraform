@@ -40,7 +40,7 @@ resource "aws_iam_policy" "eventbridge_ssm_policy" {
   policy = data.aws_iam_policy_document.eventbridge_ssm_policy.json
 }
 resource "aws_iam_policy" "eventbridge_sqs_policy" {
-  name   = "${local.project}-EventBridgeSSMPolicy"
+  name   = "${local.project}-EventBridgeSQSPolicy"
   policy = data.aws_iam_policy_document.eventbridge_sqs_policy.json
 }
 resource "aws_iam_role_policy_attachment" "eventbridge_ssm_policy_attach" {
