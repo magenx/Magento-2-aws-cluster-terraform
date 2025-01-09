@@ -17,6 +17,24 @@ resource "aws_ssm_association" "user_data" {
   document_version = "$LATEST"
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# Create SSM Document to get InitEC2WithUserData document
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_ssm_document" "get_user_data" {
+  name            = "GetInitEC2WithUserData"
+  document_format = "YAML"
+  document_type   = "Automation"
+  content = <<EOF
+schemaVersion: "0.3"
+description: "Automate execution of InitEC2WithUserData on an instance"
+mainSteps:
+  - name: ExecuteInitEC2WithUserData
+    action: "aws:runCommand"
+    inputs:
+      DocumentName: "InitEC2WithUserData"
+      TimeoutSeconds: 120
+EOF
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document to configure EC2 instances in Auto Scaling Group
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "user_data" {
@@ -31,6 +49,9 @@ parameters:
     type: String
     description: "SSM Document Execution log file"
     default: "/tmp/ssm_execution_log.txt"
+  instanceId:
+    type: String
+    description: "InstanceID from event"
 mainSteps:
   - name: "WebStackCleanup"
     action: "aws:runShellScript"
@@ -244,7 +265,7 @@ mainSteps:
           echo "Instance ready: $(date)" >> {{ LogFileName }}
           aws sns publish \
             --topic-arn ${aws_sns_topic.default.arn} \
-            --subject "SSM Document Execution Log on $${INSTANCE_NAME}" \
+            --subject "SSM Document Execution on $(metadata tags/instance/Instance_name)" \
             --message file://{{ LogFileName }}
 EOF
 }
