@@ -41,13 +41,13 @@ resource "aws_iam_policy" "eventbridge_ssm_policy" {
 }
 resource "aws_iam_policy" "eventbridge_sqs_policy" {
   name   = "${local.project}-EventBridgeSSMPolicy"
-  policy = data.aws_iam_policy_document.eventbridge_ssm_policy.json
+  policy = data.aws_iam_policy_document.eventbridge_sqs_policy.json
 }
 resource "aws_iam_role_policy_attachment" "eventbridge_ssm_policy_attach" {
   role       = aws_iam_role.eventbridge_service_role.name
   policy_arn = aws_iam_policy.eventbridge_ssm_policy.arn
 }
-resource "aws_iam_role_policy_attachment" "eventbridge_ssm_policy_attach" {
+resource "aws_iam_role_policy_attachment" "eventbridge_sqs_policy_attach" {
   role       = aws_iam_role.eventbridge_service_role.name
   policy_arn = aws_iam_policy.eventbridge_sqs_policy.arn
 }
