@@ -73,7 +73,7 @@ resource "aws_cloudwatch_event_target" "s3_update" {
   depends_on = [aws_autoscaling_group.this]
   rule       = aws_cloudwatch_event_rule.s3_update.name
   target_id  = "${local.project}-instance-s3-update-setup"
-  arn        = aws_ssm_document.user_data.arn
+  arn        = aws_ssm_document.get_user_data.arn
   role_arn   = aws_iam_role.eventbridge_service_role.arn
   dead_letter_config {
     arn = aws_sqs_queue.dead_letter_queue.arn
