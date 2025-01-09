@@ -78,16 +78,6 @@ resource "aws_cloudwatch_event_target" "s3_update" {
   dead_letter_config {
     arn = aws_sqs_queue.dead_letter_queue.arn
   }
-  input_transformer {
-    input_paths = {
-      ObjectKey = "$.detail.object.key"
-    }
-    input_template = <<EOF
-    {
-    "ObjectKey": "<ObjectKey>"
-    }
-    EOF
-  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule for EC2 instance termination lifecycle
