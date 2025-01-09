@@ -243,7 +243,7 @@ mainSteps:
           echo "INSTANCE_HOSTNAME: $(hostname)" >> {{ LogFileName }}
           echo "Instance ready: $(date)" >> {{ LogFileName }}
           aws sns publish \
-            --topic-arn aws_sns_topic.default.arn \
+            --topic-arn ${aws_sns_topic.default.arn} \
             --subject "SSM Document Execution Log on $${INSTANCE_NAME}" \
             --message file://{{ LogFileName }}
 EOF
