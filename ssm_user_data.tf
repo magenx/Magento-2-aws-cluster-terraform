@@ -32,6 +32,9 @@ mainSteps:
     inputs:
       DocumentName: "InitEC2WithUserData"
       TimeoutSeconds: 120
+      Targets:
+        - Key: "tag:Name"
+          Values: ["enabled"]
 EOF
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
