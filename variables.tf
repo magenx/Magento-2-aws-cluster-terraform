@@ -25,6 +25,15 @@ locals {
    environment = lower(terraform.workspace)
 }
 
+locals {
+  default_tags = {
+    Managed      = "terraform"
+    Brand        = var.brand
+    Environment  = local.environment
+    Dns          = "${var.brand}.internal"
+  }
+}
+
 variable "password" {
    description = "Generate password"
    default     = [
