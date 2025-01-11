@@ -40,7 +40,7 @@ resource "aws_launch_template" "this" {
   }
  dynamic "tag_specifications" {
     for_each = {
-      for type in ["instance", "volume"] : type => data.aws_default_tags.this
+      for type in ["instance", "volume"] : type => local.default_tags
     }
     content {
       resource_type = tag_specifications.key
@@ -119,11 +119,11 @@ resource "aws_autoscaling_group" "this" {
     create_before_destroy = true
   }
   dynamic "tag" {
-    for_each = merge(data.aws_default_tags.this.tags,{Name="${local.project}-${each.key}-asg"})
+    for_each = merge(local.default_tags,{Name="${local.project}-${each.key}-asg"})
     content {
       key                 = tag.key
       value               = tag.value
-      propagate_at_launch = true
+      propagate_at_launch = false
     }
   }
 }
