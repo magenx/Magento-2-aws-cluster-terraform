@@ -39,24 +39,19 @@ resource "aws_launch_template" "this" {
     security_groups = [aws_security_group.ec2[each.key].id]
   }
  dynamic "tag_specifications" {
-    for_each = toset(["instance", "volume"])
+    for_each = {
+      for type in ["instance", "volume"] : type => data.aws_default_tags.this
+    }
     content {
       resource_type = tag_specifications.key
-
-      dynamic "tags" {
-        for_each = merge(
-          data.aws_default_tags.this.tags,
-          {
-            Name          = "${local.project}-${each.key}-ec2"
-            Instance_name = each.key
-            Hostname      = "${each.key}.${var.brand}.internal"
-          }
-        )
-        content {
-          key   = tags.key
-          value = tags.value
+      tags = merge(
+        tag_specifications.value,
+        {
+          Name          = "${local.project}-${each.key}-ec2",
+          Instance_name = each.key,
+          Hostname      = "${each.key}.${var.brand}.internal"
         }
-      }
+      )
     }
   }
   user_data = base64encode(<<EOF
