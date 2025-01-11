@@ -23,12 +23,7 @@ provider "aws" {
   alias  = "useast1"
   region = "us-east-1"
   default_tags {
-   tags = {
-   Managed      = "terraform"
-   Brand        = var.brand
-   Environment  = local.environment
-   Dns          = "${var.brand}.internal"
-  }
+   tags = { local.default_tags }
  }
 }
 provider "null" {}
