@@ -39,7 +39,7 @@ resource "aws_launch_template" "this" {
     security_groups = [aws_security_group.ec2[each.key].id]
   }
   dynamic "tag_specifications" {
-    for_each = toset(["instance","spot-instance-request"])
+    for_each = toset(["instance","spot-instances-request"])
     content {
        resource_type = tag_specifications.key
        tags = merge(
