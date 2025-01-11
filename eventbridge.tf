@@ -32,7 +32,7 @@ data "aws_iam_policy_document" "eventbridge_sqs_policy" {
   statement {
     effect = "Allow"
     actions   = ["sqs:SendMessage"]
-    resources = ["arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"]
+    resources = [aws_sqs_queue.dead_letter_queue.arn]
   }
 }
 resource "aws_iam_policy" "eventbridge_ssm_policy" {
