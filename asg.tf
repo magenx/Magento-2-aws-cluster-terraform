@@ -39,7 +39,7 @@ resource "aws_launch_template" "this" {
     security_groups = [aws_security_group.ec2[each.key].id]
   }
   dynamic "tag_specifications" {
-    for_each = toset(["instance","volume"])
+    for_each = toset(["instance","spot-instance-request"])
     content {
        resource_type = tag_specifications.key
        tags = merge(
@@ -48,10 +48,21 @@ resource "aws_launch_template" "this" {
           Name = "${local.project}-${each.key}-ec2"
           Instance_name = each.key
           Hostname = "${each.key}.${var.brand}.internal"
+          Config = "s3_system_setup"
         }
       )
     }
   }
+  tag_specifications {
+       resource_type = "volume"
+       tags = merge(
+         local.default_tags,
+         {
+          Name = "${local.project}-${each.key}-volume"
+          Instance_name = each.key
+        }
+      )
+    }
   user_data = base64encode(<<EOF
 #!/bin/bash
 # update and install
