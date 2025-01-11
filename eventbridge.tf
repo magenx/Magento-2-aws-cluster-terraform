@@ -78,6 +78,10 @@ resource "aws_cloudwatch_event_target" "s3_update" {
   dead_letter_config {
     arn = aws_sqs_queue.dead_letter_queue.arn
   }
+  run_command_targets {
+    key    = "tag:Name"
+    values = ["FooBar"]
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule for EC2 instance termination lifecycle
