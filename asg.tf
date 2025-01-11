@@ -45,7 +45,7 @@ resource "aws_launch_template" "this" {
     content {
       resource_type = tag_specifications.key
       tags = merge(
-        tag_specifications.value,
+        tag_specifications.value.tags,
         {
           Name          = "${local.project}-${each.key}-ec2",
           Instance_name = each.key,
