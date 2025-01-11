@@ -79,8 +79,8 @@ resource "aws_cloudwatch_event_target" "s3_update" {
     arn = aws_sqs_queue.dead_letter_queue.arn
   }
   run_command_targets {
-    key    = "tag:Brand"
-    values = [var.brand]
+    key    = "tag:Config"
+    values = ["s3_system_setup"]
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
