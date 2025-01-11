@@ -100,7 +100,7 @@ resource "aws_autoscaling_group" "this" {
   max_size            = each.value.max_size
   health_check_grace_period = var.asg["health_check_grace_period"]
   health_check_type         = var.asg["health_check_type"]
-  target_group_arns  = [aws_lb_target_group.this.arn]
+  target_group_arns  = each.key == "varnish" ? [aws_lb_target_group.this.arn] : []
   launch_template {
       id      = aws_launch_template.this[each.key].id
       version = "$Latest"
