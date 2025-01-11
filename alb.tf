@@ -18,9 +18,12 @@ resource "aws_lb" "this" {
     prefix  = "ALB"
     enabled = true
   }
-  tags = {
+  tags = merge( 
+    local.default_tags,
+    {
     Name = "${local.project}-alb"
-  }
+    }
+  )
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create Target Group for Load Balancer
