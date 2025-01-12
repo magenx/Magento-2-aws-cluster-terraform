@@ -113,11 +113,11 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
   }
   input_transformer {
     input_paths = {
-      instanceId = "$.detail.EC2InstanceId"
+      InstanceId = "$.detail.EC2InstanceId"
     }
     input_template = <<EOF
     {
-    "instanceId": "<instanceId>"
+    "instanceId": "<InstanceId>"
     }
     EOF
   }
