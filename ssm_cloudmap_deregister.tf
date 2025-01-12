@@ -14,27 +14,46 @@ resource "aws_ssm_document" "cloudmap_deregister" {
 schemaVersion: "0.3"
 description: "Deregister instance from CloudMap on termination"
 parameters:
-  instanceId:
+  InstanceId:
     type: String
+    description: "The ID of the instance to deregister"
+  AutoScalingGroupName:
+    type: String
+    description: "The name of the Auto Scaling Group"
 mainSteps:
-  - name: DeregisterInstance
-    action: aws:runCommand
+  - name: ConstructParameterKey
+    action: aws:executeScript
     inputs:
-      DocumentName: "AWS-RunShellScript"
-      InstanceIds:
-        - "{{ instanceId }}"
-      TimeoutSeconds: 60
-      Parameters:
-        commands:
-          - |-
-            #!/bin/bash
-            INSTANCE_ID="{{ instanceId }}"
-            INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
-            CLOUDMAP_SERVICE_ID="$(parameterstore $${INSTANCE_NAME^^}_CLOUDMAP_SERVICE_ID)"
-            aws servicediscovery deregister-instance \
-              --region ${data.aws_region.current.name} \
-              --service-id $${CLOUDMAP_SERVICE_ID} \
-              --instance-id $${INSTANCE_ID}
-        executionTimeout: "60"
+      Runtime: python3.8
+      Handler: construct_parameter_key
+      Script: |
+        def construct_parameter_key(event, context):
+            asg_name = event['AutoScalingGroupName']
+            # Convert ASG name to uppercase and append _CLOUDMAP_SERVICE_ID
+            service_name = asg_name.upper() + "_CLOUDMAP_SERVICE_ID"
+            return {"ServiceName": service_name}
+    outputs:
+      - Name: ServiceName
+        Selector: "$.ServiceName"
+        Type: String
+
+  - name: GetCloudMapServiceId
+    action: aws:executeAwsApi
+    inputs:
+      Service: ssm
+      Api: GetParameter
+      Name: "/${local.project}/${local.environment}/{{ ConstructParameterKey.ServiceName }}"
+    outputs:
+      - Name: CloudMapServiceId
+        Selector: "$.Parameter.Value"
+        Type: String
+  - name: DeregisterInstance
+    action: aws:executeAwsApi
+    inputs:
+      Service: servicediscovery
+      Api: DeregisterInstance
+      InstanceId: "{{ InstanceId }}"
+      ServiceId: "{{ GetCloudMapServiceId.CloudMapServiceId }}"
+ executionTimeout: "60"
 EOF
 }
