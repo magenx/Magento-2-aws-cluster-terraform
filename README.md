@@ -89,20 +89,17 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
    yum install -y yum-utils
    yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
    yum -y install terraform
-   mkdir /home/magento && cd $_
+   mkdir -p /home/magento && cd $_
    git clone https://github.com/magenx/Magento-2-aws-cluster-terraform -b ec2_v5 .
    mv production.auto.tfvars.template production.auto.tfvars
    vim production.auto.tfvars
+   bash init.sh
    END
 ```
-- [x] Switch to root user and create workdir:  
-```
-  sudo -i
-  mkdir /home/magento && cd /home/magento
-```
-- [x] Run quick start script:  
+- [x] Switch to root user and run quick start script:  
 > 
 ```
+  sudo -i
   bash ../cloudshell-user/install
 ```
 >  
@@ -110,11 +107,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Adjust your settings
   
 ❗ ```For production deployment make sure to enable deletion protection and backup retention```  
-   
-- [x] Run:
-```
-   terraform apply
-```
+  
 > to destroy infrastructure: ```terraform destroy```  
 > resources created outside of terraform must be deleted manually, for example CloudWatch logs
 
