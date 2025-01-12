@@ -26,11 +26,11 @@ mainSteps:
     inputs:
       Runtime: python3.8
       Handler: construct_parameter_key
-      Script: |
+      Script: |-
         def construct_parameter_key(event, context):
             asg_name = event['AutoScalingGroupName']
-            # Convert ASG name to uppercase and append _CLOUDMAP_SERVICE_ID
-            service_name = asg_name.upper() + "_CLOUDMAP_SERVICE_ID"
+            service_group = asg_name.split('-')[2]
+            service_name = service_group.upper() + "_CLOUDMAP_SERVICE_ID"
             return {"ServiceName": service_name}
     outputs:
       - Name: ServiceName
