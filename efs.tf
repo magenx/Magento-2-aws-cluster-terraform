@@ -8,9 +8,12 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_efs_file_system" "this" {
   creation_token = "${local.project}-efs-storage"
-  tags = {
+  tags = merge(
+         local.default_tags,
+         {
     Name = "${local.project}-efs-storage"
   }
+)
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create EFS mount target for each subnet
