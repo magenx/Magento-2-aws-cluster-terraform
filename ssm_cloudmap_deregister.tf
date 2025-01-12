@@ -36,7 +36,6 @@ mainSteps:
       - Name: ServiceName
         Selector: "$.ServiceName"
         Type: String
-
   - name: GetCloudMapServiceId
     action: aws:executeAwsApi
     inputs:
