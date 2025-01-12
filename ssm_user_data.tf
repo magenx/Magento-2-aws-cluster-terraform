@@ -114,16 +114,21 @@ mainSteps:
       runCommand:
         - |-
           #!/bin/bash
-          echo "Start realease step $(date)" >> {{ LogFileName }}
+          echo "Start realease check step $(date)" >> {{ LogFileName }}
           # Get latest release package
           LATEST_RELEASE=$(aws s3 ls s3://${aws_s3_bucket.this["system"].bucket}/releases/ --recursive | sort | tail -n 1 | awk '{print $3}')
+          if [ -z "$${LATEST_RELEASE}" ]; then
+            echo "-- Release directory not found or empty" >> {{ LogFileName }}
+            exit 1
+          fi
           RELEASES_DIRECTORY="/home/${var.brand}/releases"
           for DIRECTORY in $${RELEASES_DIRECTORY}/*; do
             if [ "$(basename "$${DIRECTORY}")" == "$${LATEST_RELEASE}" ]; then
-              echo "Release directory $${LATEST_RELEASE} already exists. Exiting..."
+              echo "-- [INFO]: Release directory [$${LATEST_RELEASE}] already exists" >> {{ LogFileName }}
               exit 1
             fi
-          done
+          done 
+          echo "-- Latest release found: [$${LATEST_RELEASE}]" >> {{ LogFileName }}
           SHARED_DIRECTORY="/home/${var.brand}/shared"
           LATEST_RELEASE_DIRECTORY="/home/${var.brand}/releases/$${LATEST_RELEASE}"
           mkdir -p $${LATEST_RELEASE_DIRECTORY}/pub
@@ -132,21 +137,20 @@ mainSteps:
           ln -nfs "$${SHARED_DIRECTORY}/pub/media" "$${LATEST_RELEASE_DIRECTORY}/pub/media"
           # Sync latest release package
           aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/releases/$${LATEST_RELEASE}" "$${LATEST_RELEASE_DIRECTORY}"
-          # Ensure the new release directory exists
-          if [ ! -d "$${LATEST_RELEASE_DIRECTORY}" ]; then
-            echo "New release directory not found!"
-            echo "Deployment error!"
-            exit 1
-          fi
-          # Check if the directory is an EFS mount
+          # Ensure the new release directory exists and efs mounted
           if ! df -T "$${LATEST_RELEASE_DIRECTORY}/pub/media" | grep -q "efs"; then
-            echo "The media directory is not an EFS mount."
-            echo "Deployment error!"
+            echo "-- [ERROR]: The media directory is not an EFS mount" >> {{ LogFileName }}
             exit 1
           fi
           # Unzip lastest release package
           cd $${LATEST_RELEASE_DIRECTORY}
           unzip '*.zip' && rm -f *.zip
+          if [[ $? -eq 0 ]]; then
+            echo "-- The archive with the new release has been unpacked" >> {{ LogFileName }}
+          else
+            echo "-- [ERROR]: The archive is broken" >> {{ LogFileName }}
+            exit 1
+          fi
           # Perform symlink swap to point to the new release
           ln -nfs "$${LATEST_RELEASE_DIRECTORY}" "$${PUBLIC_HTML}"
   - name: "InstanceConfiguration"
@@ -174,6 +178,7 @@ mainSteps:
           aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/setup/$${INSTANCE_NAME}" "$${INSTANCE_DIRECTORY}" $${OPTIONS}
           # Check if both sync commands were successful
           if [ $? -eq 0 ]; then
+              echo "-- Configuration file:" >> {{ LogFileName }}
               # Execute scripts in order from INIT_DIRECTORY
               for SCRIPT in $(ls "$${INIT_DIRECTORY}"/*.sh | sort); do
                   LOG_FILE="$${LOG_DIRECTORY}/$(basename "$${SCRIPT}").log"
@@ -181,8 +186,9 @@ mainSteps:
                   NEW_HASH=$(md5sum "$${SCRIPT}" | awk '{print $1}')        
                   if [ ! -f "$${HASH_FILE}" ] || [ "$${NEW_HASH}" != "$(cat "$${HASH_FILE}")" ]; then
                       echo "$${NEW_HASH}" > "$${HASH_FILE}"
-                      echo -e "\n$(date) Running: $${SCRIPT}" | tee -a "$${LOG_FILE}"
+                      echo -e "\n$(date)\nRunning: $${SCRIPT}" | tee -a "$${LOG_FILE}"
                       bash "$${SCRIPT}" >>"$${LOG_FILE}" 2>&1
+                      echo "---- $${SCRIPT}" >> {{ LogFileName }}
                   fi
               done
               # Execute scripts in order from INSTANCE_DIRECTORY
@@ -192,12 +198,13 @@ mainSteps:
                   NEW_HASH=$(md5sum "$${SCRIPT}" | awk '{print $1}')        
                   if [ ! -f "$${HASH_FILE}" ] || [ "$${NEW_HASH}" != "$(cat "$${HASH_FILE}")" ]; then
                       echo "$${NEW_HASH}" > "$${HASH_FILE}"
-                      echo -e "\n$(date) Running: $${SCRIPT}" | tee -a "$${LOG_FILE}"
+                      echo -e "\n$(date)\nRunning: $${SCRIPT}" | tee -a "$${LOG_FILE}"
                       bash "$${SCRIPT}" >>"$${LOG_FILE}" 2>&1
+                      echo "---- $${SCRIPT}" >> {{ LogFileName }}
                   fi
               done
           else
-              echo "Error syncing files from S3"
+              echo "-- [ERROR]: Configuration files not found" >> {{ LogFileName }}
           fi
   - name: "CloudMapInstanceRegistration"
     action: "aws:runShellScript"
@@ -205,7 +212,7 @@ mainSteps:
       runCommand:
         - |-
           #!/bin/bash
-          echo "Start cloudmap registration step $(date)" >> {{ LogFileName }}
+          echo "Start CloudMap registration step $(date)" >> {{ LogFileName }}
           INSTANCE_IP="$(metadata local-ipv4)"
           INSTANCE_ID="$(metadata instance-id)"
           INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
@@ -226,6 +233,7 @@ mainSteps:
       runCommand:
         - |-
           #!/bin/bash
+          echo "Start Amazon Cloud Watch Agent installation step:" >> {{ LogFileName }}
           INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
           cd /tmp
           wget https://amazoncloudwatch-agent.s3.amazonaws.com/debian/arm64/latest/amazon-cloudwatch-agent.deb
@@ -237,11 +245,12 @@ mainSteps:
       runCommand:
         - |-
           #!/bin/bash
+          echo "-------------------------------------------------" >> {{ LogFileName }}
           echo "Instance uptime: $(uptime)" >> {{ LogFileName }}
           echo "INSTANCE_ID: $(metadata instance-id)" >> {{ LogFileName }}
           echo "INSTANCE_NAME: $(metadata tags/instance/Instance_name)" >> {{ LogFileName }}
           echo "INSTANCE_HOSTNAME: $(hostname)" >> {{ LogFileName }}
-          echo "Instance ready: $(date)" >> {{ LogFileName }}
+          echo "SSM Document is complete: $(date)" >> {{ LogFileName }}
           aws sns publish \
             --topic-arn ${aws_sns_topic.default.arn} \
             --subject "SSM Document Execution on $(metadata tags/instance/Instance_name)" \
