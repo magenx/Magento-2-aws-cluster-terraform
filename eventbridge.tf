@@ -114,10 +114,12 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
   input_transformer {
     input_paths = {
       InstanceId = "$.detail.EC2InstanceId"
+      AutoScalingGroupName = "$.detail.AutoScalingGroupName"
     }
     input_template = <<EOF
     {
-    "instanceId": "<InstanceId>"
+    "InstanceId": "<InstanceId>",
+    "AutoScalingGroupName": "<AutoScalingGroupName>"
     }
     EOF
   }
