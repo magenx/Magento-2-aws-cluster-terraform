@@ -50,7 +50,6 @@ resource "aws_launch_template" "this" {
         }
       )
     }
-  }
   tag_specifications {
        resource_type = "volume"
        tags = merge(
