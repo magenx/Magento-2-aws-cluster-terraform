@@ -102,7 +102,7 @@ resource "aws_autoscaling_group" "this" {
   depends_on = [aws_ssm_parameter.aws_env]
   for_each = var.ec2
   name = "${local.project}-${each.key}-asg"
-  vpc_zone_identifier = values(aws_subnet.this).*.id
+  vpc_zone_identifier = values(aws_subnet.this)[0].id
   desired_capacity    = each.value.desired_capacity
   min_size            = each.value.min_size
   max_size            = each.value.max_size
