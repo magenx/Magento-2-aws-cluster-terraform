@@ -21,35 +21,32 @@ resource "aws_iam_role" "eventbridge_service_role" {
   description        = "Provides EventBridge manage events on your behalf."
   assume_role_policy = data.aws_iam_policy_document.eventbridge_assume_role.json
 }
-data "aws_iam_policy_document" "eventbridge_ssm_policy" {
+data "aws_iam_policy_document" "eventbridge_policy" {
   statement {
     effect    = "Allow"
-    actions   = ["ssm:StartAutomationExecution"]
-    resources = ["arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"]
+    actions   = [
+      "ssm:StartAutomationExecution",
+      "ssm:GetAutomationExecution",
+      "sqs:SendMessage",
+      "ssm:GetParameter",
+      "ssm:GetParameters",
+      "servicediscovery:DeregisterInstance"
+    ]
+    resources = ["*"]
+    condition {
+      test     = "StringEquals"
+      variable = "aws:PrincipalAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
   }
 }
-data "aws_iam_policy_document" "eventbridge_sqs_policy" {
-  statement {
-    effect = "Allow"
-    actions   = ["sqs:SendMessage"]
-    resources = [aws_sqs_queue.dead_letter_queue.arn]
-  }
+resource "aws_iam_policy" "eventbridge_policy" {
+  name   = "${local.project}-EventBridgePolicy"
+  policy = data.aws_iam_policy_document.eventbridge_policy.json
 }
-resource "aws_iam_policy" "eventbridge_ssm_policy" {
-  name   = "${local.project}-EventBridgeSSMPolicy"
-  policy = data.aws_iam_policy_document.eventbridge_ssm_policy.json
-}
-resource "aws_iam_policy" "eventbridge_sqs_policy" {
-  name   = "${local.project}-EventBridgeSQSPolicy"
-  policy = data.aws_iam_policy_document.eventbridge_sqs_policy.json
-}
-resource "aws_iam_role_policy_attachment" "eventbridge_ssm_policy_attach" {
+resource "aws_iam_role_policy_attachment" "eventbridge_policy_attach" {
   role       = aws_iam_role.eventbridge_service_role.name
-  policy_arn = aws_iam_policy.eventbridge_ssm_policy.arn
-}
-resource "aws_iam_role_policy_attachment" "eventbridge_sqs_policy_attach" {
-  role       = aws_iam_role.eventbridge_service_role.name
-  policy_arn = aws_iam_policy.eventbridge_sqs_policy.arn
+  policy_arn = aws_iam_policy.eventbridge_policy.arn
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule for S3 bucket object event
