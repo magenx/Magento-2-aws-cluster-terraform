@@ -144,7 +144,7 @@ mainSteps:
           fi
           # Unzip lastest release package
           cd $${LATEST_RELEASE_DIRECTORY}
-          unzip '*.zip' && rm -f *.zip
+          unzip $${LATEST_RELEASE}.zip && rm -f $${LATEST_RELEASE}.zip
           if [[ $? -eq 0 ]]; then
             echo "-- The archive with the new release has been unpacked" >> {{ LogFileName }}
           else
@@ -253,7 +253,7 @@ mainSteps:
           echo "SSM Document is complete: $(date)" >> {{ LogFileName }}
           aws sns publish \
             --topic-arn ${aws_sns_topic.default.arn} \
-            --subject "SSM Document Execution on $(metadata tags/instance/Instance_name)" \
+            --subject "SSM Document InitEC2WithUserData execution on $(metadata tags/instance/Instance_name)" \
             --message file://{{ LogFileName }}
 EOF
 }
