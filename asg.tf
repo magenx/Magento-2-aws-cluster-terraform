@@ -38,10 +38,8 @@ resource "aws_launch_template" "this" {
     associate_public_ip_address = true
     security_groups = [aws_security_group.ec2[each.key].id]
   }
-  dynamic "tag_specifications" {
-    for_each = toset(["instance"])
-    content {
-       resource_type = tag_specifications.key
+  tag_specifications {
+       resource_type = "instance"
        tags = merge(
          local.default_tags,
          {
