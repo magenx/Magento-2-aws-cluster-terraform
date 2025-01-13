@@ -53,6 +53,5 @@ mainSteps:
       Api: DeregisterInstance
       InstanceId: "{{ InstanceId }}"
       ServiceId: "{{ GetCloudMapServiceId.CloudMapServiceId }}"
-executionTimeout: "60"
 EOF
 }
