@@ -34,6 +34,12 @@ locals {
   }
 }
 
+locals {
+  ec2_setup = {
+    Setup = "s3_system_setup"
+  }
+}
+
 variable "password" {
    description = "Generate password"
    default     = [
