@@ -42,11 +42,11 @@ resource "aws_launch_template" "this" {
        resource_type = "instance"
        tags = merge(
          local.default_tags,
+         local.ec2_setup,
          {
           Name = "${local.project}-${each.key}-ec2"
           Instance_name = each.key
           Hostname = "${each.key}.${var.brand}.internal"
-          Config = "s3_system_setup"
         }
       )
     }
