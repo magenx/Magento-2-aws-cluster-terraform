@@ -75,10 +75,12 @@ resource "aws_cloudwatch_event_target" "s3_update" {
   dead_letter_config {
     arn = aws_sqs_queue.dead_letter_queue.arn
   }
-  run_command_targets {
-    key    = "tag:Config"
-    values = ["s3_system_setup"]
-  }
+#run_command_targets [
+#            for k, v in local.ec2_setup : {
+#              key    = tag:${k}
+#              values = [v]
+#            }
+#          ]
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule for EC2 instance termination lifecycle
