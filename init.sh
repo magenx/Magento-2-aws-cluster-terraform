@@ -56,44 +56,6 @@ aws s3api put-public-access-block \
 
 aws s3api wait bucket-exists --bucket ${STATE_BUCKET}
 
-# Define the bucket policy
-STATE_BUCKET_POLICY=$(cat <<EOF
-{
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Principal": {
-                    "Service": "dynamodb.amazonaws.com"
-                },
-                "Action": "s3:PutObject",
-                "Resource": "arn:aws:s3:::${STATE_BUCKET}/*"
-            }
-        ]
-}
-EOF
-)
-
-# Apply bucket policy
-echo "---"
-echo "[!][INFO] Applying bucket policy to grant DynamoDB access to S3 bucket ${STATE_BUCKET}"
-echo "---"
-aws s3api put-bucket-policy --bucket "${STATE_BUCKET}" --policy "${STATE_BUCKET_POLICY}"
-
-# create dynamodb table
-aws dynamodb create-table \
-    --table-name ${DYNAMODB_TABLE} \
-    --attribute-definitions AttributeName=LockID,AttributeType=S \
-    --key-schema AttributeName=LockID,KeyType=HASH \
-    --billing-mode PAY_PER_REQUEST \
-    --table-class STANDARD_INFREQUENT_ACCESS \
-    --tags Key=Name,Value=${DYNAMODB_TABLE} \
-    --deletion-protection-enabled
-
-echo "---"
-echo "[!][INFO] Waiting for DynamoDB tabe to become active ..."
-echo "---"
-aws dynamodb wait table-exists --table-name ${DYNAMODB_TABLE}
 if  [ $? -ne 0 ]; then
 exit 1
 fi
@@ -105,11 +67,12 @@ echo "---"
 cat <<EOF > backend.tf
 terraform {
   backend "s3" {
+    use_lockfile    = true
     bucket          = "${STATE_BUCKET}"
     key             = "${OBJECT_KEY}"
     region          = "${AWS_REGION}"
-    dynamodb_table  = "${DYNAMODB_TABLE}"
     workspace_key_prefix = "${AWS_REGION}/magenx"
+
   }
 }
 EOF
@@ -141,5 +104,3 @@ terraform plan -out ${WORKSPACE}.plan.out -no-color 2>&1 > ${WORKSPACE}.plan.out
 ls -l ${WORKSPACE}.plan.out.txt
 
 touch lock.lock
-cd /home/magento
-echo "terraform apply"
