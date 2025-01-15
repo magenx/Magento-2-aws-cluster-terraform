@@ -19,10 +19,9 @@ echo "---"
 read -e -p "[?] Enter the S3 bucket name: " -i "magenx-terraform-state-lock-${RANDOM}" STATE_BUCKET
 read -e -p "[?] Enter the key: " -i "terraform.tfstate" OBJECT_KEY
 read -e -p "[?] Enter the region: " -i "${AWS_REGION}" AWS_REGION
-read -e -p "[?] Enter the DynamoDB table name: " -i "${STATE_BUCKET}" DYNAMODB_TABLE
 
 echo "---"
-echo "[!][INFO] Creating S3 bucket and dynamodb table"
+echo "[!][INFO] Creating S3 bucket"
 echo "---"
 
 # check bucket name on s3 storage
