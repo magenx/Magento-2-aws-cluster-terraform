@@ -49,11 +49,11 @@ resource "aws_iam_role_policy_attachment" "eventbridge_policy_attach" {
   policy_arn = aws_iam_policy.eventbridge_policy.arn
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# EventBridge Rule for S3 bucket object event
+# EventBridge Rule for S3 bucket object event for setup
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_rule" "s3_update" {
+resource "aws_cloudwatch_event_rule" "s3_setup_update" {
   name        = "${local.project}-s3-update-setup"
-  description = "Trigger SSM document when s3 system bucket updated"
+  description = "Trigger SSM document when s3 system bucket setup updated"
   event_pattern = jsonencode({
     "source": ["aws.s3"],
     "detail-type"  : ["Object Created"],
@@ -64,13 +64,47 @@ resource "aws_cloudwatch_event_rule" "s3_update" {
   })
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
+# EventBridge Rule Target for SSM Document configuration on S3 update
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_event_target" "s3_setup_update" {
+  depends_on = [aws_autoscaling_group.this]
+  rule       = aws_cloudwatch_event_rule.s3_setup_update.name
+  target_id  = "${local.project}-s3-system-setup-update"
+  arn        = aws_ssm_document.configuration.arn
+  role_arn   = aws_iam_role.eventbridge_service_role.arn
+  dead_letter_config {
+    arn = aws_sqs_queue.dead_letter_queue.arn
+  }
+#run_command_targets [
+#            for k, v in local.ec2_setup : {
+#              key    = tag:${k}
+#              values = [v]
+#            }
+#          ]
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# EventBridge Rule for S3 bucket object event for release
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_event_rule" "s3_release_update" {
+  name        = "${local.project}-s3-release-update"
+  description = "Trigger SSM document when s3 system bucket release updated"
+  event_pattern = jsonencode({
+    "source": ["aws.s3"],
+    "detail-type"  : ["Object Created"],
+    "detail"       : {
+      "bucket"     : { "name" : [aws_s3_bucket.this["system"].bucket] },
+      "object"     : { "key" : [{ "prefix" : "release/" }] }
+    }
+  })
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule Target for SSM Document User Data on S3 update
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_cloudwatch_event_target" "s3_update" {
+resource "aws_cloudwatch_event_target" "s3_release_update" {
   depends_on = [aws_autoscaling_group.this]
-  rule       = aws_cloudwatch_event_rule.s3_update.name
-  target_id  = "${local.project}-instance-s3-update-setup"
-  arn        = aws_ssm_document.user_data.arn
+  rule       = aws_cloudwatch_event_rule.s3_release_update.name
+  target_id  = "${local.project}-s3-system-release-update"
+  arn        = aws_ssm_document.release.arn
   role_arn   = aws_iam_role.eventbridge_service_role.arn
   dead_letter_config {
     arn = aws_sqs_queue.dead_letter_queue.arn
