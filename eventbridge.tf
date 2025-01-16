@@ -52,7 +52,7 @@ resource "aws_iam_role_policy_attachment" "eventbridge_policy_attach" {
 # EventBridge Rule for S3 bucket object event for setup
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "s3_setup_update" {
-  name        = "${local.project}-s3-update-setup"
+  name        = "${local.project}-s3-setup-update"
   description = "Trigger SSM document when s3 system bucket setup updated"
   event_pattern = jsonencode({
     "source": ["aws.s3"],
