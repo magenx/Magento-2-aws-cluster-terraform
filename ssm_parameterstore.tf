@@ -31,7 +31,6 @@ locals {
     EFS_ACCESS_POINT_BACKUP     = aws_efs_access_point.this["backup"].id
     SNS_TOPIC_ARN               = aws_sns_topic.default.arn
     FRONTEND_CLOUDMAP_SERVICE_ID = aws_service_discovery_service.this["frontend"].id
-    ADMIN_CLOUDMAP_SERVICE_ID   = aws_service_discovery_service.this["admin"].id
     VARNISH_CLOUDMAP_SERVICE_ID = aws_service_discovery_service.this["varnish"].id
     MARIADB_CLOUDMAP_SERVICE_ID = aws_service_discovery_service.this["mariadb"].id
     OPENSEARCH_CLOUDMAP_SERVICE_ID = aws_service_discovery_service.this["opensearch"].id
@@ -52,10 +51,10 @@ locals {
     SES_SECRET                  = aws_iam_access_key.ses_smtp_user_access_key.secret
     SES_PASSWORD                = aws_iam_access_key.ses_smtp_user_access_key.ses_smtp_password_v4
     SES_ENDPOINT                = "email-smtp.${data.aws_region.current.name}.amazonaws.com"
-    DATABASE_NAME               = var.brand
-    DATABASE_USER               = var.brand
-    DATABASE_PASSWORD           = random_password.this["mariadb"].result
-    DATABASE_ROOT_PASSWORD      = random_password.this["mariadb_root"].result
+    MARIADB_DATABASE            = "${var.brand}_${local.environment}"
+    MARIADB_USER                = "${var.brand}_${local.environment}"
+    MARIADB_PASSWORD            = random_password.this["mariadb"].result
+    MARIADB_ROOT_PASSWORD       = random_password.this["mariadb_root"].result
     ADMIN_PATH                  = "admin_${random_string.this["admin_path"].result}"
     DOMAIN                      = var.domain
     BRAND                       = var.brand
@@ -64,9 +63,6 @@ locals {
     WEB_ROOT_PATH               = "/home/${var.brand}/public_html"
     SECURITY_HEADER             = random_uuid.this.result
     HEALTH_CHECK_LOCATION       = random_string.this["health_check"].result
-    PHPMYADMIN                  = random_string.this["phpmyadmin"].result
-    BLOWFISH                    = random_password.this["blowfish"].result
-    PROFILER                    = random_string.this["profiler"].result
     RESOLVER                    = cidrhost(aws_vpc.this.cidr_block, 2)
     HTTP_X_HEADER               = random_uuid.this.result
   }
