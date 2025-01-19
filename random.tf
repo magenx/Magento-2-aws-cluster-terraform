@@ -13,7 +13,7 @@ resource "random_uuid" "this" {}
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "this" {
   for_each         = toset(var.password)
-  length           = (each.key == "blowfish" ? 32 : 16)
+  length           = 16
   lower            = true
   upper            = true
   numeric          = true
@@ -25,7 +25,7 @@ resource "random_password" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_string" "this" {
   for_each       = toset(var.string)
-  length         = (each.key == "id_prefix" ? 3 : 7)
+  length         = 7
   lower          = true
   numeric        = true
   special        = false
