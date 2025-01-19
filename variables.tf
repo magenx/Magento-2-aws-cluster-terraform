@@ -85,14 +85,6 @@ variable "ec2" {
       min_size         = "1"
       max_size         = "5"
     }
-    admin = {
-      instance_type    = "c7g.xlarge"
-      service          = null
-      volume_size      = "25"
-      desired_capacity = "1"
-      min_size         = "1"
-      max_size         = "5"
-    }
     varnish = {
       instance_type    = "c7g.large"
       service          = null
