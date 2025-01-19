@@ -56,10 +56,9 @@ variable "password" {
 variable "string" {
    description = "Generate random string"
    default     = [
-      "admin_path", 
-      "phpmyadmin", 
-      "profiler", 
-      "health_check", 
+      "admin_path",
+      "profiler",
+      "health_check",
       "project",
       "opensearch"
    ]
