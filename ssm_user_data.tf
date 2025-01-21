@@ -56,13 +56,14 @@ mainSteps:
         - |-
           apt -qqy update
           apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core
-  - name: "ParameterstoreQueryScript"
+  - name: "WriteHelperScripts"
     action: "aws:runCommand"
     inputs:
       DocumentName: "AWS-RunShellScript"
       Parameters:
         commands:
           - |-
+            ### Parameterstore request script
             cat <<'END' > /usr/local/bin/parameterstore
             #!/bin/bash
             parameterstore() {
@@ -79,13 +80,7 @@ mainSteps:
             parameterstore "$${KEY}"
             END
             chmod +x /usr/local/bin/parameterstore
-  - name: "EC2MetadataQueryScript"
-    action: "aws:runCommand"
-    inputs:
-      DocumentName: "AWS-RunShellScript"
-      Parameters:
-        commands:
-          - |-
+            ### EC2 Metadata Request Script
             cat <<'END' > /usr/local/bin/metadata
             #!/bin/bash
             METADATA_URL="http://169.254.169.254/latest"
@@ -111,6 +106,14 @@ mainSteps:
             metadata "$${FIELD}"
             END
             chmod +x /usr/local/bin/metadata
+            ### Cron leader script
+            cat <<'END' > /usr/local/bin/cronleader
+            INSTANCE_ID=$(metadata instance-id)
+            INSTANCE_ID_FOR_CRONJOB=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names ${aws_autoscaling_group.this["frontend"].name} --region ${data.aws_region.current.name} --output json | \
+              jq -r '.AutoScalingGroups[].Instances[] | select(.LifecycleState=="InService") | .InstanceId' | sort | head -1)
+            [ "$${INSTANCE_ID_FOR_CRONJOB}" = "$${INSTANCE_ID}" ]
+            END
+            chmod +x /usr/local/bin/cronleader
   - name: "LatestReleaseDeployment"
     action: "aws:executeAutomation"
     inputs:
