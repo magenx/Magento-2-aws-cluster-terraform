@@ -106,14 +106,14 @@ mainSteps:
             metadata "$${FIELD}"
             END
             chmod +x /usr/local/bin/metadata
-            ### Cron leader script
-            cat <<'END' > /usr/local/bin/cronleader
+            ### Write leader instance script
+            cat <<'END' > /usr/local/bin/leader
             INSTANCE_ID=$(metadata instance-id)
-            INSTANCE_ID_FOR_CRONJOB=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names ${aws_autoscaling_group.this["frontend"].name} --region ${data.aws_region.current.name} --output json | \
+            LEADER_INSTANCE_ID=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names ${aws_autoscaling_group.this["frontend"].name} --region ${data.aws_region.current.name} --output json | \
               jq -r '.AutoScalingGroups[].Instances[] | select(.LifecycleState=="InService") | .InstanceId' | sort | head -1)
-            [ "$${INSTANCE_ID_FOR_CRONJOB}" = "$${INSTANCE_ID}" ]
+            [ "$${LEADER_INSTANCE_ID}" = "$${INSTANCE_ID}" ]
             END
-            chmod +x /usr/local/bin/cronleader
+            chmod +x /usr/local/bin/leader
   - name: "LatestReleaseDeployment"
     action: "aws:executeAutomation"
     inputs:
