@@ -17,37 +17,61 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
         "logs_collected": {
           "files": {
             "collect_list": [
+            %{ if each.key == "frontend" ~}
             {
                 "file_path": "/var/log/nginx/error.log",
-                "log_group_name": "${local.project}_nginx_error_logs",
-                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
-            },
-            %{ if each.key == "admin" ~}
-            {
-                "file_path": "/home/${var.brand}/public_html/var/log/php-fpm-error.log",
-                "log_group_name": "${local.project}_php_app_error_logs",
-                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
+                "log_group_name": "${local.project}_nginx_error_log",
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
+                "retention_in_days": 30
             },
             {
-                "file_path": "/home/${var.brand}/public_html/var/log/exception.log",
-                "log_group_name": "${local.project}_app_error_logs",
-                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
+                "file_path": "/var/log/php/error.log",
+                "log_group_name": "${local.project}_php_error_log",
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
+                "retention_in_days": 30
+            },
+            %{ endif ~}
+            %{ if each.key == "mariadb" ~}
+            {
+                "file_path": "/var/log/mysql/error.log",
+                "log_group_name": "${local.project}_mariadb_error_log",
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
+                "retention_in_days": 30
+            },
+            %{ endif ~}
+            %{ if each.key == "opensearch" ~}
+            {
+                "file_path": "/var/log/opensearch/**.log",
+                "log_group_name": "${local.project}_opensearch_error_log",
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
+                "retention_in_days": 30
+            },
+            %{ endif ~}
+            %{ if each.key == "redis" ~}
+            {
+                "file_path": "/var/log/redis/**.log",
+                "log_group_name": "${local.project}_redis_error_log",
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
+                "retention_in_days": 30
             },
             %{ endif ~}
             {
+                "file_path": "/opt/${var.brand}/setup/log/**.log",
+                "log_group_name": "${local.project}_instance_configuration",
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
+                "retention_in_days": 30
+            },
+            {
                 "file_path": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
                 "log_group_name": "${local.project}_cloudwatch_agent_log",
-                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
+                "retention_in_days": 30
             },
             {
                 "file_path": "/var/log/apt/**.log",
                 "log_group_name": "${local.project}_system_apt",
-                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
-            },
-            {
-                "file_path": "/opt/${var.brand}/${each.key}/**.log",
-                "log_group_name": "${local.project}_instance_configuration",
-                "log_stream_name": "${each.key}-{instance_id}-{ip_address}"
+                "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
+                "retention_in_days": 30
             },
             {
                 "file_path": "/var/log/syslog",
