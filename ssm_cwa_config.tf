@@ -8,7 +8,7 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_parameter" "cloudwatch_agent_config" {
   for_each    = var.ec2
-  name        = "amazon-cloudwatch-agent-${each.key}.json"
+  name        = "/cloudwatch-agent/amazon-cloudwatch-agent-${each.key}.json"
   description = "Configuration file for CloudWatch agent at ${each.key} for ${local.project}"
   type        = "String"
   value       = <<EOF
