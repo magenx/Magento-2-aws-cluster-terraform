@@ -28,7 +28,13 @@ resource "aws_iam_role" "ec2" {
 # Attach policies to EC2 service role
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_iam_role_policy_attachment" "ec2" {
-  for_each = { for policy in [ for role,policy in setproduct(keys(var.ec2),var.ec2_instance_profile_policy): { role = policy[0] , policy = policy[1]} ] : "${policy.role}-${policy.policy}" => policy }
+  for_each = { 
+    for entry in setproduct(keys(var.ec2), var.ec2_instance_profile_policy) : 
+      "${entry[0]}-${entry[1]}" => { 
+        role   = entry[0], 
+        policy = entry[1] 
+      } 
+  }
   role       = aws_iam_role.ec2[each.value.role].name
   policy_arn = each.value.policy
 }
@@ -54,45 +60,6 @@ resource "aws_iam_role_policy" "sns_publish" {
   name     = "EC2ProfileSNSPublishPolicy${title(each.key)}"
   role     = aws_iam_role.ec2[each.key].id
   policy = data.aws_iam_policy_document.sns_publish[each.key].json
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create policy for EC2 service role to limit CodeCommit access
-# # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_iam_policy_document" "codecommit_access" {
-  for_each = var.ec2
-  statement {
-    sid     = "codecommitaccessapp${each.key}"
-    effect  = "Allow"
-    actions = [
-      "codecommit:Get*",
-      "codecommit:List*",
-      "codecommit:GitPull"
-    ]
-    resources = [aws_codecommit_repository.magento.arn]
-    condition {
-      test     = "StringEqualsIfExists"
-      variable = "codecommit:References"
-      values   = ["refs/heads/main"]
-    }
-  }
-
-  statement {
-    sid     = "codecommitaccessservices${each.key}"
-    effect  = "Allow"
-    actions = [
-      "codecommit:Get*",
-      "codecommit:List*",
-      "codecommit:GitPull"
-    ]
-    resources = [aws_codecommit_repository.services.arn]
-  }
-}
-
-resource "aws_iam_role_policy" "codecommit_access" {
-  for_each = var.ec2
-  name     = "${local.project}PolicyForCodeCommitAccess${title(each.key)}"
-  role     = aws_iam_role.ec2[each.key].id
-  policy = data.aws_iam_policy_document.codecommit_access[each.key].json
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create EC2 Instance Profile
