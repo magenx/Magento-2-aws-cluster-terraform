@@ -41,7 +41,6 @@ resource "aws_launch_template" "this" {
   tag_specifications {
        resource_type = "instance"
        tags = merge(
-         local.default_tags,
          local.ec2_setup,
          {
           Name = "${local.project}-${each.key}-ec2"
@@ -52,13 +51,10 @@ resource "aws_launch_template" "this" {
     }
   tag_specifications {
        resource_type = "volume"
-       tags = merge(
-         local.default_tags,
-         {
+       tags = {
           Name = "${local.project}-${each.key}-volume"
           Instance_name = each.key
         }
-      )
     }
   user_data = base64encode(<<EOF
 #!/bin/bash
