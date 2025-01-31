@@ -129,7 +129,7 @@ mainSteps:
       Targets:
         - Key: "tag:${keys(local.ec2_setup)[0]}"
           Values:
-            - ${values(local.ec2_setup)}
+            - ${values(local.ec2_setup)[0]}
   - name: "CloudMapInstanceRegistration"
     action: "aws:runCommand"
     inputs:
@@ -174,6 +174,6 @@ mainSteps:
       Targets:
         - Key: "tag:${keys(local.ec2_setup)[0]}"
           Values:
-            - values(local.ec2_setup)
+            - values(local.ec2_setup)[0]
 EOF
 }
