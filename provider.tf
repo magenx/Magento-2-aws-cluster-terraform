@@ -1,4 +1,3 @@
-
 terraform {
   required_providers {
     aws = {
@@ -13,28 +12,18 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.0"
     }
-    http = {
-      source  = "hashicorp/http"
-      version = "~> 3.0"
-    }
-    external = {
-      source  = "hashicorp/external"
+    archive = {
+      source = "hashicorp/archive"
       version = "~> 2.0"
-    }
   }
+ }
 }
-
 
 provider "aws" {
-default_tags {
-   tags = {
-   Managed      = "Terraform"
-   Config       = var.brand
-   Environment  = local.environment
-  }
-}
+  default_tags {
+   tags = local.default_tags
+ }
 }
 provider "null" {}
 provider "random" {}
-provider "template" {}
-provider "external" {}
+provider "archive" {}
