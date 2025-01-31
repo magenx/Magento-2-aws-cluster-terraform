@@ -11,7 +11,7 @@ resource "aws_lb" "this" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
-  subnets            = values(aws_subnet.this).0.id
+  subnets            = values(aws_subnet.this).*.id
   drop_invalid_header_fields = true
   access_logs {
     bucket  = aws_s3_bucket.this["system"].bucket
