@@ -4,16 +4,6 @@ variable "github_repo" {
   type        = string
 }
 
-variable "crypt_key" {
-  description = "Magento 2 master crypt key"
-  type        = string
-}
-
-variable "graphql_id_salt" {
-  description = "Magento 2 graphql salt id"
-  type        = string
-}
-
 variable "brand" {
   description = "Business brand name"
   type        = string
@@ -26,16 +16,6 @@ variable "domain" {
 
 variable "admin_email" {
   description = "Shop admin email"
-  type        = string
-}
-
-variable "timezone" {
-  description = "Server and shop timezone"
-  type        = string
-}
-
-variable "php_version" {
-  description = "PHP version"
   type        = string
 }
 
@@ -70,12 +50,9 @@ variable "vpc" {
 variable "string" {
    description = "Generate random string"
    default     = [
-      "admin_path", 
-      "mysql_path", 
-      "profiler", 
-      "session_persistent", 
-      "cache_prefix", 
-      "health_check", 
+      "admin_path",
+      "mysql_path",
+      "health_check",
       "project",
       "opensearch"
    ]
@@ -85,7 +62,6 @@ variable "ec2" {
   description  = "EC2 instances names and types included in AutoScaling groups"
   default      = {
     frontend   = "c7g.xlarge"
-    admin      = "c7g.xlarge"
    }
 }
 
@@ -246,12 +222,6 @@ variable "redis_parameters" {
 variable "asg" {
   description      = "Map Autoscaling Group configuration values"
   default  = {
-    volume_size           = "50"
-    monitoring            = false
-    warm_pool             = "disabled"
-    desired_capacity      = "1"
-    min_size              = "1"
-    max_size              = "5"
     health_check_type     = "EC2"
     health_check_grace_period = "300"
   }
@@ -287,7 +257,7 @@ variable "efs" {
 variable "s3" {
   description = "S3 bucket names"
   type        = set(string)
-  default     = ["media", "system", "backup", "state"]
+  default     = ["media", "system"]
 }
 
 variable "ec2_instance_profile_policy" {
@@ -307,37 +277,6 @@ variable "eventbridge_policy" {
   "arn:aws:iam::aws:policy/service-role/CloudWatchEventsBuiltInTargetExecutionAccess", 
   "arn:aws:iam::aws:policy/service-role/CloudWatchEventsInvocationAccess",
   "arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole"
-  ]
-}
-
-variable "aws_config_rule" {
-  description = "Use AWS Config to evaluate critical configuration settings for your AWS resources."
-  default     = {
-  ROOT_ACCOUNT_MFA_ENABLED                  = ""
-  MFA_ENABLED_FOR_IAM_CONSOLE_ACCESS        = ""
-  INCOMING_SSH_DISABLED                     = "AWS::EC2::SecurityGroup"
-  DB_INSTANCE_BACKUP_ENABLED                = "AWS::RDS::DBInstance"
-  RDS_SNAPSHOTS_PUBLIC_PROHIBITED           = "AWS::RDS::DBSnapshot"
-  RDS_INSTANCE_DELETION_PROTECTION_ENABLED  = "AWS::RDS::DBInstance"
-  EC2_IMDSV2_CHECK                          = "AWS::EC2::Instance"
-  EC2_VOLUME_INUSE_CHECK                    = "AWS::EC2::Volume"
-  EC2_STOPPED_INSTANCE                      = ""
-  ELB_DELETION_PROTECTION_ENABLED           = "AWS::ElasticLoadBalancingV2::LoadBalancer"
-  }
-}
-
-# Define the variable for resource types
-variable "resource_types" {
-  type = list(string)
-  default = [
-    "AWS::EC2::Instance",
-    "AWS::S3::Bucket",
-    "AWS::IAM::Role",
-    "AWS::IAM::User",
-    "AWS::RDS::DBInstance",
-    "AWS::EC2::VPC",
-    "AWS::EC2::Subnet",
-    "AWS::EC2::SecurityGroup"
   ]
 }
 
