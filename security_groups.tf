@@ -62,16 +62,6 @@ resource "aws_vpc_security_group_ingress_rule" "frontend_alb" {
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "admin_alb" {
-  description = "Security group rules for EC2 and ALB"
-  security_group_id = aws_security_group.ec2["admin"].id
-  referenced_security_group_id = aws_security_group.alb.id
-  ip_protocol  = "-1"
-  tags = {
-    Name = "${local.project}-admin-alb"
-  }
-}
-
 resource "aws_vpc_security_group_ingress_rule" "frontend_service" {
   for_each = local.service_sgs
   description = "Security group rules for EC2 and ${each.key}"
@@ -83,32 +73,10 @@ resource "aws_vpc_security_group_ingress_rule" "frontend_service" {
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "admin_service" {
-  for_each = local.service_sgs
-  description = "Security group rules for EC2 and ${each.key}"
-  security_group_id = aws_security_group.ec2["admin"].id
-  referenced_security_group_id = each.value
-  ip_protocol  = "-1"
-  tags = {
-    Name = "${local.project}-admin-${each.key}"
-  }
-}
-
 resource "aws_vpc_security_group_ingress_rule" "service_frontend" {
   for_each = local.service_sgs
   description = "Security group rules for EC2 and ${each.key}"
   referenced_security_group_id = aws_security_group.ec2["frontend"].id
-  security_group_id = each.value
-  ip_protocol  = "-1"
-  tags = {
-    Name = "${local.project}-${each.key}-frontend"
-  }
-}
-
-resource "aws_vpc_security_group_ingress_rule" "service_admin" {
-  for_each = local.service_sgs
-  description = "Security group rules for EC2 and ${each.key}"
-  referenced_security_group_id = aws_security_group.ec2["admin"].id
   security_group_id = each.value
   ip_protocol  = "-1"
   tags = {
