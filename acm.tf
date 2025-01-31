@@ -13,12 +13,9 @@ resource "aws_acm_certificate" "default" {
   lifecycle {
     create_before_destroy   = true
   }
-  tags = merge(
-         local.default_tags,
-         {
+  tags = {
     Name = "${local.project}-${var.domain}-cert"
   }
-)
 }
 
 resource "aws_acm_certificate" "cloudfront" {
@@ -31,12 +28,9 @@ resource "aws_acm_certificate" "cloudfront" {
   lifecycle {
     create_before_destroy   = true
   }
-  tags = merge(
-         local.default_tags,
-         {
+  tags = {
     Name = "${local.project}-${var.domain}-cert"
   }
-)
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Validate ssl certificate for domain and subdomains
