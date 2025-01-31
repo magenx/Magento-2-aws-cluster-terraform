@@ -29,7 +29,7 @@ provider "aws" {
 default_tags {
    tags = {
    Managed      = "Terraform"
-   Config       = var.magento["brand"]
+   Config       = var.brand
    Environment  = local.environment
   }
 }
