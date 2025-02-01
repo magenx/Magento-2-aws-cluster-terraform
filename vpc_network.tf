@@ -19,7 +19,7 @@ resource "aws_vpc" "this" {
 # Create subnets for each AZ in our dedicated VPC
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_shuffle" "availability_zone" {
-  input        = data.aws_availability_zones.all.names
+  input        = data.aws_availability_zones.all
   result_count = var.vpc["availability_zone_qty"]
   keepers = {
     vpc_id = aws_vpc.this.id
