@@ -76,31 +76,31 @@ variable "vpc" {
 variable "ec2" {
   default = {
     frontend = {
-      instance_type    = "c7g.xlarge"
+      instance_type    = "t4g.medium"
       service          = null
       volume_size      = "25"
-      desired_capacity = "1"
+      desired_capacity = "2"
       min_size         = "1"
-      max_size         = "5"
+      max_size         = "4"
     }
     varnish = {
-      instance_type    = "c7g.large"
+      instance_type    = "t4g.small"
       service          = null
       volume_size      = "25"
       desired_capacity = "1"
       min_size         = "1"
-      max_size         = "5"
+      max_size         = "4"
     }
     opensearch = {
-      instance_type    = "c7g.large"
+      instance_type    = "t4g.small"
       service          = true
-      volume_size      = "100"
+      volume_size      = "50"
       desired_capacity = "1"
       min_size         = "1"
       max_size         = "1"
     }
     redis = {
-      instance_type    = "c7g.medium"
+      instance_type    = "t4g.small"
       service          = true
       volume_size      = "25"
       desired_capacity = "1"
@@ -108,7 +108,7 @@ variable "ec2" {
       max_size         = "1"
     }
     rabbitmq = {
-      instance_type    = "c7g.medium"
+      instance_type    = "t4g.nano"
       service          = true
       volume_size      = "25"
       desired_capacity = "1"
@@ -116,7 +116,7 @@ variable "ec2" {
       max_size         = "1"
     }
     mariadb = {
-      instance_type    = "m7g.xlarge"
+      instance_type    = "t4g.large"
       service          = true
       volume_size      = "25"
       desired_capacity = "1"
