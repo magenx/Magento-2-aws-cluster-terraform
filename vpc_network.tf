@@ -18,15 +18,15 @@ resource "aws_vpc" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create subnets for each AZ in our dedicated VPC
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "random_shuffle" "availability_zone" {
-  input        = data.aws_availability_zone.all.names
-  result_count = var.vpc["availability_zone_qty"]
+resource "random_shuffle" "availability_zones" {
+  input        = data.aws_availability_zones.available.names
+  result_count = var.vpc["availability_zones_qty"]
   keepers = {
     vpc_id = aws_vpc.this.id
   }
 }
 resource "aws_subnet" "this" {
-  for_each                = toset(random_shuffle.availability_zone.result)
+  for_each                = toset(random_shuffle.availability_zones.result)
   vpc_id                  = aws_vpc.this.id
   availability_zone       = each.key
   cidr_block              = cidrsubnet(aws_vpc.this.cidr_block, 4, var.az_number[each.value.name_suffix])
