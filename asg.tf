@@ -258,3 +258,23 @@ resource "aws_cloudwatch_metric_alarm" "disk_free_alarm" {
   ok_actions = [aws_sns_topic.default.arn]
   insufficient_data_actions = [aws_sns_topic.default.arn]
 }
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create CloudWatch alarm for asg max active instances
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_cloudwatch_metric_alarm" "asg_max_instances" {
+  for_each            = var.ec2
+  alarm_name          = "${local.project}-${each.key}-asg-max-instances"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "GroupInServiceInstances"
+  namespace           = "${local.project}"
+  period              = 60
+  statistic           = "Maximum"
+  threshold           = each.value.max_size
+  alarm_description   = "Triggered when ASG ${each.key} reaches ${each.value.max_size} instance count"
+  actions_enabled     = true
+  dimensions = { AutoScalingGroupName = aws_autoscaling_group[each.key].this.name }
+  alarm_actions = [aws_sns_topic.default.arn]
+  ok_actions = [aws_sns_topic.default.arn]
+  insufficient_data_actions = [aws_sns_topic.default.arn]
+}
