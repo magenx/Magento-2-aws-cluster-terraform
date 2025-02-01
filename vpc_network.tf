@@ -18,21 +18,14 @@ resource "aws_vpc" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create subnets for each AZ in our dedicated VPC
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "random_shuffle" "availability_zones" {
-  input        = data.aws_availability_zones.available.names
-  result_count = var.vpc["availability_zones_qty"]
-  keepers = {
-    vpc_id = aws_vpc.this.id
-  }
-}
 resource "aws_subnet" "this" {
-  for_each                = element(random_shuffle.availability_zones.result, 0) #toset(random_shuffle.availability_zones.result)
+  for_each                = data.aws_availability_zone.one
   vpc_id                  = aws_vpc.this.id
   availability_zone       = each.key
   cidr_block              = cidrsubnet(aws_vpc.this.cidr_block, 4, var.az_number[each.value.name_suffix])
   map_public_ip_on_launch = true
   tags = {
-    Name = "${local.project}-subnet"
+    Name = "${local.project}-${each.key}-subnet"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
