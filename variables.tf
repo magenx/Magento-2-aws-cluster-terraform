@@ -66,11 +66,11 @@ variable "string" {
 variable "vpc" {
   description      = "Configuration for VPC"
   default          = {
-    enable_dns_support    = true
-    enable_dns_hostnames  = true
-    instance_tenancy      = "default"
-    cidr_block            = "172.35.0.0/16"
-    availability_zone_qty = "1"
+    enable_dns_support     = true
+    enable_dns_hostnames   = true
+    instance_tenancy       = "default"
+    cidr_block             = "172.35.0.0/16"
+    availability_zones_qty = "1"
   }
 }
 
