@@ -26,7 +26,7 @@ resource "random_shuffle" "availability_zones" {
   }
 }
 resource "aws_subnet" "this" {
-  for_each                = { for idx, az in random_shuffle.availability_zones.result : az => idx } #toset(random_shuffle.availability_zones.result)
+  for_each                = element(random_shuffle.availability_zones.result, 0) #toset(random_shuffle.availability_zones.result)
   vpc_id                  = aws_vpc.this.id
   availability_zone       = each.key
   cidr_block              = cidrsubnet(aws_vpc.this.cidr_block, 4, var.az_number[each.value.name_suffix])
