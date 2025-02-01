@@ -273,7 +273,7 @@ resource "aws_cloudwatch_metric_alarm" "asg_max_instances" {
   threshold           = each.value.max_size
   alarm_description   = "Triggered when ASG ${each.key} reaches ${each.value.max_size} instance count"
   actions_enabled     = true
-  dimensions = { AutoScalingGroupName = aws_autoscaling_group[each.key].this.name }
+  dimensions = { AutoScalingGroupName = aws_autoscaling_group.this[each.key].name }
   alarm_actions = [aws_sns_topic.default.arn]
   ok_actions = [aws_sns_topic.default.arn]
   insufficient_data_actions = [aws_sns_topic.default.arn]
