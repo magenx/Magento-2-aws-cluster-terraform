@@ -19,13 +19,13 @@ resource "aws_vpc" "this" {
 # Create subnets for each AZ in our dedicated VPC
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_subnet" "this" {
-  for_each                = data.aws_availability_zone.one
+  for_each                = data.aws_availability_zone.available
   vpc_id                  = aws_vpc.this.id
   availability_zone       = each.key
   cidr_block              = cidrsubnet(aws_vpc.this.cidr_block, 4, var.az_number[each.value.name_suffix])
   map_public_ip_on_launch = true
   tags = {
-    Name = "${local.project}-${each.key}-subnet"
+    Name = "${local.project}-subnet-${each.key}"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
