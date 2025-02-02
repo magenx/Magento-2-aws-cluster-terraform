@@ -56,7 +56,6 @@ variable "string" {
    description = "Generate random string"
    default     = [
       "admin_path",
-      "profiler",
       "health_check",
       "project",
       "opensearch"
