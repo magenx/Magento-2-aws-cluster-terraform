@@ -45,7 +45,7 @@ resource "random_string" "s3" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Select random subnets for ASG as required availability_zones_qty
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "random_shuffle" "selected_subnets" {
+resource "random_shuffle" "subnets" {
   input        = [for subnet in aws_subnet.this : subnet.id]
   result_count = var.vpc["availability_zones_qty"]
 }
