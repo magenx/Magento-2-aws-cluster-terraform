@@ -23,7 +23,7 @@ locals {
     AWS_DEFAULT_REGION          = data.aws_region.current.name
     VPC_ID                      = aws_vpc.this.id
     CIDR                        = aws_vpc.this.cidr_block
-    SUBNET_ID                   = values(aws_subnet.this).0.id
+    SUBNETS_IDS                 = join(",", random_shuffle.subnets.result)
     SOURCE_AMI                  = data.aws_ami.distro.id
     EFS_SYSTEM_ID               = aws_efs_file_system.this.id
     EFS_ACCESS_POINT_VAR        = aws_efs_access_point.this["var"].id
