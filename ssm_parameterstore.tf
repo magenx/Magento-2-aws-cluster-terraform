@@ -28,7 +28,6 @@ locals {
     EFS_SYSTEM_ID               = aws_efs_file_system.this.id
     EFS_ACCESS_POINT_VAR        = aws_efs_access_point.this["var"].id
     EFS_ACCESS_POINT_MEDIA      = aws_efs_access_point.this["media"].id
-    EFS_ACCESS_POINT_BACKUP     = aws_efs_access_point.this["backup"].id
     SNS_TOPIC_ARN               = aws_sns_topic.default.arn
     FRONTEND_CLOUDMAP_SERVICE_ID = aws_service_discovery_service.this["frontend"].id
     VARNISH_CLOUDMAP_SERVICE_ID = aws_service_discovery_service.this["varnish"].id
