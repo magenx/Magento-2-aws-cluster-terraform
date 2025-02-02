@@ -30,8 +30,8 @@ data "aws_availability_zones" "available" {
   state = "available"
   exclude_zone_ids = ["use1-az3"]
 }
-data "aws_availability_zone" "one" {
-  for_each = toset(slice(tolist(data.aws_availability_zones.available.names), 0, var.vpc["availability_zones_qty"]))
+data "aws_availability_zone" "available" {
+  for_each = toset(data.aws_availability_zones.available.names)
   name = each.key
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
