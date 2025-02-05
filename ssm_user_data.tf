@@ -50,12 +50,14 @@ mainSteps:
             fi
             touch /root/webstack_clean
   - name: "InstallBasePackages"
-    action: "aws:runShellScript"
+    action: "aws:runCommand"
     inputs:
-      runCommand:
-        - |-
-          apt -qqy update
-          apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core
+      DocumentName: "AWS-RunShellScript"
+      Parameters:
+        commands:
+          - |-
+            apt -qqy update
+            apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core
   - name: "WriteHelperScripts"
     action: "aws:runCommand"
     inputs:
