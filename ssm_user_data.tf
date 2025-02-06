@@ -136,6 +136,10 @@ mainSteps:
             [ "$${LEADER_INSTANCE_ID}" = "$${INSTANCE_ID}" ]
             END
             chmod +x /usr/local/bin/leader
+      Targets:
+        - Key: "tag:aws:autoscaling:groupName"
+          Values:
+            - "{{ Target }}"
   - name: "LatestReleaseDeployment"
     action: "aws:executeAutomation"
     inputs:
@@ -149,9 +153,9 @@ mainSteps:
     inputs:
       DocumentName: "InstanceConfiguration"
       Targets:
-        - Key: "tag:${keys(local.ec2_setup)[0]}"
+        - Key: "tag:aws:autoscaling:groupName"
           Values:
-            - ${values(local.ec2_setup)[0]}
+            - "{{ Target }}"
   - name: "CloudMapInstanceRegistration"
     action: "aws:runCommand"
     inputs:
@@ -175,6 +179,10 @@ mainSteps:
               --service-id $${CLOUDMAP_SERVICE_ID} \
               --instance-id $${INSTANCE_ID} \
               --attributes AWS_INSTANCE_IPV4=$${INSTANCE_IP}
+      Targets:
+        - Key: "tag:aws:autoscaling:groupName"
+          Values:
+            - "{{ Target }}"
   - name: "InstallCloudWatchAgent"
     action: "aws:runCommand"
     inputs:
@@ -189,6 +197,10 @@ mainSteps:
             wget https://amazoncloudwatch-agent.s3.amazonaws.com/debian/arm64/latest/amazon-cloudwatch-agent.deb
             dpkg -i amazon-cloudwatch-agent.deb
             /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:/cloudwatch-agent/amazon-cloudwatch-agent-$${INSTANCE_NAME}.json
+      Targets:
+        - Key: "tag:aws:autoscaling:groupName"
+          Values:
+            - "{{ Target }}"
   - name: "SendExecutionLog"
     action: "aws:executeAutomation"
     inputs:
