@@ -15,6 +15,11 @@ resource "aws_ssm_association" "user_data" {
   }
   association_name = "InitEC2WithUserData-${aws_autoscaling_group.this[each.key].name}"
   document_version = "$LATEST"
+  automation_target_parameter_name = "Target"
+  parameters = {
+        AssumeRole = aws_iam_role.ec2[each.key].arn
+        Target     = aws_autoscaling_group.this[each.key].name
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document to configure EC2 instances in Auto Scaling Group
@@ -26,7 +31,14 @@ resource "aws_ssm_document" "user_data" {
   content = <<EOF
 schemaVersion: "0.3"
 description: "Init EC2 instance with UserData"
+assumeRole: "{{ AssumeRole }}"
 parameters:
+  Target:
+    type: String
+    description: The target Auto Scaling groups
+  AssumeRole:
+    type: String
+    description: The ARN of the role that SSM Automation will assume
   LogFileName:
     type: String
     description: "SSM Document Execution log file"
@@ -49,6 +61,10 @@ mainSteps:
               fi
             fi
             touch /root/webstack_clean
+      Targets:
+        - Key: "tag:aws:autoscaling:groupName"
+          Values:
+            - "{{ Target }}"
   - name: "InstallBasePackages"
     action: "aws:runCommand"
     inputs:
@@ -58,6 +74,10 @@ mainSteps:
           - |-
             apt -qqy update
             apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core
+      Targets:
+        - Key: "tag:aws:autoscaling:groupName"
+          Values:
+            - "{{ Target }}"
   - name: "WriteHelperScripts"
     action: "aws:runCommand"
     inputs:
