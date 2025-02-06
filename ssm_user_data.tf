@@ -33,9 +33,17 @@ schemaVersion: "0.3"
 description: "Init EC2 instance with UserData"
 assumeRole: "{{ AssumeRole }}"
 parameters:
-  Target:
+  TargetASG:
     type: String
     description: The target Auto Scaling groups
+  TargetEC2TagKey:
+    type: String
+    description: The target EC2 instance tag key
+    default: "tag:${keys(local.ec2_setup)[0]}"
+  TargetEC2TagValue:
+    type: String
+    description: The target EC2 instance tag value
+    default: "${values(local.ec2_setup)[0]}"
   AssumeRole:
     type: String
     description: The ARN of the role that SSM Automation will assume
@@ -140,14 +148,6 @@ mainSteps:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
             - "{{ Target }}"
-  - name: "LatestReleaseDeployment"
-    action: "aws:executeAutomation"
-    inputs:
-      DocumentName: "LatestReleaseDeployment"
-      Targets:
-        - Key: "tag:${keys(local.ec2_setup)[0]}"
-          Values:
-            - ${values(local.ec2_setup)[0]}
   - name: "InstanceConfiguration"
     action: "aws:executeAutomation"
     inputs:
@@ -156,6 +156,14 @@ mainSteps:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
             - "{{ Target }}"
+  - name: "LatestReleaseDeployment"
+    action: "aws:executeAutomation"
+    inputs:
+      DocumentName: "LatestReleaseDeployment"
+      Targets:
+        - Key: "{{ TargetEC2TagKey }}"
+          Values:
+            - "{{ TargetEC2TagValue }}"
   - name: "CloudMapInstanceRegistration"
     action: "aws:runCommand"
     inputs:
