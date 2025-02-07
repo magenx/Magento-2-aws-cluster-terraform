@@ -133,6 +133,8 @@ mainSteps:
     action: "aws:executeAutomation"
     inputs:
       DocumentName: "InstanceConfiguration"
+      RuntimeParameters:
+        LogFileName: "{{ LogFileName }}"
       Targets:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
@@ -141,6 +143,10 @@ mainSteps:
     action: "aws:executeAutomation"
     inputs:
       DocumentName: "LatestReleaseDeployment"
+      RuntimeParameters:
+        LogFileName: "{{ LogFileName }}"
+        TargetEC2TagKey: "{{ TargetEC2TagKey }}"
+        TargetEC2TagValue: "{{ TargetEC2TagValue }}"
       Targets:
         - Key: "{{ TargetEC2TagKey }}"
           Values:
