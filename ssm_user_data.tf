@@ -17,21 +17,21 @@ resource "aws_ssm_association" "user_data" {
   document_version = "$LATEST"
   automation_target_parameter_name = "Target"
   parameters = {
-        AssumeRole = aws_iam_role.ec2[each.key].arn
-        Target     = aws_autoscaling_group.this[each.key].name
+        AutomationAssumeRole  = aws_iam_role.ec2[each.key].arn
+        Target  = aws_autoscaling_group.this[each.key].name
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document to configure EC2 instances in Auto Scaling Group
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "user_data" {
-  name            = "InitEC2WithUserData"
+  name            = "UserData"
   document_format = "YAML"
   document_type   = "Automation"
   content = <<EOF
 schemaVersion: "0.3"
-description: "Init EC2 instance with UserData"
-assumeRole: "{{ AssumeRole }}"
+description: "Configure EC2 instance with UserData"
+assumeRole: "{{ AutomationAssumeRole }}"
 parameters:
   TargetASG:
     type: String
@@ -50,29 +50,8 @@ parameters:
   LogFileName:
     type: String
     description: "SSM Document Execution log file"
-    default: "/tmp/ssm_execution_log.txt"
+    default: {{ automation:EXECUTION_ID }}
 mainSteps:
-  - name: "WebStackCleanup"
-    action: "aws:runCommand"
-    inputs:
-      DocumentName: "AWS-RunShellScript"
-      Parameters:
-        commands:
-          - |-
-            #!/bin/bash
-            echo "Start document $(date)" > {{ LogFileName }}
-            if [ ! -f "/root/webstack_clean" ]; then
-              WEB_STACK_CHECK="mysql* rabbitmq* elasticsearch opensearch percona-server* maria* php* nginx* apache* ufw varnish* certbot* redis* webmin"
-              INSTALLED_PACKAGES="$(apt -qq list --installed $${WEB_STACK_CHECK} 2> /dev/null | cut -d'/' -f1 | tr '\n' ' ')"
-              if [ ! -z "$${INSTALLED_PACKAGES}" ]; then
-                apt -qq -y remove --purge "$${INSTALLED_PACKAGES}"
-              fi
-            fi
-            touch /root/webstack_clean
-      Targets:
-        - Key: "tag:aws:autoscaling:groupName"
-          Values:
-            - "{{ Target }}"
   - name: "InstallBasePackages"
     action: "aws:runCommand"
     inputs:
@@ -80,6 +59,8 @@ mainSteps:
       Parameters:
         commands:
           - |-
+            #!/bin/bash
+            echo "Configure EC2 instance with UserData {{ global:DATE_TIME }}" > {{ LogFileName }}
             apt -qqy update
             apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core
       Targets:
@@ -172,7 +153,7 @@ mainSteps:
         commands:
           - |-
             #!/bin/bash
-            echo "Start CloudMap registration step $(date)" >> {{ LogFileName }}
+            echo "CloudMap {{ Target }} registration {{ global:DATE_TIME }}" >> {{ LogFileName }}
             INSTANCE_IP="$(metadata local-ipv4)"
             INSTANCE_ID="$(metadata instance-id)"
             INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
@@ -199,7 +180,6 @@ mainSteps:
         commands:
           - |-
             #!/bin/bash
-            echo "Start Amazon Cloud Watch Agent installation step:" >> {{ LogFileName }}
             INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
             cd /tmp
             wget https://amazoncloudwatch-agent.s3.amazonaws.com/debian/arm64/latest/amazon-cloudwatch-agent.deb
@@ -210,12 +190,13 @@ mainSteps:
           Values:
             - "{{ Target }}"
   - name: "SendExecutionLog"
-    action: "aws:executeAutomation"
+    action: "aws:executeAwsApi"
+    isEnd: true
     inputs:
-      DocumentName: "SendExecutionLog"
-      Targets:
-        - Key: "tag:${keys(local.ec2_setup)[0]}"
-          Values:
-            - ${values(local.ec2_setup)[0]}
+      Service: "sns"
+      Api: "Publish"
+      TopicArn: "${aws_sns_topic.default.arn}"
+      Subject: "UserData ${local.project}-${local.environment}-{{ Target }}"
+      Message: "Configuration for EC2 instance with UserData {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
