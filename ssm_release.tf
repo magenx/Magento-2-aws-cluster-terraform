@@ -12,19 +12,27 @@ resource "aws_ssm_document" "release" {
   document_type   = "Automation"
   content = <<EOF
 schemaVersion: "0.3"
-description: "Latest release deployment step"
+description: "Latest release deployment"
 parameters:
   EventSource:
     type: String
     description: "Event Source"
     default: ""
+  TargetEC2TagKey:
+    type: String
+    description: The target EC2 instance tag key
+    default: "tag:${keys(local.ec2_setup)[0]}"
+  TargetEC2TagValue:
+    type: String
+    description: The target EC2 instance tag value
+    default: "${values(local.ec2_setup)[0]}"
   LogFileName:
     type: String
     description: "SSM Document Execution log file"
-    default: "/tmp/ssm_execution_log.txt"
+    default: "{{ automation:EXECUTION_ID }}"
   Force:
     type: String
-    description: "Force SSM Document Steps Execution"
+    description: "Force document execution"
     default: "false"
 mainSteps:
   - name: "LatestReleaseDeployment"
@@ -35,7 +43,7 @@ mainSteps:
         commands:
           - |-
             #!/bin/bash
-            echo "Start release check step $(date)" >> {{ LogFileName }}
+            echo "Latest release checkout {{ global:DATE_TIME }}" >> {{ LogFileName }}
             LATEST_RELEASE=$(aws s3 ls s3://${aws_s3_bucket.this["system"].bucket}/releases/ --recursive | sort | tail -n 1 | awk '{print $3}')
             if [ -z "$${LATEST_RELEASE}" ]; then
               echo "-- Release directory not found or empty" >> {{ LogFileName }}
@@ -68,12 +76,18 @@ mainSteps:
               exit 1
             fi
             ln -nfs "$${LATEST_RELEASE_DIRECTORY}" "$${PUBLIC_HTML}"
+      Targets:
+        - Key: "{{ TargetEC2TagKey }}"
+          Values:
+            - "{{ TargetEC2TagValue }}"
   - name: "SendExecutionLog"
-    action: "aws:executeAutomation"
+    action: "aws:executeAwsApi"
+    isEnd: true
     inputs:
-      DocumentName: "SendExecutionLog"
-      RuntimeParameters:
-        EventSource:
-        - {{ EventSource }}
+      Service: "sns"
+      Api: "Publish"
+      TopicArn: "${aws_sns_topic.default.arn}"
+      Subject: "UserData ${local.project}-${local.environment}-{{ Target }}"
+      Message: "Configuration for EC2 instance with UserData {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
