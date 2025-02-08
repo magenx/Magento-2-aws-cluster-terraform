@@ -15,10 +15,10 @@ resource "aws_ssm_association" "user_data" {
   }
   association_name = "InitEC2WithUserData-${aws_autoscaling_group.this[each.key].name}"
   document_version = "$LATEST"
-  automation_target_parameter_name = "Target"
+  automation_target_parameter_name = "TargetASG"
   parameters = {
         AutomationAssumeRole  = aws_iam_role.ec2[each.key].arn
-        Target  = aws_autoscaling_group.this[each.key].name
+        TargetASG  = aws_autoscaling_group.this[each.key].name
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -66,7 +66,7 @@ mainSteps:
       Targets:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
-            - "{{ Target }}"
+            - "{{ TargetASG }}"
   - name: "WriteHelperScripts"
     action: "aws:runCommand"
     inputs:
@@ -128,17 +128,18 @@ mainSteps:
       Targets:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
-            - "{{ Target }}"
+            - "{{ TargetASG }}"
   - name: "InstanceConfiguration"
     action: "aws:executeAutomation"
     inputs:
       DocumentName: "InstanceConfiguration"
       RuntimeParameters:
         LogFileName: "{{ LogFileName }}"
+        TargetASG: "{{ TargetASG }}"
       Targets:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
-            - "{{ Target }}"
+            - "{{ TargetASG }}"
   - name: "LatestReleaseDeployment"
     action: "aws:executeAutomation"
     inputs:
@@ -177,7 +178,7 @@ mainSteps:
       Targets:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
-            - "{{ Target }}"
+            - "{{ TargetASG }}"
   - name: "InstallCloudWatchAgent"
     action: "aws:runCommand"
     inputs:
@@ -194,7 +195,7 @@ mainSteps:
       Targets:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
-            - "{{ Target }}"
+            - "{{ TargetASG }}"
   - name: "SendExecutionLog"
     action: "aws:executeAwsApi"
     isEnd: true
@@ -202,7 +203,7 @@ mainSteps:
       Service: "sns"
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
-      Subject: "UserData ${local.project}-${local.environment}-{{ Target }}"
+      Subject: "UserData ${local.project}-${local.environment}-{{ TargetASG }}"
       Message: "Configuration for EC2 instance with UserData {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
