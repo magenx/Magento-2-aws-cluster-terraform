@@ -12,20 +12,23 @@ resource "aws_ssm_document" "configuration" {
   document_type   = "Automation"
   content = <<EOF
 schemaVersion: "0.3"
-description: "Instance configuration step"
+description: "Instance configuration"
 parameters:
+  TargetASG:
+    type: String
+    description: The target Auto Scaling groups
   EventSource:
     type: String
     description: "Event Source"
     default: ""
   Force:
     type: String
-    description: "Force SSM Document Steps Execution"
+    description: "Force document execution"
     default: "false"
   LogFileName:
     type: String
     description: "SSM Document Execution log file"
-    default: "/tmp/ssm_execution_log.txt"
+    default: "{{ LogFileName }}"
 mainSteps:
   - name: "InstanceConfiguration"
     action: "aws:runCommand"
@@ -35,7 +38,7 @@ mainSteps:
         commands:
           - |-
             #!/bin/bash
-            echo "Start configuration step $(date)" >> {{ LogFileName }}
+            echo "Start configuration {{ global:DATE_TIME }}" >> {{ LogFileName }}
             INSTANCE_NAME=$(metadata tags/instance/Instance_name)
             SETUP_DIRECTORY="/opt/${var.brand}/setup"
             LOG_DIRECTORY="$${SETUP_DIRECTORY}/log"
@@ -77,12 +80,18 @@ mainSteps:
             else
                 echo "-- [ERROR]: Configuration files not found" >> {{ LogFileName }}
             fi
+      Targets:
+        - Key: "tag:aws:autoscaling:groupName"
+          Values:
+            - "{{ TargetASG }}"
   - name: "SendExecutionLog"
-    action: "aws:executeAutomation"
+    action: "aws:executeAwsApi"
+    isEnd: true
     inputs:
-      DocumentName: "SendExecutionLog"
-      RuntimeParameters:
-        EventSource:
-        - {{ EventSource }}
+      Service: "sns"
+      Api: "Publish"
+      TopicArn: "${aws_sns_topic.default.arn}"
+      Subject: "Instance Configuration ${local.project}-${local.environment}-{{ TargetASG }}"
+      Message: "Instance Configuration {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
