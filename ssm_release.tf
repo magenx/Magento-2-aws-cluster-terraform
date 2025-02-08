@@ -87,7 +87,7 @@ mainSteps:
       Service: "sns"
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
-      Subject: "UserData ${local.project}-${local.environment}-{{ Target }}"
-      Message: "Configuration for EC2 instance with UserData {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
+      Subject: "Latest release deployment ${local.project}-${local.environment}-{{ Target }}"
+      Message: "Latest release deployment {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
