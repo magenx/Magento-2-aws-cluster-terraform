@@ -1,6 +1,6 @@
 # Rename this file to production.auto.tfvars and customize your variables #
 brand               = "magenx"
 codename            = "onyxyeti"
-github_repo         = "magenx/Magento-2"
 domain              = "magenx.org"
 admin_email         = "admin@magenx.org"
+github_repo         = "magenx/Magento-2"
