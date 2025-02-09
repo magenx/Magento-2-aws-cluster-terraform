@@ -21,7 +21,8 @@ variable "admin_email" {
 
 locals {
    # Create global project name to be assigned to all resources
-   project = lower("${var.brand}-${random_string.this["project"].result}")
+   project = lower("${var.brand}-${random_pet.this.result}")
+   # Get env from workspace
    environment = lower(terraform.workspace)
 }
 
@@ -30,7 +31,7 @@ locals {
     Managed      = "terraform"
     Brand        = var.brand
     Environment  = local.environment
-    Dns          = "${var.brand}.internal"
+    Project      = local.project
   }
 }
 
