@@ -84,6 +84,9 @@ mainSteps:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
             - "{{ TargetASG }}"
+      CloudWatchOutputConfig:
+        CloudWatchLogGroupName: "${local.project}-${local.environment}-InstanceConfiguration"
+        CloudWatchOutputEnabled: true
   - name: "SendExecutionLog"
     action: "aws:executeAwsApi"
     isEnd: true
