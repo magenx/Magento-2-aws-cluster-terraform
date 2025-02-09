@@ -9,6 +9,11 @@ variable "brand" {
   type        = string
 }
 
+variable "codename" {
+  description = "Project codename"
+  type        = string
+}
+
 variable "domain" {
   description = "Shop domain name"
   type        = string
@@ -21,7 +26,7 @@ variable "admin_email" {
 
 locals {
    # Create global project name to be assigned to all resources
-   project = lower("${var.brand}-${random_pet.this.id}")
+   project = lower("${var.brand}-${var.codename}-${substr(lower(terraform.workspace), 0, 1)}")
    # Get env from workspace
    environment = lower(terraform.workspace)
 }
