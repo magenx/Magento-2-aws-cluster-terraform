@@ -119,6 +119,7 @@ variable "ec2" {
       instance_type    = "t4g.large"
       service          = true
       volume_size      = "25"
+      mysql_volume_size = "100"
       desired_capacity = "1"
       min_size         = "1"
       max_size         = "1"
