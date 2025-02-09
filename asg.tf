@@ -26,7 +26,7 @@ resource "aws_launch_template" "this" {
     content {
       device_name = "/dev/xvdb"
       ebs {
-        volume_size = "250"
+        volume_size = each.value.mysql_volume_size
         volume_type = "gp3"
         encrypted   = true
         delete_on_termination = false
