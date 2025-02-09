@@ -160,7 +160,7 @@ mainSteps:
         commands:
           - |-
             #!/bin/bash
-            echo "CloudMap {{ Target }} registration {{ global:DATE_TIME }}" >> {{ LogFileName }}
+            echo "CloudMap registration {{ global:DATE_TIME }}" >> {{ LogFileName }}
             INSTANCE_IP="$(metadata local-ipv4)"
             INSTANCE_ID="$(metadata instance-id)"
             INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
