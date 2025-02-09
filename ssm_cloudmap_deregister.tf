@@ -32,7 +32,6 @@ mainSteps:
   - name: ConstructParameterPath
     action: aws:executeScript
     nextStep: GetCloudMapServiceId
-    isEnd: false
     inputs:
       Runtime: python3.11
       Handler: construct_parameter_path
@@ -56,7 +55,6 @@ mainSteps:
   - name: "GetCloudMapServiceId"
     action: aws:executeAwsApi
     nextStep: DeregisterInstanceFromCloudMap
-    isEnd: false
     inputs:
       Service: ssm
       Api: GetParameter
@@ -67,7 +65,6 @@ mainSteps:
         Type: String
   - name: "DeregisterInstanceFromCloudMap"
     action: aws:executeAwsApi
-    isEnd: true
     inputs:
       Service: servicediscovery
       Api: DeregisterInstance
@@ -75,7 +72,6 @@ mainSteps:
       InstanceId: "{{ InstanceId }}"
   - name: "SendExecutionLog"
     action: "aws:executeAwsApi"
-    isEnd: true
     inputs:
       Service: "sns"
       Api: "Publish"
