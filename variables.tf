@@ -58,7 +58,6 @@ variable "string" {
    default     = [
       "admin_path",
       "health_check",
-      "project",
       "opensearch"
    ]
 }
