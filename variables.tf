@@ -94,7 +94,7 @@ variable "ec2" {
     opensearch = {
       instance_type    = "t4g.small"
       service          = true
-      volume_size      = "50"
+      volume_size      = "25"
       desired_capacity = "1"
       min_size         = "1"
       max_size         = "1"
