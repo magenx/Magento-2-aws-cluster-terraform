@@ -50,7 +50,7 @@ parameters:
   LogFileName:
     type: String
     description: "SSM Document Execution log file"
-    default: {{ automation:EXECUTION_ID }}
+    default: "{{ automation:EXECUTION_ID }}"
 mainSteps:
   - name: "InstallBasePackages"
     action: "aws:runCommand"
