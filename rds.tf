@@ -46,7 +46,7 @@ resource "aws_db_instance" "this" {
   instance_class         = var.rds["instance_class"]
   multi_az               = var.rds["multi_az"]
   db_name                = local.db_name
-  username               = var.app["brand"]
+  username               = var.brand
   password               = random_password.this["rds"].result
   parameter_group_name   = aws_db_parameter_group.this.id
   skip_final_snapshot    = var.rds["skip_final_snapshot"]

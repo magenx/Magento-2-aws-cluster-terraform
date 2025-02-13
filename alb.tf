@@ -7,19 +7,19 @@
 # Create Application Load Balancers
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb" "this" {
-  name               = "${local.project}-${each.key}-alb"
+  name               = "${local.project}-external-alb"
   internal           = false
   load_balancer_type = "application"
   drop_invalid_header_fields = true
-  security_groups    = [aws_security_group.alb.id]
-  subnets            = [for az, subnet in aws_subnet.this : subnet.id][0:2]
+  security_groups    = [aws_security_group.external_alb.id]
+  subnets            = slice([for az, subnet in aws_subnet.this : subnet.id], 0 ,2)
   access_logs {
     bucket  = aws_s3_bucket.this["system"].bucket
     prefix  = "ALB"
     enabled = true
   }
   tags = {
-    Name = "${local.project}-${each.key}-alb"
+    Name = "${local.project}-external-alb"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#

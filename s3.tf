@@ -191,25 +191,25 @@ data "aws_iam_policy_document" "system" {
     }
   }
 
-  statement {
-    sid    = "AllowCodebuildS3Access"
-    effect = "Allow"
-    actions = [
-      "s3:PutObject",
-      "s3:GetObject"
-    ]
-    resources = [
-      "${aws_s3_bucket.this["system"].arn}/*"
-    ]
-    principals {
-      type        = "AWS"
-      identifiers = [
-        aws_iam_role.codebuild.arn,
-        aws_iam_role.codepipeline.arn,
-        aws_iam_role.config.arn
-      ]
-    }
-  }
+  # statement {
+  #   sid    = "AllowCodebuildS3Access"
+  #   effect = "Allow"
+  #   actions = [
+  #     "s3:PutObject",
+  #     "s3:GetObject"
+  #   ]
+  #   resources = [
+  #     "${aws_s3_bucket.this["system"].arn}/*"
+  #   ]
+  #   principals {
+  #     type        = "AWS"
+  #     identifiers = [
+  #       aws_iam_role.codebuild.arn,
+  #       aws_iam_role.codepipeline.arn,
+  #       aws_iam_role.config.arn
+  #     ]
+  #   }
+  # }
 
   statement {
     sid    = "CloudFrontAccess"
@@ -261,9 +261,9 @@ data "aws_iam_policy_document" "backup" {
     principals {
       type        = "AWS"
       identifiers = [
-        aws_iam_role.codebuild.arn,
-        aws_iam_role.codepipeline.arn,
-        aws_iam_role.codedeploy.arn
+        # aws_iam_role.codebuild.arn,
+        # aws_iam_role.codepipeline.arn,
+        # aws_iam_role.codedeploy.arn
       ]
     }
   }

@@ -86,6 +86,7 @@ variable "ec2" {
       min_size         = "2"
       max_size         = "8"
     }
+  }
 }
 
 variable "opensearch" {
