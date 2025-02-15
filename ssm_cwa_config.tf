@@ -30,6 +30,21 @@ resource "aws_ssm_parameter" "cloudwatch_agent_config" {
                 "log_stream_name": "${each.key}-{instance_id}-{ip_address}",
                 "retention_in_days": 30
             },
+            {
+                "file_path": "/var/log/aws/codedeploy-agent/codedeploy-agent.log",
+                "log_group_name": "${local.project}_codedeploy_agent_log",
+                "log_stream_name": "${each.key}-{instance_id}-agent-log"
+            },
+            {
+                "file_path": "/opt/codedeploy-agent/deployment-root/deployment-logs/codedeploy-agent-deployments.log",
+                "log_group_name": "${local.project}_codedeploy_agent_deployment_log",
+                "log_stream_name": "${each.key}-{instance_id}-codedeploy-agent-deployment-log"
+            },
+            {
+                "file_path": "/tmp/codedeploy-agent.update.log",
+                "log_group_name": "${local.project}_codedeploy_agent_updater_log",
+                "log_stream_name": "${each.key}-{instance_id}-codedeploy-agent-updater-log"
+            },
             %{ endif ~}
             %{ if each.key == "mariadb" ~}
             {
