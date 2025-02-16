@@ -8,88 +8,45 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_document" "release" {
   name            = "LatestReleaseDeployment"
-  document_format = "YAML"
   document_type   = "Automation"
+  document_format = "YAML"
   content = <<EOF
-schemaVersion: "0.3"
-description: "Latest release deployment"
-parameters:
-  EventSource:
-    type: String
-    description: "Event Source"
-    default: ""
-  TargetEC2TagKey:
-    type: String
-    description: The target EC2 instance tag key
-    default: "tag:${keys(local.ec2_setup)[0]}"
-  TargetEC2TagValue:
-    type: String
-    description: The target EC2 instance tag value
-    default: "${values(local.ec2_setup)[0]}"
-  LogFileName:
-    type: String
-    description: "SSM Document Execution log file"
-    default: "{{ automation:EXECUTION_ID }}"
-  Force:
-    type: String
-    description: "Force document execution"
-    default: "false"
-mainSteps:
-  - name: "LatestReleaseDeployment"
-    action: "aws:runCommand"
-    inputs:
-      DocumentName: "AWS-RunShellScript"
-      Parameters:
-        commands:
-          - |
-            #!/bin/bash
-            echo "Latest release checkout {{ global:DATE_TIME }}" >> {{ LogFileName }}
-            LATEST_RELEASE=$(aws s3 ls s3://${aws_s3_bucket.this["system"].bucket}/releases/ --recursive | sort | tail -n 1 | awk '{print $3}')
-            if [ -z "$${LATEST_RELEASE}" ]; then
-              echo "-- Release directory not found or empty" >> {{ LogFileName }}
-              exit 1
-            fi
-            RELEASES_DIRECTORY="/home/${var.brand}/releases"
-            for DIRECTORY in $${RELEASES_DIRECTORY}/*; do
-              if [ "$(basename "$${DIRECTORY}")" == "$${LATEST_RELEASE}" ]; then
-                echo "-- [INFO]: Release directory [$${LATEST_RELEASE}] already exists" >> {{ LogFileName }}
-                exit 1
-              fi
-            done 
-            echo "-- Latest release found: [$${LATEST_RELEASE}]" >> {{ LogFileName }}
-            SHARED_DIRECTORY="/home/${var.brand}/shared"
-            LATEST_RELEASE_DIRECTORY="/home/${var.brand}/releases/$${LATEST_RELEASE}"
-            mkdir -p $${LATEST_RELEASE_DIRECTORY}/pub
-            ln -nfs "$${SHARED_DIRECTORY}/var" "$${LATEST_RELEASE_DIRECTORY}/var"
-            ln -nfs "$${SHARED_DIRECTORY}/pub/media" "$${LATEST_RELEASE_DIRECTORY}/pub/media"
-            aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/releases/$${LATEST_RELEASE}" "$${LATEST_RELEASE_DIRECTORY}"
-            if ! df -T "$${LATEST_RELEASE_DIRECTORY}/pub/media" | grep -q "efs"; then
-              echo "-- [ERROR]: The media directory is not an EFS mount" >> {{ LogFileName }}
-              exit 1
-            fi
-            cd $${LATEST_RELEASE_DIRECTORY}
-            unzip $${LATEST_RELEASE}.zip && rm -f $${LATEST_RELEASE}.zip
-            if [[ $? -eq 0 ]]; then
-              echo "-- The archive with the new release has been unpacked" >> {{ LogFileName }}
-            else
-              echo "-- [ERROR]: The archive is broken" >> {{ LogFileName }}
-              exit 1
-            fi
-            ln -nfs "$${LATEST_RELEASE_DIRECTORY}" "$${PUBLIC_HTML}"
-      Targets:
-        - Key: "{{ TargetEC2TagKey }}"
-          Values:
-            - "{{ TargetEC2TagValue }}"
-      CloudWatchOutputConfig:
-        CloudWatchLogGroupName: "${local.project}-${local.environment}-LatestReleaseDeployment"
-        CloudWatchOutputEnabled: true
-  - name: "SendExecutionLog"
+    schemaVersion: "0.3"
+    description: Start a CodeDeploy release deployment with a new S3 revision
+    assumeRole: "{{ AutomationAssumeRole }}"
+    parameters:
+      ApplicationName:
+        type: String
+        description: Name of the CodeDeploy application
+      DeploymentGroupName:
+        type: String
+        description: Name of the CodeDeploy deployment group
+      S3Bucket:
+        type: String
+        description: S3 bucket containing the revision
+      S3ObjectKey:
+        type: String
+        description: S3 object key of the revision
+    mainSteps:
+      - name: StartDeployment
+        action: "aws:executeAwsApi"
+        inputs:
+          Service: codedeploy
+          Api: CreateDeployment
+          ApplicationName: "{{ ApplicationName }}"
+          DeploymentGroupName: "{{ DeploymentGroupName }}"
+          Revision:
+            RevisionType: S3
+            S3Location:
+              Bucket: "{{ S3Bucket }}"
+              Key: "{{ S3ObjectKey }}"
+ - name: "SendExecutionLog"
     action: "aws:executeAwsApi"
     inputs:
       Service: "sns"
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
-      Subject: "Latest release deployment ${local.project}-${local.environment}"
-      Message: "Latest release deployment {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
+      Subject: "Latest release deployment ${local.project}"
+      Message: "Latest release {{ S3ObjectKey }} deployment {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
