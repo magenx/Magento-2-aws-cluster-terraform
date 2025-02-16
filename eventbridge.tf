@@ -49,7 +49,7 @@ resource "aws_iam_role_policy_attachment" "eventbridge_policy_attach" {
   policy_arn = aws_iam_policy.eventbridge_policy.arn
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# EventBridge Rule for S3 bucket object event for setup
+# EventBridge Rule for S3 bucket object event for setup update
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "s3_setup_update" {
   name        = "${local.project}-s3-setup-update"
@@ -75,15 +75,9 @@ resource "aws_cloudwatch_event_target" "s3_setup_update" {
   dead_letter_config {
     arn = aws_sqs_queue.dead_letter_queue.arn
   }
-#run_command_targets [
-#            for k, v in local.ec2_setup : {
-#              key    = tag:${k}
-#              values = [v]
-#            }
-#          ]
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# EventBridge Rule for S3 bucket object event for release
+# EventBridge Rule for S3 bucket object event for release update
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "s3_release_update" {
   name        = "${local.project}-s3-release-update"
@@ -98,16 +92,33 @@ resource "aws_cloudwatch_event_rule" "s3_release_update" {
   })
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# EventBridge Rule Target for SSM Document User Data on S3 update
+# EventBridge Rule Target for SSM Document S3 release update
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_cloudwatch_event_target" "s3_release_update" {
   depends_on = [aws_autoscaling_group.this]
-  rule       = aws_cloudwatch_event_rule.s3_release_update.name
-  target_id  = "${local.project}-s3-system-release-update"
-  arn        = aws_ssm_document.release.arn
-  role_arn   = aws_iam_role.eventbridge_service_role.arn
+  rule      = aws_cloudwatch_event_rule.s3_release_update.name
+  target_id = "${local.project}-s3-system-release-update"
+  arn       = aws_ssm_document.release.arn
+  role_arn  = aws_iam_role.eventbridge_service_role.arn
   dead_letter_config {
     arn = aws_sqs_queue.dead_letter_queue.arn
+  }
+  input_transformer {
+    input_paths = {
+      ApplicationName     = ${aws_codedeploy_app.this["frontend"].name},
+      DeploymentGroupName = ${aws_codedeploy_deployment_group.this["frontend"].name},
+      S3Bucket            = "$.detail.requestParameters.bucketName",
+      S3ObjectKey         = "$.detail.requestParameters.key"
+    }
+    input_template = <<EOF
+    {
+      "ApplicationName": ${aws_codedeploy_app.this["frontend"].name},
+      "DeploymentGroupName": ${aws_codedeploy_deployment_group.this["frontend"].name},
+      "S3Bucket": "<S3Bucket>",
+      "S3ObjectKey": "<S3ObjectKey>",
+      "AutomationAssumeRole": "${aws_iam_role.eventbridge_service_role.arn}"
+    }
+    EOT
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
