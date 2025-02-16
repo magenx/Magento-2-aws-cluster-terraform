@@ -36,14 +36,6 @@ parameters:
   TargetASG:
     type: String
     description: The target Auto Scaling groups
-  TargetEC2TagKey:
-    type: String
-    description: The target EC2 instance tag key
-    default: "tag:${keys(local.ec2_setup)[0]}"
-  TargetEC2TagValue:
-    type: String
-    description: The target EC2 instance tag value
-    default: "${values(local.ec2_setup)[0]}"
   AssumeRole:
     type: String
     description: The ARN of the role that SSM Automation will assume
@@ -52,21 +44,6 @@ parameters:
     description: "SSM Document Execution log file"
     default: "{{ automation:EXECUTION_ID }}"
 mainSteps:
-  - name: "InstallBasePackages"
-    action: "aws:runCommand"
-    inputs:
-      DocumentName: "AWS-RunShellScript"
-      Parameters:
-        commands:
-          - |-
-            #!/bin/bash
-            echo "Configure EC2 instance with UserData {{ global:DATE_TIME }}" > {{ LogFileName }}
-            apt -qqy update
-            apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core
-      Targets:
-        - Key: "tag:aws:autoscaling:groupName"
-          Values:
-            - "{{ TargetASG }}"
   - name: "WriteHelperScripts"
     action: "aws:runCommand"
     inputs:
@@ -129,6 +106,29 @@ mainSteps:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
             - "{{ TargetASG }}"
+  - name: "InstallBasePackages"
+    action: "aws:runCommand"
+    inputs:
+      DocumentName: "AWS-RunShellScript"
+      Parameters:
+        commands:
+          - |-
+            #!/bin/bash
+            echo "Configure EC2 instance with UserData {{ global:DATE_TIME }}" > {{ LogFileName }}
+            INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
+            apt -qqy update
+            apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core
+            if [ "$${INSTANCE_NAME}" = "frontend" ]; then
+              apt -qqy install ruby
+              cd /tmp
+              wget https://aws-codedeploy-${data.aws_region.current.name}.s3.amazonaws.com/latest/install
+              chmod +x ./install
+              ./install auto
+            fi
+      Targets:
+        - Key: "tag:aws:autoscaling:groupName"
+          Values:
+            - "{{ TargetASG }}"
   - name: "InstanceConfiguration"
     action: "aws:executeAutomation"
     inputs:
@@ -140,18 +140,6 @@ mainSteps:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
             - "{{ TargetASG }}"
-  - name: "LatestReleaseDeployment"
-    action: "aws:executeAutomation"
-    inputs:
-      DocumentName: "LatestReleaseDeployment"
-      RuntimeParameters:
-        LogFileName: "{{ LogFileName }}"
-        TargetEC2TagKey: "{{ TargetEC2TagKey }}"
-        TargetEC2TagValue: "{{ TargetEC2TagValue }}"
-      Targets:
-        - Key: "{{ TargetEC2TagKey }}"
-          Values:
-            - "{{ TargetEC2TagValue }}"
   - name: "CloudMapInstanceRegistration"
     action: "aws:runCommand"
     inputs:
