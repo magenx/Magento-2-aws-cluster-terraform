@@ -39,10 +39,6 @@ parameters:
   AssumeRole:
     type: String
     description: The ARN of the role that SSM Automation will assume
-  LogFileName:
-    type: String
-    description: "SSM Document Execution log file"
-    default: "{{ automation:EXECUTION_ID }}"
 mainSteps:
   - name: "WriteHelperScripts"
     action: "aws:runCommand"
@@ -106,6 +102,8 @@ mainSteps:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
             - "{{ TargetASG }}"
+      CloudWatchOutputConfig:
+        CloudWatchOutputEnabled: true
   - name: "InstallBasePackages"
     action: "aws:runCommand"
     inputs:
@@ -114,7 +112,6 @@ mainSteps:
         commands:
           - |-
             #!/bin/bash
-            echo "Configure EC2 instance with UserData {{ global:DATE_TIME }}" > {{ LogFileName }}
             INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
             apt -qqy update
             apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core
@@ -125,21 +122,28 @@ mainSteps:
               chmod +x ./install
               ./install auto
             fi
+            cd /tmp
+            wget https://amazoncloudwatch-agent.s3.amazonaws.com/debian/arm64/latest/amazon-cloudwatch-agent.deb
+            dpkg -i amazon-cloudwatch-agent.deb
+            /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:/cloudwatch-agent/amazon-cloudwatch-agent-$${INSTANCE_NAME}.json
       Targets:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
             - "{{ TargetASG }}"
+      CloudWatchOutputConfig:
+        CloudWatchOutputEnabled: true
   - name: "InstanceConfiguration"
     action: "aws:executeAutomation"
     inputs:
       DocumentName: "InstanceConfiguration"
       RuntimeParameters:
-        LogFileName: "{{ LogFileName }}"
         TargetASG: "{{ TargetASG }}"
       Targets:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
             - "{{ TargetASG }}"
+      CloudWatchOutputConfig:
+        CloudWatchOutputEnabled: true
   - name: "CloudMapInstanceRegistration"
     action: "aws:runCommand"
     inputs:
@@ -148,7 +152,6 @@ mainSteps:
         commands:
           - |-
             #!/bin/bash
-            echo "CloudMap registration {{ global:DATE_TIME }}" >> {{ LogFileName }}
             INSTANCE_IP="$(metadata local-ipv4)"
             INSTANCE_ID="$(metadata instance-id)"
             INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
@@ -167,23 +170,8 @@ mainSteps:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
             - "{{ TargetASG }}"
-  - name: "InstallCloudWatchAgent"
-    action: "aws:runCommand"
-    inputs:
-      DocumentName: "AWS-RunShellScript"
-      Parameters:
-        commands:
-          - |-
-            #!/bin/bash
-            INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
-            cd /tmp
-            wget https://amazoncloudwatch-agent.s3.amazonaws.com/debian/arm64/latest/amazon-cloudwatch-agent.deb
-            dpkg -i amazon-cloudwatch-agent.deb
-            /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:/cloudwatch-agent/amazon-cloudwatch-agent-$${INSTANCE_NAME}.json
-      Targets:
-        - Key: "tag:aws:autoscaling:groupName"
-          Values:
-            - "{{ TargetASG }}"
+      CloudWatchOutputConfig:
+        CloudWatchOutputEnabled: true
   - name: "SendExecutionLog"
     action: "aws:executeAwsApi"
     isEnd: true
