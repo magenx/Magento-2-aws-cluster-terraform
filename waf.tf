@@ -13,8 +13,7 @@ resource "aws_wafv2_web_acl" "this" {
   description = "${local.project}-WAF-Protections"
 
   default_action {
-    allow {
-    }
+    allow {}
   }
 
   visibility_config {
@@ -24,83 +23,48 @@ resource "aws_wafv2_web_acl" "this" {
   }
 
   rule {
-    name     = "${local.project}-Cloudfront-WAF-media-Protection-rate-based"
+    name     = "${local.project}-country-based"
     priority = 0
-
     action {
-      count {}
+      block {}
     }
-
     statement {
-      rate_based_statement {
-       limit              = 100
-       aggregate_key_type = "IP"
-       
-       scope_down_statement {
-         byte_match_statement {
-          field_to_match {
-              uri_path   {}
-              }
-          search_string  = "/media/"
-          positional_constraint = "STARTS_WITH"
-
-          text_transformation {
-            priority   = 0
-            type       = "NONE"
-           }
-         }
-       }
-     }
-  }
-      visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "${local.project}-Cloudfront-WAF-Protection-rate-based-rule"
-      sampled_requests_enabled   = true
+      geo_match_statement {
+        country_codes = [var.restricted_countries]
+      }
     }
-   }
-   
-   rule {
-    name     = "${local.project}-Cloudfront-WAF-static-Protection-rate-based"
-    priority = 1
-
-    action {
-      count {}
-    }
-
-    statement {
-      rate_based_statement {
-       limit              = 200
-       aggregate_key_type = "IP"
-       
-       scope_down_statement {
-         byte_match_statement {
-          field_to_match {
-              uri_path   {}
-              }
-          search_string  = "/static/"
-          positional_constraint = "STARTS_WITH"
-
-          text_transformation {
-            priority   = 0
-            type       = "NONE"
-           }
-         }
-       }
-     }
-    }
-      visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "${local.project}-Cloudfront-WAF-static-Protection-rate-based-rule"
-      sampled_requests_enabled   = true
+    visibility_config {
+      cloudwatch_metrics_enabled = false
+      metric_name                = "${local.project}-country-based"
+      sampled_requests_enabled   = false
     }
   }
 
   rule {
+    name     = "${local.project}-rate-based"
+    priority = 1
+    action {
+      block {}
+    }
+    statement {
+      rate_based_statement {
+       limit              = 300
+       aggregate_key_type = "IP"
+       evaluation_window_sec = 120
+       }
+     }
+      visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "${local.project}-rate-rule"
+      sampled_requests_enabled   = true
+    }
+   }
+
+  rule {
     name = "AWSManagedRulesCommonRule"
     priority = 2
-    override_action {
-      none {
-      }
+    action {
+      block {}
     }
     statement {
       managed_rule_group_statement {
@@ -114,12 +78,12 @@ resource "aws_wafv2_web_acl" "this" {
       sampled_requests_enabled = true
     }
   }
+
   rule {
     name = "AWSManagedRulesAmazonIpReputation"
     priority = 3
-    override_action {
-      none {
-      }
+    action {
+      block {}
     }
     statement {
       managed_rule_group_statement {
@@ -133,12 +97,12 @@ resource "aws_wafv2_web_acl" "this" {
       sampled_requests_enabled = true
     }
   }
+
   rule {
     name = "AWSManagedRulesBotControlRule"
     priority = 4
-    override_action {
-      none {
-      }
+    action {
+      block {}
     }
     statement {
       managed_rule_group_statement {
