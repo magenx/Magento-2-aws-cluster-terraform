@@ -21,14 +21,6 @@ parameters:
     type: String
     description: "Event Source"
     default: ""
-  Force:
-    type: String
-    description: "Force document execution"
-    default: "false"
-  LogFileName:
-    type: String
-    description: "SSM Document Execution log file"
-    default: "{{ LogFileName }}"
 mainSteps:
   - name: "InstanceConfiguration"
     action: "aws:runCommand"
@@ -38,7 +30,6 @@ mainSteps:
         commands:
           - |-
             #!/bin/bash
-            echo "Start configuration {{ global:DATE_TIME }}" >> {{ LogFileName }}
             INSTANCE_NAME=$(metadata tags/instance/Instance_name)
             SETUP_DIRECTORY="/opt/${var.brand}/setup"
             LOG_DIRECTORY="$${SETUP_DIRECTORY}/log"
@@ -54,16 +45,14 @@ mainSteps:
             aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/setup/instance" "$${INIT_DIRECTORY}" $${OPTIONS} && \
             aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/setup/$${INSTANCE_NAME}" "$${INSTANCE_DIRECTORY}" $${OPTIONS}
             if [ $? -eq 0 ]; then
-                echo "-- Configuration file:" >> {{ LogFileName }}
                 for SCRIPT in $(ls "$${INIT_DIRECTORY}"/*.sh | sort); do
                     LOG_FILE="$${LOG_DIRECTORY}/$(basename "$${SCRIPT}").log"
                     HASH_FILE="$${HASH_DIRECTORY}/$(basename "$${SCRIPT}").md5sum"
                     NEW_HASH=$(md5sum "$${SCRIPT}" | awk '{print $1}')        
                     if [ ! -f "$${HASH_FILE}" ] || [ "$${NEW_HASH}" != "$(cat "$${HASH_FILE}")" ]; then
                         echo "$${NEW_HASH}" > "$${HASH_FILE}"
-                        echo -e "\n$(date)\nRunning: $${SCRIPT}" | tee -a "$${LOG_FILE}"
+                        echo -e "\n$(date)\nRunning: $${SCRIPT}" >> "$${LOG_FILE}"
                         bash "$${SCRIPT}" >>"$${LOG_FILE}" 2>&1
-                        echo "---- $${SCRIPT}" >> {{ LogFileName }}
                     fi
                 done
                 for SCRIPT in $(ls "$${INSTANCE_DIRECTORY}"/*.sh | sort); do
@@ -72,20 +61,19 @@ mainSteps:
                     NEW_HASH=$(md5sum "$${SCRIPT}" | awk '{print $1}')        
                     if [ ! -f "$${HASH_FILE}" ] || [ "$${NEW_HASH}" != "$(cat "$${HASH_FILE}")" ]; then
                         echo "$${NEW_HASH}" > "$${HASH_FILE}"
-                        echo -e "\n$(date)\nRunning: $${SCRIPT}" | tee -a "$${LOG_FILE}"
+                        echo -e "\n$(date)\nRunning: $${SCRIPT}" >> "$${LOG_FILE}"
                         bash "$${SCRIPT}" >>"$${LOG_FILE}" 2>&1
-                        echo "---- $${SCRIPT}" >> {{ LogFileName }}
                     fi
                 done
             else
-                echo "-- [ERROR]: Configuration files not found" >> {{ LogFileName }}
+                echo "-- [ERROR]: Configuration files not found"
             fi
       Targets:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
             - "{{ TargetASG }}"
       CloudWatchOutputConfig:
-        CloudWatchLogGroupName: "${local.project}-${local.environment}-InstanceConfiguration"
+        CloudWatchLogGroupName: "${local.project}-InstanceConfiguration"
         CloudWatchOutputEnabled: true
   - name: "SendExecutionLog"
     action: "aws:executeAwsApi"
@@ -94,7 +82,7 @@ mainSteps:
       Service: "sns"
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
-      Subject: "Instance Configuration ${local.project}-${local.environment}-{{ TargetASG }}"
+      Subject: "Instance Configuration ${local.project}-{{ TargetASG }}"
       Message: "Instance Configuration {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
