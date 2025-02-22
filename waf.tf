@@ -63,8 +63,8 @@ resource "aws_wafv2_web_acl" "this" {
   rule {
     name = "AWSManagedRulesCommonRule"
     priority = 2
-    action {
-      block {}
+    override_action {
+      none {}
     }
     statement {
       managed_rule_group_statement {
@@ -82,8 +82,8 @@ resource "aws_wafv2_web_acl" "this" {
   rule {
     name = "AWSManagedRulesAmazonIpReputation"
     priority = 3
-    action {
-      block {}
+    override_action {
+      none {}
     }
     statement {
       managed_rule_group_statement {
@@ -101,8 +101,8 @@ resource "aws_wafv2_web_acl" "this" {
   rule {
     name = "AWSManagedRulesBotControlRule"
     priority = 4
-    action {
-      block {}
+    override_action {
+      none {}
     }
     statement {
       managed_rule_group_statement {
