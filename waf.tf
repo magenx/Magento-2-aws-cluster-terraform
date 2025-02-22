@@ -30,7 +30,7 @@ resource "aws_wafv2_web_acl" "this" {
     }
     statement {
       geo_match_statement {
-        country_codes = [var.restricted_countries]
+        country_codes = var.restricted_countries
       }
     }
     visibility_config {
