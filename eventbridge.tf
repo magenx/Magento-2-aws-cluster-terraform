@@ -29,8 +29,8 @@ data "aws_iam_policy_document" "eventbridge_policy" {
       "ssm:GetAutomationExecution",
       "sqs:SendMessage",
       "ssm:SendCommand",
-			"ssm:ListCommands",
-			"ssm:ListCommandInvocations",
+      "ssm:ListCommands",
+      "ssm:ListCommandInvocations",
       "ssm:GetParameter",
       "ssm:GetParameters",
       "servicediscovery:DeregisterInstance"
