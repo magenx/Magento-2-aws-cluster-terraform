@@ -138,13 +138,11 @@ mainSteps:
       DocumentName: "InstanceConfiguration"
       RuntimeParameters:
         TargetASG: "{{ TargetASG }}"
-      TargetParameterName: 
+      TargetParameterName: "InstanceId"
       Targets:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
             - "{{ TargetASG }}"
-      CloudWatchOutputConfig:
-        CloudWatchOutputEnabled: true
   - name: "CloudMapInstanceRegistration"
     action: "aws:runCommand"
     inputs:
