@@ -138,6 +138,7 @@ mainSteps:
       DocumentName: "InstanceConfiguration"
       RuntimeParameters:
         TargetASG: "{{ TargetASG }}"
+      TargetParameterName: 
       Targets:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
