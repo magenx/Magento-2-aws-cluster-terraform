@@ -8,12 +8,12 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_ssm_parameter" "aws_env" {
   for_each    = local.parameters
-  name        = "/${local.project}/${local.environment}/${each.key}"
+  name        = "/${local.project}/${each.key}"
   description = "Environment variable value for ${each.key}"
   type        = "String"
   value       = each.value
   tags = {
-    Name = "${local.project}-${local.environment}-${each.key}"
+    Name = "${local.project}-${each.key}"
   }
 }
 locals {
