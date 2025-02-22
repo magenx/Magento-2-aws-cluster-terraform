@@ -12,7 +12,7 @@ data "aws_iam_policy_document" "eventbridge_assume_role" {
     actions = ["sts:AssumeRole"]
     principals {
       type        = "Service"
-      identifiers = ["events.amazonaws.com"]
+      identifiers = ["ssm.amazonaws.com"]
     }
   }
 }
@@ -28,6 +28,9 @@ data "aws_iam_policy_document" "eventbridge_policy" {
       "ssm:StartAutomationExecution",
       "ssm:GetAutomationExecution",
       "sqs:SendMessage",
+      "ssm:SendCommand",
+			"ssm:ListCommands",
+			"ssm:ListCommandInvocations",
       "ssm:GetParameter",
       "ssm:GetParameters",
       "servicediscovery:DeregisterInstance"
