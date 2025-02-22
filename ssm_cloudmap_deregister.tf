@@ -24,10 +24,6 @@ parameters:
     type: String
     description: The project name
     default: ${local.project}
-  Environment:
-    type: String
-    description: The environment
-    default: ${local.environment}
 mainSteps:
   - name: ConstructParameterPath
     action: aws:executeScript
@@ -38,15 +34,13 @@ mainSteps:
       InputPayload:
         AutoScalingGroupName: '{{ AutoScalingGroupName }}'
         Project: '{{ Project }}'
-        Environment: '{{ Environment }}'
       Script: |-
         def construct_parameter_path(event, context):
             print("Received event:", event)
             asg_name = event['AutoScalingGroupName']
             project = event['Project']
-            environment = event['Environment']
             service_group = asg_name.split('-')[2]
-            parameter_path = f"/{project}/{environment}/{service_group.upper()}_CLOUDMAP_SERVICE_ID"
+            parameter_path = f"/{project}/{service_group.upper()}_CLOUDMAP_SERVICE_ID"
             return {"ParameterPath": parameter_path}
     outputs:
       - Name: ParameterPath
@@ -76,7 +70,7 @@ mainSteps:
       Service: "sns"
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
-      Subject: "Deregister instance from CloudMap on termination ${local.project}-${local.environment}-{{ InstanceId }}"
+      Subject: "Deregister instance from CloudMap on termination ${local.project}-{{ InstanceId }}"
       Message: "Deregister {{ InstanceId }} from CloudMap on termination {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
