@@ -110,7 +110,7 @@ resource "aws_cloudwatch_event_target" "s3_release_update" {
       S3Bucket            = "$.detail.requestParameters.bucketName",
       S3ObjectKey         = "$.detail.requestParameters.key"
     }
-    input_template = <<EOF
+    input_template = <<END
     {
       "ApplicationName": aws_codedeploy_app.this["frontend"].name,
       "DeploymentGroupName": aws_codedeploy_deployment_group.this["frontend"].id,
@@ -118,7 +118,7 @@ resource "aws_cloudwatch_event_target" "s3_release_update" {
       "S3ObjectKey": "<S3ObjectKey>",
       "AutomationAssumeRole": aws_iam_role.eventbridge_service_role.arn
     }
-    EOT
+    END
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -154,11 +154,11 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
       InstanceId = "$.detail.EC2InstanceId"
       AutoScalingGroupName = "$.detail.AutoScalingGroupName"
     }
-    input_template = <<EOF
+    input_template = <<END
     {
     "InstanceId": "<InstanceId>",
     "AutoScalingGroupName": "<AutoScalingGroupName>"
     }
-    EOF
+    END
   }
 }
