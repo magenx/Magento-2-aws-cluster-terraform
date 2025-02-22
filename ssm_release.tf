@@ -15,15 +15,6 @@ resource "aws_ssm_document" "release" {
     description: Start a CodeDeploy release deployment with a new S3 revision
     assumeRole: "{{ AutomationAssumeRole }}"
     parameters:
-      ApplicationName:
-        type: String
-        description: Name of the CodeDeploy application
-      DeploymentGroupName:
-        type: String
-        description: Name of the CodeDeploy deployment group
-      S3Bucket:
-        type: String
-        description: S3 bucket containing the revision
       S3ObjectKey:
         type: String
         description: S3 object key of the revision
@@ -33,12 +24,12 @@ resource "aws_ssm_document" "release" {
         inputs:
           Service: codedeploy
           Api: CreateDeployment
-          ApplicationName: "{{ ApplicationName }}"
-          DeploymentGroupName: "{{ DeploymentGroupName }}"
+          ApplicationName: ${aws_codedeploy_app.this["frontend"].name}
+          DeploymentGroupName: ${aws_codedeploy_deployment_group.this["frontend"].id}
           Revision:
             RevisionType: S3
             S3Location:
-              Bucket: "{{ S3Bucket }}"
+              Bucket: ${aws_s3_bucket.this["system"].bucket}
               Key: "{{ S3ObjectKey }}"
  - name: "SendExecutionLog"
     action: "aws:executeAwsApi"
