@@ -105,18 +105,18 @@ resource "aws_cloudwatch_event_target" "s3_release_update" {
   }
   input_transformer {
     input_paths = {
-      ApplicationName     = ${aws_codedeploy_app.this["frontend"].name},
-      DeploymentGroupName = ${aws_codedeploy_deployment_group.this["frontend"].name},
+      ApplicationName     = aws_codedeploy_app.this["frontend"].name,
+      DeploymentGroupName = aws_codedeploy_deployment_group.this["frontend"].name,
       S3Bucket            = "$.detail.requestParameters.bucketName",
       S3ObjectKey         = "$.detail.requestParameters.key"
     }
     input_template = <<EOF
     {
-      "ApplicationName": ${aws_codedeploy_app.this["frontend"].name},
-      "DeploymentGroupName": ${aws_codedeploy_deployment_group.this["frontend"].name},
+      "ApplicationName": aws_codedeploy_app.this["frontend"].name,
+      "DeploymentGroupName": aws_codedeploy_deployment_group.this["frontend"].name,
       "S3Bucket": "<S3Bucket>",
       "S3ObjectKey": "<S3ObjectKey>",
-      "AutomationAssumeRole": "${aws_iam_role.eventbridge_service_role.arn}"
+      "AutomationAssumeRole": aws_iam_role.eventbridge_service_role.arn
     }
     EOT
   }
