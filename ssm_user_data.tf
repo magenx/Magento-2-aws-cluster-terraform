@@ -111,7 +111,7 @@ mainSteps:
         commands:
           - |-
             #!/bin/bash
-            INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
+            INSTANCE_NAME="$(metadata tags/instance/InstanceName)"
             apt -qqy update
             apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core
             if [ "$${INSTANCE_NAME}" = "frontend" ]; then
