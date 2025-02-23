@@ -15,7 +15,7 @@ resource "aws_ssm_association" "user_data" {
   }
   association_name = "InitEC2WithUserData-${aws_autoscaling_group.this[each.key].name}"
   document_version = "$LATEST"
-  automation_target_parameter_name = "InstanceId"
+  automation_target_parameter_name = "TargetASG"
   parameters = {
         AutomationAssumeRole  = aws_iam_role.ssm_service_role.arn
         TargetASG  = aws_autoscaling_group.this[each.key].name
@@ -139,7 +139,7 @@ mainSteps:
       RuntimeParameters:
         AutomationAssumeRole: "{{AutomationAssumeRole}}"
         TargetASG: "{{ TargetASG }}"
-      TargetParameterName: "InstanceId"
+      TargetParameterName: "TargetASG"
       Targets:
         - Key: "tag:aws:autoscaling:groupName"
           Values:
