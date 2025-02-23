@@ -10,7 +10,7 @@ resource "aws_ssm_association" "user_data" {
   for_each = var.ec2
   name     = aws_ssm_document.user_data.name
   targets {
-    key    = "tag:InstanceName"
+    key    = "tag:aws:autoscaling:groupName"
     values = [aws_autoscaling_group.this[each.key].name]
   }
   association_name = "InitEC2WithUserData-${aws_autoscaling_group.this[each.key].name}"
