@@ -41,8 +41,24 @@ resource "aws_iam_role_policy_attachment" "ec2" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create inline policy for EC2 service role to publish sns message
 # # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_iam_policy_document" "sns_publish" {
+data "aws_iam_policy_document" "ec2_custom" {
   for_each = var.ec2
+  statement {
+    sid    = "EC2ProfileASGDescribePolicy${each.key}"
+    effect = "Allow"
+    actions = [
+      "autoscaling:Describe*"
+    ]
+    resources = ["*"]
+  }
+  statement {
+    sid    = "EC2ProfileGetParameterPolicy${each.key}"
+    effect = "Allow"
+    actions = [
+      "ssm:GetParameter"
+    ]
+    resources = ["*"]
+  }
   statement {
     sid    = "EC2ProfileSNSPublishPolicy${each.key}"
     effect = "Allow"
@@ -53,20 +69,7 @@ data "aws_iam_policy_document" "sns_publish" {
       aws_sns_topic.default.arn
     ]
   }
-}
-
-resource "aws_iam_role_policy" "sns_publish" {
-  for_each = var.ec2
-  name     = "EC2ProfileSNSPublishPolicy${title(each.key)}"
-  role     = aws_iam_role.ec2[each.key].id
-  policy = data.aws_iam_policy_document.sns_publish[each.key].json
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create inline policy for EC2 service role to send ses emails
-# # ---------------------------------------------------------------------------------------------------------------------#
-data "aws_iam_policy_document" "ses_send" {
-  for_each = var.ec2
-  statement {
+ statement {
     sid     = "EC2ProfileSESSendPolicy${each.key}"
     effect  = "Allow"
     actions = [
@@ -81,12 +84,13 @@ data "aws_iam_policy_document" "ses_send" {
     }
   }
 }
+}
 
-resource "aws_iam_role_policy" "ses_send" {
+resource "aws_iam_role_policy" "ec2_custom" {
   for_each = var.ec2
-  name     = "EC2ProfileSESSendPolicy${title(each.key)}"
+  name     = "EC2ProfileCustomPolicy${title(each.key)}"
   role     = aws_iam_role.ec2[each.key].id
-  policy = data.aws_iam_policy_document.ses_send[each.key].json
+  policy = data.aws_iam_policy_document.ec2_custom[each.key].json
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create inline policy for EC2 maridb service role to attach/detach vulume
