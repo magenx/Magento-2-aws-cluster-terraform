@@ -39,7 +39,7 @@ resource "aws_iam_role_policy_attachment" "ec2" {
   policy_arn = each.value.policy
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
-# Create inline policy for EC2 service role to publish sns message
+# Create custom policy for EC2 instance profile
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_iam_policy_document" "ec2_custom" {
   for_each = var.ec2
