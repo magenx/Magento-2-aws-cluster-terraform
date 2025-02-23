@@ -12,7 +12,7 @@ data "aws_iam_policy_document" "eventbridge_assume_role" {
     actions = ["sts:AssumeRole"]
     principals {
       type        = "Service"
-      identifiers = ["ssm.amazonaws.com"]
+      identifiers = ["events.amazonaws.com"]
     }
   }
 }
@@ -26,14 +26,7 @@ data "aws_iam_policy_document" "eventbridge_policy" {
     effect    = "Allow"
     actions   = [
       "ssm:StartAutomationExecution",
-      "ssm:GetAutomationExecution",
-      "sqs:SendMessage",
-      "ssm:SendCommand",
-      "ssm:ListCommands",
-      "ssm:ListCommandInvocations",
-      "ssm:GetParameter",
-      "ssm:GetParameters",
-      "servicediscovery:DeregisterInstance"
+      "sqs:SendMessage"
     ]
     resources = ["*"]
     condition {
