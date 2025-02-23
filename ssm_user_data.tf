@@ -10,15 +10,15 @@ resource "aws_ssm_association" "user_data" {
   for_each = var.ec2
   name     = aws_ssm_document.user_data.name
   targets {
-    key    = "tag:aws:autoscaling:groupName"
+    key    = "tag:InstanceName"
     values = [aws_autoscaling_group.this[each.key].name]
   }
   association_name = "InitEC2WithUserData-${aws_autoscaling_group.this[each.key].name}"
   document_version = "$LATEST"
-  automation_target_parameter_name = "TargetASG"
+  automation_target_parameter_name = "InstanceName"
   parameters = {
         AutomationAssumeRole  = aws_iam_role.ssm_service_role.arn
-        TargetASG  = aws_autoscaling_group.this[each.key].name
+        InstanceName  = each.key
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -36,9 +36,9 @@ parameters:
   AutomationAssumeRole:
     type: String
     description: "IAM role that allows Automation to perform the actions on your behalf"
-  TargetASG:
+  InstanceName:
     type: String
-    description: The target Auto Scaling groups
+    description: The target tag instance name
 mainSteps:
   - name: "WriteHelperScripts"
     action: "aws:runCommand"
@@ -99,9 +99,9 @@ mainSteps:
             END
             chmod +x /usr/local/bin/leader
       Targets:
-        - Key: "tag:aws:autoscaling:groupName"
+        - Key: "tag:InstanceName"
           Values:
-            - "{{ TargetASG }}"
+            - "{{ InstanceName }}"
       CloudWatchOutputConfig:
         CloudWatchOutputEnabled: true
   - name: "InstallBasePackages"
@@ -127,9 +127,9 @@ mainSteps:
             dpkg -i amazon-cloudwatch-agent.deb
             /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:/cloudwatch-agent/amazon-cloudwatch-agent-$${INSTANCE_NAME}.json
       Targets:
-        - Key: "tag:aws:autoscaling:groupName"
+        - Key: "tag:InstanceName"
           Values:
-            - "{{ TargetASG }}"
+            - "{{ InstanceName }}"
       CloudWatchOutputConfig:
         CloudWatchOutputEnabled: true
   - name: "InstanceConfiguration"
@@ -138,12 +138,12 @@ mainSteps:
       DocumentName: "InstanceConfiguration"
       RuntimeParameters:
         AutomationAssumeRole: "{{AutomationAssumeRole}}"
-        TargetASG: "{{ TargetASG }}"
-      TargetParameterName: "TargetASG"
+        InstanceName: "{{ InstanceName }}"
+      TargetParameterName: "InstanceName"
       Targets:
-        - Key: "tag:aws:autoscaling:groupName"
+        - Key: "tag:InstanceName"
           Values:
-            - "{{ TargetASG }}"
+            - "{{ InstanceName }}"
   - name: "CloudMapInstanceRegistration"
     action: "aws:runCommand"
     inputs:
@@ -167,9 +167,9 @@ mainSteps:
               --instance-id $${INSTANCE_ID} \
               --attributes AWS_INSTANCE_IPV4=$${INSTANCE_IP}
       Targets:
-        - Key: "tag:aws:autoscaling:groupName"
+        - Key: "tag:InstanceName"
           Values:
-            - "{{ TargetASG }}"
+            - "{{ InstanceName }}"
       CloudWatchOutputConfig:
         CloudWatchOutputEnabled: true
   - name: "SendExecutionLog"
@@ -179,7 +179,7 @@ mainSteps:
       Service: "sns"
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
-      Subject: "UserData ${local.project}-${local.environment}-{{ TargetASG }}"
+      Subject: "UserData ${local.project}-${local.environment}-{{ InstanceName }}"
       Message: "Configuration for EC2 instance with UserData {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
