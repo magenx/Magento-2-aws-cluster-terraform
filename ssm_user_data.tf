@@ -137,8 +137,7 @@ mainSteps:
       DocumentName: "InstanceConfiguration"
       RuntimeParameters:
         AutomationAssumeRole: "{{AutomationAssumeRole}}"
-        InstanceName: "{{ InstanceName }}"
-      TargetParameterName: "InstanceName"
+      TargetParameterName: "InstanceIds"
       Targets:
         - Key: "InstanceIds"
           Values:
@@ -178,7 +177,7 @@ mainSteps:
       Service: "sns"
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
-      Subject: "UserData ${local.project}-${local.environment}-{{ InstanceName }}"
+      Subject: "UserData ${local.project}-{{ InstanceIds }}"
       Message: "Configuration for EC2 instance with UserData {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
