@@ -15,10 +15,9 @@ resource "aws_ssm_association" "user_data" {
   }
   association_name = "InitEC2WithUserData-${aws_autoscaling_group.this[each.key].name}"
   document_version = "$LATEST"
-  automation_target_parameter_name = "InstanceName"
+  automation_target_parameter_name = "InstanceIds"
   parameters = {
         AutomationAssumeRole  = aws_iam_role.ssm_service_role.arn
-        InstanceName  = each.key
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -36,9 +35,9 @@ parameters:
   AutomationAssumeRole:
     type: String
     description: "IAM role that allows Automation to perform the actions on your behalf"
-  InstanceName:
+  InstanceIds:
     type: String
-    description: The target tag instance name
+    description: The target instance id
 mainSteps:
   - name: "WriteHelperScripts"
     action: "aws:runCommand"
@@ -99,9 +98,9 @@ mainSteps:
             END
             chmod +x /usr/local/bin/leader
       Targets:
-        - Key: "tag:InstanceName"
+        - Key: "InstanceIds"
           Values:
-            - "{{ InstanceName }}"
+            - "{{ InstanceIds }}"
       CloudWatchOutputConfig:
         CloudWatchOutputEnabled: true
   - name: "InstallBasePackages"
@@ -127,9 +126,9 @@ mainSteps:
             dpkg -i amazon-cloudwatch-agent.deb
             /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:/cloudwatch-agent/amazon-cloudwatch-agent-$${INSTANCE_NAME}.json
       Targets:
-        - Key: "tag:InstanceName"
+        - Key: "InstanceIds"
           Values:
-            - "{{ InstanceName }}"
+            - "{{ InstanceIds }}"
       CloudWatchOutputConfig:
         CloudWatchOutputEnabled: true
   - name: "InstanceConfiguration"
@@ -141,9 +140,9 @@ mainSteps:
         InstanceName: "{{ InstanceName }}"
       TargetParameterName: "InstanceName"
       Targets:
-        - Key: "tag:InstanceName"
+        - Key: "InstanceIds"
           Values:
-            - "{{ InstanceName }}"
+            - "{{ InstanceIds }}"
   - name: "CloudMapInstanceRegistration"
     action: "aws:runCommand"
     inputs:
@@ -167,9 +166,9 @@ mainSteps:
               --instance-id $${INSTANCE_ID} \
               --attributes AWS_INSTANCE_IPV4=$${INSTANCE_IP}
       Targets:
-        - Key: "tag:InstanceName"
+        - Key: "InstanceIds"
           Values:
-            - "{{ InstanceName }}"
+            - "{{ InstanceIds }}"
       CloudWatchOutputConfig:
         CloudWatchOutputEnabled: true
   - name: "SendExecutionLog"
