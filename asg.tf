@@ -44,7 +44,7 @@ resource "aws_launch_template" "this" {
          local.ec2_setup,
          {
           Name = "${local.project}-${each.key}-ec2"
-          Instance_name = each.key
+          InstanceName = each.key
           Hostname = "${each.key}.${var.brand}.internal"
         }
       )
@@ -53,7 +53,6 @@ resource "aws_launch_template" "this" {
        resource_type = "volume"
        tags = {
           Name = "${local.project}-${each.key}-volume"
-          Instance_name = each.key
         }
     }
   user_data = base64encode(<<EOF
