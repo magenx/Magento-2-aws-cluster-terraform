@@ -15,9 +15,9 @@ resource "aws_ssm_association" "user_data" {
   }
   association_name = "InitEC2WithUserData-${aws_autoscaling_group.this[each.key].name}"
   document_version = "$LATEST"
-  automation_target_parameter_name = "TargetASG"
+  automation_target_parameter_name = "InstanceId"
   parameters = {
-        AutomationAssumeRole  = aws_iam_role.ec2[each.key].arn
+        AutomationAssumeRole  = aws_iam_role.ssm_service_role.arn
         TargetASG  = aws_autoscaling_group.this[each.key].name
   }
 }
@@ -31,14 +31,14 @@ resource "aws_ssm_document" "user_data" {
   content = <<EOF
 schemaVersion: "0.3"
 description: "Configure EC2 instance with UserData"
-assumeRole: "{{ AutomationAssumeRole }}"
+assumeRole: "{{AutomationAssumeRole}}"
 parameters:
+  AutomationAssumeRole:
+    type: String
+    description: "IAM role that allows Automation to perform the actions on your behalf"
   TargetASG:
     type: String
     description: The target Auto Scaling groups
-  AssumeRole:
-    type: String
-    description: The ARN of the role that SSM Automation will assume
 mainSteps:
   - name: "WriteHelperScripts"
     action: "aws:runCommand"
@@ -137,6 +137,7 @@ mainSteps:
     inputs:
       DocumentName: "InstanceConfiguration"
       RuntimeParameters:
+        AutomationAssumeRole: "{{AutomationAssumeRole}}"
         TargetASG: "{{ TargetASG }}"
       TargetParameterName: "InstanceId"
       Targets:
