@@ -14,9 +14,9 @@ resource "aws_ssm_document" "configuration" {
 schemaVersion: "0.3"
 description: "Instance configuration"
 parameters:
-  TargetASG:
+  InstanceIds:
     type: String
-    description: The target Auto Scaling groups
+    description: The target instance id
   EventSource:
     type: String
     description: "Event Source"
@@ -69,9 +69,9 @@ mainSteps:
                 echo "-- [ERROR]: Configuration files not found"
             fi
       Targets:
-        - Key: "tag:aws:autoscaling:groupName"
+        - Key: "InstanceIds"
           Values:
-            - "{{ TargetASG }}"
+            - "{{ InstanceIds }}"
       CloudWatchOutputConfig:
         CloudWatchLogGroupName: "${local.project}-InstanceConfiguration"
         CloudWatchOutputEnabled: true
@@ -82,7 +82,7 @@ mainSteps:
       Service: "sns"
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
-      Subject: "Instance Configuration ${local.project}-{{ TargetASG }}"
+      Subject: "Instance Configuration ${local.project}-{{ InstanceIds }}"
       Message: "Instance Configuration {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
