@@ -6,14 +6,14 @@
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document association with Auto Scaling Group
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_association" "user_data" {
+resource "aws_ssm_association" "initialization" {
   for_each = var.ec2
-  name     = aws_ssm_document.user_data.name
+  name     = aws_ssm_document.initialization.name
   targets {
     key    = "tag:aws:autoscaling:groupName"
     values = [aws_autoscaling_group.this[each.key].name]
   }
-  association_name = "InitEC2WithUserData-${aws_autoscaling_group.this[each.key].name}"
+  association_name = "InitEC2-${aws_autoscaling_group.this[each.key].name}"
   document_version = "$LATEST"
   automation_target_parameter_name = "InstanceIds"
   parameters = {
@@ -23,13 +23,13 @@ resource "aws_ssm_association" "user_data" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document to configure EC2 instances in Auto Scaling Group
 # # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ssm_document" "user_data" {
-  name            = "UserData"
+resource "aws_ssm_document" "initialization" {
+  name            = "InstanceInitialization"
   document_format = "YAML"
   document_type   = "Automation"
   content = <<EOF
 schemaVersion: "0.3"
-description: "Configure EC2 instance with UserData"
+description: "EC2 instance initialization: install base packages and register in cloudmap"
 assumeRole: "{{AutomationAssumeRole}}"
 parameters:
   AutomationAssumeRole:
@@ -70,7 +70,7 @@ mainSteps:
             #!/bin/bash
             parameterstore() {
                 local KEY=$1
-                local PARAMETER_NAME="/${local.project}/${local.environment}/$${KEY}"
+                local PARAMETER_NAME="/${local.project}/$${KEY}"
                 aws ssm get-parameter --name "$${PARAMETER_NAME}" --with-decryption --query 'Parameter.Value' --output text
             }
             if [ "$#" -eq 0 ]; then
@@ -151,19 +151,18 @@ mainSteps:
       CloudWatchOutputConfig:
         CloudWatchOutputEnabled: true
   - name: "InstanceConfiguration"
-    action: "aws:executeAutomation"
-    onFailure: Abort
+    action: aws:executeAutomation
+    nextStep: CloudMapInstanceRegistration
     isCritical: true
+    isEnd: false
+    onFailure: Abort
     inputs:
-      DocumentName: "InstanceConfiguration"
-      RuntimeParameters:
-        AutomationAssumeRole: "{{AutomationAssumeRole}}"
-        InstanceId: "{{ InstanceIds }}"
-      TargetParameterName: "InstanceIds"
+      DocumentName: InstanceConfiguration
+      TargetParameterName: InstanceIds
       Targets:
-        - Key: "InstanceIds"
+        - Key: ParameterValues
           Values:
-            - "{{ InstanceIds }}"
+            - '{{ InstanceIds }}'
   - name: "CloudMapInstanceRegistration"
     action: "aws:runCommand"
     inputs:
@@ -174,7 +173,7 @@ mainSteps:
             #!/bin/bash
             INSTANCE_IP="$(metadata local-ipv4)"
             INSTANCE_ID="$(metadata instance-id)"
-            INSTANCE_NAME="$(metadata tags/instance/Instance_name)"
+            INSTANCE_NAME="$(metadata tags/instance/InstanceName)"
             INSTANCE_HOSTNAME="$(metadata tags/instance/Hostname)"
             CLOUDMAP_SERVICE_ID="$(parameterstore $${INSTANCE_NAME^^}_CLOUDMAP_SERVICE_ID)"
             if ! grep -q "$${INSTANCE_IP}  $${INSTANCE_HOSTNAME}" /etc/hosts; then
@@ -199,7 +198,7 @@ mainSteps:
       Service: "sns"
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
-      Subject: "User Data ${local.project}-{{ InstanceIds }}"
-      Message: "Configuration for EC2 instance with User Data {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
+      Subject: "Server Initialization for ${local.project} {{ InstanceIds }}"
+      Message: "Server Initialization {{ automation:EXECUTION_ID }} for instance {{ InstanceIds }} completed at {{ global:DATE_TIME }}"
 EOF
 }
