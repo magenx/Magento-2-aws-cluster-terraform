@@ -39,6 +39,25 @@ parameters:
     type: String
     description: The target instance id
 mainSteps:
+  - name: GetInstanceStatus
+    action: aws:executeAwsApi
+    inputs:
+      Service: ec2
+      Api: DescribeInstanceStatus
+      InstanceIds:
+        - "{{InstanceIds}}"
+    outputs:
+      - Name: InstanceState
+        Selector: "$.InstanceStatuses[0].InstanceState.Name"
+        Type: String
+  - name: CheckInstanceStatus
+    action: aws:branch
+    isEnd: true
+    inputs:
+      Choices:
+        - NextStep: "WriteHelperScripts"
+          Variable: "{{GetInstanceStatus.InstanceState}}"
+          StringEquals: "running"
   - name: "WriteHelperScripts"
     action: "aws:runCommand"
     inputs:
@@ -133,6 +152,8 @@ mainSteps:
         CloudWatchOutputEnabled: true
   - name: "InstanceConfiguration"
     action: "aws:executeAutomation"
+    onFailure: Abort
+    isCritical: true
     inputs:
       DocumentName: "InstanceConfiguration"
       RuntimeParameters:
