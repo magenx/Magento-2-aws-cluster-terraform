@@ -84,7 +84,6 @@ data "aws_iam_policy_document" "ec2_custom" {
     }
   }
 }
-}
 
 resource "aws_iam_role_policy" "ec2_custom" {
   for_each = var.ec2
