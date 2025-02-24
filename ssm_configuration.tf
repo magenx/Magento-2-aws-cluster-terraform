@@ -14,7 +14,7 @@ resource "aws_ssm_document" "configuration" {
 schemaVersion: "0.3"
 description: "Instance configuration"
 parameters:
-  InstanceIds:
+  InstanceId:
     type: String
     description: The target instance id
   EventSource:
@@ -26,6 +26,8 @@ mainSteps:
     action: "aws:runCommand"
     inputs:
       DocumentName: "AWS-RunShellScript"
+      InstanceIds:
+        - "{{ InstanceId }}"
       Parameters:
         commands:
           - |-
@@ -68,10 +70,6 @@ mainSteps:
             else
                 echo "-- [ERROR]: Configuration files not found"
             fi
-      Targets:
-        - Key: "InstanceIds"
-          Values:
-            - "{{ InstanceIds }}"
       CloudWatchOutputConfig:
         CloudWatchLogGroupName: "${local.project}-InstanceConfiguration"
         CloudWatchOutputEnabled: true
