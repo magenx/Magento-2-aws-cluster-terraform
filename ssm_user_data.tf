@@ -158,7 +158,7 @@ mainSteps:
       DocumentName: "InstanceConfiguration"
       RuntimeParameters:
         AutomationAssumeRole: "{{AutomationAssumeRole}}"
-        InstanceIds: "{{ InstanceIds }}"
+        InstanceId: "{{ InstanceIds }}"
       TargetParameterName: "InstanceIds"
       Targets:
         - Key: "InstanceIds"
