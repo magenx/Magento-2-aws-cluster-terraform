@@ -14,7 +14,7 @@ resource "aws_ssm_document" "configuration" {
 schemaVersion: "0.3"
 description: "Instance configuration"
 parameters:
-  InstanceId:
+  InstanceIds:
     type: String
     description: The target instance id
   EventSource:
@@ -27,7 +27,7 @@ mainSteps:
     inputs:
       DocumentName: "AWS-RunShellScript"
       InstanceIds:
-        - "{{ InstanceId }}"
+        - "{{ InstanceIds }}"
       Parameters:
         commands:
           - |-
@@ -80,7 +80,7 @@ mainSteps:
       Service: "sns"
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
-      Subject: "Instance Configuration ${local.project}-{{ InstanceIds }}"
-      Message: "Instance Configuration {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
+      Subject: "Instance Configuration ${local.project} {{ InstanceIds }}"
+      Message: "Instance Configuration {{ InstanceIds }} {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
