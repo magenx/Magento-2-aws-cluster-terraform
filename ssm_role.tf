@@ -25,6 +25,7 @@ data "aws_iam_policy_document" "ssm_policy" {
   statement {
     effect    = "Allow"
     actions   = [
+      "ec2:Describe*"
       "tag:GetResources",
       "sns:Publish",
       "ssm:StartAutomationExecution",
