@@ -29,7 +29,7 @@ resource "aws_ssm_document" "initialization" {
   document_type   = "Automation"
   content = <<EOF
 schemaVersion: "0.3"
-description: "EC2 instance initialization: install base packages and register in cloudmap"
+description: "Instance initialization: install base packages and register in cloudmap"
 assumeRole: "{{AutomationAssumeRole}}"
 parameters:
   AutomationAssumeRole:
@@ -198,7 +198,7 @@ mainSteps:
       Service: "sns"
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
-      Subject: "Server Initialization for ${local.project} {{ InstanceIds }}"
-      Message: "Server Initialization {{ automation:EXECUTION_ID }} for instance {{ InstanceIds }} completed at {{ global:DATE_TIME }}"
+      Subject: "Instance {{ InstanceIds }} initialization for ${local.project}"
+      Message: "Instance {{ InstanceIds }} initialization {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
