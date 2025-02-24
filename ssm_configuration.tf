@@ -30,7 +30,7 @@ mainSteps:
         commands:
           - |-
             #!/bin/bash
-            INSTANCE_NAME=$(metadata tags/instance/Instance_name)
+            INSTANCE_NAME=$(metadata tags/instance/InstanceName)
             SETUP_DIRECTORY="/opt/${var.brand}/setup"
             LOG_DIRECTORY="$${SETUP_DIRECTORY}/log"
             HASH_DIRECTORY="$${SETUP_DIRECTORY}/.hash"
