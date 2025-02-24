@@ -198,7 +198,7 @@ mainSteps:
       Service: "sns"
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
-      Subject: "UserData ${local.project}-{{ InstanceIds }}"
-      Message: "Configuration for EC2 instance with UserData {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
+      Subject: "User Data ${local.project}-{{ InstanceIds }}"
+      Message: "Configuration for EC2 instance with User Data {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
