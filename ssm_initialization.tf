@@ -131,6 +131,7 @@ mainSteps:
           - |-
             #!/bin/bash
             INSTANCE_NAME="$(metadata tags/instance/InstanceName)"
+            hostnamectl set-hostname $${INSTANCE_NAME}.${var.domain}.internal
             apt -qqy update
             apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core
             if [ "$${INSTANCE_NAME}" = "frontend" ]; then
