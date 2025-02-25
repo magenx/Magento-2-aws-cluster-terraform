@@ -152,45 +152,57 @@ mainSteps:
         CloudWatchOutputEnabled: true
   - name: "InstanceConfiguration"
     action: aws:executeAutomation
-    nextStep: CloudMapInstanceRegistration
+    nextStep: "CloudMapInstanceRegistration"
     isCritical: true
     isEnd: false
     onFailure: Abort
     inputs:
-      DocumentName: InstanceConfiguration
+      DocumentName: "InstanceConfiguration"
       TargetParameterName: InstanceIds
       Targets:
         - Key: ParameterValues
           Values:
             - '{{ InstanceIds }}'
-  - name: "CloudMapInstanceRegistration"
-    action: "aws:runCommand"
+  - name: "GetCloudMapServiceIdFromInstanceTag"
+    action: "aws:executeAwsApi"
     inputs:
-      DocumentName: "AWS-RunShellScript"
-      Parameters:
-        commands:
-          - |-
-            #!/bin/bash
-            INSTANCE_IP="$(metadata local-ipv4)"
-            INSTANCE_ID="$(metadata instance-id)"
-            INSTANCE_NAME="$(metadata tags/instance/InstanceName)"
-            INSTANCE_HOSTNAME="$(metadata tags/instance/Hostname)"
-            CLOUDMAP_SERVICE_ID="$(parameterstore $${INSTANCE_NAME^^}_CLOUDMAP_SERVICE_ID)"
-            if ! grep -q "$${INSTANCE_IP}  $${INSTANCE_HOSTNAME}" /etc/hosts; then
-              echo "$${INSTANCE_IP}  $${INSTANCE_HOSTNAME}" >> /etc/hosts
-            fi
-            hostnamectl set-hostname $${INSTANCE_HOSTNAME}
-            aws servicediscovery register-instance \
-              --region ${data.aws_region.current.name} \
-              --service-id $${CLOUDMAP_SERVICE_ID} \
-              --instance-id $${INSTANCE_ID} \
-              --attributes AWS_INSTANCE_IPV4=$${INSTANCE_IP}
-      Targets:
-        - Key: "InstanceIds"
+      Service: "ec2"
+      Api: "DescribeTags"
+      Filters:
+        - Name: "resource-id"
           Values:
             - "{{ InstanceIds }}"
-      CloudWatchOutputConfig:
-        CloudWatchOutputEnabled: true
+        - Name: "key"
+          Values:
+            - "{{ CloudMapServiceTagKey }}"
+    outputs:
+      - Name: "CloudMapServiceId"
+        Selector: "$.Tags[0].Value"
+        Type: "String"
+  - name: "GetInstancePrivateIp"
+    action: "aws:executeAwsApi"
+    inputs:
+      Service: "ec2"
+      Api: "DescribeInstances"
+      InstanceIds:
+        - "{{ InstanceIds }}"
+    outputs:
+      - Name: "PrivateIp"
+        Selector: "$.Reservations[0].Instances[0].PrivateIpAddress"
+        Type: "String"
+  - name: "RegisterInstanceInCloudMap"
+    action: "aws:executeAwsApi"
+    inputs:
+      Service: "servicediscovery"
+      Api: "RegisterInstance"
+      ServiceId: "{{ GetCloudMapServiceIdFromInstanceTag.CloudMapServiceId }}"
+      InstanceId: "{{ InstanceIds }}"
+      Attributes:
+        AWS_INSTANCE_IPV4: "{{ GetInstancePrivateIp.PrivateIp }}"
+    outputs:
+      - Name: "OperationId"
+        Selector: "$.OperationId"
+        Type: "String"
   - name: "SendExecutionLog"
     action: "aws:executeAwsApi"
     isEnd: true
