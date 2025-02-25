@@ -36,6 +36,7 @@ data "aws_iam_policy_document" "ssm_policy" {
       "ssm:ListCommandInvocations",
       "ssm:GetParameter",
       "ssm:GetParameters",
+      "route53:CreateHealthCheck",
       "servicediscovery:Get*",
       "servicediscovery:List*",
       "servicediscovery:RegisterInstance",
