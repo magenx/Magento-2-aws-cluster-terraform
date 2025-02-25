@@ -28,6 +28,7 @@ data "aws_iam_policy_document" "ssm_policy" {
       "ec2:Describe*",
       "tag:GetResources",
       "sns:Publish",
+      "ssm:DescribeInstanceInformation",
       "ssm:StartAutomationExecution",
       "ssm:GetAutomationExecution",
       "ssm:SendCommand",
