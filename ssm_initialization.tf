@@ -153,7 +153,7 @@ mainSteps:
         CloudWatchOutputEnabled: true
   - name: "InstanceConfiguration"
     action: aws:executeAutomation
-    nextStep: "CloudMapInstanceRegistration"
+    nextStep: "GetCloudMapServiceIdFromInstanceTag"
     isCritical: true
     isEnd: false
     onFailure: Abort
