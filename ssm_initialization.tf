@@ -175,7 +175,7 @@ mainSteps:
             - "{{ InstanceIds }}"
         - Name: "key"
           Values:
-            - "{{ CloudMapServiceTagKey }}"
+            - "CloudmapId"
     outputs:
       - Name: "CloudMapServiceId"
         Selector: "$.Tags[0].Value"
