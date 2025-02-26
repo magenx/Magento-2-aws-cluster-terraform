@@ -204,12 +204,17 @@ mainSteps:
       - Name: "OperationId"
         Selector: "$.OperationId"
         Type: "String"
-  - name: "GetCloudMapRegistrationStatus"
-    action: "aws:executeAwsApi"
+  - name: "GetCloudMapOperationStatus"
+    action: "aws:waitForAwsResourceProperty"
     inputs:
       Service: "servicediscovery"
       Api: "GetOperation"
       OperationId: "{{ RegisterInstanceInCloudMap.OperationId }}"
+      PropertySelector: "$.Operation.Status"
+      DesiredValues:
+        - "SUCCESS"
+      timeoutSeconds: 120
+      MaxAttempts: 5
     outputs:
       - Name: "OperationStatus"
         Selector: "$.Operation.Status"
@@ -222,6 +227,6 @@ mainSteps:
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
       Subject: "Instance {{ InstanceIds }} initialization for ${local.project}"
-      Message: "Instance {{ InstanceIds }} initialization {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }} CloudMap status: {{ GetCloudMapRegistrationStatus.OperationStatus }}"
+      Message: "Instance {{ InstanceIds }} with ip {{ GetInstancePrivateIp.PrivateIp }} initialization {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }} CloudMap status: {{ GetCloudMapOperationStatus.OperationStatus }}"
 EOF
 }
