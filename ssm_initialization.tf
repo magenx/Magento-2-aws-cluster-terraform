@@ -1,7 +1,7 @@
 
 
 
-/////////////////////////////////////////////[ SYSTEM MANAGER DOCUMENT USER DATA ]////////////////////////////////////////
+////////////////////////////////////////[ SYSTEM MANAGER DOCUMENT EC2 INITIALIZATION ]////////////////////////////////////
 
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document association with Auto Scaling Group
@@ -204,6 +204,16 @@ mainSteps:
       - Name: "OperationId"
         Selector: "$.OperationId"
         Type: "String"
+  - name: "GetCloudMapRegistrationStatus"
+    action: "aws:executeAwsApi"
+    inputs:
+      Service: "servicediscovery"
+      Api: "GetOperation"
+      OperationId: "{{ RegisterInstanceInCloudMap.OperationId }}"
+    outputs:
+      - Name: "OperationStatus"
+        Selector: "$.Operation.Status"
+        Type: "String"
   - name: "SendExecutionLog"
     action: "aws:executeAwsApi"
     isEnd: true
@@ -212,6 +222,6 @@ mainSteps:
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
       Subject: "Instance {{ InstanceIds }} initialization for ${local.project}"
-      Message: "Instance {{ InstanceIds }} initialization {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
+      Message: "Instance {{ InstanceIds }} initialization {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }} CloudMap status: {{ GetCloudMapRegistrationStatus.OperationStatus }}"
 EOF
 }
