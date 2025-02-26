@@ -152,7 +152,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] AWS WAF Protection rules  
 
 ##
-![Magento_2_AWS_cloud_auto_scaling_terraform-map](https://user-images.githubusercontent.com/1591200/149658151-d2da3630-e7cc-466e-868d-d9e341aad29e.png)
+![Magento_2_AWS_cloud_auto_scaling_terraform-map]()
 
 ## 💰 Infracost - shows cloud infrastructure cost estimates:
 ```
