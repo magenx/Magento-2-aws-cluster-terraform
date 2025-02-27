@@ -39,25 +39,22 @@ parameters:
     type: String
     description: The target instance id
 mainSteps:
-  - name: GetInstanceStatus
-    action: aws:executeAwsApi
+  - name: "WaitForInstanceRunning"
+    action: "aws:waitForAwsResourceProperty"
     inputs:
-      Service: ec2
-      Api: DescribeInstanceStatus
+      Service: "ec2"
+      Api: "DescribeInstanceStatus"
       InstanceIds:
-        - "{{InstanceIds}}"
+        - "{{ InstanceIds }}"
+      PropertySelector: "$.InstanceStatuses[0].InstanceState.Name"
+      DesiredValues:
+        - "running"
+      timeoutSeconds: 120
+      MaxAttempts: 5
     outputs:
-      - Name: InstanceState
+      - Name: "InstanceState"
         Selector: "$.InstanceStatuses[0].InstanceState.Name"
-        Type: String
-  - name: CheckInstanceStatus
-    action: aws:branch
-    isEnd: true
-    inputs:
-      Choices:
-        - NextStep: "WriteHelperScripts"
-          Variable: "{{GetInstanceStatus.InstanceState}}"
-          StringEquals: "running"
+        Type: "String"
   - name: "WriteHelperScripts"
     action: "aws:runCommand"
     inputs:
