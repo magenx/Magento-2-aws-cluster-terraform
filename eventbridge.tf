@@ -29,11 +29,6 @@ data "aws_iam_policy_document" "eventbridge_policy" {
       "sqs:SendMessage"
     ]
     resources = ["*"]
-    condition {
-      test     = "StringEquals"
-      variable = "aws:PrincipalAccount"
-      values   = [data.aws_caller_identity.current.account_id]
-    }
   }
 }
 resource "aws_iam_policy" "eventbridge_policy" {
