@@ -41,6 +41,8 @@ parameters:
 mainSteps:
   - name: "WaitForInstanceRunning"
     action: "aws:waitForAwsResourceProperty"
+    timeoutSeconds: 60
+    isCritical: true
     inputs:
       Service: "ec2"
       Api: "DescribeInstanceStatus"
@@ -201,6 +203,8 @@ mainSteps:
         Type: "String"
   - name: "GetCloudMapOperationStatus"
     action: "aws:waitForAwsResourceProperty"
+    timeoutSeconds: 60
+    isCritical: true
     inputs:
       Service: "servicediscovery"
       Api: "GetOperation"
