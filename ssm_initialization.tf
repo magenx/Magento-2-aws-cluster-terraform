@@ -49,7 +49,6 @@ mainSteps:
       PropertySelector: "$.InstanceStatuses[0].InstanceState.Name"
       DesiredValues:
         - "running"
-      timeoutSeconds: 60
     outputs:
       - Name: "InstanceState"
         Selector: "$.InstanceStatuses[0].InstanceState.Name"
@@ -209,7 +208,6 @@ mainSteps:
       PropertySelector: "$.Operation.Status"
       DesiredValues:
         - "SUCCESS"
-      timeoutSeconds: 60
     outputs:
       - Name: "OperationStatus"
         Selector: "$.Operation.Status"
