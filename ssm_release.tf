@@ -31,13 +31,13 @@ resource "aws_ssm_document" "release" {
             S3Location:
               Bucket: ${aws_s3_bucket.this["system"].bucket}
               Key: "{{ S3ObjectKey }}"
- - name: "SendExecutionLog"
-    action: "aws:executeAwsApi"
-    inputs:
-      Service: "sns"
-      Api: "Publish"
-      TopicArn: "${aws_sns_topic.default.arn}"
-      Subject: "Latest release deployment ${local.project}"
-      Message: "Latest release {{ S3ObjectKey }} deployment {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
+      - name: "SendExecutionLog"
+        action: "aws:executeAwsApi"
+        inputs:
+          Service: "sns"
+          Api: "Publish"
+          TopicArn: "${aws_sns_topic.default.arn}"
+          Subject: "Latest release deployment ${local.project}"
+          Message: "Latest release {{ S3ObjectKey }} deployment {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
