@@ -51,10 +51,6 @@ mainSteps:
       PropertySelector: "$.InstanceStatuses[0].InstanceState.Name"
       DesiredValues:
         - "running"
-    outputs:
-      - Name: "InstanceState"
-        Selector: "$.InstanceStatuses[0].InstanceState.Name"
-        Type: "String"
   - name: "WriteHelperScripts"
     action: "aws:runCommand"
     inputs:
@@ -212,10 +208,6 @@ mainSteps:
       PropertySelector: "$.Operation.Status"
       DesiredValues:
         - "SUCCESS"
-    outputs:
-      - Name: "OperationStatus"
-        Selector: "$.Operation.Status"
-        Type: "String"
   - name: "SendExecutionLog"
     action: "aws:executeAwsApi"
     isEnd: true
