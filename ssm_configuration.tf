@@ -17,6 +17,7 @@ parameters:
   InstanceIds:
     type: String
     description: The target instance ids
+    default: ""
   EventSource:
     type: String
     description: "Event source"
