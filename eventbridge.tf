@@ -66,6 +66,18 @@ resource "aws_cloudwatch_event_target" "s3_setup_update" {
   dead_letter_config {
     arn = aws_sqs_queue.dead_letter_queue.arn
   }
+  input_transformer {
+    input_paths = {
+      EventSource = "$.source"
+      S3ObjectKey = "$.detail.object.key"
+    }
+    input_template = <<END
+    {
+      "EventSource": "<EventSource>",
+      "S3ObjectKey": "<S3ObjectKey>"
+    }
+    END
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # EventBridge Rule for S3 bucket object event for release update
@@ -96,7 +108,7 @@ resource "aws_cloudwatch_event_target" "s3_release_update" {
   }
   input_transformer {
     input_paths = {
-      S3ObjectKey = "$.detail.requestParameters.key"
+      S3ObjectKey = "$.detail.object.key"
     }
     input_template = <<END
     {
