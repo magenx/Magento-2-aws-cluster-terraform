@@ -16,12 +16,35 @@ description: "Instance configuration"
 parameters:
   InstanceIds:
     type: String
-    description: The target instance id
+    description: The target instance ids
   EventSource:
     type: String
-    description: "Event Source"
-    default: ""
+    description: "Event source"
+    default: "aws.autoscaling"
 mainSteps:
+  - name: "CheckEventSource"
+    action: "aws:branch"
+    inputs:
+      Choices:
+        - Variable: "{{ EventSource }}"
+          StringEquals: "aws.s3"
+          NextStep: "RunCommandOnAllInstances"
+      Default: 
+        "ExecuteRunCommand"
+  - name: "RunCommandOnAllInstances"
+    action: "aws:executeAwsApi"
+    inputs:
+      Service: "ec2"
+      Api: "DescribeInstances"
+    outputs:
+      - Name: "InstanceIds"
+        Selector: "$.Reservations[].Instances[].InstanceId"
+        Type: "StringList"
+    nextStep: "ExecuteRunCommand"
+  - name: "ExecuteRunCommand"
+    action: "aws:runCommand"
+    inputs:
+      InstanceIds: "{{ RunCommandOnAllInstances.InstanceIds }}"
   - name: "InstanceConfiguration"
     action: "aws:runCommand"
     inputs:
