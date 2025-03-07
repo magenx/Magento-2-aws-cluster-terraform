@@ -54,7 +54,7 @@ resource "aws_lb_listener" "https" {
     fixed_response {
         content_type = "text/plain"
         message_body = "No targets are responding to this request"
-        status_code  = "502"
+        status_code  = "418"
         }
     }
 }
