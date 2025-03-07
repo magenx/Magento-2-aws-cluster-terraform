@@ -33,7 +33,7 @@ mainSteps:
         SourceType: "S3"
         SourceInfo:
           path: "https://${aws_s3_bucket.this["system"].bucket_domain_name}/setup/"
-        InstallDependencies: "True"
+        InstallDependencies: "False"
         ExtraVariables: "SSM=True"
         Check: "False"
         Verbose: "-v"
