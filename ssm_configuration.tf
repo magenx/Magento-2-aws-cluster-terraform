@@ -32,11 +32,12 @@ mainSteps:
       Parameters:
         SourceType: "S3"
         SourceInfo:
-          path: "s3://${aws_s3_bucket.this["system"].bucket}/setup/"
+          path: "https://${aws_s3_bucket.this["system"].bucket_domain_name}/setup/"
         InstallDependencies: "True"
         ExtraVariables: "SSM=True"
         Check: "False"
         Verbose: "-v"
+        TimeoutSeconds: "120"
   - name: "SendExecutionLog"
     action: "aws:executeAwsApi"
     isEnd: true
