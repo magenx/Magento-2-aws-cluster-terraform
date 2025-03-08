@@ -154,7 +154,7 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
     {
     "InstanceId": "<InstanceId>",
     "AutoScalingGroupName": "<AutoScalingGroupName>",
-    "AutomationAssumeRole": "${aws_iam_role.ssm_service_role.arn}",
+    "AutomationAssumeRole": "${aws_iam_role.ssm_service_role.arn}"
     }
     END
   }
