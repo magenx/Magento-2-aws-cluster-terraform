@@ -123,9 +123,16 @@ mainSteps:
         commands:
           - |-
             #!/bin/bash
+            apt-get -qqy update
+            apt-get -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core unzip pipx
+            # install awscli v2
+            mkdir /tmp/awscli
+            cd /tmp/awscli
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            bash ./aws/install
             INSTANCE_NAME="$(metadata tags/instance/InstanceName)"
             hostnamectl set-hostname $${INSTANCE_NAME}.${var.domain}.internal
-            apt -qqy update
             if [ "$${INSTANCE_NAME}" = "frontend" ]; then
               apt -qqy install ruby
               cd /tmp
