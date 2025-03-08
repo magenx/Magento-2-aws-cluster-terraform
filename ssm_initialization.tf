@@ -145,18 +145,33 @@ mainSteps:
       CloudWatchOutputConfig:
         CloudWatchOutputEnabled: true
   - name: "InstanceConfiguration"
-    action: aws:executeAutomation
+    action: "aws:runCommand"
     nextStep: "GetCloudMapServiceIdFromInstanceTag"
     isCritical: true
     isEnd: false
     onFailure: Abort
     inputs:
-      DocumentName: "InstanceConfiguration"
-      TargetParameterName: InstanceIds
-      Targets:
-        - Key: ParameterValues
-          Values:
-            - '{{ InstanceIds }}'
+      DocumentName: "AWS-RunShellScript"
+      InstanceIds:
+        - "{{ InstanceIds }}"
+      Parameters:
+        commands:
+          - |-
+            #!/bin/bash
+            pip3 install ansible-core --upgrade
+            ansible localhost -m ping > /dev/null 2>&1 && echo "SUCCESS: Ansible ping worked!" || { echo "ERROR: Ansible ping failed!"; exit 1; }
+            INSTANCE_NAME=$(metadata tags/instance/InstanceName)
+            INSTANCE_IP=$(metadata local-ipv4)
+            SETUP_DIRECTORY="/opt/${var.brand}/setup"
+            INSTANCE_DIRECTORY="$${SETUP_DIRECTORY}/$${INSTANCE_NAME}"
+            mkdir -p "$${INSTANCE_DIRECTORY}"
+            touch $${SETUP_DIRECTORY}/init
+            S3_OPTIONS="--quiet --exact-timestamps --delete"
+            aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/setup/$${INSTANCE_NAME}" "$${INSTANCE_DIRECTORY}" $${S3_OPTIONS}
+            ansible-playbook -i localhost -c local -e "SSM=True instance_name=$${INSTANCE_NAME} brand=${var.brand} instance_ip=$${INSTANCE_IP}" -v  $${INSTANCE_DIRECTORY}/$${INSTANCE_NAME}.yml
+      CloudWatchOutputConfig:
+        CloudWatchLogGroupName: "${local.project}-InstanceConfiguration"
+        CloudWatchOutputEnabled: true
   - name: "GetCloudMapServiceIdFromInstanceTag"
     action: "aws:executeAwsApi"
     inputs:
