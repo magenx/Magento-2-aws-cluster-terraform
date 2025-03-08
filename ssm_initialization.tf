@@ -64,7 +64,7 @@ mainSteps:
             parameterstore() {
                 local KEY=$1
                 local PARAMETER_NAME="/${local.project}/$${KEY}"
-                aws ssm get-parameter --name "$${PARAMETER_NAME}" --with-decryption --query 'Parameter.Value' --output text
+                sudo /root/awscli/bin/aws ssm get-parameter --name "$${PARAMETER_NAME}" --with-decryption --query 'Parameter.Value' --output text
             }
             if [ "$#" -eq 0 ]; then
                 echo "Usage: $0 <parameter-key>"
@@ -104,7 +104,7 @@ mainSteps:
             ### Write leader instance script
             cat <<'END' > /usr/local/bin/leader
             INSTANCE_ID=$(metadata instance-id)
-            LEADER_INSTANCE_ID=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names ${aws_autoscaling_group.this["frontend"].name} --region ${data.aws_region.current.name} --output json | \
+            LEADER_INSTANCE_ID=$(sudo /root/awscli/bin/aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names ${aws_autoscaling_group.this["frontend"].name} --region ${data.aws_region.current.name} --output json | \
               jq -r '.AutoScalingGroups[].Instances[] | select(.LifecycleState=="InService") | .InstanceId' | sort | head -1)
             [ "$${LEADER_INSTANCE_ID}" = "$${INSTANCE_ID}" ]
             END
@@ -131,6 +131,7 @@ mainSteps:
             curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             bash ./aws/install
+            sudo ./aws/install --bin-dir /root/awscli/bin --install-dir /root/awscli/awscli --update
             INSTANCE_NAME="$(metadata tags/instance/InstanceName)"
             hostnamectl set-hostname $${INSTANCE_NAME}.${var.domain}.internal
             if [ "$${INSTANCE_NAME}" = "frontend" ]; then
@@ -167,7 +168,7 @@ mainSteps:
             sudo pipx ensurepath
             export PATH="$PATH:/root/.local/bin"
             sudo pipx install ansible-core
-            sudo ansible localhost -m ping > /dev/null 2>&1 && echo "SUCCESS: Ansible ping worked!" || { echo "ERROR: Ansible ping failed!"; exit 1; }
+            sudo /root/.local/bin/ansible localhost -m ping > /dev/null 2>&1 && echo "SUCCESS: Ansible ping worked!" || { echo "ERROR: Ansible ping failed!"; exit 1; }
             INSTANCE_NAME=$(metadata tags/instance/InstanceName)
             INSTANCE_IP=$(metadata local-ipv4)
             SETUP_DIRECTORY="/opt/${var.brand}/setup"
@@ -175,7 +176,7 @@ mainSteps:
             mkdir -p "$${INSTANCE_DIRECTORY}"
             touch $${SETUP_DIRECTORY}/init
             S3_OPTIONS="--quiet --exact-timestamps --delete"
-            aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/setup/$${INSTANCE_NAME}" "$${INSTANCE_DIRECTORY}" $${S3_OPTIONS}
+            sudo /root/awscli/bin/aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/setup/$${INSTANCE_NAME}" "$${INSTANCE_DIRECTORY}" $${S3_OPTIONS}
             sudo ansible-playbook -i localhost -c local -e "SSM=True instance_name=$${INSTANCE_NAME} brand=${var.brand} instance_ip=$${INSTANCE_IP}" -v  $${INSTANCE_DIRECTORY}/$${INSTANCE_NAME}.yml
       CloudWatchOutputConfig:
         CloudWatchLogGroupName: "${local.project}-InstanceConfiguration"
