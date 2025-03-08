@@ -126,7 +126,6 @@ mainSteps:
             INSTANCE_NAME="$(metadata tags/instance/InstanceName)"
             hostnamectl set-hostname $${INSTANCE_NAME}.${var.domain}.internal
             apt -qqy update
-            apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core python3-pip unzip
             if [ "$${INSTANCE_NAME}" = "frontend" ]; then
               apt -qqy install ruby
               cd /tmp
@@ -158,7 +157,7 @@ mainSteps:
         commands:
           - |-
             #!/bin/bash
-            pip3 install ansible-core --upgrade
+            pipx install ansible-core
             ansible localhost -m ping > /dev/null 2>&1 && echo "SUCCESS: Ansible ping worked!" || { echo "ERROR: Ansible ping failed!"; exit 1; }
             INSTANCE_NAME=$(metadata tags/instance/InstanceName)
             INSTANCE_IP=$(metadata local-ipv4)
