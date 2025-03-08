@@ -81,7 +81,7 @@ mainSteps:
       Service: "sns"
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
-      Subject: "Instance {{ InstanceIds }} configuration for ${local.project}"
-      Message: "Instance {{ InstanceIds }} configuration {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
+      Subject: "Instance configuration for ${local.project}"
+      Message: "Instance {{ FilterInstancesByNameTag.InstanceIds }} configuration {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
