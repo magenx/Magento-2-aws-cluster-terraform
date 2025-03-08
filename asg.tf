@@ -61,7 +61,7 @@ resource "aws_launch_template" "this" {
 # update and install
 apt -qq update
 apt -qqy remove --purge awscli
-apt -qqy install unzip
+apt -qqy install jq apt-transport-https lsb-release ca-certificates curl gnupg software-properties-common snmp syslog-ng-core unzip pipx
 # install ssm manager
 mkdir /tmp/ssm
 cd /tmp/ssm
@@ -75,6 +75,7 @@ cd /tmp/awscli
 curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 bash ./aws/install
+pipx ensurepath
 EOF
   )
   metadata_options {
