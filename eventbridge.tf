@@ -68,12 +68,12 @@ resource "aws_cloudwatch_event_target" "s3_setup_update" {
   }
   input_transformer {
     input_paths = {
-      EventSource = "$.source"
+      AutomationAssumeRole  = aws_iam_role.ssm_service_role.arn
       S3ObjectKey = "$.detail.object.key"
     }
     input_template = <<END
     {
-      "EventSource": "<EventSource>",
+      "AutomationAssumeRole": "<AutomationAssumeRole>",
       "S3ObjectKey": "<S3ObjectKey>"
     }
     END
@@ -108,10 +108,12 @@ resource "aws_cloudwatch_event_target" "s3_release_update" {
   }
   input_transformer {
     input_paths = {
+      AutomationAssumeRole  = aws_iam_role.ssm_service_role.arn
       S3ObjectKey = "$.detail.object.key"
     }
     input_template = <<END
     {
+      "AutomationAssumeRole": "<AutomationAssumeRole>",
       "S3ObjectKey": "<S3ObjectKey>"
     }
     END
@@ -147,13 +149,15 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
   }
   input_transformer {
     input_paths = {
+      AutomationAssumeRole  = aws_iam_role.ssm_service_role.arn
       InstanceId = "$.detail.EC2InstanceId"
       AutoScalingGroupName = "$.detail.AutoScalingGroupName"
     }
     input_template = <<END
     {
     "InstanceId": "<InstanceId>",
-    "AutoScalingGroupName": "<AutoScalingGroupName>"
+    "AutoScalingGroupName": "<AutoScalingGroupName>",
+    "AutomationAssumeRole": "<AutomationAssumeRole>"
     }
     END
   }
