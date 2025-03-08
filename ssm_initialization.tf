@@ -177,7 +177,7 @@ mainSteps:
             touch $${SETUP_DIRECTORY}/init
             S3_OPTIONS="--quiet --exact-timestamps --delete"
             sudo /root/awscli/bin/aws s3 sync "s3://${aws_s3_bucket.this["system"].bucket}/setup/$${INSTANCE_NAME}" "$${INSTANCE_DIRECTORY}" $${S3_OPTIONS}
-            sudo ansible-playbook -i localhost -c local -e "SSM=True instance_name=$${INSTANCE_NAME} brand=${var.brand} instance_ip=$${INSTANCE_IP}" -v  $${INSTANCE_DIRECTORY}/$${INSTANCE_NAME}.yml
+            sudo /root/.local/bin/ansible-playbook -i localhost -c local -e "SSM=True instance_name=$${INSTANCE_NAME} brand=${var.brand} instance_ip=$${INSTANCE_IP}" -v  $${INSTANCE_DIRECTORY}/$${INSTANCE_NAME}.yml
       CloudWatchOutputConfig:
         CloudWatchLogGroupName: "${local.project}-InstanceConfiguration"
         CloudWatchOutputEnabled: true
