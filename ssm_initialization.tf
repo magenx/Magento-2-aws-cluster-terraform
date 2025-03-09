@@ -133,7 +133,7 @@ mainSteps:
             bash ./aws/install
             sudo ./aws/install --bin-dir /root/awscli/bin --install-dir /root/awscli/awscli --update
             INSTANCE_NAME="$(metadata tags/instance/InstanceName)"
-            hostnamectl set-hostname $${INSTANCE_NAME}.${var.domain}.internal
+            hostnamectl set-hostname $${INSTANCE_NAME}.${var.brand}.internal
             if [ "$${INSTANCE_NAME}" = "frontend" ]; then
               apt -qqy install ruby
               cd /tmp
