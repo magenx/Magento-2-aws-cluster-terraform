@@ -41,7 +41,7 @@ parameters:
 mainSteps:
   - name: "WaitForInstanceRunning"
     action: "aws:waitForAwsResourceProperty"
-    timeoutSeconds: 60
+    timeoutSeconds: 300
     isCritical: true
     inputs:
       Service: "ec2"
