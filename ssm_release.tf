@@ -19,7 +19,7 @@ resource "aws_ssm_document" "release" {
         type: String
         description: S3 object key of the revision
     mainSteps:
-      - name: StartDeployment
+      - name: CreateDeployment
         action: "aws:executeAwsApi"
         inputs:
           Service: codedeploy
@@ -32,13 +32,17 @@ resource "aws_ssm_document" "release" {
               bucket: ${aws_s3_bucket.this["system"].bucket}
               key: "{{ S3ObjectKey }}"
               bundleType: zip
+        outputs:
+          - Name: DeploymentId
+            Selector: "$.deploymentId"
+            Type: String
       - name: "SendExecutionLog"
         action: "aws:executeAwsApi"
         inputs:
           Service: "sns"
           Api: "Publish"
           TopicArn: "${aws_sns_topic.default.arn}"
-          Subject: "Latest release deployment ${local.project}"
-          Message: "Latest release {{ S3ObjectKey }} deployment {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
+          Subject: "Latest release deployment for ${local.project}"
+          Message: "Latest release {{ S3ObjectKey }} deployment {{ CreateDeployment.DeploymentId }} started {{ global:DATE_TIME }}"
 EOF
 }
