@@ -217,7 +217,7 @@ data "aws_iam_policy_document" "system" {
     ]
     principals {
       type        = "AWS"
-      identifiers =  aws_iam_role.ec2["frontend"].arn
+      identifiers =  [aws_iam_role.ec2["frontend"].arn]
     }
   }
 
