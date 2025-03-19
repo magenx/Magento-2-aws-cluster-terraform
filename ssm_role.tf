@@ -29,6 +29,7 @@ data "aws_iam_policy_document" "ssm_policy" {
       "codedeploy:CreateDeployment",
       "codedeploy:GetDeploymentConfig",
       "codedeploy:RegisterApplicationRevision",
+      "codedeploy:GetApplicationRevision",
       "tag:GetResources",
       "sns:Publish",
       "ssm:DescribeInstanceInformation",
