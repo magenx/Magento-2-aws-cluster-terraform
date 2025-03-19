@@ -26,6 +26,9 @@ data "aws_iam_policy_document" "ssm_policy" {
     effect    = "Allow"
     actions   = [
       "ec2:Describe*",
+      "codedeploy:CreateDeployment",
+      "codedeploy:GetDeploymentConfig",
+      "codedeploy:RegisterApplicationRevision",
       "tag:GetResources",
       "sns:Publish",
       "ssm:DescribeInstanceInformation",
