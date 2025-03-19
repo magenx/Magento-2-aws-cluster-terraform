@@ -206,6 +206,21 @@ data "aws_iam_policy_document" "system" {
     }
   }
 
+ statement {
+    sid    = "AllowEC2ReleaseS3GetObject"
+    effect = "Allow"
+    actions = [
+      "s3:GetObject"
+    ]
+    resources = [
+      "${aws_s3_bucket.this["system"].arn}/release/*"
+    ]
+    principals {
+      type        = "AWS"
+      identifiers =  aws_iam_role.ec2["frontend"].arn
+    }
+  }
+
   statement {
     sid    = "ALBWriteLogs"
     effect = "Allow"
