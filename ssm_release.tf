@@ -24,13 +24,14 @@ resource "aws_ssm_document" "release" {
         inputs:
           Service: codedeploy
           Api: CreateDeployment
-          ApplicationName: ${aws_codedeploy_app.this["frontend"].name}
-          DeploymentGroupName: ${aws_codedeploy_deployment_group.this["frontend"].id}
-          Revision:
-            RevisionType: S3
-            S3Location:
-              Bucket: ${aws_s3_bucket.this["system"].bucket}
-              Key: "{{ S3ObjectKey }}"
+          applicationName: ${aws_codedeploy_app.this["frontend"].name}
+          deploymentGroupName: ${aws_codedeploy_deployment_group.this["frontend"].deployment_group_name}
+          revision:
+            revisionType: S3
+            s3Location:
+              bucket: ${aws_s3_bucket.this["system"].bucket}
+              key: "{{ S3ObjectKey }}"
+              bundleType: zip
       - name: "SendExecutionLog"
         action: "aws:executeAwsApi"
         inputs:
