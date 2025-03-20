@@ -53,7 +53,7 @@ resource "aws_iam_role_policy" "codedeploy" {
 # CodeDeploy Applications for frontend ASG
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_codedeploy_app" "this" {
-  for_each = { for instance, value in var.ec2 : instance => value if value.service == null }
+  for_each = { for instance, value in var.ec2 : instance => value if instance == "frontend" }
   name = "${local.project}-${each.key}-codedeploy-app"
   compute_platform = "Server"
 }
