@@ -39,7 +39,7 @@ parameters:
     type: String
     description: The target instance id
 mainSteps:
-  - name: "WaitForInstanceRunning"
+  - name: "WaitForInstanceStateRunning"
     action: "aws:waitForAwsResourceProperty"
     timeoutSeconds: 300
     isCritical: true
@@ -50,7 +50,30 @@ mainSteps:
         - "{{ InstanceIds }}"
       PropertySelector: "$.InstanceStatuses[0].InstanceState.Name"
       DesiredValues:
+        - running
+  - name: "AssertInstanceStateRunning"
+    isCritical: true
+    action: "aws:assertAwsResourceProperty"
+    inputs:
+      Service: "ec2"
+      Api: "DescribeInstanceStatus"
+      InstanceIds:
+        - "{{ InstanceIds }}"
+      PropertySelector: "$.InstanceStatuses[0].InstanceState.Name"
+      DesiredValues:
         - "running"
+   - name: "WaitForInstanceStatusOk"
+    action: "aws:waitForAwsResourceProperty"
+    timeoutSeconds: 300
+    isCritical: true
+    inputs:
+      Service: "ec2"
+      Api: "DescribeInstanceStatus"
+      InstanceIds:
+        - "{{ InstanceIds }}"
+      PropertySelector: "$.InstanceStatuses[0].InstanceStatus.Status"
+      DesiredValues:
+        - "ok"
   - name: "WriteHelperScripts"
     action: "aws:runCommand"
     inputs:
