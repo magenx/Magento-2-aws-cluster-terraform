@@ -258,7 +258,7 @@ mainSteps:
     action: aws:branch
     inputs:
       Choices:
-      - NextStep: "GetOperationStatus"
+      - NextStep: "GetCloudMapOperationStatus"
         Not:
           Variable: "{{ GetCloudMapOperationStatus.OperationStatus }}"
           StringEquals: "SUCCESS"
