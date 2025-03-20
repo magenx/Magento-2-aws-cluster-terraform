@@ -244,7 +244,7 @@ mainSteps:
       - Name: "OperationId"
         Selector: "$.OperationId"
         Type: "String"
-  - name: waitUntilInstanceStateRunning
+  - name: "WaitCloudMapOperationStatus"
     action: aws:waitForAwsResourceProperty
     timeoutSeconds: 60
     inputs:
@@ -254,7 +254,7 @@ mainSteps:
       PropertySelector: "$.Operation.Status"
       DesiredValues:
         - SUCCESS
-  - name: assertInstanceStateRunning
+  - name: "AssertCloudMapOperationStatus"
     action: aws:assertAwsResourceProperty
     inputs:
       Service: "servicediscovery"
