@@ -13,11 +13,8 @@ resource "aws_ssm_document" "cloudmap_deregister" {
   content = <<EOF
 schemaVersion: '0.3'
 description: Deregister instance from CloudMap on termination
-assumeRole: "{{AutomationAssumeRole}}"
+assumeRole: ${aws_iam_role.ssm_service_role.arn}
 parameters:
-  AutomationAssumeRole:
-    type: String
-    description: "IAM role that allows Automation to perform the actions on your behalf"
   InstanceId:
     type: String
     description: The ID of the instance to deregister
