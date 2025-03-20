@@ -16,9 +16,6 @@ resource "aws_ssm_association" "initialization" {
   association_name = "InitEC2-${aws_autoscaling_group.this[each.key].name}"
   document_version = "$LATEST"
   automation_target_parameter_name = "InstanceIds"
-  parameters = {
-        AutomationAssumeRole  = aws_iam_role.ssm_service_role.arn
-  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create SSM Document to configure EC2 instances in Auto Scaling Group
@@ -30,7 +27,7 @@ resource "aws_ssm_document" "initialization" {
   content = <<EOF
 schemaVersion: "0.3"
 description: "Instance initialization: install base packages and register in cloudmap"
-assumeRole: "{{AutomationAssumeRole}}"
+assumeRole: ${aws_iam_role.ssm_service_role.arn}
 parameters:
   AutomationAssumeRole:
     type: String
