@@ -13,7 +13,7 @@ resource "aws_ssm_document" "release" {
   content = <<EOF
     schemaVersion: "0.3"
     description: Start a CodeDeploy release deployment with a new S3 revision
-    assumeRole: "{{ AutomationAssumeRole }}"
+    assumeRole: ${aws_iam_role.ssm_service_role.arn}
     parameters:
       S3ObjectKey:
         type: String
