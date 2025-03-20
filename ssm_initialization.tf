@@ -62,7 +62,7 @@ mainSteps:
       PropertySelector: "$.InstanceStatuses[0].InstanceState.Name"
       DesiredValues:
         - "running"
-   - name: "WaitForInstanceStatusOk"
+  - name: "WaitForInstanceStatusOk"
     action: "aws:waitForAwsResourceProperty"
     timeoutSeconds: 300
     isCritical: true
