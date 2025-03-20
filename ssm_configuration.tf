@@ -42,12 +42,12 @@ mainSteps:
       Service: ec2
       Api: DescribeInstances
       Filters:
-        - Name: tag:Name
+        - Name: tag:InstanceName
           Values:
             - "{{ ExtractInstanceName.InstanceName }}"
     outputs:
       - Name: InstanceIds
-        Selector: "$.Reservations[].Instances[].InstanceId"
+        Selector: "$.Reservations[*].Instances[*].InstanceId"
         Type: StringList
   - name: "RunCommandOnInstances"
     action: aws:runCommand
@@ -80,6 +80,6 @@ mainSteps:
       Api: "Publish"
       TopicArn: "${aws_sns_topic.default.arn}"
       Subject: "Instance configuration for ${local.project}"
-      Message: "Instance {{ FilterInstancesByNameTag.InstanceIds }} configuration {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
+      Message: "Instance {{ ExtractInstanceName.InstanceName }} {{ FilterInstancesByNameTag.InstanceIds }} configuration {{ automation:EXECUTION_ID }} completed at {{ global:DATE_TIME }}"
 EOF
 }
