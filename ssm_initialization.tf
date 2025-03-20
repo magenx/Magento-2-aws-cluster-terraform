@@ -245,16 +245,25 @@ mainSteps:
         Selector: "$.OperationId"
         Type: "String"
   - name: "GetCloudMapOperationStatus"
-    action: "aws:waitForAwsResourceProperty"
-    timeoutSeconds: 60
-    isCritical: true
+    action: "aws:executeAwsApi"
     inputs:
       Service: "servicediscovery"
       Api: "GetOperation"
       OperationId: "{{ RegisterInstanceInCloudMap.OperationId }}"
-      PropertySelector: "$.Operation.Status"
-      DesiredValues:
-        - "SUCCESS"
+    outputs:
+      - Name: "OperationStatus"
+        Selector: "$.Operation.Status"
+        Type: "String"
+  - name: "ConfirmGetCloudMapOperationStatus"
+    action: aws:branch
+    inputs:
+      Choices:
+      - NextStep: "GetOperationStatus"
+        Not:
+          Variable: "{{ GetCloudMapOperationStatus.OperationStatus }}"
+          StringEquals: "SUCCESS"
+      Default:
+        SendExecutionLog
   - name: "SendExecutionLog"
     action: "aws:executeAwsApi"
     isEnd: true
