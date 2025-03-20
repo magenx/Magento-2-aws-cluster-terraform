@@ -13,13 +13,11 @@ resource "aws_ssm_document" "configuration" {
   content = <<EOF
 schemaVersion: "0.3"
 description: "Runs Ansible Playbook to configure EC2 instance"
+assumeRole: ${aws_iam_role.ssm_service_role.arn}
 parameters:
   S3ObjectKey:
     type: String
     description: "The S3 object key path"
-  AutomationAssumeRole:
-    type: String
-    description: "The ARN of the role that allows Automation to perform the actions"
 mainSteps:
   - name: "ExtractInstanceName"
     action: aws:executeScript
