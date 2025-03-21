@@ -4,9 +4,8 @@
 > Enterprise-grade solution for companies of all sizes, B2B B2C, providing the best customer experience.  
 > use [Fastly, Cloudflare, Section](../../tree/fastly_v5) in front 
 
-<img src="https://user-images.githubusercontent.com/1591200/117845471-7abda280-b278-11eb-8c88-db3fa307ae40.jpeg" width="150" height="105"> <img src="https://user-images.githubusercontent.com/1591200/117845982-edc71900-b278-11eb-81ec-e19465f1344c.jpeg" width="140" height="130"> <img src="https://user-images.githubusercontent.com/1591200/118028531-158ead80-b35b-11eb-8957-636de16ada34.png" width="230" height="140">
-<img src="https://user-images.githubusercontent.com/1591200/130320410-91749ce8-5af1-4802-af25-ffb36e7ded98.png" width="100" height="120"><img src="https://user-images.githubusercontent.com/1591200/143559434-7593c7bf-79b5-4a1f-b6cc-71060cf0bbec.png" width="160" height="170">
-
+<img src="https://github.com/user-attachments/assets/11071403-b3cb-4844-a438-f7bc89d55b11">
+<br />
 <br />
 
 ## AWS Graviton4 Processor - Enabling the best performance in EC2:
@@ -86,7 +85,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] [Subscribe to Debian 12 ARM](https://aws.amazon.com/marketplace/pp/prodview-63gms6fbfaota)
 - [x] Choose an AWS Region
 - [x] Start AWS CloudShell [fastest way to deploy and debug]
-- [x] Create quick start script:
+- [x] Create install script in cloudshell user home:
 ```
    cat <<'END' > install
    yum install -y yum-utils
@@ -99,20 +98,23 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
    bash init.sh
    END
 ```
-- [x] Switch to root user and run quick start script:  
-> 
+- [x] Switch to root user and run quick init script:
 ```
   sudo -i
   bash ../cloudshell-user/install
 ```
+- [x] Adjust your settings
+```
+  cd /home/magento
+  terraform apply
+```
 >  
 ❗ Right after `terraform apply` you will receive email from amazon to approve resources    
-- [x] Adjust your settings
   
 ❗ ```For production deployment make sure to enable deletion protection and backup retention```  
   
-> to destroy infrastructure: ```terraform destroy```  
-> resources created outside of terraform must be deleted manually, for example CloudWatch logs
+❗ Destroy infrastructure: ```terraform destroy```  
+❗ Resources created outside of terraform must be deleted manually, for example CloudWatch logs or volumes
 
 <br />
 
@@ -127,6 +129,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
  `4` s3 buckets for [media] [media-optimized] images [backup] and [system] configuration and release deployments (with access policy)  
  `1` cloudfront s3 and ALB origin distribution  
  `1` lambda@edge function to resize images   
+ `1` codedeploy app and group for deployments
  `1` efs file system for shared folders, with mount target per AZ  
  `1` sns topic default subscription to receive email alerts  
  `1` ses user access details for smtp module  
@@ -144,8 +147,8 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 - [x] Simple Email Service authentication
 - [x] CloudWatch agent configured to stream logs
 - [x] Configuration settings saved in Parameter Store
-- [x] Live shop in production mode / read-only 
-- [x] Security groups configured for every service and instances
+- [x] Codedeploy to deploy application release
+- [x] Security groups configured for every instance
 - [x] [Lambda@Edge](https://aws.amazon.com/lambda/edge/#Real-time_Image_Transformation) images optimization
 - [x] Enhanced security 
 - [x] AWS CloudMap for private DNS management
