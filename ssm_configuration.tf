@@ -47,7 +47,7 @@ mainSteps:
             - "{{ ExtractInstanceName.InstanceName }}"
     outputs:
       - Name: InstanceIds
-        Selector: "$.Reservations[*].Instances[*].InstanceId"
+        Selector: "$.Reservations..Instances..InstanceId"
         Type: StringList
   - name: "RunCommandOnInstances"
     action: aws:runCommand
