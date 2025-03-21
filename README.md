@@ -1,4 +1,5 @@
 ## Magento 2 [auto scaling](https://aws.amazon.com/autoscaling/) cluster with Terraform on AWS cloud only
+> This configuration creates an EC2 instances and replaces all AWS-managed services with self-managed alternatives. Done.  
 > Deploy a full-scale secure and flexible e-commerce infrastructure based on Magento 2 in a matter of seconds.  
 > Enterprise-grade solution for companies of all sizes, B2B B2C, providing the best customer experience.  
 > use [Fastly, Cloudflare, Section](../../tree/fastly_v5) in front 
@@ -69,12 +70,14 @@ https://devdocs.magento.com/
 https://docs.aws.amazon.com/index.html
 https://www.terraform.io/docs/
 https://aws.amazon.com/cloudshell/
+https://docs.ansible.com/
 ```
 <br />
 
 The terraform configuration language and all the files in this repository are intuitively simple and straightforward. They are written in simple text and functions that any beginner can understand. Terraform deployment with zero dependency, no prerequisites, no need to install additional software, no programming required.  
   
 The idea was to create a full-fledged turnkey infrastructure, with deeper settings, so that any ecommerce manager could deploy it and immediately use it for his brand.
+
 
 <br />
 
@@ -114,41 +117,38 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
 <br />
 
 ## Complete setup:
- `6` autoscaling groups with launch templates + configuration from `user_data`  
- `6` target groups for load balancer (frontend admin opensearch redis rabbitmq mariadb)   
+ `6` autoscaling groups with launch templates + configuration with `ssm automation` and `ansible playbooks`  
+ `1` varnish or frontend target group for load balancer    
  `1` load balancer with listeners / rules  
  `1` ec2 instance mariadb database  
  `1` ec2 instance elasticsearch domain for Magento catalog search  
  `1` ec2 instance redis for sessions and cache  
  `1` ec2 instance rabbitmq broker to manage queue messages  
- `3` s3 buckets for [media] original images and [system] files and logs (with access policy)  
- `1` cloudfront s3 origin distribution  
- `1` lambda@edge function to resize images  
- `1` s3 bucket for [media-optimized] resized images  
+ `4` s3 buckets for [media] [media-optimized] images [backup] and [system] configuration and release deployments (with access policy)  
+ `1` cloudfront s3 and ALB origin distribution  
+ `1` lambda@edge function to resize images   
  `1` efs file system for shared folders, with mount target per AZ  
  `1` sns topic default subscription to receive email alerts  
  `1` ses user access details for smtp module  
  
- >resources are grouped into a virtual network, VPC dedicated to your brand  
- >the settings initially imply a medium store, and are designed for moderate traffic.  
- >services are clustered and replicated thus ready for failover.
+ > resources are grouped into a virtual network, VPC dedicated to your brand  
+ > the settings initially imply a medium store, and are designed for moderate traffic.  
+ > services are clustered and replicated thus ready for failover.
  
 ##
 - [x] Deployment into isolated Virtual Private Cloud
-- [x] Autoscaling policy per each group
+- [x] Autoscaling policy per each group, in case of clustering
 - [x] Managed with [Systems Manager](https://aws.amazon.com/systems-manager/) agent
 - [x] Instance Profile assigned to simplify EC2 management
-- [x] Create and use ssm documents and EventBridge rules to automate tasks
-- [x] Simple Email Service authentication + SMTP Magento module
+- [x] EventBridge rules to automate tasks
+- [x] Simple Email Service authentication
 - [x] CloudWatch agent configured to stream logs
 - [x] Configuration settings saved in Parameter Store
 - [x] Live shop in production mode / read-only 
 - [x] Security groups configured for every service and instances
-- [x] phpMyAdmin for easy database editing
 - [x] [Lambda@Edge](https://aws.amazon.com/lambda/edge/#Real-time_Image_Transformation) images optimization
-- [x] Enhanced security in AWS and LEMP 
+- [x] Enhanced security 
 - [x] AWS CloudMap for private DNS management
-- [x] AWS Config resource configuraton rules
 - [x] AWS WAF Protection rules  
 
 ##
@@ -174,16 +174,18 @@ OVERALL TOTAL       **$630.87
 
 <br/>
 
-## :hammer_and_wrench: Magento 2 development | source code:
+## :hammer_and_wrench: Magento 2 development:
 - [x] Docker for local development - https://github.com/magenx/Magento-2-docker-configuration
-- [x] Github developer, staging, production + release repository workflow.
-- [x] Github Actions build code.
-- [x] EC2 instance user_data configured on boot to clone files from s3, Github, etc.
-> Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime.
+- [x] Github Actions build code and push to S3
+- [x] EC2 instance configuration with ssm documents on boot to sync configs from S3
+- [x] Codedeploy agent creates deployment on S3 release updates
+  
+> DEMO code: https://github.com/magenx/Magento-2/    
+> Replaced over 200+ useless modules. Minimal Magento 2 package can be extended anytime  
 > Remove replaced components from `composer.json` in `"replace": {}` and run `composer update`  
 > modules configuration here: https://github.com/magenx/Magento-2/blob/main/composer.json  
    
-   
+
 **Performance and security enhancements**
 - Faster backend and frontend from 14% upto 50%
 - Better memory management upto 15%
@@ -192,16 +194,6 @@ OVERALL TOTAL       **$630.87
 - Zero maintenance
 - Low security risks
 
-<br />
-
-## CI/CD scenario:
-- [x] Event driven
-- [x] Services configuration files tracked in Parameter Store
-- [x] SSM Document pull from S3 or Github and cleanup.
-- [X] DevOps with local docker environment - developer and staging.
-- [x] GitHub Actions to build,release and sync with CodeCommit.
-- [x] Change deployment logic to your needs.  
-   
 <br />
    
 ## :e-mail: Contact us for installation and support:
