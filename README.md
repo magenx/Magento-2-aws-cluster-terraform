@@ -109,7 +109,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
   terraform apply
 ```
 > Terraform state saved and managed in s3 bucket.  
-> If you log out of CloudShell or lose your session, you can run install script again to pull the Terraform files and reconnect to the S3 backend.
+> If you have logged out of CloudShell and your environment has been deleted, you can run install script again to pull the Terraform files and reconnect to the S3 backend.
 
 ❗ Right after `terraform apply` you will receive email from amazon to approve resources    
   
