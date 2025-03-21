@@ -108,7 +108,9 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
   cd /home/magento
   terraform apply
 ```
->  
+> Terraform state saved and managed in s3 bucket.  
+> If you log out of CloudShell or lose your session, you can run install script again to pull the Terraform files and reconnect to the S3 backend.
+
 ❗ Right after `terraform apply` you will receive email from amazon to approve resources    
   
 ❗ ```For production deployment make sure to enable deletion protection and backup retention```  
