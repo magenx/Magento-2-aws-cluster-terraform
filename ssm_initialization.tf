@@ -29,9 +29,6 @@ schemaVersion: "0.3"
 description: "Instance initialization: install base packages and register in cloudmap"
 assumeRole: ${aws_iam_role.ssm_service_role.arn}
 parameters:
-  AutomationAssumeRole:
-    type: String
-    description: "IAM role that allows Automation to perform the actions on your behalf"
   InstanceIds:
     type: String
     description: The target instance id
