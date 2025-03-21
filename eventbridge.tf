@@ -72,7 +72,7 @@ resource "aws_cloudwatch_event_target" "s3_setup_update" {
     }
   input_template = <<END
 {
-  "S3ObjectKey": <S3ObjectKey>
+  "S3ObjectKey": ["<S3ObjectKey>"]
 }
 END
   }
@@ -110,7 +110,7 @@ resource "aws_cloudwatch_event_target" "s3_release_update" {
     }
   input_template = <<END
 {
-  "S3ObjectKey": <S3ObjectKey>
+  "S3ObjectKey": ["<S3ObjectKey>"]
 }
 END
   }
@@ -150,8 +150,8 @@ resource "aws_cloudwatch_event_target" "ec2_terminating" {
     }
   input_template = <<END
 {
-  "InstanceId": <InstanceId>,
-  "AutoScalingGroupName": <AutoScalingGroupName>
+  "InstanceId": ["<InstanceId>"],
+  "AutoScalingGroupName": ["<AutoScalingGroupName>"]
 }
 END
   }
