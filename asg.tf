@@ -40,15 +40,12 @@ resource "aws_launch_template" "this" {
   }
   tag_specifications {
        resource_type = "instance"
-       tags = merge(
-         local.ec2_setup,
-         {
+       tags = {
           Name = "${local.project}-${each.key}-ec2"
           InstanceName = each.key
           Hostname = "${each.key}.${var.brand}.internal"
           CloudmapId = aws_service_discovery_service.this[each.key].id
         }
-      )
     }
   tag_specifications {
        resource_type = "volume"
