@@ -25,7 +25,8 @@ Configuring your own infrastructure these days is the most profitable way. You m
 Adobe Commerce Cloud has lots of technical problems due to the fact that many services compete on the same server and share the processor time, memory, network and I/O. Bad architectural solution using monolitic servers, not cloud native solution, that was not made specifically for Magento, but adapted in rush using many wrappers, with manual pseudo scaling and 48 hours to 5 days to accept and deploy new settings.
 
 ```
-Obviously, PaaS intermediaries also use AWS Cloud. But concealing its cheap solutions with a marketing, 
+Obviously, PaaS intermediaries also use AWS Cloud.  
+But concealing its cheap solutions with a marketing,  
 trying to hook you up on a dodgy contract and making you pay 10 times more.
 ``` 
 <img align="right" width="500" src="https://user-images.githubusercontent.com/1591200/130331243-03e6097a-c380-4586-b380-cbc733237d93.png">
