@@ -40,7 +40,7 @@ trying to hook you up on a dodgy contract and making you pay 10 times more.
 - [x] No hardware restrictions
 - [x] No services limitations
 - [x] No hidden bottlenecks
-- [x] No time waste for [support tickets](https://devdocs.magento.com/cloud/project/services.html) 
+- [x] No time waste for [support tickets](https://experienceleague.adobe.com/en/docs/commerce-on-cloud/user-guide/configure/service/services-yaml) 
   
   
 &nbsp;  
