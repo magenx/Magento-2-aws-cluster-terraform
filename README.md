@@ -132,7 +132,7 @@ The idea was to create a full-fledged turnkey infrastructure, with deeper settin
  `4` s3 buckets for [media] [media-optimized] images [backup] and [system] configuration and release deployments   
  `1` cloudfront s3 and ALB origin distribution  
  `1` lambda@edge function to resize images   
- `1` codedeploy app and group for deployments
+ `1` codedeploy app and group for deployments  
  `1` efs file system for shared folders, with mount target per AZ  
  `1` sns topic default subscription to receive email alerts  
  `1` ses user access details for smtp module  
