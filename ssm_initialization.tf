@@ -197,7 +197,7 @@ mainSteps:
             find $${INSTANCE_DIRECTORY}/ -type f -name '*.y*ml' -delete
             cd $${INSTANCE_DIRECTORY}/
             unzip -o $${INSTANCE_NAME}.zip
-            sudo /root/.local/bin/ansible-playbook -i localhost -c local -e "SSM=True instance_name=$${INSTANCE_NAME} brand=${var.brand} instance_ip=$${INSTANCE_IP}" -v  $${INSTANCE_DIRECTORY}/$${INSTANCE_NAME}.yml
+            sudo /root/.local/bin/ansible-playbook -i localhost -c local -e "SSM=True instance_name=$${INSTANCE_NAME} instance_ip=$${INSTANCE_IP}" -v  $${INSTANCE_DIRECTORY}/$${INSTANCE_NAME}.yml
       CloudWatchOutputConfig:
         CloudWatchLogGroupName: "${local.project}-InstanceConfiguration"
         CloudWatchOutputEnabled: true
