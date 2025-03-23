@@ -28,7 +28,14 @@ resource "aws_wafv2_web_acl" "this" {
       name     = rule.key
       priority = rule.value.priority
       action {
-        (rule.value.action) {}
+        dynamic "allow" {
+          for_each = rule.value.action == "allow" ? [1] : []
+          content {}
+        }
+        dynamic "block" {
+          for_each = rule.value.action == "block" ? [1] : []
+          content {}
+        }
       }
       statement {
         ip_set_reference_statement {
