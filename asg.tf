@@ -12,18 +12,47 @@ resource "aws_launch_template" "this" {
   iam_instance_profile { name = aws_iam_instance_profile.ec2[each.key].name }
   image_id = element(values(data.external.packer[each.key].result), 0)
   instance_type = each.value
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      volume_size = each.value.volume_size
+      volume_type = "gp3"
+      encrypted   = true
+      delete_on_termination = true
+    }
+  }
   monitoring { enabled = var.asg["monitoring"] }
   network_interfaces { 
     associate_public_ip_address = true
     security_groups = [aws_security_group.ec2.id]
   }
-  dynamic "tag_specifications" {
-    for_each = toset(["instance","volume"])
-    content {
-       resource_type = tag_specifications.key
-       tags = merge(data.aws_default_tags.this.tags,{Name = "${local.project}-${each.key}-ec2", Project = "${local.project}"})
+  tag_specifications {
+       resource_type = "instance"
+       tags = {
+          Name = "${local.project}-${each.key}-ec2"
+          Instance_name = each.key
+          Hostname = "${each.key}.${var.brand}.internal"
+        }
     }
+  tag_specifications {
+       resource_type = "volume"
+       tags = {
+          Name = "${local.project}-${each.key}-volume"
+        }
   }
+  user_data = base64encode(<<EOF
+#!/bin/bash
+# remove awscli and install ssm manager
+apt -qqy remove --purge awscli
+# install ssm manager
+mkdir /tmp/ssm
+cd /tmp/ssm
+wget https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_arm64/amazon-ssm-agent.deb
+dpkg -i amazon-ssm-agent.deb
+systemctl enable amazon-ssm-agent
+systemctl start amazon-ssm-agent
+EOF
+  )
   metadata_options {
     http_endpoint               = "enabled"
     http_tokens                 = "required"
@@ -49,21 +78,13 @@ resource "aws_autoscaling_group" "this" {
   min_size            = var.asg["min_size"]
   max_size            = var.asg["max_size"]
   health_check_grace_period = var.asg["health_check_grace_period"]
-  health_check_type         = var.asg["health_check_type"]
-  target_group_arns  = [aws_lb_target_group.this[each.key].arn]
-  dynamic "warm_pool" {
-    for_each = var.asg["warm_pool"] == "enabled" ? [var.ec2] : []
-    content {
-      pool_state                  = "Stopped"
-      min_size                    = var.asg["min_size"]
-      max_group_prepared_capacity = var.asg["max_size"]
-    }
-  }
+  health_check_type  = var.asg["health_check_type"]
+  target_group_arns  = aws_lb_target_group.this.arn
   launch_template {
     name    = aws_launch_template.this[each.key].name
     version = "$Latest"
   }
- instance_refresh {
+  instance_refresh {
     strategy = "Rolling"
     preferences {
       min_healthy_percentage = 50
@@ -75,7 +96,7 @@ resource "aws_autoscaling_group" "this" {
     create_before_destroy = true
   }
   dynamic "tag" {
-    for_each = merge(data.aws_default_tags.this.tags,{ Name = "${local.project}-${each.key}-asg" })
+    for_each = merge(local.default_tags,{Name="${local.project}-${each.key}-asg"})
     content {
       key                 = tag.key
       value               = tag.value
@@ -160,11 +181,4 @@ resource "aws_cloudwatch_metric_alarm" "scalein" {
   }
   alarm_description = "${each.key} scale-in alarm - CPU less than ${var.asp["in_threshold"]} percent"
   alarm_actions     = [aws_autoscaling_policy.scalein[each.key].arn]
-}
-
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create EC2 ebs default encryption
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_ebs_encryption_by_default" "this" {
-  enabled = true
 }
