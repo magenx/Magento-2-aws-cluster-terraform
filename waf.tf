@@ -62,9 +62,9 @@ resource "aws_wafv2_web_acl" "this" {
       }
     }
     visibility_config {
-      cloudwatch_metrics_enabled = false
+      cloudwatch_metrics_enabled = true
       metric_name                = "${local.project}-country-based"
-      sampled_requests_enabled   = false
+      sampled_requests_enabled   = true
     }
   }
 
