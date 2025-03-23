@@ -213,6 +213,40 @@ variable "restricted_countries" {
 
 
 
+locals {
+  # Read the CSV files to get IPs
+  whitelist_ips = csvdecode(file("${abspath(path.root)}/waf_whitelist.csv"))
+  blacklist_ips = csvdecode(file("${abspath(path.root)}/waf_blacklist.csv"))
+  # Define whitelist and blacklist IP sets
+  waf_ipset = {
+    whitelist = {
+      name        = "${local.project}-whitelist-ip-set"
+      description = "IP set for whitelisted IP addresses"
+      addresses   = local.whitelist_ips[*].ip_address
+    }
+    blacklist = {
+      name        = "${local.project}-blacklist-ip-set"
+      description = "IP set for blacklisted IP addresses"
+      addresses   = local.blacklist_ips[*].ip_address
+    }
+  }
+  # Define rules for whitelist and blacklist
+  waf_ipset_rules = {
+    allow-whitelisted-ips = {
+      priority     = 0
+      action       = "allow"
+      ip_set_key   = "whitelist"
+      metric_name  = "${local.project}-allow-whitelisted-ips"
+    }
+    block-blacklisted-ips = {
+      priority     = 1
+      action       = "block"
+      ip_set_key   = "blacklist"
+      metric_name  = "${local.project}-block-blacklisted-ips"
+    }
+  }
+}
+
 ## Regions with Regional Edge Caches
 locals {
   rec_regions = {
