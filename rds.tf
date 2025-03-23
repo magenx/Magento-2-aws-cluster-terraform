@@ -60,7 +60,7 @@ resource "aws_rds_cluster" "this" {
   cluster_identifier          = "${local.project}-aurora-cluster"
   engine                      = var.rds["engine"]
   engine_version              = var.rds["engine_version"]
-  availability_zones          = []
+  availability_zones          = random_shuffle.subnets.result
   db_subnet_group_name        = aws_db_subnet_group.this.name
   vpc_security_group_ids      = [aws_security_group.rds.id]
   port                        = "3306"
