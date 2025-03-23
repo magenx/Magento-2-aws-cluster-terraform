@@ -27,13 +27,17 @@ resource "aws_lb" "this" {
 # Create Target Groups for Load Balancers
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_lb_target_group" "this" {
-  for_each    = var.ec2
-  name        = "${local.project}-${each.key}"
+  name        = "${local.project}-frontend"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.this.id
   health_check {
-    path = "/${random_string.this["health_check"].result}"
+    path                = "/${random_string.this["health_check"].result}"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 3
+    unhealthy_threshold = 2
+    matcher             = "200"
   }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
@@ -44,14 +48,14 @@ resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.this.arn
   port              = "443"
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-FS-1-2-Res-2020-10"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-Res-2021-06"
   certificate_arn   = aws_acm_certificate.default.arn
   default_action {
     type             = "fixed-response"
     fixed_response {
         content_type = "text/plain"
         message_body = "No targets are responding to this request"
-        status_code  = "502"
+        status_code  = "418"
         }
     }
 }
@@ -77,64 +81,13 @@ resource "aws_lb_listener" "http" {
 resource "aws_lb_listener_rule" "frontend" {
   listener_arn = aws_lb_listener.https.arn
   priority     = 30
-							
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.this["frontend"].arn
+    target_group_arn = aws_lb_target_group.this.arn
   }
   condition {
     host_header {
       values = [var.domain]
-    }
-  }
-  condition {
-    http_header {
-      http_header_name = "X-Magenx-Header"
-      values           = [random_uuid.this.result]
-    }
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for Load Balancer - forward to admin
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "admin" {
-  listener_arn = aws_lb_listener.https.arn
-  priority     = 20
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this["admin"].arn
-  }
-  condition {
-    http_header {
-      http_header_name = "X-Magenx-Header"
-      values           = [random_uuid.this.result]
-    }
-  }
-  condition {
-    path_pattern {
-      values = ["/admin_${random_string.this["admin_path"].result}/*"]
-    }
-  }
-}
-# # ---------------------------------------------------------------------------------------------------------------------#
-# Create conditional listener rule for Load Balancer - forward to phpmyadmin
-# # ---------------------------------------------------------------------------------------------------------------------#
-resource "aws_lb_listener_rule" "mysql" {
-  listener_arn = aws_lb_listener.https.arn
-  priority     = 10
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this["admin"].arn
-  }
-  condition {
-    http_header {
-      http_header_name = "X-Magenx-Header"
-      values           = [random_uuid.this.result]
-    }
-  }
-  condition {
-    path_pattern {
-      values = ["/mysql_${random_string.this["mysql_path"].result}/*"]
     }
   }
 }
