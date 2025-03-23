@@ -73,7 +73,7 @@ EOF
 resource "aws_autoscaling_group" "this" {
   for_each = var.ec2
   name = "${local.project}-${each.key}-asg"
-  vpc_zone_identifier = values(aws_subnet.this).*.id
+  vpc_zone_identifier = random_shuffle.subnets.result
   desired_capacity    = var.asg["desired_capacity"]
   min_size            = var.asg["min_size"]
   max_size            = var.asg["max_size"]
