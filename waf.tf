@@ -22,9 +22,30 @@ resource "aws_wafv2_web_acl" "this" {
     sampled_requests_enabled = true
   }
 
+  dynamic "rule" {
+    for_each = local.waf_ipset_rules
+    content {
+      name     = rule.key
+      priority = rule.value.priority
+      action {
+        (rule.value.action) {}
+      }
+      statement {
+        ip_set_reference_statement {
+          arn = aws_wafv2_ip_set.this[rule.value.ip_set_key].arn
+        }
+      }
+      visibility_config {
+        cloudwatch_metrics_enabled = true
+        metric_name                = rule.value.metric_name
+        sampled_requests_enabled   = true
+      }
+    }
+  }
+
   rule {
     name     = "${local.project}-country-based"
-    priority = 0
+    priority = 2
     action {
       block {}
     }
@@ -42,13 +63,13 @@ resource "aws_wafv2_web_acl" "this" {
 
   rule {
     name     = "${local.project}-rate-based"
-    priority = 1
+    priority = 3
     action {
       block {}
     }
     statement {
       rate_based_statement {
-       limit              = 300
+       limit              = 500
        aggregate_key_type = "IP"
        evaluation_window_sec = 120
        }
@@ -62,7 +83,7 @@ resource "aws_wafv2_web_acl" "this" {
 
   rule {
     name = "AWSManagedRulesCommonRule"
-    priority = 2
+    priority = 4
     override_action {
       none {}
     }
@@ -81,7 +102,7 @@ resource "aws_wafv2_web_acl" "this" {
 
   rule {
     name = "AWSManagedRulesAmazonIpReputation"
-    priority = 3
+    priority = 5
     override_action {
       none {}
     }
@@ -97,4 +118,15 @@ resource "aws_wafv2_web_acl" "this" {
       sampled_requests_enabled = true
     }
   }
+}
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Create AWS WAFv2 IP set
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "aws_wafv2_ip_set" "this" {
+  for_each           = local.waf_ipset
+  name               = each.value.name
+  description        = each.value.description
+  scope              = "CLOUDFRONT"
+  ip_address_version = "IPV4"
+  addresses          = each.value.addresses
 }
