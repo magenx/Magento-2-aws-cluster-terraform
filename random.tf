@@ -7,13 +7,12 @@
 # Generate random uuid string that is intended to be used as secret header
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_uuid" "this" {}
-
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Generate random passwords
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_password" "this" {
   for_each         = toset(var.password)
-  length           = (each.key == "blowfish" ? 32 : 16)
+  length           = 16
   lower            = true
   upper            = true
   numeric          = true
@@ -25,7 +24,7 @@ resource "random_password" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "random_string" "this" {
   for_each       = toset(var.string)
-  length         = (each.key == "id_prefix" ? 3 : 7)
+  length         = 7
   lower          = true
   numeric        = true
   special        = false
@@ -42,4 +41,10 @@ resource "random_string" "s3" {
   special        = false
   upper          = false
 }
-
+# # ---------------------------------------------------------------------------------------------------------------------#
+# Select random subnets for ASG as required availability_zones_qty
+# # ---------------------------------------------------------------------------------------------------------------------#
+resource "random_shuffle" "subnets" {
+  input        = [for subnet in aws_subnet.this : subnet.id]
+  result_count = var.vpc["availability_zones_qty"]
+}
