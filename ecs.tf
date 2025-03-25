@@ -24,7 +24,7 @@ resource "aws_ecs_service" "this" {
   cluster                            = aws_ecs_cluster.this.id
   task_definition                    = aws_ecs_task_definition.this.arn
   desired_count                      = var.ecs["desired_count"]
-  deployment_minimum_healthy_percent = var.ecs["tdeployment_minimum_healthy_percent"]
+  deployment_minimum_healthy_percent = var.ecs["deployment_minimum_healthy_percent"]
   deployment_maximum_percent         = var.ecs["deployment_maximum_percent"]
   load_balancer {
     target_group_arn = aws_alb_target_group.this.arn
