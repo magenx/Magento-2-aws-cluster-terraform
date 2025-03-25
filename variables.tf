@@ -1,3 +1,21 @@
+variable "ecr" {
+  description = "ECR repository configuration"
+  type = object({
+    force_delete = bool
+  })
+}
+
+variable "ecs" {
+  description = "ECS service configuration"
+  type = object({
+    desired_count                      = number
+    deployment_minimum_healthy_percent = number
+    deployment_maximum_percent         = number
+    service_name                       = string
+    container_port                     = number
+  })
+}
+
 variable "github_repo" {
   description = "Magento GitHub repository"
   type        = string
