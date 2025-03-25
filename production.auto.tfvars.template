@@ -3,3 +3,18 @@ brand               = "magenx"
 github_repo         = "magenx/Magento-2"
 domain              = "magenx.org"
 admin_email         = "admin@magenx.org"
+
+ecr = {
+  force_delete = true
+}
+
+ecs = {
+  desired_count                      = 1
+  deployment_minimum_healthy_percent = 100
+  deployment_maximum_percent         = 200
+  service_name                       = "my-ecs-service"
+  container_port                     = 80
+  host_port                          = 80
+  cpu_units                          = 200
+  memory                             = 200
+}
