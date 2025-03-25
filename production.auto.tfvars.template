@@ -1,8 +1,9 @@
 # Rename this file to production.auto.tfvars and customize your variables #
 brand               = "magenx"
-github_repo         = "magenx/Magento-2"
+codename            = "polar23"
 domain              = "magenx.org"
 admin_email         = "admin@magenx.org"
+github_repo         = "magenx/Magento-2"
 
 ecr = {
   force_delete = true
