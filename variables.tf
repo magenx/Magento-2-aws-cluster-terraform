@@ -12,6 +12,7 @@ variable "ecs" {
     deployment_minimum_healthy_percent = number
     deployment_maximum_percent         = number
     service_name                       = string
+    service_image                      = string
     container_port                     = number
     host_port                          = number
     cpu_units                          = number
