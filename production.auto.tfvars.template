@@ -13,6 +13,7 @@ ecs = {
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
   service_name                       = "my-ecs-service"
+  service_image                      = "public.ecr.aws/docker/library/hello-world:latest"
   container_port                     = 80
   host_port                          = 80
   cpu_units                          = 200
