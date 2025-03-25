@@ -295,6 +295,7 @@ variable "ec2_instance_profile_policy" {
   "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
   "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
   "arn:aws:iam::aws:policy/AmazonElasticFileSystemClientReadWriteAccess",
+  "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
   ]
 }
 
