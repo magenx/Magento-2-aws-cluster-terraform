@@ -42,7 +42,7 @@ resource "aws_launch_template" "this" {
     }
   user_data = base64encode(<<EOF
 #!/bin/bash
-# remove awscli and install ssm manager
+# remove awscli
 apt -qqy remove --purge awscli
 # install ssm manager
 mkdir /tmp/ssm
@@ -51,6 +51,8 @@ wget https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_arm64
 dpkg -i amazon-ssm-agent.deb
 systemctl enable amazon-ssm-agent
 systemctl start amazon-ssm-agent
+# ecs cluster
+echo ECS_CLUSTER=${aws_ecs_cluster.this.name} >> /etc/ecs/ecs.config
 EOF
   )
   metadata_options {
