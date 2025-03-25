@@ -14,7 +14,7 @@ resource "aws_mq_broker" "this" {
   security_groups    = [aws_security_group.rabbitmq.id]
   subnet_ids         = [values(aws_subnet.this).0.id]
   user {
-    username         = var.app["brand"]
+    username         = var.brand
     password         = random_password.this["rabbitmq"].result
   }
   tags = {

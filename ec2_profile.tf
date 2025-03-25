@@ -77,7 +77,7 @@ data "aws_iam_policy_document" "ses_send" {
     condition {
       test     = "StringEquals"
       variable = "ses:FromAddress"
-      values   = [var.app["admin_email"]]
+      values   = [var.admin_email]
     }
   }
 }

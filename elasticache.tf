@@ -21,7 +21,7 @@ resource "aws_elasticache_parameter_group" "this" {
   for_each      = toset(var.redis["name"])
   name          = "${local.project}-${each.key}-parameter"
   family        = var.redis["family"]
-  description   = "Parameter group for ${var.app["domain"]} ${each.key} backend"
+  description   = "Parameter group for ${var.domain} ${each.key} backend"
    dynamic "parameter" {
     for_each = var.redis_parameters
     content {
@@ -38,7 +38,7 @@ resource "aws_elasticache_parameter_group" "this" {
 # # ---------------------------------------------------------------------------------------------------------------------#
 resource "aws_elasticache_replication_group" "this" {
   for_each                      = toset(var.redis["name"])
-  description                   = "Replication group for ${var.app["domain"]} ${each.key} backend"
+  description                   = "Replication group for ${var.domain} ${each.key} backend"
   num_cache_clusters            = var.redis["num_cache_clusters"]
   at_rest_encryption_enabled    = var.redis["at_rest_encryption_enabled"]
   engine                        = "redis"
