@@ -27,11 +27,10 @@ data "aws_default_tags" "this" {}
 # Get the list of AWS Availability Zones available in this region
 # # ---------------------------------------------------------------------------------------------------------------------#
 data "aws_availability_zones" "available" {
-  state            = "available"
+  state = "available"
   exclude_zone_ids = ["use1-az3"]
 }
-
-data "aws_availability_zone" "all" {
+data "aws_availability_zone" "available" {
   for_each = toset(data.aws_availability_zones.available.names)
   name = each.key
 }
