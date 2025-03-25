@@ -23,7 +23,7 @@ resource "aws_service_discovery_service" "this" {
         az      = entry[1] 
       } 
   }
-  name = ${local.project}-${each.value.service}-${each.value.az}
+  name = "${local.project}-${each.value.service}-${each.value.az}"
   dns_config {
     namespace_id = aws_service_discovery_private_dns_namespace.this.id
     dns_records {
