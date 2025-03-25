@@ -13,6 +13,9 @@ variable "ecs" {
     deployment_maximum_percent         = number
     service_name                       = string
     container_port                     = number
+    host_port                          = number
+    cpu_units                          = number
+    memory                             = number
   })
 }
 
