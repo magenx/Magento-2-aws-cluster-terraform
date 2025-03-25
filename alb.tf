@@ -89,6 +89,12 @@ resource "aws_lb_listener_rule" "varnish" {
       values = [var.domain]
     }
   }
+  condition {
+    http_header {
+      http_header_name = "X-Magenx-Header"
+      value = [random_uuid.this.result]
+    }
+  }
 }
 # # ---------------------------------------------------------------------------------------------------------------------#
 # Create CloudWatch HTTP 5XX metrics and email alerts
