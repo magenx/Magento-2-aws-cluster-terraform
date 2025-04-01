@@ -215,8 +215,8 @@ variable "restricted_countries" {
 
 locals {
   # Read the CSV files to get IPs
-  whitelist_ips = csvdecode(file("${abspath(path.root)}/waf_whitelist.csv"))
-  blacklist_ips = csvdecode(file("${abspath(path.root)}/waf_blacklist.csv"))
+  whitelist_ips = csvdecode(file("${abspath(path.root)}/waf/whitelist.csv"))
+  blacklist_ips = csvdecode(file("${abspath(path.root)}/waf/blacklist.csv"))
   # Define whitelist and blacklist IP sets
   waf_ipset = {
     whitelist = {
